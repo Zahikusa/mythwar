@@ -91,6 +91,8 @@ export class Renderer {
   private shrinePulse = [0, 0, 0];
   private gateChips = [-1, -1, -1, -1, -1, -1];
   private laneAlert = [0, 0, 0];
+  private winner: Team | null = null;
+  private embers: { x: number; y: number; vx: number; vy: number; life: number }[] = [];
   private hover: { unit: Unit; x: number; top: number; d: number } | null = null;
   private mouseRef: { x: number; y: number } | null = null;
   private sortBuf: Unit[] = [];
@@ -139,6 +141,7 @@ export class Renderer {
     this.shake = 0;
     this.collapse = [-1, -1];
     this.laneAlert = [0, 0, 0];
+    this.embers = [];
   }
 
   private background(index: number): HTMLCanvasElement {
@@ -431,6 +434,7 @@ export class Renderer {
       this.laneAlert[i] = Math.max(0, this.laneAlert[i] - dt * 0.7);
     }
     this.ragnarok += ((world.ragnarokStarted ? 1 : 0) - this.ragnarok) * Math.min(1, dt * 0.8);
+    this.winner = world.winner;
     this.updateCollapse(dt);
 
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
@@ -499,6 +503,7 @@ export class Renderer {
     if (this.ragnarok > 0.01) {
       ctx.fillStyle = `rgba(150, 20, 10, ${0.16 * this.ragnarok})`;
       ctx.fillRect(0, 0, L.width, L.height);
+      this.drawEmbers(ctx, dt);
     }
     if (this.vignette) ctx.drawImage(this.vignette, 0, 0, L.width, L.height);
     if (this.fx.flash > 0) {
@@ -509,6 +514,24 @@ export class Renderer {
       ctx.fillStyle = 'rgba(10, 6, 24, 0.35)';
       ctx.fillRect(0, 0, L.width, L.height);
     }
+  }
+
+  /** Ragnarök: embers drift up across the whole battlefield. */
+  private drawEmbers(ctx: CanvasRenderingContext2D, dt: number): void {
+    const L = this.layout;
+    const want = Math.round((L.mode === 'mobile' ? 25 : 50) * this.ragnarok * (this.quality === 'low' ? 0.5 : 1));
+    while (this.embers.length < want) {
+      this.embers.push({ x: Math.random() * L.width, y: L.height + Math.random() * 40, vx: (Math.random() - 0.5) * 20, vy: -30 - Math.random() * 50, life: 4 + Math.random() * 4 });
+    }
+    for (const e of this.embers) {
+      e.life -= dt;
+      e.x += (e.vx + Math.sin(this.time * 2 + e.y * 0.02) * 12) * dt;
+      e.y += e.vy * dt;
+      const a = Math.min(1, e.life * 0.5) * this.ragnarok;
+      drawGlow(ctx, e.x, e.y, 6, [255, 120, 40], 0.6 * a);
+      circle(ctx, e.x, e.y, 1.3, `rgba(255, 210, 140, ${a.toFixed(3)})`);
+    }
+    this.embers = this.embers.filter((e) => e.life > 0 && e.y > -20);
   }
 
   private drawAmbient(ctx: CanvasRenderingContext2D, dt: number): void {
@@ -779,7 +802,9 @@ export class Renderer {
     const spawnK = v.spawn;
     const sc = p.s * (0.6 + 0.4 * spawnK);
     const fly = art.fly * p.s;
-    const y = p.y - fly;
+    // After the battle the victors hop in celebration.
+    const cheer = this.winner === u.team ? Math.abs(Math.sin(this.time * 7 + v.seed * 6)) * 5 * p.s : 0;
+    const y = p.y - fly - cheer;
     ctx.save();
     ctx.globalAlpha = Math.min(1, spawnK * 1.5);
     ctx.translate(p.x, y);
