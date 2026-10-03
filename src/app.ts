@@ -265,7 +265,7 @@ export class App {
         this.overTimer -= dt;
         if (this.overTimer <= 0) {
           this.state = 'over';
-          this.menus.showResults(g.world, g.playerTeam, this.difficulty);
+          this.menus.showResults(g.world, g.playerTeam, this.difficulty, g.history);
         }
       }
     }

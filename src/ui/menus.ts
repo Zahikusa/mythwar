@@ -7,6 +7,7 @@ import { h, fmt, fmtTime, onTap } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 import type { Settings } from './settings.ts';
+import type { HistorySample } from '../game.ts';
 
 export interface MenuCallbacks {
   play(difficulty: Difficulty): void;
@@ -291,7 +292,7 @@ export class Menus {
   // Results
   // -------------------------------------------------------------------------
 
-  showResults(world: World, me: Team, difficulty: Difficulty): void {
+  showResults(world: World, me: Team, difficulty: Difficulty, history: HistorySample[] = []): void {
     const el = this.screens.over!;
     el.innerHTML = '';
     const won = world.winner === me;
@@ -329,7 +330,7 @@ export class Menus {
       h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: won ? 'The enemy citadel has fallen.' : 'Your citadel lies in ruins.' })),
       h('div', { class: 'vportrait' }, portrait(champion.id, 96, me, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
       h('div', { class: 'vtime', text: `Battle length ${fmtTime(world.time)}` }),
-      table,
+      h('div', { class: 'vstats' }, table, history.length >= 3 ? armyChart(history, me, AI_PROFILES[difficulty].name) : null),
       h(
         'div',
         { class: 'mrow' },
@@ -376,4 +377,95 @@ function powersArt(): HTMLElement {
   const box = h('div', { class: 'hart powers' });
   for (const a of AGES) box.appendChild(h('div', { class: 'hpow', title: POWERS[a.power].name, html: POWER_ICONS[a.power] }));
   return box;
+}
+
+/** Chart colours validated for a dark surface (dataviz palette check: band, CVD, contrast). */
+const CHART_YOU = '#2196dc';
+const CHART_FOE = '#e8506a';
+
+/** "Army strength over time" line chart with direct labels, legend and a hover crosshair. */
+function armyChart(history: HistorySample[], me: Team, foeName: string): HTMLElement {
+  const W = 440;
+  const H = 130;
+  const pad = { l: 40, r: 50, t: 10, b: 20 };
+  const pw = W - pad.l - pad.r;
+  const ph = H - pad.t - pad.b;
+  const tMax = Math.max(1, history[history.length - 1].t);
+  let vMax = 1;
+  for (const s of history) vMax = Math.max(vMax, s.army[0], s.army[1]);
+  vMax = niceCeil(vMax);
+  const X = (t: number) => pad.l + (t / tMax) * pw;
+  const Y = (v: number) => pad.t + ph - (v / vMax) * ph;
+  const foe = me === 0 ? 1 : 0;
+  const path = (team: number) => history.map((s, i) => (i ? 'L' : 'M') + X(s.t).toFixed(1) + ',' + Y(s.army[team]).toFixed(1)).join('');
+  const last = history[history.length - 1];
+  let grid = '';
+  for (const k of [0, 0.5, 1]) {
+    const y = Y(vMax * k).toFixed(1);
+    grid += '<line x1="' + pad.l + '" x2="' + (W - pad.r) + '" y1="' + y + '" y2="' + y + '" class="cg"/>';
+    grid += '<text x="' + (pad.l - 6) + '" y="' + y + '" class="cy">' + fmt(vMax * k) + '</text>';
+  }
+  // Keep the two end labels from colliding.
+  let yYou = Y(last.army[me]);
+  let yFoe = Y(last.army[foe]);
+  if (Math.abs(yYou - yFoe) < 12) {
+    const mid = (yYou + yFoe) / 2;
+    const up = yYou <= yFoe ? -6 : 6;
+    yYou = mid + up;
+    yFoe = mid - up;
+  }
+  const lx = X(last.t);
+  const svg =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" class="chartsvg" role="img" aria-label="Army strength over time">' +
+    grid +
+    '<text x="' + pad.l + '" y="' + (H - 6) + '" class="cx">0:00</text>' +
+    '<text x="' + (W - pad.r) + '" y="' + (H - 6) + '" class="cx end">' + fmtTime(tMax) + '</text>' +
+    '<path d="' + path(foe) + '" class="cl" stroke="' + CHART_FOE + '"/>' +
+    '<path d="' + path(me) + '" class="cl" stroke="' + CHART_YOU + '"/>' +
+    '<circle cx="' + lx + '" cy="' + Y(last.army[foe]) + '" r="4" fill="' + CHART_FOE + '" class="cm"/>' +
+    '<circle cx="' + lx + '" cy="' + Y(last.army[me]) + '" r="4" fill="' + CHART_YOU + '" class="cm"/>' +
+    '<text x="' + (lx + 8) + '" y="' + yYou + '" class="cd">You</text>' +
+    '<text x="' + (lx + 8) + '" y="' + yFoe + '" class="cd">Foe</text>' +
+    '<line class="ch" x1="0" x2="0" y1="' + pad.t + '" y2="' + (pad.t + ph) + '" visibility="hidden"/>' +
+    '</svg>';
+  const legend = h(
+    'div',
+    { class: 'clegend' },
+    h('span', null, h('i', { style: 'background:' + CHART_YOU }), 'You'),
+    h('span', null, h('i', { style: 'background:' + CHART_FOE }), foeName),
+  );
+  const tip = h('div', { class: 'ctip hidden' });
+  const plot = h('div', { class: 'cplot', html: svg }, tip);
+  const box = h('div', { class: 'chart' }, h('div', { class: 'ctitle', text: 'Army strength over time' }), legend, plot);
+  // Hover: crosshair + tooltip at the nearest sample.
+  const hair = plot.querySelector('.ch') as SVGLineElement;
+  plot.addEventListener('pointermove', (e) => {
+    const r = plot.querySelector('svg')!.getBoundingClientRect();
+    const sx = ((e.clientX - r.left) / r.width) * W;
+    const t = Math.max(0, Math.min(tMax, ((sx - pad.l) / pw) * tMax));
+    let best = history[0];
+    for (const s of history) if (Math.abs(s.t - t) < Math.abs(best.t - t)) best = s;
+    const x = X(best.t);
+    hair.setAttribute('x1', String(x));
+    hair.setAttribute('x2', String(x));
+    hair.setAttribute('visibility', 'visible');
+    tip.innerHTML =
+      '<b>' + fmtTime(best.t) + '</b>' +
+      '<span><i style="background:' + CHART_YOU + '"></i>You ' + fmt(best.army[me]) + '</span>' +
+      '<span><i style="background:' + CHART_FOE + '"></i>' + foeName + ' ' + fmt(best.army[foe]) + '</span>';
+    tip.classList.remove('hidden');
+    const px = (x / W) * r.width;
+    tip.style.left = Math.max(0, Math.min(r.width - tip.offsetWidth, px - tip.offsetWidth / 2)) + 'px';
+  });
+  plot.addEventListener('pointerleave', () => {
+    hair.setAttribute('visibility', 'hidden');
+    tip.classList.add('hidden');
+  });
+  return box;
+}
+
+function niceCeil(v: number): number {
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  for (const m of [1, 2, 2.5, 5, 10]) if (v <= m * p) return m * p;
+  return 10 * p;
 }

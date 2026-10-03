@@ -78,8 +78,9 @@ See DESIGN.md for the game design.
 6. [x] Panels cache element refs; the blessing buy button no longer rewrites its innerHTML
    every frame (it did while the panel was open).
 7. [x] `drawUnits` sorts by a precomputed `renderKey` in a reused buffer.
-8. [ ] Results screen: add an "army value over time" sparkline for both sides (needs periodic
-   samples recorded in the sim or app).
+8. [x] Results screen "Army strength over time" line chart (`Game.history`, sampled every 5 s):
+   validated chart colours, legend + direct labels, hover crosshair/tooltip; side-by-side with
+   the stats table on short phone screens.
 
 ## Decisions log
 - Added **gate wards** (free built-in weak turret per lane, scales with age): without them, the

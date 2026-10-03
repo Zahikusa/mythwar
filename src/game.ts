@@ -14,6 +14,14 @@ export interface GameOptions {
 
 export type GameListener = (events: SimEvent[]) => void;
 
+/** Periodic snapshot of both armies' value (gold value weighted by remaining health). */
+export interface HistorySample {
+  t: number;
+  army: [number, number];
+}
+
+const SAMPLE_EVERY = 5;
+
 /** One match: the simulation, the AI(s) and the fixed-step clock. */
 export class Game {
   readonly world: World;
@@ -25,6 +33,8 @@ export class Game {
   speed = 1;
   paused = false;
   over = false;
+  readonly history: HistorySample[] = [];
+  private nextSample = 0;
   private acc = 0;
   private listeners: GameListener[] = [];
 
@@ -59,6 +69,10 @@ export class Game {
       }
       if (steps >= 40) this.acc = 0;
     }
+    if (this.world.time >= this.nextSample || (this.world.winner !== null && this.history.at(-1)?.t !== this.world.time)) {
+      this.sample();
+      this.nextSample = this.world.time + SAMPLE_EVERY;
+    }
     const events = this.world.drainEvents();
     if (events.length) {
       for (const e of events) if (e.type === 'gameOver') this.over = true;
@@ -66,6 +80,12 @@ export class Game {
     }
     this.view.paused = this.paused;
     return this.acc / TICK;
+  }
+
+  private sample(): void {
+    const army: [number, number] = [0, 0];
+    for (const lane of this.world.lanes) for (const u of lane) if (u.alive) army[u.team] += u.def.cost * (u.hp / u.maxHp);
+    this.history.push({ t: this.world.time, army });
   }
 
   /** Fast-forwards the simulation (used by tests / attract mode). */
