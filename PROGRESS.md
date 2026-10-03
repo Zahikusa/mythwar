@@ -21,7 +21,7 @@ See DESIGN.md for the game design.
 - [x] M3 Renderer skeleton: game loop w/ interpolation, background, lanes, bases, placeholder units
 - [x] M4 HUD + menus (title, difficulty, pause, end screen), input (lane select, cards, drag)
 - [x] M5 Creature art & animation for all 16 creatures, turrets, citadels per age
-- [ ] M6 FX: particles, projectiles, god-power visuals, ascend transition, shake, floating text
+- [x] M6 FX: particles, projectiles, god-power visuals, ascend transition, shake, floating text
 - [x] M7 Audio (synth SFX + ambient music), settings
 - [x] M8 Mobile: landscape thumb layout, portrait rotation, touch drag, perf scaling
 - [x] M9 Onboarding: how-to-play, first-game hints, tooltips
@@ -32,8 +32,8 @@ See DESIGN.md for the game design.
   powers.ts (5 god powers), data.ts (all balance numbers), types.ts (state, events, commands).
 - AI (`src/ai/ai.ts`): lane threat assessment, counters, ascend saving, turrets, blessings, powers.
 - `npm run sim -- 20 master adept` headless balance runs; `node scripts/trace.ts <seed>` timeline.
-- Balance snapshot (master vs master): ages at ~2/4.5/8.5/13.5 min, games ~20 min (Ragnarök
-  ends stalemates). mythic>master 8-4, master>adept 9-3, adept>novice 12-0.
+- Balance snapshot (after the formation rules, see backlog #19): master vs master games ~18 min
+  (Ragnarök ends stalemates); mythic>master 20-10, master>adept 24-6, adept>novice 19-1.
 
 - Renderer (`src/render`): themed pre-rendered backdrops per age (cross-fade on ascend), citadel
   keep/gates/turrets per age style, shrines, 16 procedural animated creatures
@@ -57,8 +57,9 @@ See DESIGN.md for the game design.
   multi-touch on phones — found by the smoke test).
 
 - Difficulty calibration vs scripted naive players (`node scripts/bots.ts 10`,
-  `node scripts/calib.ts reactive adept 30`): a lane-reactive bot beats Novice ~90%, Adept ~37%,
-  Master ~20%, Mythic 0%; a random spammer beats Novice ~47%. Default difficulty: Novice.
+  `node scripts/calib.ts counter adept 30`): a bot that follows the Counter! badge beats Novice
+  ~90%, Adept ~27%, Master ~10%, Mythic 0% (bots don't use turrets/blessings/shrines, so real
+  players should do better). Default difficulty: Novice.
 
 - Coach tips (`src/ui/coach.ts`), lane danger pulses, "Counter!" card badge.
 - PWA: manifest (landscape, fullscreen), offline service worker; phones go fullscreen and
@@ -159,6 +160,13 @@ See DESIGN.md for the game design.
     per layout.
 49. [x] Melee blows draw a slash arc across the target (yellow on counter hits); creatures
     also recoil slightly when struck.
+50. [ ] `src/ui/hud.ts update()`: lane-strength bars do a `querySelector('.lbar')` per tab per
+    frame; cache the refs like the panels (#6).
+51. [ ] Enemy god powers: add a short distinct warning sound on enemy casts so players look up.
+52. [ ] Coach: no tip explains the formation rules (Hunter packs / Guardian sweeps / Mystics
+    hang back); add one when the player first has 3+ Hunters in a lane.
+53. [ ] Smoke test doesn't drive the rotated-portrait *menus* (title → difficulty → Begin);
+    add that flow (taps must map through the rotated stage).
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
