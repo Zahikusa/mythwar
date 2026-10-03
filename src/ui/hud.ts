@@ -55,6 +55,8 @@ export class Hud {
   private panel: 'none' | 'turret' | 'bless' = 'none';
   private turretRows: HTMLElement[] = [];
   private blessRows: Record<string, HTMLElement> = {};
+  private blessRefs: Record<string, { pips: Element[]; buy: HTMLButtonElement; cost: number }> = {};
+  private turretBuys: HTMLButtonElement[][] = [[], [], []];
   private hpShown: [number, number] = [1, 1];
   private drag: { unitId: string | null; power: boolean; startX: number; startY: number; active: boolean; pointerId: number; longPress: number } | null = null;
   private ghost: HTMLDivElement;
@@ -196,6 +198,7 @@ export class Hud {
       onTap(buy, () => this.tryBless(id));
       const row = h('div', { class: `brow b-${id}` }, h('div', { class: 'bname', text: b.name }), pips, h('div', { class: 'bdesc', text: b.blurb }), buy);
       this.blessRows[id] = row;
+      this.blessRefs[id] = { pips: [...pips.children], buy, cost: -2 };
       panel.appendChild(row);
     }
     return panel;
@@ -796,7 +799,13 @@ export class Hud {
         };
         const status = cur ? h('div', { class: 'tcur' }, h('b', { text: cur.name }), cur.age < me.age ? h('span', { class: 'old', text: 'outdated' }) : null) : h('div', { class: 'tcur empty', text: 'Empty — gate ward only' });
         const buttons = h('div', { class: 'tbtns' });
-        for (const id of [bolt.id, blast.id]) if (!cur || cur.id !== id) buttons.appendChild(mk(id));
+        this.turretBuys[lane] = [];
+        for (const id of [bolt.id, blast.id]) {
+          if (cur && cur.id === id) continue;
+          const b = mk(id);
+          this.turretBuys[lane].push(b);
+          buttons.appendChild(b);
+        }
         if (cur) {
           const sell = h('button', { class: 'tsell', title: 'Sell for half its cost' }, h('span', { class: 'tn', text: 'Sell' }), h('span', { class: 'tc', text: `+${Math.floor(cur.cost * SELL_REFUND)}` }));
           onTap(sell, () => this.trySell(lane));
@@ -804,7 +813,7 @@ export class Hud {
         }
         row.append(h('div', { class: 'tlane', text: LANE_NAMES[lane] }), status, buttons);
       }
-      for (const b of row.querySelectorAll<HTMLButtonElement>('.tbuy')) {
+      for (const b of this.turretBuys[lane]) {
         toggle(b, 'poor', w.turretBlocker(g.playerTeam, lane, b.dataset.id!) === 'Not enough gold');
       }
     }
@@ -815,21 +824,17 @@ export class Hud {
     const w = g.world;
     const me = w.players[g.playerTeam];
     for (const id of BLESSING_ORDER) {
-      const row = this.blessRows[id];
+      const ref = this.blessRefs[id];
       const rank = me.blessings[id];
-      const pips = row.querySelectorAll('.pips i');
-      pips.forEach((p, i) => toggle(p, 'on', i < rank));
-      const buy = row.querySelector('.buy') as HTMLButtonElement;
-      if (rank >= BLESSING_MAX_RANK) {
-        setText(buy, 'Max');
-        toggle(buy, 'poor', false);
-        buy.disabled = true;
-      } else {
-        const cost = blessingCost(rank, me.age);
-        buy.disabled = false;
-        buy.innerHTML = `${ICONS.gold}<span>${fmt(cost)}</span>`;
-        toggle(buy, 'poor', me.gold < cost);
+      ref.pips.forEach((p, i) => toggle(p, 'on', i < rank));
+      const cost = rank >= BLESSING_MAX_RANK ? -1 : blessingCost(rank, me.age);
+      if (cost !== ref.cost) {
+        ref.cost = cost;
+        ref.buy.disabled = cost < 0;
+        if (cost < 0) ref.buy.textContent = 'Max';
+        else ref.buy.innerHTML = `${ICONS.gold}<span>${fmt(cost)}</span>`;
       }
+      toggle(ref.buy, 'poor', cost >= 0 && me.gold < cost);
     }
   }
 

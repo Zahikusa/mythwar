@@ -453,6 +453,7 @@ export class World {
       rebirthUsed: false,
       lastHitAt: -10,
       kills: 0,
+      renderKey: 0,
     };
     this.lanes[lane].push(u);
     this.unitById.set(u.id, u);

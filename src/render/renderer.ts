@@ -87,6 +87,7 @@ export class Renderer {
   private gateChips = [-1, -1, -1, -1, -1, -1];
   private hover: { unit: Unit; x: number; top: number; d: number } | null = null;
   private mouseRef: { x: number; y: number } | null = null;
+  private sortBuf: Unit[] = [];
   private ageFlash: [number, number] = [0, 0];
   /** Citadel collapse progress per team (-1 = standing). */
   private collapse: [number, number] = [-1, -1];
@@ -684,10 +685,15 @@ export class Renderer {
       }
     }
     // Ground creatures first, then flyers; back (smaller y) first.
-    const sorted = list.filter((u) => u.alive).sort((a, b) => {
-      if (a.flying !== b.flying) return a.flying ? 1 : -1;
-      return this.vis.get(a.id)!.yJit - this.vis.get(b.id)!.yJit;
-    });
+    const sorted = this.sortBuf;
+    sorted.length = 0;
+    for (const u of list) {
+      if (!u.alive) continue;
+      // Sort key: flyers above ground creatures, then back-to-front by depth jitter.
+      u.renderKey = (u.flying ? 10 : 0) + this.vis.get(u.id)!.yJit;
+      sorted.push(u);
+    }
+    sorted.sort((a, b) => a.renderKey - b.renderKey);
     // Shadows
     for (const u of sorted) {
       const p = this.unitScreen(u, alpha);

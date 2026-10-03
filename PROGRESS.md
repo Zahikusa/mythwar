@@ -74,12 +74,10 @@ See DESIGN.md for the game design.
 3. [x] Results show the player's most-summoned creature ("Your champion: X ×n");
    `TeamStats.summonedBy` added.
 4. [x] Battered gates now throw stone chips + dust (throttled per lane) on `baseHit`.
-5. [ ] Desktop: hovering a creature on the battlefield shows nothing; add a light label
-   (name, class icon colour, HP) to help learning.
-6. [ ] `src/ui/hud.ts updateTurretPanel/updateBlessPanel`: `querySelectorAll` every frame while
-   a panel is open; cache element refs.
-7. [ ] `src/render/renderer.ts drawUnits`: comparator calls `vis.get` O(n log n) per lane per
-   frame plus array allocs; precompute sort keys.
+5. [x] Desktop hover labels on creatures (name, class colour, HP) via `view.mouse`.
+6. [x] Panels cache element refs; the blessing buy button no longer rewrites its innerHTML
+   every frame (it did while the panel was open).
+7. [x] `drawUnits` sorts by a precomputed `renderKey` in a reused buffer.
 8. [ ] Results screen: add an "army value over time" sparkline for both sides (needs periodic
    samples recorded in the sim or app).
 

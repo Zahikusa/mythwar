@@ -36,6 +36,8 @@ export interface Unit {
   rebirthUsed: boolean;
   lastHitAt: number;
   kills: number;
+  /** Scratch value owned by the renderer (draw order); not used by the simulation. */
+  renderKey: number;
 }
 
 export interface Projectile {
