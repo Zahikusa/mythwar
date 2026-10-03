@@ -152,6 +152,7 @@ export class App {
       // Attract / screenshot mode: AI vs AI with the HUD visible.
       const game = this.startGame((p.get('difficulty') as Difficulty) ?? 'master', Number(p.get('seed') ?? 7), true);
       game.view.selectedLane = 1;
+      game.speed = Number(p.get('speed') ?? 1);
       this.state = 'playing';
       this.hud.attach(game);
     } else if (p.has('play')) {

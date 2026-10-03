@@ -56,7 +56,6 @@ export class Hud {
   private turretRows: HTMLElement[] = [];
   private blessRows: Record<string, HTMLElement> = {};
   private hpShown: [number, number] = [1, 1];
-  private tooltipFor: string | null = null;
   private drag: { unitId: string | null; power: boolean; startX: number; startY: number; active: boolean; pointerId: number; longPress: number } | null = null;
   private ghost: HTMLDivElement;
   /** Set by the input layer: maps a client point to a lane index (or -1). */
@@ -208,6 +207,9 @@ export class Hud {
 
   attach(game: Game): void {
     this.game = game;
+    setText(this.el.speed.querySelector('span')!, `${game.speed}×`);
+    toggle(this.el.speed, 'on', game.speed > 1);
+    toggle(this.el.ascend, 'maxed', false);
     this.cardAge = -1;
     this.hpShown = [1, 1];
     this.togglePanel('none');
@@ -515,12 +517,10 @@ export class Hud {
     }
     tt.style.left = `${x}px`;
     tt.style.top = `${y}px`;
-    this.tooltipFor = def.id;
   }
 
   hideTooltip(): void {
     this.el.tooltip.classList.add('hidden');
-    this.tooltipFor = null;
   }
 
   // -------------------------------------------------------------------------
@@ -655,11 +655,13 @@ export class Hud {
       const why = w.ageUpBlocker(g.playerTeam);
       toggle(E.ascend, 'ready', !why);
       toggle(E.ascend, 'xpready', me.xp >= next.xpRequired && !!why);
-      E.ascend.title = `Ascend to ${next.name} (U): needs ${fmt(next.xpRequired)} XP and ${fmt(next.ascendCost)} gold. New creatures, turrets, god power and a stronger citadel.`;
+      const title = `Ascend to ${next.name} (U): needs ${fmt(next.xpRequired)} XP and ${fmt(next.ascendCost)} gold. New creatures, turrets, god power and a stronger citadel.`;
+      if (E.ascend.title !== title) E.ascend.title = title;
     } else {
       setStyle(E.ascFill, 'height', '100%');
       setText(E.ascSub, 'Final age');
       toggle(E.ascend, 'ready', false);
+      toggle(E.ascend, 'xpready', false);
       toggle(E.ascend, 'maxed', true);
     }
 
@@ -678,7 +680,6 @@ export class Hud {
       this.bannerTimer -= dt;
       if (this.bannerTimer <= 0) E.banner.classList.remove('show');
     }
-    if (this.tooltipFor && this.layoutInfo?.mode === 'mobile' && Math.random() < 0) this.hideTooltip();
   }
 
   /** The class that best counters the enemies in the selected lane (value-weighted), if any. */

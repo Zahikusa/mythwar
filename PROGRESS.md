@@ -23,8 +23,8 @@ See DESIGN.md for the game design.
 - [x] M5 Creature art & animation for all 16 creatures, turrets, citadels per age
 - [ ] M6 FX: particles, projectiles, god-power visuals, ascend transition, shake, floating text
 - [x] M7 Audio (synth SFX + ambient music), settings
-- [ ] M8 Mobile: landscape thumb layout, portrait rotation, touch drag, perf scaling
-- [ ] M9 Onboarding: how-to-play, first-game hints, tooltips
+- [x] M8 Mobile: landscape thumb layout, portrait rotation, touch drag, perf scaling
+- [x] M9 Onboarding: how-to-play, first-game hints, tooltips
 - [ ] M10 Balance pass via headless sims, polish, screenshot review on desktop + mobile
 
 ## Done
@@ -57,6 +57,12 @@ See DESIGN.md for the game design.
 - Difficulty calibration vs scripted naive players (`node scripts/bots.ts 10`,
   `node scripts/calib.ts reactive adept 30`): a lane-reactive bot beats Novice ~90%, Adept ~37%,
   Master ~20%, Mythic 0%; a random spammer beats Novice ~47%. Default difficulty: Novice.
+
+- Coach tips (`src/ui/coach.ts`), lane danger pulses, "Counter!" card badge.
+- PWA: manifest (landscape, fullscreen), offline service worker; phones go fullscreen and
+  lock landscape on battle start; notch safe-areas respected.
+- Citadel collapse finale; README.md; `node scripts/soak.ts 60 16` (no errors in all ages,
+  headless software-rendered fps 44–85 at 16× speed).
 
 ## Next
 - First-game onboarding hints
