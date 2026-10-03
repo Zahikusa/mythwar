@@ -146,6 +146,18 @@ See DESIGN.md for the game design.
 41. [x] How-to page 1 shows your (blue-glow, facing right) creatures versus the enemy's
     (red, facing left); `portrait()` can render facing left.
 42. [x] `node scripts/shoot.ts --list` prints all screenshot scenarios (filter = substring).
+43. [x] Power screenshot scenarios for Spirit Dragon / Starfall pointed at a battle that had
+    already ended; re-pointed and both powers verified visually.
+44. [x] Event effects (spawn flashes, shockwaves, strikes) are sized by the creature body scale,
+    so they stay proportional on ultrawide screens.
+45. [x] Pausing now freezes particles/ghosts/coins too (renderer gets dt = 0 while paused).
+46. [ ] `src/render/citadel.ts drawCitadelKeep`: keep/wall are redrawn every frame with fresh
+    gradients; cache the static parts per (age, team, layout) in an offscreen canvas and only
+    draw animated bits (banner, windows, smoke) live — cheaper on phones.
+47. [ ] Lane highlight / shrine / fimbul overlays allocate canvas gradients every frame; cache
+    per layout.
+48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
+    the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
     Mystics beat *everything* at army scale (ranged units focus fire, melee fight one at a time),
     so "spam Mystics" was a dominant strategy. Added formation rules — Hunters hunt in packs
