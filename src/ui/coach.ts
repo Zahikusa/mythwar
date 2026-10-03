@@ -121,7 +121,10 @@ export class Coach {
     if (this.current) {
       const done = this.current.done ? this.current.done(g, t, this.shownAt) : t - this.shownAt > 8;
       if (done) this.finish();
-      else this.position();
+      else {
+        this.el.classList.add('show');
+        this.position();
+      }
       return;
     }
     for (const tip of TIPS) {
