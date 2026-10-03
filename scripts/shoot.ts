@@ -19,7 +19,12 @@ interface Scenario {
   wait?: number;
   /** JS evaluated in the page before the screenshot. */
   script?: string;
+  /** Extra wait after the script ran. */
+  after?: number;
 }
+
+const cast = (age: number, lane: number) =>
+  `(() => { const a = window.__mythwar; const w = a.game.world; const p = w.players[0]; p.age = ${age}; p.powerCooldown = 0; a.game.command({ type: 'power', team: 0, lane: ${lane} }); })()`;
 
 const SCENARIOS: Scenario[] = [
   { name: 'desktop-early', query: 'demo&ff=75&seed=3', w: 1600, h: 900 },
@@ -33,6 +38,29 @@ const SCENARIOS: Scenario[] = [
   { name: 'menu-settings', query: 'screen=settings', w: 1600, h: 900, wait: 2000 },
   { name: 'mobile-title', query: '', w: 844, h: 390, mobile: true, dpr: 3, wait: 2500 },
   { name: 'mobile-diff', query: 'screen=difficulty', w: 844, h: 390, mobile: true, dpr: 3, wait: 2000 },
+  { name: 'power-briar', query: 'demo&ff=60&seed=3', w: 1600, h: 900, script: cast(0, 1), after: 700 },
+  { name: 'power-zeus', query: 'demo&ff=200&seed=3', w: 1600, h: 900, script: cast(1, 1), after: 900 },
+  { name: 'power-fimbul', query: 'demo&ff=300&seed=3', w: 1600, h: 900, script: cast(2, 1), after: 1300 },
+  { name: 'power-dragon', query: 'demo&ff=500&seed=3', w: 1600, h: 900, script: cast(3, 1), after: 1100 },
+  { name: 'power-starfall', query: 'demo&ff=800&seed=3', w: 1600, h: 900, script: cast(4, 1), after: 1400 },
+  {
+    name: 'gameover-collapse',
+    query: 'play=adept&seed=4',
+    w: 1600,
+    h: 900,
+    wait: 2000,
+    script: `(() => { const w = window.__mythwar.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0); })()`,
+    after: 1400,
+  },
+  {
+    name: 'gameover-results',
+    query: 'play=adept&seed=4',
+    w: 1600,
+    h: 900,
+    wait: 2000,
+    script: `(() => { const w = window.__mythwar.game.world; w.players[0].baseHp = 1; w.damageBase(0, 10, 0, 1); })()`,
+    after: 3600,
+  },
   { name: 'gallery', query: 'gallery&scale=2', w: 1440, h: 1600, wait: 1200 },
   { name: 'play-start', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 3000 },
 ];
@@ -91,7 +119,10 @@ async function main(): Promise<void> {
       const t0 = Date.now();
       await page.goto(`http://127.0.0.1:${port}/?${q}`, { waitUntil: 'load' });
       await new Promise((r) => setTimeout(r, (sc.wait ?? 1500) + extraWait));
-      if (sc.script) await page.evaluate(sc.script);
+      if (sc.script) {
+        await page.evaluate(sc.script);
+        await new Promise((r) => setTimeout(r, sc.after ?? 0));
+      }
       const fps = await page.evaluate(() => (window as unknown as { __fps?: number }).__fps ?? -1);
       await page.screenshot({ path: `screenshots/${sc.name}.png` });
       console.log(`${sc.name}: ${Date.now() - t0}ms fps=${fps}${errors.length ? '\n  ' + errors.join('\n  ') : ''}`);

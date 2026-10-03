@@ -142,6 +142,7 @@ export function drawCitadelKeep(
   t: number,
   hitFlash: number,
   ageFlash: number,
+  collapse = 0,
 ): void {
   const st = CITADEL_STYLES[age];
   const far = layout.lanes[0];
@@ -210,7 +211,17 @@ export function drawCitadelKeep(
     }
     for (let x = fx; x < far.x0 - 12 * s; x += 14 * s) rrect(ctx, x, wallTopFar - 6 * s, 7 * s, 7 * s, 1, st.wall);
 
-    // Keep tower
+    // Keep tower (sinks and topples when the citadel falls)
+    if (collapse > 0) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(fx - 200, -1000, far.x0 - fx + 400, baseY + 1000);
+      ctx.clip();
+      const k = collapse * collapse;
+      ctx.translate(keepX, baseY);
+      ctx.rotate(k * 0.22 + Math.sin(t * 40) * 0.01 * (1 - k));
+      ctx.translate(-keepX, -baseY + k * h * 0.95);
+    }
     const kx = keepX - w / 2;
     const ky = baseY - h;
     const grad = ctx.createLinearGradient(kx, 0, kx + w, 0);
@@ -246,9 +257,10 @@ export function drawCitadelKeep(
     }
     // Trim band and windows
     line(ctx, kx + w * 0.04, ky + 4 * s, kx + w * 0.96, ky + 4 * s, Math.max(1.5, 3 * s), st.trim);
-    windowLight(ctx, keepX, ky + h * 0.42, w * 0.2, h * 0.16, team, t, 0);
-    windowLight(ctx, keepX - w * 0.25, ky + h * 0.68, w * 0.12, h * 0.1, team, t, 1.3);
-    windowLight(ctx, keepX + w * 0.25, ky + h * 0.68, w * 0.12, h * 0.1, team, t, 2.1);
+    const temple = st.roofKind === 'pediment';
+    windowLight(ctx, keepX, ky + h * 0.42, w * (temple ? 0.13 : 0.2), h * 0.16, team, t, 0);
+    windowLight(ctx, keepX - w * (temple ? 0.213 : 0.25), ky + h * 0.68, w * (temple ? 0.09 : 0.12), h * 0.1, team, t, 1.3);
+    windowLight(ctx, keepX + w * (temple ? 0.213 : 0.25), ky + h * 0.68, w * (temple ? 0.09 : 0.12), h * 0.1, team, t, 2.1);
     if (st.roofKind !== 'pagoda' && st.roofKind !== 'canopy') crenellations(ctx, st, kx + w * 0.04, kx + w * 0.96, ky + 1, s);
     roof(ctx, st, keepX, ky, w * 1.05, s, true);
 
@@ -292,6 +304,7 @@ export function drawCitadelKeep(
         if (hpFrac < 0.3) drawGlow(ctx, sx, sy, 12 * s, [255, 120, 40], 0.6 + 0.3 * Math.sin(t * 12 + i));
       }
     }
+    if (collapse > 0) ctx.restore();
   });
 }
 
@@ -307,11 +320,19 @@ export function drawCitadelGate(
   s: number,
   hitFlash: number,
   t: number,
+  collapse = 0,
 ): void {
   const st = CITADEL_STYLES[age];
   const g = layout.lanes[lane];
   void gateX;
   withSide(ctx, layout, team, () => {
+    if (collapse > 0) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(g.x0 - 200, -1000, 400, laneY + g.band * 0.5 + 1000);
+      ctx.clip();
+      ctx.translate(0, collapse * collapse * 60 * s);
+    }
     // Lanes are symmetric, so in mirrored space the right gate maps onto the left one.
     const x = g.x0;
     const w = 40 * s;
@@ -384,6 +405,7 @@ export function drawCitadelGate(
       ctx.fillRect(bx, by - h, w, h);
       ctx.globalAlpha = 1;
     }
+    if (collapse > 0) ctx.restore();
   });
 }
 

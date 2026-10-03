@@ -83,6 +83,8 @@ export class Renderer {
   private baseFlash: [number, number] = [0, 0];
   private shrinePulse = [0, 0, 0];
   private ageFlash: [number, number] = [0, 0];
+  /** Citadel collapse progress per team (-1 = standing). */
+  private collapse: [number, number] = [-1, -1];
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -123,6 +125,7 @@ export class Renderer {
     this.fx.clear();
     this.ragnarok = 0;
     this.shake = 0;
+    this.collapse = [-1, -1];
   }
 
   private background(index: number): HTMLCanvasElement {
@@ -275,6 +278,10 @@ export class Renderer {
           this.fx.timedFx({ kind: 'meteor', x, y: g.y - 6 * g.s, x2: fromX, y2: -40, dur: e.fall, layer: 3, size: 9 * g.s + 4, rgb: [255, 200, 120], color: '#ffd38a' });
           break;
         }
+        case 'gameOver':
+          this.collapse[e.winner === 0 ? 1 : 0] = 0;
+          this.shake = 10;
+          break;
         case 'ragnarok':
           this.fx.flash = 1;
           this.fx.flashColor = '255,80,40';
@@ -282,6 +289,29 @@ export class Renderer {
           break;
         default:
           break;
+      }
+    }
+  }
+
+  /** The losing citadel crumbles: explosions, dust and a sinking keep. */
+  private updateCollapse(dt: number): void {
+    const L = this.layout;
+    for (const team of [0, 1] as Team[]) {
+      const c = this.collapse[team];
+      if (c < 0 || c >= 1) continue;
+      this.collapse[team] = Math.min(1, c + dt / 2.6);
+      this.shake = Math.max(this.shake, 3 * (1 - c));
+      if (Math.random() < dt * 14) {
+        const far = L.lanes[0];
+        const near = L.lanes[L.lanes.length - 1];
+        const left = team === 0;
+        const x0 = left ? L.field.x : near.x1;
+        const x1 = left ? far.x0 : L.field.x + L.field.w;
+        const x = x0 + Math.random() * (x1 - x0);
+        const y = L.horizon + Math.random() * (near.y - L.horizon);
+        this.fx.burst(x, y, { count: 14, color: '#ffb35a', rgb: [255, 160, 70], speed: 200, life: 0.7, size: 3, shape: 'glow', layer: 3, gravity: 200 });
+        this.fx.burst(x, y, { count: 6, color: 'rgba(70,60,60,0.6)', speed: 70, life: 1.4, size: 8, shape: 'smoke', layer: 3, gravity: -30 });
+        this.fx.timedFx({ kind: 'flashAt', x, y, dur: 0.4, layer: 3, size: 70, rgb: [255, 190, 110] });
       }
     }
   }
@@ -363,6 +393,7 @@ export class Renderer {
     }
     for (let i = 0; i < 3; i++) this.shrinePulse[i] = Math.max(0, this.shrinePulse[i] - dt * 1.5);
     this.ragnarok += ((world.ragnarokStarted ? 1 : 0) - this.ragnarok) * Math.min(1, dt * 0.8);
+    this.updateCollapse(dt);
 
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     const sh = this.shakeEnabled ? this.shake : 0;
@@ -384,7 +415,7 @@ export class Renderer {
     // Citadel keeps (behind the lanes)
     for (const team of [0, 1] as Team[]) {
       const p = world.players[team];
-      drawCitadelKeep(ctx, L, team, p.age, p.baseHp / p.baseMaxHp, this.time, this.baseFlash[team], this.ageFlash[team]);
+      drawCitadelKeep(ctx, L, team, p.age, p.baseHp / p.baseMaxHp, this.time, this.baseFlash[team], this.ageFlash[team], Math.max(0, this.collapse[team]));
     }
 
     // Lanes far → near
@@ -395,7 +426,7 @@ export class Renderer {
       for (const team of [0, 1] as Team[]) {
         const p = world.players[team];
         const gate = this.gateScreen(team, lane);
-        drawCitadelGate(ctx, L, team, lane, p.age, gate.x, gate.y, gate.s, this.baseFlash[team], this.time);
+        drawCitadelGate(ctx, L, team, lane, p.age, gate.x, gate.y, gate.s, this.baseFlash[team], this.time, Math.max(0, this.collapse[team]));
       }
       this.fx.drawTimed(ctx, lane);
       this.drawUnits(ctx, world, lane, alpha, simTime, dt, view);
@@ -888,9 +919,17 @@ export class Renderer {
       if (inst.kind !== 'fimbul') continue;
       const g = this.layout.lanes[inst.lane];
       const k = inst.t / POWER_TIMING.fimbul.duration;
-      const a = Math.sin(Math.min(1, k) * Math.PI) * 0.35;
-      ctx.fillStyle = `rgba(200, 235, 255, ${a})`;
-      ctx.fillRect(g.x0 - g.band, g.y - 80 * g.s, g.x1 - g.x0 + g.band * 2, 80 * g.s + g.band * 0.6);
+      const a = Math.sin(Math.min(1, k) * Math.PI) * 0.4;
+      const top = g.y - 90 * g.s;
+      const bot = g.y + g.band * 0.6;
+      const grad = ctx.createLinearGradient(0, top, 0, bot);
+      grad.addColorStop(0, 'rgba(200, 235, 255, 0)');
+      grad.addColorStop(0.6, `rgba(210, 240, 255, ${a})`);
+      grad.addColorStop(1, `rgba(230, 248, 255, ${a * 0.6})`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(g.x0 - g.band, top, g.x1 - g.x0 + g.band * 2, bot - top, g.band * 0.6);
+      ctx.fill();
     }
     void AGES;
     void UNITS;
