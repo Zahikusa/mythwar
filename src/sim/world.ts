@@ -363,6 +363,7 @@ export class World {
     this.time += dt;
     this.tick++;
     for (const lane of this.lanes) for (const u of lane) u.px = u.x;
+    for (const pr of this.projectiles) pr.px = pr.x;
     for (const p of this.players) this.updatePlayer(p, dt);
     this.updateRagnarok();
     for (let lane = 0; lane < LANE_COUNT; lane++) this.updateLane(lane, dt);
@@ -670,6 +671,7 @@ export class World {
       targetId: o.targetId,
       x0: o.x0,
       x: o.x0,
+      px: o.x0,
       tx: o.tx,
       t: 0,
       dur: Math.max(0.06, Math.abs(o.tx - o.x0) / o.speed),

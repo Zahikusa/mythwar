@@ -48,6 +48,7 @@ export interface Projectile {
   targetId: number; // unit id or BASE_TARGET
   x0: number;
   x: number;
+  px: number; // position at the start of the last tick (render interpolation)
   tx: number; // last known target x
   t: number; // 0..1 progress
   dur: number;
