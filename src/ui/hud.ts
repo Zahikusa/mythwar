@@ -57,6 +57,7 @@ export class Hud {
   private cardAge = -1;
   private el: Record<string, HTMLElement> = {};
   private laneTabs: HTMLButtonElement[] = [];
+  private laneBars: { bar: HTMLElement; fill: HTMLElement }[] = [];
   private queueChips: QueueChip[] = [];
   private toastTimer = 0;
   private bannerTimer = 0;
@@ -166,6 +167,8 @@ export class Hud {
         h('span', { class: 'qn' }),
         h('span', { class: 'lbar', title: 'Lane strength: yours vs. the enemy' }, h('i')),
       );
+      const bar = tab.querySelector('.lbar') as HTMLElement;
+      this.laneBars.push({ bar, fill: bar.firstElementChild as HTMLElement });
       onTap(tab, () => this.selectLane(i));
       this.laneTabs.push(tab);
       E.lanetabs.appendChild(tab);
@@ -707,9 +710,9 @@ export class Hud {
         if (u.team === g.playerTeam) mine += v;
         else theirs += v;
       }
-      const bar = tab.querySelector('.lbar') as HTMLElement;
+      const { bar, fill } = this.laneBars[i];
       toggle(bar, 'show', mine > 0 && theirs > 0);
-      if (mine > 0 && theirs > 0) setStyle(bar.firstElementChild as HTMLElement, 'width', `${((mine / (mine + theirs)) * 100).toFixed(0)}%`);
+      if (mine > 0 && theirs > 0) setStyle(fill, 'width', `${((mine / (mine + theirs)) * 100).toFixed(0)}%`);
       toggle(tab, 'sel', g.view.selectedLane === i);
       toggle(tab, 'hover', g.view.hoverLane === i && g.view.targeting !== 'none');
       setText(tab.querySelector('.qn')!, counts[i] ? String(counts[i]) : '');

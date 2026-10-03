@@ -274,6 +274,11 @@ export class Audio {
           else if (e.owner !== -1) [0, 6].forEach((n, i) => this.tone({ freq: midi(52 + n), dur: 0.6, vol: 0.08, type: 'triangle', delay: i * 0.12 }));
           break;
         case 'power':
+          // Enemy casts get a rising two-note warning first, so players look up.
+          if (e.team !== this.playerTeam) {
+            this.tone({ freq: 440, to: 660, dur: 0.18, vol: 0.12, type: 'square' });
+            this.tone({ freq: 440, to: 880, dur: 0.22, vol: 0.1, type: 'square', delay: 0.2 });
+          }
           this.powerSound(e.kind);
           break;
         case 'strike':

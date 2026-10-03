@@ -160,13 +160,11 @@ See DESIGN.md for the game design.
     per layout.
 49. [x] Melee blows draw a slash arc across the target (yellow on counter hits); creatures
     also recoil slightly when struck.
-50. [ ] `src/ui/hud.ts update()`: lane-strength bars do a `querySelector('.lbar')` per tab per
-    frame; cache the refs like the panels (#6).
-51. [ ] Enemy god powers: add a short distinct warning sound on enemy casts so players look up.
-52. [ ] Coach: no tip explains the formation rules (Hunter packs / Guardian sweeps / Mystics
-    hang back); add one when the player first has 3+ Hunters in a lane.
-53. [ ] Smoke test doesn't drive the rotated-portrait *menus* (title → difficulty → Begin);
-    add that flow (taps must map through the rotated stage).
+50. [x] Lane-strength bar refs cached.
+51. [x] Enemy god-power casts play a rising two-note warning before the power's own sound.
+52. [x] Coach tip "packs" explains Hunter packs vs Guardian sweeps when the player first
+    fields 3+ Hunters in one lane.
+53. [x] Smoke flow drives title → difficulty → Begin Battle on a rotated portrait phone.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed

@@ -94,6 +94,25 @@ async function resumeFlow(page: Page): Promise<void> {
   check('leaving a battle discards its autosave', gone);
 }
 
+async function rotatedMenusFlow(page: Page): Promise<void> {
+  console.log('== rotated portrait menus ==');
+  await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await page.goto(`${base}/`, { waitUntil: 'load' });
+  await sleep(1500);
+  const playBtn = await center(page, '.screen.title .mbtn.primary:not(.hidden)');
+  await page.touchscreen.tap(playBtn.x, playBtn.y);
+  await sleep(600);
+  let menu = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current);
+  check('rotated: Play opens the difficulty screen', menu === 'difficulty', menu);
+  const begin = await center(page, '.screen.difficulty .mbtn.primary');
+  const inView = begin.x > 0 && begin.x < 390 && begin.y > 0 && begin.y < 844;
+  check('rotated: Begin Battle is on screen', inView, JSON.stringify(begin));
+  await page.touchscreen.tap(begin.x, begin.y);
+  await sleep(600);
+  const st = await page.evaluate(() => ({ state: (window as unknown as { __mythwar: any }).__mythwar.state, menu: (window as unknown as { __mythwar: any }).__mythwar.menus.current }));
+  check('rotated: tapping Begin Battle starts a battle', st.state === 'playing' && st.menu === 'none', JSON.stringify(st));
+}
+
 async function run(page: Page, label: string, viewport: { width: number; height: number; mobile: boolean }): Promise<void> {
   console.log(`\n== ${label} ==`);
   await page.setViewport({ width: viewport.width, height: viewport.height, isMobile: viewport.mobile, hasTouch: viewport.mobile, deviceScaleFactor: 1 });
@@ -324,6 +343,10 @@ async function main(): Promise<void> {
     page.on('pageerror', (e) => errors.push(`resume: ${String(e)}`));
     await resumeFlow(page);
     await page.close();
+    const page2 = await browser.newPage();
+    page2.on('pageerror', (e) => errors.push(`rotated menus: ${String(e)}`));
+    await rotatedMenusFlow(page2);
+    await page2.close();
   } finally {
     await browser.close();
     server.close();

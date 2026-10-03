@@ -37,6 +37,19 @@ const TIPS: Tip[] = [
     done: (_g, t, s) => t - s > 10,
   },
   {
+    id: 'packs',
+    text: 'Your Hunters crowd into a pack and strike as one — deadly against Mystics. But a Guardian’s sweeping blow hits the whole pack.',
+    when: (g) => {
+      for (let lane = 0; lane < 3; lane++) {
+        let n = 0;
+        for (const u of g.world.lanes[lane]) if (u.alive && u.team === g.playerTeam && u.def.cls === 'hunter') n++;
+        if (n >= 3) return true;
+      }
+      return false;
+    },
+    done: (_g, t, s) => t - s > 10,
+  },
+  {
     id: 'power',
     text: 'Your god power is ready! Tap it, then choose a lane to unleash it.',
     anchor: '.act.power',
