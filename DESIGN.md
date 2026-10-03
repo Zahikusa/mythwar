@@ -57,9 +57,10 @@ Turrets per age: a **Bolt** turret (single target, long range) and a **Blast**
 turret (splash). Turrets can be sold for 50%.
 
 ## Controls
-- **Desktop:** click a lane (or W/S, ↑/↓) to select it; click a creature card
-  (or 1–4) to summon into it; drag a card onto any lane; Space / god-power
-  button then lane to cast; T turret, U ascend, Esc pause. Hover for tooltips.
+- **Desktop:** click a lane (or W/S, ↑/↓, Q/A/Z) to select it; click a creature card
+  (or 1–4) to summon into it; drag a card onto any lane; Space casts the god power on
+  the selected lane (or click the power button, then a lane); T turrets, B blessings,
+  U ascend, F 2× speed, Esc pause. Hover cards and creatures for details.
 - **Mobile (landscape):** creature cards on the left thumb column, powers on
   the right. Tap lane to select, tap card to summon, or drag a card onto a lane.
   Long-press a card for info. Portrait is supported by rotating the game.

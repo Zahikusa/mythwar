@@ -119,6 +119,17 @@ See DESIGN.md for the game design.
     the far lane, well below the top HUD (≈75 px); desktop ≈296 px.
 28. [x] Results chart marks both sides' ascensions (coloured ticks + numerals; `Game.ageUps`,
     saved with autosaves).
+30. [x] Healing had no feedback: regrowth/lifesteal now emit rising green sparkles (every 5%
+    of max HP healed).
+31. [x] DESIGN.md controls were out of date (Space casts directly; Q/A/Z, B, F keys).
+32. [ ] Performance: `node scripts/perf.mjs` stress (127 creatures) costs ~42 ms/frame with
+    headless software raster vs ~0.6 ms for a typical field; real battles stay ≤ ~25 creatures
+    (~7 ms). If real phones struggle, cache creature animation frames as sprites (LRU by
+    def/team/scale/frame) — needs on-device profiling first.
+33. [ ] Hotkey/help overlay: desktop players have no in-game list of shortcuts except
+    tooltips; add a "?" key / button that shows a compact controls card.
+34. [ ] Title backdrop battle uses `adept` AIs only; vary difficulty/seed so returning players
+    see different ages more often (e.g. fast-forward 3–8 min into some backdrops).
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
     Mystics beat *everything* at army scale (ranged units focus fire, melee fight one at a time),
     so "spam Mystics" was a dominant strategy. Added formation rules — Hunters hunt in packs

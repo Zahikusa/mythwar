@@ -34,6 +34,9 @@ interface UnitVis {
   hpShown: number;
   hpAlpha: number;
   frozenFx: number;
+  /** Last seen hp and healing accumulated since the last heal sparkle. */
+  lastHp: number;
+  healAcc: number;
 }
 
 interface Ghost {
@@ -711,7 +714,7 @@ export class Renderer {
       let v = this.vis.get(u.id);
       if (!v) {
         const seed = ((u.id * 2654435761) >>> 0) / 4294967296;
-        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn: 0, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0 };
+        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn: 0, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0 };
         this.vis.set(u.id, v);
       }
     }
@@ -841,6 +844,13 @@ export class Renderer {
     }
 
     // Health bar (only once damaged)
+    // Healing (regrowth, lifesteal) shows as rising green sparkles.
+    if (u.hp > v.lastHp) v.healAcc += u.hp - v.lastHp;
+    v.lastHp = u.hp;
+    if (v.healAcc > u.maxHp * 0.05) {
+      v.healAcc = 0;
+      this.fx.burst(p.x, bodyY, { count: 4, color: '#9dff8a', rgb: [140, 255, 120], speed: 30, life: 0.8, size: 2, shape: 'glow', layer: u.lane, gravity: -50, jitter: u.def.radius * this.bodyScale(g) });
+    }
     v.hpShown += (u.hp - v.hpShown) * Math.min(1, dt * 10);
     const damaged = u.hp < u.maxHp - 0.5;
     v.hpAlpha = Math.max(0, Math.min(1, v.hpAlpha + (damaged ? dt * 6 : -dt * 2)));
