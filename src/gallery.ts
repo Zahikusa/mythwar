@@ -1,6 +1,6 @@
 import { AGE_UNITS } from './sim/data.ts';
 import { artFor } from './render/creatures/index.ts';
-import { drawGlow, setLineWidth } from './render/draw.ts';
+import { setLineWidth } from './render/draw.ts';
 import { TEAM_COLORS } from './render/theme.ts';
 
 /** Debug page (?gallery): every creature idle / walking / attacking, for art review. */
@@ -61,7 +61,6 @@ export function runGallery(root: HTMLElement): void {
       ctx.font = `${12 * scale * 0.6}px sans-serif`;
       ctx.fillText(def.name, col * cellW + 6, row * cellH + 14 * scale * 0.6);
     });
-    void drawGlow;
     requestAnimationFrame(frame);
   };
   frame();

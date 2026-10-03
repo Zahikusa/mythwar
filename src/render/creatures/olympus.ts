@@ -1,4 +1,4 @@
-import { OUTLINE, circle, cluster, dots, drawGlow, ellipse, glowDot, limb, limb2, line, oval, poly, blob, swing } from '../draw.ts';
+import { OUTLINE, circle, dots, drawGlow, ellipse, glowDot, limb, limb2, line, oval, poly, blob, swing } from '../draw.ts';
 import { gait } from './fae.ts';
 import type { CreatureArt, Pose } from './types.ts';
 
@@ -313,6 +313,5 @@ export const gorgon: CreatureArt = {
     // Front arm (pointing)
     limb2(ctx, 5, -36, 9, -33, 12 + reach, -36 - reach * 0.4, 2.6, 2.2, GSKIN);
     ctx.restore();
-    void cluster;
   },
 };

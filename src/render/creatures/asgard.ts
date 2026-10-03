@@ -1,4 +1,4 @@
-import { OUTLINE, circle, cluster, dots, drawGlow, ellipse, glowDot, limb, limb2, line, oval, poly, blob, swing } from '../draw.ts';
+import { OUTLINE, circle, cluster, drawGlow, ellipse, glowDot, limb, limb2, line, oval, poly, blob, swing } from '../draw.ts';
 import { gait } from './fae.ts';
 import { quadFoot } from './olympus.ts';
 import type { CreatureArt } from './types.ts';
@@ -293,5 +293,4 @@ function wing(ctx: CanvasRenderingContext2D, x: number, y: number, rot: number, 
   ctx.stroke();
   blob(ctx, [0, -1, -6, -9, -16, -12, -12, -6, -4, -3], 'rgba(200, 220, 240, 0.6)', false);
   ctx.restore();
-  void dots;
 }

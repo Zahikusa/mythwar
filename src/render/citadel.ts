@@ -315,7 +315,7 @@ export function drawCitadelGate(
   team: Team,
   lane: number,
   age: number,
-  gateX: number,
+  _gateX: number,
   laneY: number,
   s: number,
   hitFlash: number,
@@ -324,7 +324,6 @@ export function drawCitadelGate(
 ): void {
   const st = CITADEL_STYLES[age];
   const g = layout.lanes[lane];
-  void gateX;
   withSide(ctx, layout, team, () => {
     if (collapse > 0) {
       ctx.save();
@@ -633,7 +632,6 @@ export function drawTurret(
     }
   }
   ctx.restore();
-  void dots;
 }
 
 function blobLeaf(ctx: CanvasRenderingContext2D, x: number, y: number, len: number, col: string): void {

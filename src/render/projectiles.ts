@@ -1,6 +1,6 @@
 import type { ProjectileKind } from '../sim/data.ts';
 import type { Team } from '../sim/types.ts';
-import { TAU, circle, drawGlow, ellipse, line } from './draw.ts';
+import { TAU, circle, drawGlow, line } from './draw.ts';
 import type { Fx } from './fx.ts';
 import { TEAM_COLORS } from './theme.ts';
 
@@ -35,7 +35,7 @@ export function drawProjectile(
   time: number,
   fromX: number,
   fromY: number,
-  t: number,
+  _t: number,
 ): void {
   const tc = TEAM_COLORS[team];
   const emit = Math.random() < 0.5;
@@ -266,8 +266,6 @@ export function drawProjectile(
       break;
     }
   }
-  void t;
-  void ellipse;
 }
 
 /** Impact flourish when a projectile lands. */

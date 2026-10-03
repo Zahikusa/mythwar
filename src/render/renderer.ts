@@ -1,4 +1,4 @@
-import { AGES, LANE_LENGTH, SHRINE_RADIUS, SHRINE_X, TICK, UNITS } from '../sim/data.ts';
+import { LANE_LENGTH, SHRINE_RADIUS, SHRINE_X, TICK } from '../sim/data.ts';
 import { POWER_TIMING, spiritDragonHead } from '../sim/powers.ts';
 import type { Projectile, SimEvent, Team, Unit } from '../sim/types.ts';
 import type { World } from '../sim/world.ts';
@@ -360,7 +360,7 @@ export class Renderer {
     }
   }
 
-  private onStrike(kind: string, team: Team, lane: number, lx: number, radius: number): void {
+  private onStrike(kind: string, _team: Team, lane: number, lx: number, radius: number): void {
     const g = this.layout.lanes[lane];
     const x = laneX(g, lx);
     const s = g.s;
@@ -389,7 +389,6 @@ export class Renderer {
         this.shake = Math.max(this.shake, 6);
         break;
     }
-    void team;
   }
 
   // -------------------------------------------------------------------------
@@ -448,7 +447,7 @@ export class Renderer {
         drawCitadelGate(ctx, L, team, lane, p.age, gate.x, gate.y, gate.s, this.baseFlash[team], this.time, Math.max(0, this.collapse[team]));
       }
       this.fx.drawTimed(ctx, lane);
-      this.drawUnits(ctx, world, lane, alpha, simTime, dt, view);
+      this.drawUnits(ctx, world, lane, alpha, simTime, dt);
       for (const team of [0, 1] as Team[]) {
         const slot = world.players[team].turrets[lane];
         if (slot.def) {
@@ -671,7 +670,7 @@ export class Renderer {
     }
   }
 
-  private drawUnits(ctx: CanvasRenderingContext2D, world: World, lane: number, alpha: number, simTime: number, dt: number, view: ViewState): void {
+  private drawUnits(ctx: CanvasRenderingContext2D, world: World, lane: number, alpha: number, simTime: number, dt: number): void {
     const g = this.layout.lanes[lane];
     const list = world.lanes[lane];
     // Ensure visual state
@@ -712,7 +711,6 @@ export class Renderer {
     // Ghosts
     for (const gh of this.ghosts) if (gh.lane === lane) this.drawGhost(ctx, gh, dt);
     if (lane === this.layout.lanes.length - 1) this.ghosts = this.ghosts.filter((gh) => gh.t < DEATH_TIME);
-    void view;
   }
 
   private drawUnit(ctx: CanvasRenderingContext2D, u: Unit, alpha: number, simTime: number, dt: number, g: LaneGeom): void {
@@ -996,7 +994,5 @@ export class Renderer {
       ctx.roundRect(g.x0 - g.band, top, g.x1 - g.x0 + g.band * 2, bot - top, g.band * 0.6);
       ctx.fill();
     }
-    void AGES;
-    void UNITS;
   }
 }

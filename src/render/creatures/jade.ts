@@ -1,4 +1,4 @@
-import { OUTLINE, circle, cluster, dots, drawGlow, ellipse, glowDot, limb, limb2, line, oval, poly, blob, swing } from '../draw.ts';
+import { circle, cluster, dots, drawGlow, ellipse, glowDot, limb, limb2, line, oval, poly, blob, swing } from '../draw.ts';
 import { gait } from './fae.ts';
 import { quadFoot } from './olympus.ts';
 import type { CreatureArt } from './types.ts';
@@ -251,6 +251,5 @@ export const kitsune: CreatureArt = {
       circle(ctx, ax + 4, ay - 3, 1.5 + charge * 2, '#eaf6ff');
     }
     ctx.restore();
-    void OUTLINE;
   },
 };

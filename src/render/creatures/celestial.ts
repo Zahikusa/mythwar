@@ -1,4 +1,4 @@
-import { OUTLINE, circle, cluster, dots, drawGlow, ellipse, glowDot, limb, limb2, line, oval, poly, blob, swing } from '../draw.ts';
+import { OUTLINE, circle, cluster, drawGlow, ellipse, glowDot, limb, limb2, line, oval, poly, blob, swing } from '../draw.ts';
 import { gait } from './fae.ts';
 import type { CreatureArt } from './types.ts';
 
@@ -357,8 +357,6 @@ export const dragon: CreatureArt = {
     // Team-coloured gem on the chest
     glowDot(ctx, 12, -26, 2, p.tc.main, p.tc.light);
     ctx.restore();
-    void cluster;
-    void dots;
   },
 };
 

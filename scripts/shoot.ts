@@ -29,6 +29,7 @@ const cast = (age: number, lane: number) =>
 const SCENARIOS: Scenario[] = [
   { name: 'desktop-early', query: 'demo&ff=75&seed=3', w: 1600, h: 900 },
   { name: 'desktop-mid', query: 'demo&ff=420&seed=5', w: 1600, h: 900 },
+  { name: 'desktop-jade', query: 'demo&ff=560&seed=11', w: 1600, h: 900 },
   { name: 'desktop-late', query: 'demo&ff=900&seed=5', w: 1600, h: 900 },
   { name: 'mobile-land', query: 'demo&ff=120&seed=3', w: 844, h: 390, mobile: true, dpr: 3 },
   { name: 'mobile-port', query: 'demo&ff=120&seed=3', w: 390, h: 844, mobile: true, dpr: 3 },

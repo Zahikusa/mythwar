@@ -178,6 +178,5 @@ export class Coach {
     }
     this.el.style.left = `${x}px`;
     this.el.style.top = `${y}px`;
-    void bottom;
   }
 }
