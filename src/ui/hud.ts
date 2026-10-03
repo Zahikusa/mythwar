@@ -604,11 +604,13 @@ export class Hud {
       setText(E.xptext, `${fmt(me.xp)} — final age`);
     }
 
-    // Cards
+    // Cards (+ highlight the class that counters the selected lane's enemies)
+    const advice = this.counterAdvice();
     for (const c of this.cards) {
       const why = w.trainBlocker(g.playerTeam, c.def.id);
       toggle(c.el, 'poor', why === 'Not enough gold');
       toggle(c.el, 'blocked', !!why && why !== 'Not enough gold');
+      toggle(c.el, 'advised', advice === c.def.cls);
     }
 
     // Queue
@@ -679,6 +681,28 @@ export class Hud {
     if (this.tooltipFor && this.layoutInfo?.mode === 'mobile' && Math.random() < 0) this.hideTooltip();
   }
 
+  /** The class that best counters the enemies in the selected lane (value-weighted), if any. */
+  private counterAdvice(): string | null {
+    const g = this.game!;
+    const lane = g.view.targeting === 'summon' && g.view.hoverLane >= 0 ? g.view.hoverLane : g.view.selectedLane;
+    if (lane < 0) return null;
+    const weight: Record<string, number> = { guardian: 0, hunter: 0, mystic: 0, legend: 0 };
+    let total = 0;
+    for (const u of g.world.lanes[lane]) {
+      if (!u.alive || u.team === g.playerTeam) continue;
+      // Creatures nearer our gate matter more.
+      const near = g.playerTeam === 0 ? 1 - u.x / 1000 : u.x / 1000;
+      const v = u.def.cost * (0.5 + near);
+      weight[u.def.cls] += v;
+      total += v;
+    }
+    if (total <= 0) return null;
+    let dominant = 'guardian';
+    for (const c of ['hunter', 'mystic']) if (weight[c] > weight[dominant]) dominant = c;
+    if (weight[dominant] < total * 0.4) return null;
+    return counterOf(dominant as UnitDef['cls']);
+  }
+
   private rebuildCards(age: number): void {
     const E = this.el;
     this.cardAge = age;
@@ -696,6 +720,7 @@ export class Hud {
         h('div', { class: 'name', text: def.name }),
         cost,
         h('div', { class: 'key', text: String(i + 1) }),
+        h('div', { class: 'advice', text: 'Counter!' }),
       );
       el.style.animationDelay = `${i * 60}ms`;
       el.addEventListener('pointerdown', (e) => this.startDrag(e as PointerEvent, def.id, false));
