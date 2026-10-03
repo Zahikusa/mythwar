@@ -268,7 +268,7 @@ export class App {
   /** Autosave the battle in progress. */
   private persist(): void {
     const g = this.game;
-    if (this.state !== 'playing' || !g || g.over || g.options.demo) return;
+    if (this.state !== 'playing' || !g || g.over || g.world.winner !== null || g.options.demo) return;
     saveBattle(g.toSave());
     this.lastSave = g.world.time;
   }

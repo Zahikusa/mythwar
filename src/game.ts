@@ -76,6 +76,7 @@ export class Game {
   /** Restores a saved battle (throws if the save is invalid). */
   static fromSave(save: GameSave): Game {
     if (!save || save.v !== 1) throw new Error('Unsupported save');
+    if (save.world.winner !== null) throw new Error('Battle already decided');
     const game = new Game({ difficulty: save.difficulty }, World.deserialize(save.world));
     game.ai.restore(save.ai);
     game.history.push(...save.history);

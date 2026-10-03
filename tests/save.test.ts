@@ -39,6 +39,15 @@ describe('save games', () => {
     expect(fingerprint(w2)).toBe(fingerprint(w));
   });
 
+  it('refuses to resume a battle that is already decided', async () => {
+    const { Game } = await import('../src/game.ts');
+    const g = new Game({ difficulty: 'novice', seed: 1 });
+    g.world.players[1].baseHp = 1;
+    g.world.damageBase(1, 10, 0, 0);
+    g.world.step();
+    expect(() => Game.fromSave(g.toSave())).toThrow();
+  });
+
   it('rejects unknown data', () => {
     expect(() => World.deserialize({ v: 2 } as never)).toThrow();
   });
