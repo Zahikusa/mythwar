@@ -32,6 +32,7 @@ import type { BlessingId, Trait, TraitKind, UnitClass, UnitDef } from './data.ts
 import { Rng } from './rng.ts';
 import { castPower, updatePowers } from './powers.ts';
 import { BASE_TARGET, NO_TARGET } from './types.ts';
+import type { TurretSlot } from './types.ts';
 import type {
   Command,
   CommandResult,
@@ -73,6 +74,24 @@ export function other(team: Team): Team {
 /** Direction of travel along the lane for a team. */
 export function dirOf(team: Team): 1 | -1 {
   return team === 0 ? 1 : -1;
+}
+
+/** JSON-safe snapshot of a world (unit/turret definitions stored by id). */
+export interface WorldSnapshot {
+  v: 1;
+  time: number;
+  tick: number;
+  rng: number;
+  nextId: number;
+  winner: Team | null;
+  ragnarokAt: number;
+  ragnarokStarted: boolean;
+  finalAgeAt: number | null;
+  players: (Omit<PlayerState, 'turrets'> & { turrets: (Omit<TurretSlot, 'def'> & { def: string | null })[] })[];
+  lanes: (Omit<Unit, 'def'> & { def: string })[][];
+  shrines: Shrine[];
+  projectiles: Projectile[];
+  powers: PowerInstance[];
 }
 
 export class World {
@@ -121,6 +140,68 @@ export class World {
       stats: { summoned: 0, summonedBy: {}, kills: 0, losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0 },
       lastBaseHit: -10,
     };
+  }
+
+  /** Serializable snapshot of the whole simulation (for save games). */
+  serialize(): WorldSnapshot {
+    const snap: WorldSnapshot = {
+      v: 1,
+      time: this.time,
+      tick: this.tick,
+      rng: this.rng.state,
+      nextId: this.nextId,
+      winner: this.winner,
+      ragnarokAt: this.ragnarokAt,
+      ragnarokStarted: this.ragnarokStarted,
+      finalAgeAt: this.finalAgeAt,
+      players: this.players.map((p) => ({ ...p, turrets: p.turrets.map((t) => ({ ...t, def: t.def ? t.def.id : null })) })),
+      lanes: this.lanes.map((l) => l.filter((u) => u.alive).map((u) => ({ ...u, def: u.def.id }))),
+      shrines: this.shrines,
+      projectiles: this.projectiles.filter((p) => !p.done),
+      powers: this.powers.filter((p) => !p.done),
+    };
+    return JSON.parse(JSON.stringify(snap)) as WorldSnapshot;
+  }
+
+  /** Rebuilds a world from `serialize()` output. Throws on unknown data. */
+  static deserialize(snap: WorldSnapshot): World {
+    if (!snap || snap.v !== 1) throw new Error('Unsupported save');
+    const w = new World();
+    w.time = snap.time;
+    w.tick = snap.tick;
+    w.rng.state = snap.rng;
+    w.nextId = snap.nextId;
+    w.winner = snap.winner;
+    w.ragnarokAt = snap.ragnarokAt;
+    w.ragnarokStarted = snap.ragnarokStarted;
+    w.finalAgeAt = snap.finalAgeAt;
+    for (let i = 0; i < 2; i++) {
+      const p = snap.players[i];
+      w.players[i] = {
+        ...p,
+        turrets: p.turrets.map((t) => {
+          const def = t.def ? TURRETS[t.def] : null;
+          if (t.def && !def) throw new Error(`Unknown turret ${t.def}`);
+          return { ...t, def };
+        }),
+      };
+    }
+    w.unitById.clear();
+    snap.lanes.forEach((lane, i) => {
+      w.lanes[i] = lane.map((u) => {
+        const def = UNITS[u.def];
+        if (!def) throw new Error(`Unknown creature ${u.def}`);
+        const unit: Unit = { ...u, def };
+        w.unitById.set(unit.id, unit);
+        return unit;
+      });
+    });
+    w.shrines.splice(0, w.shrines.length, ...snap.shrines);
+    w.projectiles.splice(0, w.projectiles.length, ...snap.projectiles);
+    // JSON turns the NaN "already landed" markers of pending meteors into null.
+    for (const p of snap.powers) p.hit = p.hit.map((v) => (v === null ? NaN : v));
+    w.powers.splice(0, w.powers.length, ...snap.powers);
+    return w;
   }
 
   newId(): number {

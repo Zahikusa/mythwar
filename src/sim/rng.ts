@@ -6,6 +6,15 @@ export class Rng {
     this.s = seed >>> 0 || 0x9e3779b9;
   }
 
+  /** Internal state (for save games). */
+  get state(): number {
+    return this.s;
+  }
+
+  set state(v: number) {
+    this.s = v >>> 0;
+  }
+
   /** Float in [0, 1). */
   next(): number {
     let t = (this.s = (this.s + 0x6d2b79f5) >>> 0);

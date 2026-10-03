@@ -133,6 +133,17 @@ export class AiController {
     world.players[team].incomeMult = profile.incomeMult;
   }
 
+  /** Decision-loop state for save games. */
+  snapshot(): { timer: number; pushLane: number; rng: number } {
+    return { timer: this.timer, pushLane: this.pushLane, rng: this.rng.state };
+  }
+
+  restore(s: { timer: number; pushLane: number; rng: number }): void {
+    this.timer = s.timer;
+    this.pushLane = s.pushLane;
+    this.rng.state = s.rng;
+  }
+
   update(dt: number): void {
     if (this.world.winner !== null) return;
     this.timer -= dt;

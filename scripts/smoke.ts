@@ -60,6 +60,39 @@ async function laneScreen(page: Page, lane: number, frac = 0.4): Promise<{ x: nu
   );
 }
 
+async function resumeFlow(page: Page): Promise<void> {
+  console.log('== autosave / continue ==');
+  await page.setViewport({ width: 1600, height: 900, deviceScaleFactor: 1 });
+  await page.goto(`${base}/?play=adept&seed=13`, { waitUntil: 'load' });
+  await sleep(1500);
+  const saved = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    const g = app.game;
+    g.world.players[0].gold = 500;
+    g.command({ type: 'train', team: 0, unitId: 'treant', lane: 2 });
+    app.persist();
+    return { time: g.world.time, gold: g.world.players[0].gold };
+  });
+  await page.goto(`${base}/`, { waitUntil: 'load' });
+  await sleep(1200);
+  const visible = await page.evaluate(() => !document.querySelector('.mbtn.continue')!.classList.contains('hidden'));
+  check('title offers "Continue battle" after an autosave', visible);
+  const cb = await center(page, '.mbtn.continue');
+  await page.mouse.click(cb.x, cb.y);
+  await sleep(500);
+  const st = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    const g = app.game;
+    return { state: app.state, paused: g.paused, time: g.world.time, gold: g.world.players[0].gold, queue: g.world.players[0].queue.length, menu: app.menus.current };
+  });
+  check('continue restores the battle, paused', st.state === 'playing' && st.paused && st.menu === 'pause' && Math.abs(st.time - saved.time) < 0.01 && Math.abs(st.gold - saved.gold) < 0.01 && st.queue === 1, JSON.stringify({ saved, st }));
+  // Leaving the battle abandons the save.
+  await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.toTitle());
+  await sleep(300);
+  const gone = await page.evaluate(() => document.querySelector('.mbtn.continue')!.classList.contains('hidden'));
+  check('leaving a battle discards its autosave', gone);
+}
+
 async function run(page: Page, label: string, viewport: { width: number; height: number; mobile: boolean }): Promise<void> {
   console.log(`\n== ${label} ==`);
   await page.setViewport({ width: viewport.width, height: viewport.height, isMobile: viewport.mobile, hasTouch: viewport.mobile, deviceScaleFactor: 1 });
@@ -286,6 +319,10 @@ async function main(): Promise<void> {
       await run(page, vp.label, vp);
       await page.close();
     }
+    const page = await browser.newPage();
+    page.on('pageerror', (e) => errors.push(`resume: ${String(e)}`));
+    await resumeFlow(page);
+    await page.close();
   } finally {
     await browser.close();
     server.close();

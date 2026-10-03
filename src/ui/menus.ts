@@ -11,6 +11,7 @@ import type { HistorySample } from '../game.ts';
 
 export interface MenuCallbacks {
   play(difficulty: Difficulty): void;
+  continueSaved(): void;
   resume(): void;
   restart(): void;
   quit(): void;
@@ -33,6 +34,8 @@ export class Menus {
   private howtoDots: HTMLElement | null = null;
   private selected: Difficulty;
   private syncers: (() => void)[] = [];
+  private continueBtn: HTMLButtonElement | null = null;
+  private playBtn: HTMLButtonElement | null = null;
 
   constructor(parent: HTMLElement, settings: Settings, cb: MenuCallbacks) {
     this.cb = cb;
@@ -52,6 +55,16 @@ export class Menus {
 
   get current(): Screen {
     return this.screen;
+  }
+
+  /** Shows "Continue battle" on the title screen when an autosave exists. */
+  setContinue(label: string | null): void {
+    if (!this.continueBtn || !this.playBtn) return;
+    this.continueBtn.classList.toggle('hidden', !label);
+    this.continueBtn.querySelector('span')!.textContent = label ? `Continue \u2014 ${label}` : 'Continue battle';
+    // Only one gold button at a time.
+    this.playBtn.classList.toggle('primary', !label);
+    this.playBtn.querySelector('span')!.textContent = label ? 'New battle' : 'Play';
   }
 
   /** Return from how-to / settings to whichever screen opened them. */
@@ -93,10 +106,13 @@ export class Menus {
       h('div', { class: 'logo-main', text: 'MYTHWAR' }),
       h('div', { class: 'logo-sub', text: 'Three lanes. Five mythic ages. One citadel left standing.' }),
     );
+    this.continueBtn = this.button('Continue battle', 'primary big continue hidden', () => this.cb.continueSaved(), ICONS.play);
+    this.playBtn = this.button('Play', 'primary big', () => this.show('difficulty'), ICONS.swords);
     const buttons = h(
       'div',
       { class: 'mbuttons' },
-      this.button('Play', 'primary big', () => this.show('difficulty'), ICONS.swords),
+      this.continueBtn,
+      this.playBtn,
       this.button('How to Play', '', () => this.show('howto'), ICONS.info),
       this.button('Settings', '', () => this.show('settings'), ICONS.sound),
     );

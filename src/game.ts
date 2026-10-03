@@ -3,6 +3,7 @@ import type { Difficulty } from './ai/ai.ts';
 import { TICK } from './sim/data.ts';
 import type { Command, CommandResult, SimEvent, Team } from './sim/types.ts';
 import { World } from './sim/world.ts';
+import type { WorldSnapshot } from './sim/world.ts';
 import type { Renderer, ViewState } from './render/renderer.ts';
 
 export interface GameOptions {
@@ -22,6 +23,18 @@ export interface HistorySample {
 
 const SAMPLE_EVERY = 5;
 
+/** A battle in progress, as stored in localStorage. */
+export interface GameSave {
+  v: 1;
+  difficulty: Difficulty;
+  savedAt: number;
+  speed: number;
+  world: WorldSnapshot;
+  ai: { timer: number; pushLane: number; rng: number };
+  history: HistorySample[];
+  selectedLane: number;
+}
+
 /** One match: the simulation, the AI(s) and the fixed-step clock. */
 export class Game {
   readonly world: World;
@@ -38,13 +51,38 @@ export class Game {
   private acc = 0;
   private listeners: GameListener[] = [];
 
-  constructor(opts: GameOptions) {
+  constructor(opts: GameOptions, world?: World) {
     this.options = opts;
     const seed = opts.seed ?? (Math.random() * 1e9) | 0;
-    this.world = new World({ seed });
+    this.world = world ?? new World({ seed });
     this.ai = new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);
     this.demoAi = opts.demo ? new AiController(this.world, 0, AI_PROFILES[opts.difficulty], seed ^ 0x1234567) : null;
     this.view = { playerTeam: 0, selectedLane: opts.demo ? -1 : 1, hoverLane: -1, targeting: 'none', paused: false };
+  }
+
+  toSave(): GameSave {
+    return {
+      v: 1,
+      difficulty: this.options.difficulty,
+      savedAt: Date.now(),
+      speed: this.speed,
+      world: this.world.serialize(),
+      ai: this.ai.snapshot(),
+      history: this.history.slice(),
+      selectedLane: this.view.selectedLane,
+    };
+  }
+
+  /** Restores a saved battle (throws if the save is invalid). */
+  static fromSave(save: GameSave): Game {
+    if (!save || save.v !== 1) throw new Error('Unsupported save');
+    const game = new Game({ difficulty: save.difficulty }, World.deserialize(save.world));
+    game.ai.restore(save.ai);
+    game.history.push(...save.history);
+    game.speed = save.speed === 2 ? 2 : 1;
+    game.view.selectedLane = save.selectedLane >= 0 && save.selectedLane < 3 ? save.selectedLane : 1;
+    game.nextSample = game.world.time + SAMPLE_EVERY;
+    return game;
   }
 
   onEvents(fn: GameListener): void {

@@ -97,8 +97,10 @@ See DESIGN.md for the game design.
     now only the current/previous theme are kept.
 17. [x] `prefers-reduced-motion`: shake/vibration default off on first run; looping CSS
     pulses disabled.
-18. [ ] Mobile: browsers often kill background tabs — autosave the battle (World state with
-    def ids) to localStorage and offer "Continue battle" on the title screen.
+18. [x] Autosave: `World.serialize/deserialize`, `AiController.snapshot/restore`,
+    `Game.toSave/fromSave` (`src/save.ts`); saved every 5 s of play, on tab hide and pagehide;
+    title shows "Continue — <age> · <time>" and resumes paused. Leaving/finishing a battle
+    clears it. Unit test: a restored battle continues bit-identically; smoke flow covers it.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
     Mystics beat *everything* at army scale (ranged units focus fire, melee fight one at a time),
     so "spam Mystics" was a dominant strategy. Added formation rules — Hunters hunt in packs

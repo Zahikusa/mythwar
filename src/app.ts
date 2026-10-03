@@ -10,6 +10,9 @@ import { Coach } from './ui/coach.ts';
 import { Hud } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
 import { loadSettings, recordResult, saveSettings } from './ui/settings.ts';
+import { clearBattle, loadBattle, saveBattle } from './save.ts';
+import { AGES } from './sim/data.ts';
+import { fmtTime } from './ui/dom.ts';
 import type { Settings } from './ui/settings.ts';
 
 type AppState = 'title' | 'playing' | 'over';
@@ -43,6 +46,7 @@ export class App {
   private overTimer = -1;
   private coinTarget: [number, number] | null = null;
   private coinsSeen = 0;
+  private lastSave = 0;
   private lastBuzz = -10;
   private params = new URLSearchParams(location.search);
 
@@ -69,6 +73,7 @@ export class App {
     this.input.onPause = () => this.escape();
     this.menus = new Menus(this.stage, this.settings, {
       play: (d) => this.play(d),
+      continueSaved: () => this.continueSaved(),
       resume: () => this.resume(),
       restart: () => this.play(this.difficulty),
       quit: () => this.toTitle(),
@@ -81,8 +86,11 @@ export class App {
       if (e.key === 'Escape' && this.state === 'title') this.escape();
     });
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden && this.state === 'playing' && this.game && !this.game.paused) this.pause();
+      if (!document.hidden) return;
+      this.persist();
+      if (this.state === 'playing' && this.game && !this.game.paused) this.pause();
     });
+    window.addEventListener('pagehide', () => this.persist());
     this.applySettings(this.settings);
     this.resize();
   }
@@ -186,9 +194,13 @@ export class App {
   }
 
   private startGame(difficulty: Difficulty, seed: number | undefined, demo: boolean): Game {
+    return this.hookGame(new Game({ difficulty, seed, demo }), demo);
+  }
+
+  /** Makes `game` the active game: resets visuals and routes its events. */
+  private hookGame(game: Game, demo: boolean): Game {
     this.renderer.reset();
-    this.renderer.setTheme(0, true);
-    const game = new Game({ difficulty, seed, demo });
+    this.renderer.setTheme(game.world.players[game.playerTeam].age, true);
     this.game = game;
     game.onEvents((ev) => {
       if (this.game !== game) return;
@@ -213,20 +225,57 @@ export class App {
     this.difficulty = difficulty;
     this.settings.difficulty = difficulty;
     saveSettings(this.settings);
+    clearBattle();
     const game = this.startGame(difficulty, seed, false);
+    this.enterBattle(game);
+    this.menus.show('none');
+  }
+
+  private enterBattle(game: Game): void {
     this.immersive();
     this.state = 'playing';
     this.overTimer = -1;
+    this.lastSave = game.world.time;
     this.audio.ambience = 1;
-    this.audio.startMusic(0);
-    this.menus.show('none');
+    this.audio.startMusic(game.world.players[game.playerTeam].age);
     this.hud.attach(game);
     this.input.attach(game);
     this.coach.attach(game);
     this.coinTarget = this.hud.goldTarget();
   }
 
+  /** Resume the autosaved battle (starts paused so the player can get their bearings). */
+  continueSaved(): void {
+    const save = loadBattle();
+    let game: Game | null = null;
+    try {
+      if (save) game = Game.fromSave(save);
+    } catch {
+      game = null;
+    }
+    if (!save || !game) {
+      clearBattle();
+      this.menus.setContinue(null);
+      return;
+    }
+    this.difficulty = save.difficulty;
+    this.hookGame(game, false);
+    this.enterBattle(game);
+    game.paused = true;
+    this.menus.show('pause');
+  }
+
+  /** Autosave the battle in progress. */
+  private persist(): void {
+    const g = this.game;
+    if (this.state !== 'playing' || !g || g.over || g.options.demo) return;
+    saveBattle(g.toSave());
+    this.lastSave = g.world.time;
+  }
+
   toTitle(): void {
+    // Leaving a battle from the menu abandons it.
+    if (this.state === 'playing' && this.game && !this.game.options.demo) clearBattle();
     this.state = 'title';
     this.overTimer = -1;
     this.hud.detach();
@@ -237,6 +286,8 @@ export class App {
     demo.fastForward(40);
     this.audio.ambience = 0.2;
     this.audio.startMusic(0);
+    const save = loadBattle();
+    this.menus.setContinue(save ? `${AGES[save.world.players[0].age].name} \u00b7 ${fmtTime(save.world.time)}` : null);
     this.menus.show('title');
   }
 
@@ -279,6 +330,7 @@ export class App {
     const g = this.game!;
     const won = g.world.winner === g.playerTeam;
     recordResult(this.settings, this.difficulty, won, g.world.time);
+    clearBattle();
     this.audio.ui(won ? 'victory' : 'defeat');
     this.overTimer = 2.6;
     this.hud.cancelTargeting();
@@ -301,6 +353,7 @@ export class App {
       if (this.state === 'title' && g.over) this.toTitleBackdrop();
       this.renderer.coinTarget = this.state === 'playing' ? this.coinTarget : null;
       const alpha = g.advance(dt);
+      if (this.state === 'playing' && !g.paused && g.world.time - this.lastSave >= 5) this.persist();
       this.audio.intensity = this.battleIntensity(g);
       this.renderer.render(g.world, alpha, dt, g.view);
       if (this.state === 'playing' || this.state === 'over') this.hud.update(dt);
