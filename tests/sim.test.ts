@@ -177,6 +177,15 @@ describe('combat', () => {
     expect(pix.x).toBeLessThan(470);
   });
 
+  it('melee creatures walk past their ranged allies to the front', () => {
+    const w = new World();
+    w.spawnUnit(0, 0, UNITS.pixie, 300);
+    const t = w.spawnUnit(0, 0, UNITS.treant, 250);
+    w.spawnUnit(1, 0, UNITS.treant, 520);
+    run(w, 8);
+    expect(t.x).toBeGreaterThan(330);
+  });
+
   it('flyers pass over allied creatures', () => {
     const w = new World();
     setAge(w, 2);

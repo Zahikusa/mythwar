@@ -417,6 +417,7 @@ export class World {
     const x = this.spawnX(team, def);
     for (const u of this.lanes[lane]) {
       if (!u.alive || u.team !== team || u.flying) continue;
+      if (u.def.projectile && !def.projectile) continue; // melee may pass ranged allies
       const gap = team === 0 ? u.x - u.def.radius - (x + def.radius) : x - def.radius - (u.x + u.def.radius);
       if (gap < ALLY_SPACING) return false;
     }
@@ -487,6 +488,8 @@ export class World {
     let gap = Infinity;
     for (const a of list) {
       if (a === u || !a.alive || a.team !== u.team || a.flying) continue;
+      // Ranged creatures hang back and let melee allies through to the front line.
+      if (a.def.projectile && !u.def.projectile) continue;
       if (u.team === 0 ? a.x <= u.x : a.x >= u.x) continue;
       const g = u.team === 0 ? a.x - a.def.radius - (u.x + u.def.radius) : u.x - u.def.radius - (a.x + a.def.radius);
       if (g - ALLY_SPACING < gap) gap = g - ALLY_SPACING;

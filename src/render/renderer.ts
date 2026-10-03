@@ -441,6 +441,12 @@ export class Renderer {
       this.fx.drawParticles(ctx, lane);
     }
 
+    // Forget visuals of projectiles that no longer exist.
+    if (this.projVis.size > world.projectiles.length) {
+      const live = new Set<number>();
+      for (const pr of world.projectiles) live.add(pr.id);
+      for (const id of this.projVis.keys()) if (!live.has(id)) this.projVis.delete(id);
+    }
     this.drawPowers(ctx, world);
     this.fx.drawTimed(ctx, 3);
     this.fx.drawParticles(ctx, 3);
@@ -811,10 +817,8 @@ export class Renderer {
 
   private drawProjectiles(ctx: CanvasRenderingContext2D, world: World, lane: number, alpha: number): void {
     const g = this.layout.lanes[lane];
-    const live = new Set<number>();
     for (const pr of world.projectiles) {
       if (pr.lane !== lane || pr.done) continue;
-      live.add(pr.id);
       let pv = this.projVis.get(pr.id);
       if (!pv) {
         pv = { h0: this.launchHeight(world, pr, g), h1: 0, lastSx: NaN, lastSy: NaN, angle: 0, trail: 0 };
@@ -844,10 +848,6 @@ export class Renderer {
       drawProjectile(ctx, this.fx, pr.kind, pr.team, sx, sy, pv.angle, this.artScale(g), lane, this.time, fromX, fromY, t);
       pv.lastSx = sx;
       pv.lastSy = sy;
-    }
-    for (const id of this.projVis.keys()) {
-      const pr = world.projectiles.find((p) => p.id === id);
-      if (!pr && !live.has(id)) this.projVis.delete(id);
     }
   }
 
