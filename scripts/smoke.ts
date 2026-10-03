@@ -85,7 +85,8 @@ async function resumeFlow(page: Page): Promise<void> {
     const g = app.game;
     return { state: app.state, paused: g.paused, time: g.world.time, gold: g.world.players[0].gold, queue: g.world.players[0].queue.length, menu: app.menus.current };
   });
-  check('continue restores the battle, paused', st.state === 'playing' && st.paused && st.menu === 'pause' && Math.abs(st.time - saved.time) < 0.01 && Math.abs(st.gold - saved.gold) < 0.01 && st.queue === 1, JSON.stringify({ saved, st }));
+  // (pagehide saves again on navigation, so allow a few ticks of difference.)
+  check('continue restores the battle, paused', st.state === 'playing' && st.paused && st.menu === 'pause' && Math.abs(st.time - saved.time) < 0.25 && Math.abs(st.gold - saved.gold) < 2 && st.queue === 1, JSON.stringify({ saved, st }));
   // Leaving the battle abandons the save.
   await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.toTitle());
   await sleep(300);
