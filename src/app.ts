@@ -281,9 +281,7 @@ export class App {
     this.hud.detach();
     this.input.attach(null);
     this.coach.attach(null);
-    const demo = this.startGame('adept', (Math.random() * 1e9) | 0, true);
-    // Start the backdrop battle mid-skirmish.
-    demo.fastForward(40);
+    this.startBackdrop();
     this.audio.ambience = 0.2;
     this.audio.startMusic(0);
     const save = loadBattle();
@@ -385,7 +383,14 @@ export class App {
   }
 
   private toTitleBackdrop(): void {
-    const demo = this.startGame('adept', (Math.random() * 1e9) | 0, true);
-    demo.fastForward(20);
+    this.startBackdrop();
+  }
+
+  /** The title screen's AI-vs-AI battle, dropped in at a random moment (often a later age). */
+  private startBackdrop(): void {
+    const demo = this.startGame(Math.random() < 0.5 ? 'adept' : 'master', (Math.random() * 1e9) | 0, true);
+    const moments = [40, 40, 150, 300, 420];
+    demo.fastForward(moments[Math.floor(Math.random() * moments.length)]);
+    this.renderer.setTheme(demo.world.players[0].age, true);
   }
 }
