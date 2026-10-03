@@ -32,6 +32,7 @@ export interface GameSave {
   world: WorldSnapshot;
   ai: { timer: number; pushLane: number; rng: number };
   history: HistorySample[];
+  ageUps?: { t: number; team: Team; age: number }[];
   selectedLane: number;
 }
 
@@ -47,6 +48,8 @@ export class Game {
   paused = false;
   over = false;
   readonly history: HistorySample[] = [];
+  /** Ascension moments for the results chart. */
+  readonly ageUps: { t: number; team: Team; age: number }[] = [];
   private nextSample = 0;
   private acc = 0;
   private listeners: GameListener[] = [];
@@ -69,6 +72,7 @@ export class Game {
       world: this.world.serialize(),
       ai: this.ai.snapshot(),
       history: this.history.slice(),
+      ageUps: this.ageUps.slice(),
       selectedLane: this.view.selectedLane,
     };
   }
@@ -80,6 +84,7 @@ export class Game {
     const game = new Game({ difficulty: save.difficulty }, World.deserialize(save.world));
     game.ai.restore(save.ai);
     game.history.push(...save.history);
+    game.ageUps.push(...(save.ageUps ?? []));
     game.speed = save.speed === 2 ? 2 : 1;
     game.view.selectedLane = save.selectedLane >= 0 && save.selectedLane < 3 ? save.selectedLane : 1;
     game.nextSample = game.world.time + SAMPLE_EVERY;
@@ -114,7 +119,10 @@ export class Game {
     }
     const events = this.world.drainEvents();
     if (events.length) {
-      for (const e of events) if (e.type === 'gameOver') this.over = true;
+      for (const e of events) {
+        if (e.type === 'gameOver') this.over = true;
+        else if (e.type === 'ageUp') this.ageUps.push({ t: this.world.time, team: e.team, age: e.age });
+      }
       for (const l of this.listeners) l(events);
     }
     this.view.paused = this.paused;

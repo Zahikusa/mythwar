@@ -636,6 +636,12 @@
   border-radius: 50%;
 }
 
+.clegend .cnote {
+  margin-left: auto;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
 .cplot {
   position: relative;
 }
@@ -676,6 +682,13 @@
 .chartsvg .cm {
   stroke: #1a1230;
   stroke-width: 2;
+}
+
+.chartsvg .ca {
+  fill: #9b8fbd;
+  font-size: 8px;
+  font-weight: 700;
+  dominant-baseline: middle;
 }
 
 .chartsvg .cd {

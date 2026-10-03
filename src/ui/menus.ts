@@ -313,7 +313,7 @@ export class Menus {
   // Results
   // -------------------------------------------------------------------------
 
-  showResults(world: World, me: Team, difficulty: Difficulty, history: HistorySample[] = []): void {
+  showResults(world: World, me: Team, difficulty: Difficulty, history: HistorySample[] = [], ageUps: { t: number; team: Team; age: number }[] = []): void {
     const el = this.screens.over!;
     el.innerHTML = '';
     const won = world.winner === me;
@@ -351,7 +351,7 @@ export class Menus {
       h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: won ? 'The enemy citadel has fallen.' : 'Your citadel lies in ruins.' })),
       h('div', { class: 'vportrait' }, portrait(champion.id, 96, me, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
       h('div', { class: 'vtime', text: `Battle length ${fmtTime(world.time)}` }),
-      h('div', { class: 'vstats' }, table, history.length >= 3 ? armyChart(history, me, AI_PROFILES[difficulty].name) : null),
+      h('div', { class: 'vstats' }, table, history.length >= 3 ? armyChart(history, me, AI_PROFILES[difficulty].name, ageUps) : null),
       h(
         'div',
         { class: 'mrow' },
@@ -405,7 +405,7 @@ const CHART_YOU = '#2196dc';
 const CHART_FOE = '#e8506a';
 
 /** "Army strength over time" line chart with direct labels, legend and a hover crosshair. */
-function armyChart(history: HistorySample[], me: Team, foeName: string): HTMLElement {
+function armyChart(history: HistorySample[], me: Team, foeName: string, ageUps: { t: number; team: Team; age: number }[] = []): HTMLElement {
   const W = 440;
   const H = 130;
   const pad = { l: 40, r: 50, t: 10, b: 20 };
@@ -436,6 +436,17 @@ function armyChart(history: HistorySample[], me: Team, foeName: string): HTMLEle
     yFoe = mid - up;
   }
   const lx = X(last.t);
+  // Ascension ticks along the top edge: yours above, the foe's below; numerals in muted ink.
+  const roman = ['I', 'II', 'III', 'IV', 'V'];
+  let ascents = '';
+  for (const a of ageUps) {
+    if (a.t > tMax) continue;
+    const x = X(a.t).toFixed(1);
+    const mine = a.team === me;
+    const y0 = pad.t + (mine ? 0 : 7);
+    ascents += '<line x1="' + x + '" x2="' + x + '" y1="' + y0 + '" y2="' + (y0 + 6) + '" stroke="' + (mine ? CHART_YOU : CHART_FOE) + '" stroke-width="2" stroke-linecap="round"/>';
+    ascents += '<text x="' + (Number(x) + 3) + '" y="' + (y0 + 3) + '" class="ca">' + roman[a.age] + '</text>';
+  }
   const svg =
     '<svg viewBox="0 0 ' + W + ' ' + H + '" class="chartsvg" role="img" aria-label="Army strength over time">' +
     grid +
@@ -447,6 +458,7 @@ function armyChart(history: HistorySample[], me: Team, foeName: string): HTMLEle
     '<circle cx="' + lx + '" cy="' + Y(last.army[me]) + '" r="4" fill="' + CHART_YOU + '" class="cm"/>' +
     '<text x="' + (lx + 8) + '" y="' + yYou + '" class="cd">You</text>' +
     '<text x="' + (lx + 8) + '" y="' + yFoe + '" class="cd">Foe</text>' +
+    ascents +
     '<line class="ch" x1="0" x2="0" y1="' + pad.t + '" y2="' + (pad.t + ph) + '" visibility="hidden"/>' +
     '</svg>';
   const legend = h(
@@ -454,6 +466,7 @@ function armyChart(history: HistorySample[], me: Team, foeName: string): HTMLEle
     { class: 'clegend' },
     h('span', null, h('i', { style: 'background:' + CHART_YOU }), 'You'),
     h('span', null, h('i', { style: 'background:' + CHART_FOE }), foeName),
+    ageUps.length ? h('span', { class: 'cnote', text: 'ticks = ascensions' }) : null,
   );
   const tip = h('div', { class: 'ctip hidden' });
   const plot = h('div', { class: 'cplot', html: svg }, tip);
