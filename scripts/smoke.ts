@@ -50,7 +50,10 @@ async function laneScreen(page: Page, lane: number, frac = 0.4): Promise<{ x: nu
     (lane, frac) => {
       const app = (window as unknown as { __mythwar: any }).__mythwar;
       const g = app.renderer.layout.lanes[lane];
-      return { x: g.x0 + (g.x1 - g.x0) * frac, y: g.y - 10 };
+      const sx = g.x0 + (g.x1 - g.x0) * frac;
+      const sy = g.y - 10;
+      // Stage → client coordinates (the stage is rotated 90° on portrait phones).
+      return app.rotated ? { x: window.innerWidth - sy, y: sx } : { x: sx, y: sy };
     },
     lane,
     frac,
@@ -234,6 +237,7 @@ async function main(): Promise<void> {
     for (const vp of [
       { label: 'desktop', width: 1600, height: 900, mobile: false },
       { label: 'phone landscape', width: 844, height: 390, mobile: true },
+      { label: 'phone portrait (rotated)', width: 390, height: 844, mobile: true },
     ]) {
       const page = await browser.newPage();
       page.on('pageerror', (e) => errors.push(`${vp.label}: ${String(e)}`));
