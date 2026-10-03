@@ -41,6 +41,8 @@ export class App {
   private fpsAcc = 0;
   private fpsFrames = 0;
   private overTimer = -1;
+  private coinTarget: [number, number] | null = null;
+  private coinsSeen = 0;
   private params = new URLSearchParams(location.search);
 
   constructor(root: HTMLElement) {
@@ -106,6 +108,7 @@ export class App {
     this.renderer.resize(w, h, this.mode, this.settings.lowQuality ? 1 : 2);
     this.hud.setLayout(this.renderer.layout);
     this.stage.classList.toggle('mobile', this.mode === 'mobile');
+    this.coinTarget = this.hud.goldTarget();
   }
 
   private safeProbe: HTMLDivElement | null = null;
@@ -206,6 +209,7 @@ export class App {
     this.hud.attach(game);
     this.input.attach(game);
     this.coach.attach(game);
+    this.coinTarget = this.hud.goldTarget();
   }
 
   toTitle(): void {
@@ -271,10 +275,15 @@ export class App {
     if (g) {
       // The title backdrop restarts when its battle ends.
       if (this.state === 'title' && g.over) this.toTitleBackdrop();
+      this.renderer.coinTarget = this.state === 'playing' ? this.coinTarget : null;
       const alpha = g.advance(dt);
       this.audio.intensity = this.battleIntensity(g);
       this.renderer.render(g.world, alpha, dt, g.view);
       if (this.state === 'playing' || this.state === 'over') this.hud.update(dt);
+      if (this.renderer.fx.coinsArrived !== this.coinsSeen) {
+        this.coinsSeen = this.renderer.fx.coinsArrived;
+        this.hud.pulseGold();
+      }
       if (this.state === 'playing') this.coach.update(this.hud.panelOpen || this.menus.current !== 'none');
       if (this.overTimer > 0) {
         this.overTimer -= dt;

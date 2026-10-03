@@ -69,6 +69,8 @@ export class Renderer {
   dpr = 1;
   quality: 'high' | 'low' = 'high';
   shakeEnabled = true;
+  /** Stage position of the HUD gold counter (coins fly there), or null when hidden. */
+  coinTarget: [number, number] | null = null;
   private bgCache = new Map<number, HTMLCanvasElement>();
   private vignette: HTMLCanvasElement | null = null;
   private theme = 0;
@@ -218,7 +220,14 @@ export class Renderer {
           const by = y - (art.height * 0.5 + art.fly) * s;
           this.fx.burst(x, by, { count: 12, color: tc.light, rgb: tc.rgb, speed: 50, life: 1.1, size: 2.4, shape: 'glow', layer: e.lane, gravity: -60, drag: 1.5, jitter: 14 * s });
           this.fx.burst(x, y - 4, { count: 8, color: 'rgba(60,45,40,0.6)', speed: 40, life: 0.8, size: 4 * s + 2, shape: 'smoke', layer: e.lane, gravity: -10 });
-          if (e.team !== view.playerTeam) this.fx.text(x, by - art.height * 0.5 * s, `+${e.gold}`, '#ffd76a', 15);
+          if (e.team !== view.playerTeam) {
+            this.fx.text(x, by - art.height * 0.5 * s, `+${e.gold}`, '#ffd76a', 15);
+            // A coin flies to the gold counter (capped so big fights don't flood the screen).
+            const target = this.coinTarget;
+            if (target && this.fx.timed.filter((f) => f.kind === 'coin').length < 8) {
+              this.fx.timedFx({ kind: 'coin', x, y: by, x2: target[0], y2: target[1], dur: 0.75 + Math.random() * 0.2, layer: 3, size: Math.max(0.8, L.ui) });
+            }
+          }
           this.vis.delete(e.unitId);
           break;
         }

@@ -36,7 +36,7 @@ export interface FloatText {
 
 /** Bespoke timed effects drawn with custom code. */
 export interface TimedFx {
-  kind: 'lightning' | 'ring' | 'meteor' | 'vines' | 'ice' | 'beam' | 'flashAt' | 'slash' | 'shockwave';
+  kind: 'lightning' | 'ring' | 'meteor' | 'vines' | 'ice' | 'beam' | 'flashAt' | 'slash' | 'shockwave' | 'coin';
   x: number;
   y: number;
   x2: number;
@@ -75,6 +75,8 @@ export class Fx {
   maxParticles = 1400;
   /** Global screen flash. */
   flash = 0;
+  /** Coins that reached the gold counter (the HUD pulses when this grows). */
+  coinsArrived = 0;
   flashColor = '255,255,255';
 
   clear(): void {
@@ -165,6 +167,7 @@ export class Fx {
     }
     this.texts = this.texts.filter((t) => t.life > 0);
     for (const f of this.timed) f.t += dt;
+    for (const f of this.timed) if (f.kind === 'coin' && f.t >= f.dur) this.coinsArrived++;
     this.timed = this.timed.filter((f) => f.t < f.dur);
     this.flash = Math.max(0, this.flash - dt * 2.5);
   }
@@ -342,6 +345,9 @@ export class Fx {
         case 'ice':
           drawIce(ctx, f, k);
           break;
+        case 'coin':
+          drawCoin(ctx, f, k);
+          break;
       }
     }
   }
@@ -462,6 +468,28 @@ function drawIce(ctx: CanvasRenderingContext2D, f: TimedFx, k: number): void {
   ctx.closePath();
   ctx.fill();
   ctx.globalAlpha = 1;
+}
+
+/** A gold coin arcing from a slain foe to the gold counter (x2, y2). */
+function drawCoin(ctx: CanvasRenderingContext2D, f: TimedFx, k: number): void {
+  const e = k * k * (3 - 2 * k);
+  const x = f.x + (f.x2 - f.x) * e;
+  const y = f.y + (f.y2 - f.y) * e - Math.sin(k * Math.PI) * 60 * f.size;
+  const r = 5 * f.size * (1 - k * 0.3);
+  const spin = Math.abs(Math.cos(k * 14 + f.seed * 6));
+  drawGlow(ctx, x, y, r * 3, [255, 210, 100], 0.5);
+  ctx.fillStyle = '#7a4b12';
+  ctx.beginPath();
+  ctx.ellipse(x, y, r * Math.max(0.2, spin) + 0.8, r + 0.8, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = '#f6c453';
+  ctx.beginPath();
+  ctx.ellipse(x, y, r * Math.max(0.15, spin), r, 0, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.beginPath();
+  ctx.ellipse(x - r * 0.3 * spin, y - r * 0.35, r * 0.25 * spin, r * 0.25, 0, 0, TAU);
+  ctx.fill();
 }
 
 /** Shared helper so other modules can pre-warm glow sprites. */

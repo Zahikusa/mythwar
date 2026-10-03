@@ -247,6 +247,24 @@ export class Hud {
     this.cardAge = -1;
   }
 
+  /** Stage coordinates of the gold icon (target for flying coins). */
+  goldTarget(): [number, number] | null {
+    if (this.root.classList.contains('hidden')) return null;
+    const ico = this.el.gold.previousElementSibling as HTMLElement | null;
+    if (!ico) return null;
+    const r = ico.getBoundingClientRect();
+    if (r.width === 0) return null;
+    return this.toStage(r.left + r.width / 2, r.top + r.height / 2);
+  }
+
+  /** Little bounce on the gold counter when coins arrive. */
+  pulseGold(): void {
+    const row = this.el.gold.parentElement!;
+    row.classList.remove('pulse');
+    void row.offsetWidth;
+    row.classList.add('pulse');
+  }
+
   // -------------------------------------------------------------------------
   // Actions (used by cards, keyboard, drag-and-drop)
   // -------------------------------------------------------------------------

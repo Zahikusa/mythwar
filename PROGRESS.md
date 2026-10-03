@@ -88,6 +88,9 @@ See DESIGN.md for the game design.
 11. [x] Unit tests for Blessings (cost/rank cap, might/vitality/bastion effects) and Ragnarök
     (timing, silent wards, damage ramp, early start in the final age). 38 tests.
 12. [x] Code cleanup: removed `void x;` hacks, unused imports/params.
+13. [x] `glowSprite` would build an invalid gradient colour from a hex string; now accepts
+    hex / rgb() / triples.
+14. [x] Kill rewards: gold coins arc from slain foes to the gold counter, which pulses.
 
 ## Decisions log
 - Added **gate wards** (free built-in weak turret per lane, scales with age): without them, the

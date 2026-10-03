@@ -356,6 +356,18 @@ svg {
   gap: 8px;
 }
 
+.goldrow.pulse .ico,
+.goldrow.pulse .goldnum {
+  animation: goldpulse 0.35s ease;
+}
+
+@keyframes goldpulse {
+  40% {
+    transform: scale(1.18);
+    filter: brightness(1.4);
+  }
+}
+
 .goldrow .ico {
   width: 30px;
   height: 30px;
@@ -1424,7 +1436,19 @@ svg {
   background: rgba(10, 6, 20, 0.55);
 }
 
-.hud.mobile .goldrow .ico {
+.hud.mobile .goldrow.pulse .ico,
+.goldrow.pulse .goldnum {
+  animation: goldpulse 0.35s ease;
+}
+
+@keyframes goldpulse {
+  40% {
+    transform: scale(1.18);
+    filter: brightness(1.4);
+  }
+}
+
+.goldrow .ico {
   width: 18px;
   height: 18px;
 }
