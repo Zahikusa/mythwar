@@ -1,0 +1,65 @@
+# Mythwar: Ages of Legend — Game Design
+
+A three-lane, mythological re-imagining of the Flash classic *Age of War*.
+Two citadels face each other across three parallel lanes. Summon mythical
+creatures into a lane, kill enemy creatures for gold and XP, evolve through
+five mythic ages, and topple the enemy citadel.
+
+## Pillars
+1. **Simple to pick up** — tap a lane, tap a creature. Everything else is optional depth.
+2. **Readable depth** — a 3-way counter triangle, three lanes to balance, shrines
+   to contest, turrets, god powers, ages. Every system is visible on screen.
+3. **Clean, smooth, mythic** — procedural vector art, soft gradients, glows,
+   interpolated 60+ fps animation, juicy feedback.
+
+## Core loop
+- Gold trickles in (+ more from each shrine you hold) and is earned by kills.
+- Spend gold to summon creatures into a lane (training queue of 5).
+- Kills give XP. With enough XP (+ a gold tithe) you **Ascend** to the next age:
+  new creatures, a new god power, new turrets, more citadel HP.
+- Destroy the enemy citadel (shared HP across all lanes) to win.
+
+## Lanes
+- Three horizontal lanes (far / middle / near), drawn in soft 2.5D perspective.
+- Creatures only fight creatures in the same lane. Any lane can reach the citadel.
+- Each lane has a **Ley Shrine** at its centre. Only your creatures near it ⇒ you
+  capture it over a few seconds. Each held shrine adds gold income.
+- Each lane has one **turret slot** on each citadel.
+
+## Creature classes (counter triangle)
+| Class | Icon | Role | Strong vs |
+|---|---|---|---|
+| Guardian | shield | slow, tanky melee | Hunter |
+| Hunter | fang | fast melee striker | Mystic |
+| Mystic | orb | fragile ranged caster | Guardian |
+
+Damage ×1.5 against the class you counter, ×0.75 against the class that counters you.
+Final age adds a **Legend** (Elder Dragon): expensive, neutral, splash fire.
+
+## Ages
+| # | Age | Guardian | Hunter | Mystic | God power |
+|---|---|---|---|---|---|
+| 1 | Fae Wilds | Treant Warden (regenerates) | Redcap Raider | Pixie Sprite | Briar Snare (root + dmg) |
+| 2 | Olympus | Minotaur | Centaur Lancer (charge) | Gorgon (slowing gaze) | Wrath of Zeus (lightning) |
+| 3 | Asgard | Frost Jötunn (cleave) | Fenrir Wolf (lifesteal) | Valkyrie (flying) | Fimbulwinter (freeze) |
+| 4 | Jade Empire | Oni Brute (enrage) | Byakko Tiger | Kitsune (bouncing foxfire) | Spirit Dragon (sweeping) |
+| 5 | Celestial | Titan (slam) | Griffin (flying) | Phoenix (rebirth) | Starfall (meteors) |
+
+Legend (age 5): Elder Dragon.
+
+Turrets per age: a **Bolt** turret (single target, long range) and a **Blast**
+turret (splash). Turrets can be sold for 50%.
+
+## Controls
+- **Desktop:** click a lane (or W/S, ↑/↓) to select it; click a creature card
+  (or 1–4) to summon into it; drag a card onto any lane; Space / god-power
+  button then lane to cast; T turret, U ascend, Esc pause. Hover for tooltips.
+- **Mobile (landscape):** creature cards on the left thumb column, powers on
+  the right. Tap lane to select, tap card to summon, or drag a card onto a lane.
+  Long-press a card for info. Portrait is supported by rotating the game.
+
+## AI
+Same command API as the player. Four difficulties: Novice, Adept, Master, Mythic.
+Evaluates per-lane threat, picks counters, contests shrines, saves to ascend,
+builds turrets, aims god powers. Difficulty scales reaction time, decision
+quality and (Mythic only) a small income bonus.
