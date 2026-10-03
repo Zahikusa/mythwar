@@ -20,7 +20,9 @@ export class Input {
     canvas.addEventListener('pointermove', (e) => this.onMove(e));
     canvas.addEventListener('pointerdown', (e) => this.onDown(e));
     canvas.addEventListener('pointerleave', () => {
-      if (this.game && this.game.view.targeting !== 'summon') this.game.view.hoverLane = -1;
+      if (!this.game) return;
+      this.game.view.mouse = null;
+      if (this.game.view.targeting !== 'summon') this.game.view.hoverLane = -1;
     });
     canvas.addEventListener('contextmenu', (e) => {
       e.preventDefault();
@@ -49,7 +51,12 @@ export class Input {
 
   private onMove(e: PointerEvent): void {
     const g = this.game;
-    if (!g || g.view.targeting === 'summon') return;
+    if (!g) return;
+    if (e.pointerType === 'mouse') {
+      const [x, y] = this.toStage(e.clientX, e.clientY);
+      g.view.mouse = { x, y };
+    }
+    if (g.view.targeting === 'summon') return;
     if (e.pointerType === 'mouse' || g.view.targeting === 'power') g.view.hoverLane = this.laneAtClient(e.clientX, e.clientY);
   }
 

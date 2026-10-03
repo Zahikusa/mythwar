@@ -19,8 +19,9 @@ export interface ViewState {
   hoverLane: number;
   /** Lane highlight mode while choosing a lane for a power / drag-drop. */
   targeting: 'none' | 'power' | 'summon' | 'turret';
-  /** Per-lane flags for incoming threat arrows near the player's citadel. */
   paused: boolean;
+  /** Mouse position in stage coordinates (desktop hover labels), or null. */
+  mouse?: { x: number; y: number } | null;
 }
 
 interface UnitVis {
@@ -58,6 +59,7 @@ interface ProjVis {
 }
 
 const DEATH_TIME = 0.9;
+const CLASS_COLORS: Record<string, string> = { guardian: '#f2b84b', hunter: '#7ed957', mystic: '#b48cff', legend: '#ff8a3d' };
 const SPAWN_TIME = 0.35;
 
 export class Renderer {
@@ -83,6 +85,8 @@ export class Renderer {
   private baseFlash: [number, number] = [0, 0];
   private shrinePulse = [0, 0, 0];
   private gateChips = [-1, -1, -1, -1, -1, -1];
+  private hover: { unit: Unit; x: number; top: number; d: number } | null = null;
+  private mouseRef: { x: number; y: number } | null = null;
   private ageFlash: [number, number] = [0, 0];
   /** Citadel collapse progress per team (-1 = standing). */
   private collapse: [number, number] = [-1, -1];
@@ -429,6 +433,9 @@ export class Renderer {
       drawCitadelKeep(ctx, L, team, p.age, p.baseHp / p.baseMaxHp, this.time, this.baseFlash[team], this.ageFlash[team], Math.max(0, this.collapse[team]));
     }
 
+    this.hover = null;
+    this.mouseRef = L.mode === 'desktop' && view.targeting === 'none' ? (view.mouse ?? null) : null;
+
     // Lanes far → near
     for (let lane = 0; lane < L.lanes.length; lane++) {
       const g = L.lanes[lane];
@@ -462,6 +469,8 @@ export class Renderer {
     this.fx.drawTimed(ctx, 3);
     this.fx.drawParticles(ctx, 3);
     this.fx.drawTexts(ctx, Math.max(0.8, L.ui));
+    const hv = this.hover as Renderer['hover'];
+    if (hv) this.drawHoverLabel(ctx, hv.unit, hv.x, hv.top, view);
 
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     if (this.ragnarok > 0.01) {
@@ -755,6 +764,15 @@ export class Renderer {
     ctx.globalAlpha = 1;
 
     const bodyY = y + art.body[1] * p.s;
+    const m = this.mouseRef;
+    if (m) {
+      const hw = Math.max(10, u.def.radius * g.s * 1.3);
+      const top = y - (art.height + 4) * p.s;
+      if (m.x > p.x - hw && m.x < p.x + hw && m.y > top && m.y < p.y + 4) {
+        const d = Math.abs(m.x - p.x) + Math.abs(m.y - bodyY) * 0.5;
+        if (!this.hover || d < this.hover.d) this.hover = { unit: u, x: p.x, top: top - 12, d };
+      }
+    }
     if (v.flash > 0) drawGlow(ctx, p.x, bodyY, art.height * 0.6 * p.s, [255, 255, 255], v.flash * 0.55);
     if (u.slowTimer > 0 && u.freezeTimer <= 0) {
       for (let i = 0; i < 2; i++) {
@@ -806,6 +824,36 @@ export class Renderer {
       ctx.fillRect(bx, by, w * realFrac, h);
       ctx.globalAlpha = 1;
     }
+  }
+
+  /** Small name / class / health label above the creature under the mouse. */
+  private drawHoverLabel(ctx: CanvasRenderingContext2D, u: Unit, x: number, y: number, view: ViewState): void {
+    const mine = u.team === view.playerTeam;
+    const name = u.def.name;
+    const hp = `${Math.ceil(u.hp)} / ${Math.ceil(u.maxHp)}`;
+    ctx.font = '700 12px "Segoe UI", system-ui, sans-serif';
+    const w = Math.max(ctx.measureText(name).width, ctx.measureText(hp).width + 14) + 22;
+    const h = 34;
+    const bx = Math.round(x - w / 2);
+    const by = Math.round(y - h);
+    ctx.fillStyle = 'rgba(16, 10, 30, 0.88)';
+    ctx.strokeStyle = mine ? TEAM_COLORS[0].main : TEAM_COLORS[1].main;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, w, h, 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = CLASS_COLORS[u.def.cls];
+    ctx.beginPath();
+    ctx.arc(bx + 11, by + 11, 4, 0, TAU);
+    ctx.fill();
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#f4ecff';
+    ctx.fillText(name, bx + 19, by + 11);
+    ctx.font = '600 11px "Segoe UI", system-ui, sans-serif';
+    ctx.fillStyle = '#c9bde8';
+    ctx.fillText(hp, bx + 19, by + 25);
   }
 
   private drawGhost(ctx: CanvasRenderingContext2D, gh: Ghost, dt: number): void {
