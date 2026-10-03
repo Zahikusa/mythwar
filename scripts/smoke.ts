@@ -249,7 +249,7 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   check('buying a blessing ranks it up', might === 1, `might=${might}`);
 
   // Pause and resume
-  const pb = await center(page, '.sys .sysbtn:nth-child(2)');
+  const pb = await center(page, '.sys .sysbtn:last-child');
   if (viewport.mobile) await page.touchscreen.tap(pb.x, pb.y);
   else await page.mouse.click(pb.x, pb.y);
   await sleep(450);
