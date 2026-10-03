@@ -108,6 +108,16 @@ See DESIGN.md for the game design.
     added a compact desktop breakpoint (≤1180 px).
 23. [x] A battle whose winner was already decided (e.g. fast-forwarded) could be autosaved and
     "continued" with no results screen. `persist()` and `Game.fromSave` now refuse them (test).
+24. [ ] `src/render/renderer.ts launchHeight`: ward/turret projectile launch heights are
+    hard-coded (46·s / 62·s) instead of derived from the gate/turret geometry.
+25. [x] Ascend button shows "need N g" once the XP is there but gold is short.
+26. [x] Enemy god powers flash the targeted lane red (pulsing band) besides the toast.
+29. [x] Cards were rebuilt (with their pop-in animation) on every resize — mobile browsers
+    resize when the URL bar moves; now only when the layout mode changes. (Found while
+    investigating a screenshot-harness artefact; `crop.mjs` now uses captureBeyondViewport:false.)
+27. [ ] Spirit Dragon power draws at a fixed altitude above the lane; on the far lane of short
+    screens it can pass under the top HUD — clamp its altitude.
+28. [ ] Results chart: mark both sides' ascensions on the timeline.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
     Mystics beat *everything* at army scale (ranged units focus fire, melee fight one at a time),
     so "spam Mystics" was a dominant strategy. Added formation rules — Hunters hunt in packs

@@ -238,6 +238,8 @@ export class Hud {
   }
 
   setLayout(layout: Layout): void {
+    // Card portraits depend on the layout mode only; don't re-animate them on every resize.
+    if (this.layoutInfo?.mode !== layout.mode) this.cardAge = -1;
     this.layoutInfo = layout;
     this.root.classList.toggle('mobile', layout.mode === 'mobile');
     this.root.classList.toggle('desktop', layout.mode === 'desktop');
@@ -252,7 +254,6 @@ export class Hud {
       tab.style.left = `${g.x0 - 58 * s}px`;
       tab.style.top = `${g.y - 22 * s}px`;
     }
-    this.cardAge = -1;
   }
 
   /** Stage coordinates of the gold icon (target for flying coins). */
@@ -681,8 +682,10 @@ export class Hud {
       const next = AGES[me.age + 1];
       const xpK = Math.min(1, me.xp / next.xpRequired);
       setStyle(E.ascFill, 'height', `${(xpK * 100).toFixed(1)}%`);
-      setText(E.ascSub, `${next.name} · ${fmt(next.ascendCost)}g`);
       const why = w.ageUpBlocker(g.playerTeam);
+      // With the XP in hand, say exactly how much gold is still missing.
+      const short = Math.ceil(next.ascendCost - me.gold);
+      setText(E.ascSub, me.xp >= next.xpRequired && short > 0 ? `${next.name} · need ${fmt(short)}g` : `${next.name} · ${fmt(next.ascendCost)}g`);
       toggle(E.ascend, 'ready', !why);
       toggle(E.ascend, 'xpready', me.xp >= next.xpRequired && !!why);
       const title = `Ascend to ${next.name} (U): needs ${fmt(next.xpRequired)} XP and ${fmt(next.ascendCost)} gold. New creatures, turrets, god power and a stronger citadel.`;

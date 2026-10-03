@@ -28,6 +28,6 @@ if (script) {
   await page.evaluate(script);
   await new Promise((r) => setTimeout(r, Number(after)));
 }
-await page.screenshot({ path: 'screenshots/crop.png', clip: { x: +x, y: +y, width: +w, height: +h } });
+await page.screenshot({ path: 'screenshots/crop.png', clip: { x: +x, y: +y, width: +w, height: +h }, captureBeyondViewport: false });
 await browser.close();
 server.close();

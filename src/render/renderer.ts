@@ -87,6 +87,7 @@ export class Renderer {
   private baseFlash: [number, number] = [0, 0];
   private shrinePulse = [0, 0, 0];
   private gateChips = [-1, -1, -1, -1, -1, -1];
+  private laneAlert = [0, 0, 0];
   private hover: { unit: Unit; x: number; top: number; d: number } | null = null;
   private mouseRef: { x: number; y: number } | null = null;
   private sortBuf: Unit[] = [];
@@ -134,6 +135,7 @@ export class Renderer {
     this.ragnarok = 0;
     this.shake = 0;
     this.collapse = [-1, -1];
+    this.laneAlert = [0, 0, 0];
   }
 
   private background(index: number): HTMLCanvasElement {
@@ -296,6 +298,8 @@ export class Renderer {
         }
         case 'power':
           this.onPowerCast(e.kind, e.team, e.lane);
+          // Make it obvious which lane an enemy god power hits.
+          if (e.team !== view.playerTeam) this.laneAlert[e.lane] = 1;
           break;
         case 'strike':
           this.onStrike(e.kind, e.team, e.lane, e.x, e.radius);
@@ -419,7 +423,10 @@ export class Renderer {
       this.baseFlash[i] = Math.max(0, this.baseFlash[i] - dt * 4);
       this.ageFlash[i] = Math.max(0, this.ageFlash[i] - dt * 0.8);
     }
-    for (let i = 0; i < 3; i++) this.shrinePulse[i] = Math.max(0, this.shrinePulse[i] - dt * 1.5);
+    for (let i = 0; i < 3; i++) {
+      this.shrinePulse[i] = Math.max(0, this.shrinePulse[i] - dt * 1.5);
+      this.laneAlert[i] = Math.max(0, this.laneAlert[i] - dt * 0.7);
+    }
     this.ragnarok += ((world.ragnarokStarted ? 1 : 0) - this.ragnarok) * Math.min(1, dt * 0.8);
     this.updateCollapse(dt);
 
@@ -558,6 +565,18 @@ export class Renderer {
   }
 
   private drawLaneHighlight(ctx: CanvasRenderingContext2D, g: LaneGeom, view: ViewState): void {
+    const alert = this.laneAlert[g.index];
+    if (alert > 0) {
+      // Pulsing red band over a lane targeted by an enemy god power.
+      const a = alert * (0.25 + 0.2 * Math.sin(this.time * 18));
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = `rgba(255, 70, 90, ${Math.max(0, a).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.roundRect(g.x0 - g.band, g.y - g.band * 0.5, g.x1 - g.x0 + g.band * 2, g.band * 1.05, g.band * 0.5);
+      ctx.fill();
+      ctx.restore();
+    }
     const tc = TEAM_COLORS[view.playerTeam];
     const selected = g.index === view.selectedLane;
     const hovered = g.index === view.hoverLane;
