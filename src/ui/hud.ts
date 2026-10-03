@@ -619,6 +619,12 @@ export class Hud {
     for (const q of me.queue) counts[q.lane]++;
     for (let i = 0; i < LANE_COUNT; i++) {
       const tab = this.laneTabs[i];
+      // Danger: enemies close to our gate in this lane.
+      let danger = false;
+      for (const u of w.lanes[i]) {
+        if (u.alive && u.team !== g.playerTeam && (g.playerTeam === 0 ? u.x < 280 : u.x > 720)) danger = true;
+      }
+      toggle(tab, 'danger', danger);
       toggle(tab, 'sel', g.view.selectedLane === i);
       toggle(tab, 'hover', g.view.hoverLane === i && g.view.targeting !== 'none');
       setText(tab.querySelector('.qn')!, counts[i] ? String(counts[i]) : '');

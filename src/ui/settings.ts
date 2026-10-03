@@ -16,6 +16,7 @@ export interface Settings {
   lowQuality: boolean;
   difficulty: Difficulty;
   tutorialSeen: boolean;
+  hintsSeen: string[];
   records: Partial<Record<Difficulty, DifficultyRecord>>;
 }
 
@@ -30,17 +31,21 @@ const DEFAULTS: Settings = {
   lowQuality: false,
   difficulty: 'adept',
   tutorialSeen: false,
+  hintsSeen: [],
   records: {},
 };
 
 export function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { ...DEFAULTS, ...JSON.parse(raw), records: { ...(JSON.parse(raw).records ?? {}) } };
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return { ...DEFAULTS, ...parsed, hintsSeen: [...(parsed.hintsSeen ?? [])], records: { ...(parsed.records ?? {}) } };
+    }
   } catch {
     // ignore (private mode / corrupted)
   }
-  return { ...DEFAULTS, records: {} };
+  return { ...DEFAULTS, hintsSeen: [], records: {} };
 }
 
 export function saveSettings(s: Settings): void {

@@ -6,6 +6,7 @@ import { Input } from './input.ts';
 import { detectMode } from './render/layout.ts';
 import type { LayoutMode } from './render/layout.ts';
 import { Renderer } from './render/renderer.ts';
+import { Coach } from './ui/coach.ts';
 import { Hud } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
 import { loadSettings, recordResult, saveSettings } from './ui/settings.ts';
@@ -27,6 +28,7 @@ export class App {
   readonly menus: Menus;
   readonly settings: Settings;
   readonly audio = new Audio();
+  readonly coach: Coach;
   game: Game | null = null;
   state: AppState = 'title';
   mode: LayoutMode = 'desktop';
@@ -56,6 +58,7 @@ export class App {
       sound: (k) => this.audio.ui(k),
     });
     this.input = new Input(this.canvas, this.renderer, this.hud);
+    this.coach = new Coach(this.stage, this.settings);
     this.input.onPause = () => (this.game?.paused ? this.resume() : this.pause());
     this.menus = new Menus(this.stage, this.settings, {
       play: (d) => this.play(d),
@@ -92,6 +95,7 @@ export class App {
     const toStage = (cx: number, cy: number): [number, number] => (this.rotated ? [cy, vw - cx] : [cx, cy]);
     this.input.toStage = toStage;
     this.hud.toStage = toStage;
+    this.coach.toStage = toStage;
     this.renderer.quality = this.settings.lowQuality ? 'low' : 'high';
     this.renderer.resize(w, h, this.mode, this.settings.lowQuality ? 1 : 2);
     this.hud.setLayout(this.renderer.layout);
@@ -160,6 +164,7 @@ export class App {
     this.menus.show('none');
     this.hud.attach(game);
     this.input.attach(game);
+    this.coach.attach(game);
   }
 
   toTitle(): void {
@@ -167,6 +172,7 @@ export class App {
     this.overTimer = -1;
     this.hud.detach();
     this.input.attach(null);
+    this.coach.attach(null);
     const demo = this.startGame('adept', (Math.random() * 1e9) | 0, true);
     // Start the backdrop battle mid-skirmish.
     demo.fastForward(40);
@@ -217,6 +223,7 @@ export class App {
       this.audio.intensity = this.battleIntensity(g);
       this.renderer.render(g.world, alpha, dt, g.view);
       if (this.state === 'playing' || this.state === 'over') this.hud.update(dt);
+      if (this.state === 'playing') this.coach.update();
       if (this.overTimer > 0) {
         this.overTimer -= dt;
         if (this.overTimer <= 0) {
