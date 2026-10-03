@@ -1,4 +1,4 @@
-import type { PowerKind, ProjectileKind, TurretDef, UnitClass, UnitDef } from './data.ts';
+import type { BlessingId, PowerKind, ProjectileKind, TurretDef, UnitClass, UnitDef } from './data.ts';
 
 /** 0 = left side (the human player in single player), 1 = right side. */
 export type Team = 0 | 1;
@@ -94,6 +94,9 @@ export interface PlayerState {
   powerCooldown: number;
   turrets: TurretSlot[]; // one per lane
   incomeMult: number;
+  /** Built-in gate ward cooldown per lane. */
+  wardCooldown: number[];
+  blessings: Record<BlessingId, number>;
   stats: TeamStats;
   lastBaseHit: number;
 }
@@ -132,11 +135,13 @@ export type SimEvent =
   | { type: 'turretFire'; team: Team; lane: number }
   | { type: 'turretBuilt'; team: Team; lane: number; turretId: string | null }
   | { type: 'ageUp'; team: Team; age: number }
+  | { type: 'blessing'; team: Team; blessing: BlessingId; rank: number }
   | { type: 'power'; team: Team; lane: number; kind: PowerKind; instanceId: number }
   | { type: 'strike'; team: Team; lane: number; x: number; kind: PowerKind; radius: number }
   | { type: 'meteor'; team: Team; lane: number; x: number; fall: number }
   | { type: 'shrine'; lane: number; owner: Team | -1 }
   | { type: 'trainStart'; team: Team }
+  | { type: 'ragnarok' }
   | { type: 'gameOver'; winner: Team };
 
 export type Command =
@@ -145,6 +150,7 @@ export type Command =
   | { type: 'ageUp'; team: Team }
   | { type: 'buildTurret'; team: Team; lane: number; turretId: string }
   | { type: 'sellTurret'; team: Team; lane: number }
-  | { type: 'power'; team: Team; lane: number };
+  | { type: 'power'; team: Team; lane: number }
+  | { type: 'bless'; team: Team; blessing: BlessingId };
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };

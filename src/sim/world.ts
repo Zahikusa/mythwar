@@ -1,5 +1,7 @@
 import {
   AGES,
+  BLESSINGS,
+  BLESSING_MAX_RANK,
   BASE_DAMAGE_XP,
   KILL_GOLD_MULT,
   KILL_XP_MULT,
@@ -7,6 +9,9 @@ import {
   LANE_LENGTH,
   MAX_AGE,
   PASSIVE_XP,
+  RAGNAROK_AFTER_FINAL,
+  RAGNAROK_RAMP,
+  RAGNAROK_TIME,
   POWER_SCALE,
   POWERS,
   QUEUE_MAX,
@@ -19,9 +24,11 @@ import {
   TICK,
   TURRETS,
   UNITS,
+  WARD,
+  blessingCost,
   counterMultiplier,
 } from './data.ts';
-import type { Trait, TraitKind, UnitClass, UnitDef } from './data.ts';
+import type { BlessingId, Trait, TraitKind, UnitClass, UnitDef } from './data.ts';
 import { Rng } from './rng.ts';
 import { castPower, updatePowers } from './powers.ts';
 import { BASE_TARGET, NO_TARGET } from './types.ts';
@@ -71,6 +78,10 @@ export class World {
   readonly powers: PowerInstance[] = [];
   readonly unitById = new Map<number, Unit>();
   winner: Team | null = null;
+  /** Sim time at which Ragnarök begins (may move earlier once both sides reach the final age). */
+  ragnarokAt = RAGNAROK_TIME;
+  ragnarokStarted = false;
+  private finalAgeAt: number | null = null;
   private nextId = 1;
   private events: SimEvent[] = [];
 
@@ -97,6 +108,8 @@ export class World {
       powerCooldown: START_POWER_COOLDOWN,
       turrets: Array.from({ length: LANE_COUNT }, () => ({ def: null, cooldown: 0, lastFire: -10, aimX: team === 0 ? 200 : LANE_LENGTH - 200 })),
       incomeMult,
+      wardCooldown: Array.from({ length: LANE_COUNT }, () => 0),
+      blessings: { might: 0, vitality: 0, bastion: 0 },
       stats: { summoned: 0, kills: 0, losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0 },
       lastBaseHit: -10,
     };
@@ -145,6 +158,12 @@ export class World {
     let n = 0;
     for (const s of this.shrines) if (s.owner === team) n++;
     return n;
+  }
+
+  /** Multiplier on damage dealt to citadels (1 before Ragnarök). */
+  siegeMult(): number {
+    if (!this.ragnarokStarted) return 1;
+    return 1 + ((this.time - this.ragnarokAt) / 60) * RAGNAROK_RAMP;
   }
 
   incomeOf(team: Team): number {
@@ -215,6 +234,37 @@ export class World {
     return null;
   }
 
+  blessingBlocker(team: Team, id: BlessingId): string | null {
+    const p = this.players[team];
+    if (!BLESSINGS[id]) return 'Unknown blessing';
+    if (p.blessings[id] >= BLESSING_MAX_RANK) return 'Fully blessed';
+    if (p.gold < blessingCost(p.blessings[id], p.age)) return 'Not enough gold';
+    return null;
+  }
+
+  mightMult(team: Team): number {
+    return 1 + this.players[team].blessings.might * BLESSINGS.might.perRank;
+  }
+
+  vitalityMult(team: Team): number {
+    return 1 + this.players[team].blessings.vitality * BLESSINGS.vitality.perRank;
+  }
+
+  /** Citadel health multiplier from Bastion. */
+  bastionMult(team: Team): number {
+    return 1 + this.players[team].blessings.bastion * BLESSINGS.bastion.perRank;
+  }
+
+  /** Ward/turret damage multiplier from Bastion (half as strong as the health bonus). */
+  defenseMult(team: Team): number {
+    return 1 + this.players[team].blessings.bastion * BLESSINGS.bastion.perRank * 0.5;
+  }
+
+  /** Citadel max HP for a team at its current age and Bastion rank. */
+  baseMaxHpFor(team: Team): number {
+    return AGES[this.players[team].age].baseHp * this.bastionMult(team);
+  }
+
   apply(cmd: Command): CommandResult {
     if (this.winner !== null) return { ok: false, reason: 'The battle is over' };
     const p = this.players[cmd.team];
@@ -247,8 +297,9 @@ export class World {
         p.gold -= next.ascendCost;
         p.stats.goldSpent += next.ascendCost;
         p.age += 1;
-        const gained = next.baseHp - p.baseMaxHp;
-        p.baseMaxHp = next.baseHp;
+        const newMax = this.baseMaxHpFor(cmd.team);
+        const gained = newMax - p.baseMaxHp;
+        p.baseMaxHp = newMax;
         p.baseHp = Math.min(p.baseMaxHp, p.baseHp + gained);
         p.powerCooldown = Math.min(p.powerCooldown, 8);
         this.emit({ type: 'ageUp', team: cmd.team, age: p.age });
@@ -275,6 +326,21 @@ export class World {
         this.emit({ type: 'turretBuilt', team: cmd.team, lane: cmd.lane, turretId: null });
         return { ok: true };
       }
+      case 'bless': {
+        const why = this.blessingBlocker(cmd.team, cmd.blessing);
+        if (why) return { ok: false, reason: why };
+        const cost = blessingCost(p.blessings[cmd.blessing], p.age);
+        p.gold -= cost;
+        p.stats.goldSpent += cost;
+        p.blessings[cmd.blessing]++;
+        if (cmd.blessing === 'bastion') {
+          const newMax = this.baseMaxHpFor(cmd.team);
+          p.baseHp += newMax - p.baseMaxHp;
+          p.baseMaxHp = newMax;
+        }
+        this.emit({ type: 'blessing', team: cmd.team, blessing: cmd.blessing, rank: p.blessings[cmd.blessing] });
+        return { ok: true };
+      }
       case 'power': {
         if (cmd.lane < 0 || cmd.lane >= LANE_COUNT) return { ok: false, reason: 'Invalid lane' };
         const why = this.powerBlocker(cmd.team);
@@ -298,6 +364,7 @@ export class World {
     this.tick++;
     for (const lane of this.lanes) for (const u of lane) u.px = u.x;
     for (const p of this.players) this.updatePlayer(p, dt);
+    this.updateRagnarok();
     for (let lane = 0; lane < LANE_COUNT; lane++) this.updateLane(lane, dt);
     this.updateTurrets(dt);
     this.updateProjectiles(dt);
@@ -305,6 +372,19 @@ export class World {
     this.updateShrines(dt);
     this.cleanup();
     this.checkWin();
+  }
+
+  private updateRagnarok(): void {
+    if (this.ragnarokStarted) return;
+    if (this.players[0].age === MAX_AGE && this.players[1].age === MAX_AGE) {
+      this.ragnarokAt = Math.min(this.ragnarokAt, Math.max(this.time, this.finalAgeAt ?? this.time) + RAGNAROK_AFTER_FINAL);
+      this.finalAgeAt ??= this.time;
+    }
+    if (this.time >= this.ragnarokAt) {
+      this.ragnarokStarted = true;
+      this.ragnarokAt = this.time;
+      this.emit({ type: 'ragnarok' });
+    }
   }
 
   private updatePlayer(p: PlayerState, dt: number): void {
@@ -351,8 +431,8 @@ export class World {
       lane,
       x: sx,
       px: sx,
-      hp: def.hp,
-      maxHp: def.hp,
+      hp: def.hp * this.vitalityMult(team),
+      maxHp: def.hp * this.vitalityMult(team),
       alive: true,
       flying: !!trait(def, 'flying'),
       bornAt: this.time,
@@ -506,7 +586,7 @@ export class World {
 
   private meleeHit(u: Unit, target: Unit | null, list: Unit[]): void {
     const def = u.def;
-    let dmg = def.damage;
+    let dmg = def.damage * this.mightMult(u.team);
     const charge = trait(def, 'charge');
     if (charge && u.charged) {
       dmg *= charge.mult;
@@ -555,7 +635,7 @@ export class World {
       tx,
       speed: spec.speed,
       arc: spec.arc,
-      damage: def.damage,
+      damage: def.damage * this.mightMult(u.team),
       cls: def.cls,
       splash: splash ? splash.radius : 0,
       slow: slow ? { factor: slow.factor, duration: slow.duration } : undefined,
@@ -608,26 +688,49 @@ export class World {
 
   private updateTurrets(dt: number): void {
     for (const p of this.players) {
+      const ward = WARD;
+      const scale = POWER_SCALE[p.age];
       for (let lane = 0; lane < LANE_COUNT; lane++) {
         const slot = p.turrets[lane];
-        if (!slot.def) continue;
         if (slot.cooldown > 0) slot.cooldown -= dt;
-        // Find the enemy closest to our citadel within range.
+        if (p.wardCooldown[lane] > 0) p.wardCooldown[lane] -= dt;
+        // The enemy closest to our citadel.
         let best: Unit | null = null;
         let bestD = Infinity;
         for (const e of this.lanes[lane]) {
           if (!e.alive || e.team === p.team) continue;
           const d = p.team === 0 ? e.x - e.def.radius : LANE_LENGTH - (e.x + e.def.radius);
-          if (d <= slot.def.range && d < bestD) {
+          if (d < bestD) {
             bestD = d;
             best = e;
           }
         }
-        if (best) slot.aimX = best.x;
-        if (!best || slot.cooldown > 0) continue;
-        slot.cooldown = slot.def.cooldown;
-        slot.lastFire = this.time;
+        if (!best) continue;
+        // During Ragnarök the gate wards fall silent.
+        if (!this.ragnarokStarted && bestD <= ward.range && p.wardCooldown[lane] <= 0) {
+          p.wardCooldown[lane] = ward.cooldown;
+          this.addProjectile({
+            team: p.team,
+            lane,
+            kind: ward.projectile.kind,
+            sourceId: -(lane + 20),
+            fromTurret: true,
+            targetId: best.id,
+            x0: this.baseFront(p.team),
+            tx: best.x,
+            speed: ward.projectile.speed,
+            arc: ward.projectile.arc,
+            damage: ward.damage * scale * this.defenseMult(p.team),
+            cls: null,
+            splash: 0,
+          });
+        }
         const def = slot.def;
+        if (!def || bestD > def.range) continue;
+        slot.aimX = best.x;
+        if (slot.cooldown > 0) continue;
+        slot.cooldown = def.cooldown;
+        slot.lastFire = this.time;
         this.addProjectile({
           team: p.team,
           lane,
@@ -639,7 +742,7 @@ export class World {
           tx: best.x,
           speed: def.projectile.speed,
           arc: def.projectile.arc,
-          damage: def.damage,
+          damage: def.damage * this.defenseMult(p.team),
           cls: null,
           splash: def.splash,
           slow: def.slow,
@@ -767,9 +870,10 @@ export class World {
     this.emit({ type: 'death', unitId: u.id, team: u.team, lane: u.lane, x: u.x, defId: u.def.id, flying: u.flying, gold });
   }
 
-  damageBase(team: Team, amount: number, lane: number, attackerTeam: Team): void {
+  damageBase(team: Team, rawAmount: number, lane: number, attackerTeam: Team): void {
     const p = this.players[team];
     if (p.baseHp <= 0) return;
+    const amount = rawAmount * this.siegeMult();
     p.baseHp = Math.max(0, p.baseHp - amount);
     p.lastBaseHit = this.time;
     const att = this.players[attackerTeam];

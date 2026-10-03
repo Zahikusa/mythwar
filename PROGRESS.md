@@ -14,10 +14,10 @@ See DESIGN.md for the game design.
 - Screenshots via puppeteer-core driving the locally installed Chrome (`scripts/shoot.ts`).
 
 ## Milestones
-- [ ] M0 Scaffold (Vite, TS, Vitest, .gitignore, docs)
-- [ ] M1 Simulation core: data, lanes, units, combat, counters, projectiles, base, economy,
+- [x] M0 Scaffold (Vite, TS, Vitest, .gitignore, docs)
+- [x] M1 Simulation core: data, lanes, units, combat, counters, projectiles, base, economy,
       queue, ages, turrets, god powers, shrines, events. Unit tests.
-- [ ] M2 AI (4 difficulties) + headless AI-vs-AI runner, sanity tests (games end, harder wins)
+- [x] M2 AI (4 difficulties) + headless AI-vs-AI runner, sanity tests (games end, harder wins)
 - [ ] M3 Renderer skeleton: game loop w/ interpolation, background, lanes, bases, placeholder units
 - [ ] M4 HUD + menus (title, difficulty, pause, end screen), input (lane select, cards, drag)
 - [ ] M5 Creature art & animation for all 16 creatures, turrets, citadels per age
@@ -28,12 +28,26 @@ See DESIGN.md for the game design.
 - [ ] M10 Balance pass via headless sims, polish, screenshot review on desktop + mobile
 
 ## Done
-(nothing yet)
+- Sim core (`src/sim`): world.ts (step, combat, projectiles, turrets, gate wards, shrines, ragnarök),
+  powers.ts (5 god powers), data.ts (all balance numbers), types.ts (state, events, commands).
+- AI (`src/ai/ai.ts`): lane threat assessment, counters, ascend saving, turrets, blessings, powers.
+- `npm run sim -- 20 master adept` headless balance runs; `node scripts/trace.ts <seed>` timeline.
+- Balance snapshot (master vs master): ages at ~2/4.5/8.5/13.5 min, games ~20 min (Ragnarök
+  ends stalemates). mythic>master 8-4, master>adept 9-3, adept>novice 12-0.
 
 ## Next
-- M1 simulation core
+- M3 renderer skeleton
 
 ## Decisions log
+- Added **gate wards** (free built-in weak turret per lane, scales with age): without them, the
+  first side to win a lane fight snowballed to victory in 3–5 min (no defender's advantage).
+- Added **Blessings** (Might / Vitality / Bastion, 5 ranks each, cost scales with age): late-game
+  gold piled up to 50k+ with nothing to buy because the training queue caps throughput.
+- Added **Ragnarök** (from 18 min, or 3 min after both reach the final age): wards go silent and
+  citadel damage ramps +100%/min. Mirror matches otherwise stalemated at age 5 for 40+ minutes.
+- Power scale per age [1, 1.65, 2.75, 4.5, 7.4] vs cost scale [1, 2.1, 4.4, 9.2, 19]: value per
+  gold (~power²/cost) grows ~1.3x per age. Earlier, steeper scaling made the first ascender win.
+- Shrines give ~20% of base income each (at 50%+ they caused runaway snowballs).
 - 5 ages × 3 classes + 1 Legend (Elder Dragon) in the last age.
 - XP threshold **and** a gold tithe to ascend (strategic choice vs. spending on units).
 - Shared citadel HP; one turret slot per lane per side; shrines in lane centres give income.

@@ -62,7 +62,8 @@ export type ProjectileKind =
   | 'arrow'
   | 'rocket'
   | 'sunbeam'
-  | 'starorb';
+  | 'starorb'
+  | 'ward';
 
 export interface ProjectileSpec {
   kind: ProjectileKind;
@@ -145,14 +146,34 @@ export const QUEUE_MAX = 5;
 export const START_GOLD = 150;
 export const START_POWER_COOLDOWN = 25;
 export const PASSIVE_XP = 1.5; // xp / second
-export const KILL_GOLD_MULT = 0.9;
+export const KILL_GOLD_MULT = 0.75;
 export const KILL_XP_MULT = 1.0;
 export const BASE_DAMAGE_XP = 0.15; // xp per point of base damage, divided by attacker age power scale
 export const SELL_REFUND = 0.5;
 export const TICK = 1 / 60;
 
-/** Power (hp/damage) and cost scale per age. Later ages are slightly more cost-efficient. */
-export const POWER_SCALE = [1, 2.4, 5.4, 12, 26];
+/**
+ * Ragnarök — the late-game finisher. It begins at RAGNAROK_TIME, or RAGNAROK_AFTER_FINAL seconds
+ * after both sides reached the final age (whichever is first). From then on the gate wards fall
+ * silent and creatures deal escalating damage to citadels (+RAGNAROK_RAMP x per minute).
+ */
+export const RAGNAROK_TIME = 18 * 60;
+export const RAGNAROK_AFTER_FINAL = 3 * 60;
+export const RAGNAROK_RAMP = 1;
+
+/** Every citadel gate has a built-in ward that shoots the nearest enemy (damage scales with age). */
+export const WARD: { damage: number; cooldown: number; range: number; projectile: ProjectileSpec } = {
+  damage: 8,
+  cooldown: 1.1,
+  range: 170,
+  projectile: { kind: 'ward', speed: 700, arc: 10 },
+};
+
+/**
+ * Power (hp/damage) and cost scale per age. Combat value ~ hp x dps ~ power^2, so value per
+ * gold grows ~1.3x per age: ascending is a real edge, but not an instant win.
+ */
+export const POWER_SCALE = [1, 1.65, 2.75, 4.5, 7.4];
 export const COST_SCALE = [1, 2.1, 4.4, 9.2, 19];
 
 // ---------------------------------------------------------------------------
@@ -400,7 +421,7 @@ export const DRAGON: UnitDef = {
   cls: 'legend',
   cost: Math.round(30 * COST_SCALE[4] * 4.5),
   hp: Math.round(170 * POWER_SCALE[4] * 5),
-  damage: Math.round(10 * POWER_SCALE[4] * 3.2),
+  damage: Math.round(10 * POWER_SCALE[4] * 4),
   cooldown: 2.2,
   windup: 0.7,
   range: 130,
@@ -499,7 +520,7 @@ export const POWERS: Record<PowerKind, PowerDef> = {
     name: 'Briar Snare',
     age: 0,
     cooldown: 50,
-    damage: 40 * POWER_SCALE[0],
+    damage: 45 * POWER_SCALE[0],
     blurb: 'Thorned vines erupt beneath every foe in the lane, rooting them in place.',
   },
   zeus: {
@@ -507,7 +528,7 @@ export const POWERS: Record<PowerKind, PowerDef> = {
     name: 'Wrath of Zeus',
     age: 1,
     cooldown: 55,
-    damage: 70 * POWER_SCALE[1],
+    damage: 90 * POWER_SCALE[1],
     blurb: 'Seven thunderbolts strike enemies in the lane.',
   },
   fimbul: {
@@ -537,15 +558,41 @@ export const POWERS: Record<PowerKind, PowerDef> = {
 };
 
 // ---------------------------------------------------------------------------
+// Blessings — permanent upgrades bought with gold
+// ---------------------------------------------------------------------------
+
+export type BlessingId = 'might' | 'vitality' | 'bastion';
+
+export interface BlessingDef {
+  id: BlessingId;
+  name: string;
+  perRank: number;
+  blurb: string;
+}
+
+export const BLESSINGS: Record<BlessingId, BlessingDef> = {
+  might: { id: 'might', name: 'Might', perRank: 0.1, blurb: '+10% damage for all your creatures.' },
+  vitality: { id: 'vitality', name: 'Vitality', perRank: 0.1, blurb: '+10% health for newly summoned creatures.' },
+  bastion: { id: 'bastion', name: 'Bastion', perRank: 0.15, blurb: '+15% citadel health and +7.5% ward and turret damage.' },
+};
+export const BLESSING_ORDER: BlessingId[] = ['might', 'vitality', 'bastion'];
+export const BLESSING_MAX_RANK = 5;
+
+/** Cost of buying the next rank (rank = ranks already owned). Scales with the current age. */
+export function blessingCost(rank: number, age: number): number {
+  return Math.round(120 * (rank + 1) * COST_SCALE[age]);
+}
+
+// ---------------------------------------------------------------------------
 // Ages
 // ---------------------------------------------------------------------------
 
 export const AGES: AgeDef[] = [
-  { index: 0, id: 'fae', name: 'Fae Wilds', subtitle: 'Age of Whispers', units: [], turrets: [], power: 'briar', xpRequired: 0, ascendCost: 0, baseHp: 1500, income: 3, shrineIncome: 1.5 },
-  { index: 1, id: 'olympus', name: 'Olympus', subtitle: 'Age of Heroes', units: [], turrets: [], power: 'zeus', xpRequired: 450, ascendCost: 150, baseHp: 3200, income: 5.5, shrineIncome: 2.8 },
-  { index: 2, id: 'asgard', name: 'Asgard', subtitle: 'Age of Sagas', units: [], turrets: [], power: 'fimbul', xpRequired: 1600, ascendCost: 400, baseHp: 6800, income: 10, shrineIncome: 5.5 },
-  { index: 3, id: 'jade', name: 'Jade Empire', subtitle: 'Age of Dynasties', units: [], turrets: [], power: 'spiritdragon', xpRequired: 4500, ascendCost: 1000, baseHp: 14000, income: 19, shrineIncome: 10 },
-  { index: 4, id: 'celestial', name: 'Celestial', subtitle: 'Age of Gods', units: [], turrets: [], power: 'starfall', xpRequired: 11000, ascendCost: 2400, baseHp: 28000, income: 36, shrineIncome: 19 },
+  { index: 0, id: 'fae', name: 'Fae Wilds', subtitle: 'Age of Whispers', units: [], turrets: [], power: 'briar', xpRequired: 0, ascendCost: 0, baseHp: 2500, income: 3, shrineIncome: 0.6 },
+  { index: 1, id: 'olympus', name: 'Olympus', subtitle: 'Age of Heroes', units: [], turrets: [], power: 'zeus', xpRequired: 800, ascendCost: 150, baseHp: 4000, income: 5.5, shrineIncome: 1.1 },
+  { index: 2, id: 'asgard', name: 'Asgard', subtitle: 'Age of Sagas', units: [], turrets: [], power: 'fimbul', xpRequired: 2800, ascendCost: 400, baseHp: 6500, income: 10, shrineIncome: 2 },
+  { index: 3, id: 'jade', name: 'Jade Empire', subtitle: 'Age of Dynasties', units: [], turrets: [], power: 'spiritdragon', xpRequired: 8000, ascendCost: 1000, baseHp: 10500, income: 19, shrineIncome: 3.8 },
+  { index: 4, id: 'celestial', name: 'Celestial', subtitle: 'Age of Gods', units: [], turrets: [], power: 'starfall', xpRequired: 20000, ascendCost: 2400, baseHp: 17000, income: 36, shrineIncome: 7.2 },
 ];
 for (const age of AGES) {
   age.units = AGE_UNITS[age.index].map((u) => u.id);
