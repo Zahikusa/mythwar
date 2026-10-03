@@ -37,6 +37,7 @@ interface UnitVis {
   /** Last seen hp and healing accumulated since the last heal sparkle. */
   lastHp: number;
   healAcc: number;
+  lastSlash: number;
 }
 
 interface Ghost {
@@ -241,6 +242,13 @@ export class Renderer {
               this.fx.burst(p.x, by, { count: 6, color: '#ffe27a', speed: 120, life: 0.35, size: 2.2, shape: 'spark', layer: e.lane, drag: 4 });
             } else if (e.source === 'unit') {
               this.fx.burst(p.x, by, { count: 3, color: '#ffffff', speed: 70, life: 0.25, size: 1.8, shape: 'spark', layer: e.lane, drag: 4 });
+            }
+            // Melee blows ('unit' source) cut a slash across the target (one per target at a time).
+            if (e.source === 'unit' && v && this.time - v.lastSlash > 0.2) {
+              v.lastSlash = this.time;
+              const dir = u.team === 0 ? -1 : 1; // the blow comes from the other side
+              const r = (12 + u.def.radius * 0.6) * this.bodyScale(L.lanes[e.lane]);
+              this.fx.timedFx({ kind: 'slash', x: p.x - dir * r * 0.2, y: by, x2: p.x - dir * r * 0.2 + dir, y2: by, dur: 0.22, layer: e.lane, size: r, color: e.mult > 1 ? '#ffe27a' : 'rgba(255,255,255,0.9)' });
             }
           }
           break;
@@ -773,7 +781,7 @@ export class Renderer {
       let v = this.vis.get(u.id);
       if (!v) {
         const seed = ((u.id * 2654435761) >>> 0) / 4294967296;
-        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn: 0, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0 };
+        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn: 0, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1 };
         this.vis.set(u.id, v);
       }
     }

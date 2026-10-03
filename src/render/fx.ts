@@ -326,12 +326,23 @@ export class Fx {
           break;
         }
         case 'slash': {
+          // A swift crescent; x2 holds the facing (+1 = blow travelling right).
+          const dir = f.x2 >= f.x ? 1 : -1;
+          const sweep = k < 0.4 ? k / 0.4 : 1;
+          const a0 = dir > 0 ? -1.3 : Math.PI + 1.3;
+          const a1 = a0 + dir * 2.0 * sweep;
           ctx.globalAlpha = (1 - k) * 0.9;
           ctx.strokeStyle = f.color;
-          ctx.lineWidth = f.size * 0.15 * (1 - k * 0.5);
           ctx.lineCap = 'round';
+          ctx.lineWidth = f.size * 0.16 * (1 - k * 0.6);
           ctx.beginPath();
-          ctx.arc(f.x, f.y, f.size, -1.2 + k * 0.6, 0.6 + k * 0.6);
+          ctx.arc(f.x, f.y, f.size, Math.min(a0, a1), Math.max(a0, a1));
+          ctx.stroke();
+          ctx.globalAlpha = (1 - k) * 0.5;
+          ctx.lineWidth = f.size * 0.05;
+          ctx.strokeStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.size * 0.82, Math.min(a0, a1), Math.max(a0, a1));
           ctx.stroke();
           ctx.globalAlpha = 1;
           break;

@@ -157,6 +157,8 @@ See DESIGN.md for the game design.
     (`node scripts/perf2.mjs`, which also supports skipping passes via `renderer.skip`).
 47. [ ] Lane highlight / shrine / fimbul overlays allocate canvas gradients every frame; cache
     per layout.
+49. [x] Melee blows draw a slash arc across the target (yellow on counter hits); creatures
+    also recoil slightly when struck.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
