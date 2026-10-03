@@ -194,7 +194,13 @@ export function glowSprite(rgb: [number, number, number] | string): HTMLCanvasEl
   c.width = c.height = 64;
   const ctx = c.getContext('2d')!;
   const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  const col = typeof rgb === 'string' ? rgb : `${rgb[0]},${rgb[1]},${rgb[2]}`;
+  let col: string;
+  if (typeof rgb !== 'string') col = `${rgb[0]},${rgb[1]},${rgb[2]}`;
+  else if (rgb.startsWith('#')) {
+    // Accept hex too ("#rrggbb"), so a missing rgb triple can never produce an invalid colour.
+    const n = parseInt(rgb.slice(1, 7), 16);
+    col = `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+  } else col = rgb.replace(/^rgba?\(|\)$/g, '').split(',').slice(0, 3).join(',');
   g.addColorStop(0, `rgba(${col},1)`);
   g.addColorStop(0.25, `rgba(${col},0.55)`);
   g.addColorStop(0.6, `rgba(${col},0.15)`);
