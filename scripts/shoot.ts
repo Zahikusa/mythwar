@@ -48,8 +48,8 @@ const SCENARIOS: Scenario[] = [
   { name: 'power-briar', query: 'demo&ff=60&seed=3', w: 1600, h: 900, script: cast(0, 1), after: 700 },
   { name: 'power-zeus', query: 'demo&ff=200&seed=3', w: 1600, h: 900, script: cast(1, 1), after: 900 },
   { name: 'power-fimbul', query: 'demo&ff=300&seed=3', w: 1600, h: 900, script: cast(2, 1), after: 1300 },
-  { name: 'power-dragon', query: 'demo&ff=500&seed=3', w: 1600, h: 900, script: cast(3, 1), after: 1100 },
-  { name: 'power-starfall', query: 'demo&ff=800&seed=3', w: 1600, h: 900, script: cast(4, 1), after: 1400 },
+  { name: 'power-dragon', query: 'demo&ff=500&seed=5', w: 1600, h: 900, script: cast(3, 1), after: 1100 },
+  { name: 'power-starfall', query: 'demo&ff=800&seed=5', w: 1600, h: 900, script: cast(4, 1), after: 1400 },
   {
     name: 'gameover-collapse',
     query: 'play=adept&seed=4',
