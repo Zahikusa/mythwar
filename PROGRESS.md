@@ -145,8 +145,7 @@ See DESIGN.md for the game design.
     under the pause buttons).
 41. [x] How-to page 1 shows your (blue-glow, facing right) creatures versus the enemy's
     (red, facing left); `portrait()` can render facing left.
-42. [ ] `scripts/shoot.ts` scenarios list is long; add a `--list` flag and group names so a
-    future run can grab the right screenshots quickly.
+42. [x] `node scripts/shoot.ts --list` prints all screenshot scenarios (filter = substring).
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
     Mystics beat *everything* at army scale (ranged units focus fire, melee fight one at a time),
     so "spam Mystics" was a dominant strategy. Added formation rules — Hunters hunt in packs

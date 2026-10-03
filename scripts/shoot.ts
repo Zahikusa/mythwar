@@ -1,6 +1,7 @@
 /**
  * Screenshot harness: serves dist/ and captures scenarios with the local Chrome.
  *   npm run build && node scripts/shoot.ts [filter] [--query "a=1&b=2"] [--wait ms]
+ *   node scripts/shoot.ts --list      (scenario names; the filter matches substrings)
  * Output: screenshots/<name>.png
  */
 import { createServer } from 'node:http';
@@ -130,6 +131,10 @@ const MIME: Record<string, string> = {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  if (args.includes('--list')) {
+    for (const sc of SCENARIOS) console.log(`${sc.name.padEnd(22)} ${sc.w}x${sc.h}${sc.mobile ? ' mobile' : ''}  ?${sc.query}`);
+    return;
+  }
   const filter = args.find((a) => !a.startsWith('--') && !args[args.indexOf(a) - 1]?.startsWith('--'));
   const qIdx = args.indexOf('--query');
   const wIdx = args.indexOf('--wait');
