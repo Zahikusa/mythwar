@@ -43,6 +43,7 @@ export class App {
   private overTimer = -1;
   private coinTarget: [number, number] | null = null;
   private coinsSeen = 0;
+  private lastBuzz = -10;
   private params = new URLSearchParams(location.search);
 
   constructor(root: HTMLElement) {
@@ -57,7 +58,11 @@ export class App {
     this.renderer = new Renderer(this.canvas);
     this.hud = new Hud(this.stage, {
       pause: () => this.pause(),
-      sound: (k) => this.audio.ui(k),
+      sound: (k) => {
+        this.audio.ui(k);
+        if (k === 'summon') this.buzz(8);
+        else if (k === 'error') this.buzz([6, 40, 6]);
+      },
     });
     this.input = new Input(this.canvas, this.renderer, this.hud);
     this.coach = new Coach(this.stage, this.settings);
@@ -189,7 +194,16 @@ export class App {
       if (this.game !== game) return;
       this.renderer.onEvents(ev, game.world, game.view);
       this.audio.onEvents(ev);
-      if (this.state === 'playing') this.hud.onEvents(ev);
+      if (this.state === 'playing') {
+        this.hud.onEvents(ev);
+        for (const e of ev) {
+          if (e.type === 'ageUp' && e.team === game.playerTeam) this.buzz([30, 60, 30, 60, 60]);
+          else if (e.type === 'baseHit' && e.team === game.playerTeam && game.world.time - this.lastBuzz > 1.5) {
+            this.lastBuzz = game.world.time;
+            this.buzz(25);
+          } else if (e.type === 'gameOver') this.buzz(e.winner === game.playerTeam ? [40, 60, 40, 60, 120] : [200]);
+        }
+      }
       for (const e of ev) if (e.type === 'gameOver' && this.state === 'playing' && !demo) this.onGameOver();
     });
     return game;
@@ -224,6 +238,16 @@ export class App {
     this.audio.ambience = 0.2;
     this.audio.startMusic(0);
     this.menus.show('title');
+  }
+
+  /** Short vibration on phones (tied to the screen-shake setting). */
+  private buzz(pattern: number | number[]): void {
+    if (this.mode !== 'mobile' || !this.settings.shake) return;
+    try {
+      navigator.vibrate?.(pattern);
+    } catch {
+      // unsupported
+    }
   }
 
   /** Escape / P: leave a sub-menu, otherwise toggle pause. */

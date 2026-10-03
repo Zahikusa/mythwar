@@ -263,7 +263,7 @@ export class Menus {
         slider('Master volume', 'master'),
         slider('Music', 'music'),
         slider('Effects', 'sfx'),
-        toggleRow('Screen shake', 'shake'),
+        toggleRow('Screen shake & vibration', 'shake'),
         toggleRow('Gameplay hints', 'hints'),
         toggleRow('Battery saver (lower quality)', 'lowQuality'),
         toggleRow('Fullscreen on phones', 'fullscreen'),
