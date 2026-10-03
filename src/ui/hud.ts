@@ -159,7 +159,13 @@ export class Hud {
     // Lane tabs (near the player's gates)
     E.lanetabs = h('div', { class: 'lanetabs' });
     for (let i = 0; i < LANE_COUNT; i++) {
-      const tab = h('button', { class: 'lanetab', title: `${LANE_NAMES[i]} lane` }, h('span', { class: 'arrow', text: '▶' }), h('span', { class: 'qn' }));
+      const tab = h(
+        'button',
+        { class: 'lanetab', title: `${LANE_NAMES[i]} lane` },
+        h('span', { class: 'arrow', text: '▶' }),
+        h('span', { class: 'qn' }),
+        h('span', { class: 'lbar', title: 'Lane strength: yours vs. the enemy' }, h('i')),
+      );
       onTap(tab, () => this.selectLane(i));
       this.laneTabs.push(tab);
       E.lanetabs.appendChild(tab);
@@ -535,7 +541,14 @@ export class Hud {
     const tt = this.el.tooltip;
     const strong = COUNTERS[def.cls];
     const weak = counterOf(def.cls);
-    const dps = (def.damage / def.cooldown).toFixed(def.damage / def.cooldown < 10 ? 1 : 0);
+    // Effective numbers include the player's blessings.
+    const w = this.game?.world;
+    const team = this.game?.playerTeam ?? 0;
+    const might = w ? w.mightMult(team) : 1;
+    const vit = w ? w.vitalityMult(team) : 1;
+    const dpsVal = (def.damage / def.cooldown) * might;
+    const dps = dpsVal.toFixed(dpsVal < 10 ? 1 : 0);
+    const boost = (m: number) => (m > 1 ? ` <em class="ttboost">+${Math.round((m - 1) * 100)}%</em>` : '');
     const counters =
       def.cls === 'legend'
         ? '<div class="ttc">Neutral against every class.</div>'
@@ -545,8 +558,8 @@ export class Hud {
       <div class="ttsub">${CLASS_NAME[def.cls]} · ${def.projectile ? 'Ranged' : 'Melee'}</div>
       ${counters}
       <div class="ttstats">
-        <span>${ICONS.heart}${fmt(def.hp)}</span>
-        <span>${ICONS.swords}${dps}/s</span>
+        <span>${ICONS.heart}${fmt(def.hp * vit)}${boost(vit)}</span>
+        <span>${ICONS.swords}${dps}/s${boost(might)}</span>
         <span>Range ${def.projectile ? Math.round(def.range) : 'melee'}</span>
         <span>Speed ${Math.round(def.speed)}</span>
       </div>
@@ -685,6 +698,18 @@ export class Hud {
         if (u.alive && u.team !== g.playerTeam && (g.playerTeam === 0 ? u.x < 280 : u.x > 720)) danger = true;
       }
       toggle(tab, 'danger', danger);
+      // Lane strength: our share of the creature value in this lane.
+      let mine = 0;
+      let theirs = 0;
+      for (const u of w.lanes[i]) {
+        if (!u.alive) continue;
+        const v = u.def.cost * (u.hp / u.maxHp);
+        if (u.team === g.playerTeam) mine += v;
+        else theirs += v;
+      }
+      const bar = tab.querySelector('.lbar') as HTMLElement;
+      toggle(bar, 'show', mine > 0 && theirs > 0);
+      if (mine > 0 && theirs > 0) setStyle(bar.firstElementChild as HTMLElement, 'width', `${((mine / (mine + theirs)) * 100).toFixed(0)}%`);
       toggle(tab, 'sel', g.view.selectedLane === i);
       toggle(tab, 'hover', g.view.hoverLane === i && g.view.targeting !== 'none');
       setText(tab.querySelector('.qn')!, counts[i] ? String(counts[i]) : '');

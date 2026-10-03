@@ -983,6 +983,38 @@ svg {
   text-align: center;
 }
 
+.lanetab .lbar {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 5px);
+  width: 34px;
+  height: 5px;
+  margin-left: -17px;
+  border-radius: 3px;
+  background: var(--red);
+  box-shadow: 0 0 0 1px rgba(10, 6, 20, 0.8);
+  opacity: 0;
+  transition: opacity 0.3s;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.lanetab .lbar.show {
+  opacity: 1;
+}
+
+.lanetab .lbar i {
+  display: block;
+  height: 100%;
+  width: 50%;
+  background: var(--blue);
+  transition: width 0.4s ease;
+}
+
+.lanetab.sel .lbar {
+  transform: scale(0.85);
+}
+
 .lanetab .qn:empty {
   display: none;
 }
@@ -1407,6 +1439,12 @@ svg {
 .ttclassnote {
   color: #d9ccf5;
   margin: 2px 0;
+}
+
+.ttboost {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--good);
 }
 
 .tttrait {

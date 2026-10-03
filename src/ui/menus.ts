@@ -249,6 +249,8 @@ export class Menus {
         val.textContent = `${input.value}%`;
         this.cb.settingsChanged(s);
       });
+      // Preview the new level when the slider is released.
+      if (key !== 'music') input.addEventListener('change', () => this.cb.sound('summon'));
       return h('label', { class: 'srow' }, h('span', { text: label }), input, val);
     };
     const toggleRow = (label: string, key: 'shake' | 'hints' | 'lowQuality' | 'fullscreen') => {
