@@ -72,9 +72,12 @@ export class Renderer {
   dpr = 1;
   quality: 'high' | 'low' = 'high';
   shakeEnabled = true;
+  /** Debug/profiling: names of render passes to skip (see scripts/perf2.mjs). */
+  readonly skip = new Set<string>();
   /** Stage position of the HUD gold counter (coins fly there), or null when hidden. */
   coinTarget: [number, number] | null = null;
   private bgCache = new Map<number, HTMLCanvasElement>();
+  private keepCache = new Map<string, { canvas: HTMLCanvasElement; x: number; w: number }>();
   private vignette: HTMLCanvasElement | null = null;
   private theme = 0;
   private prevTheme = -1;
@@ -113,6 +116,7 @@ export class Renderer {
     this.canvas.style.height = `${height}px`;
     this.layout = computeLayout(width, height, mode);
     this.bgCache.clear();
+    this.keepCache.clear();
     this.vignette = renderVignette(width, height, this.dpr);
     this.fx.maxParticles = mode === 'mobile' || this.quality === 'low' ? 600 : 1400;
     this.ambient = [];
@@ -151,6 +155,27 @@ export class Renderer {
       this.bgCache.set(index, c);
       // Full-screen backdrops are big (tens of MB on 4K screens): keep only the ones in use.
       for (const k of this.bgCache.keys()) if (k !== this.theme && k !== this.prevTheme && k !== index) this.bgCache.delete(k);
+    }
+    return c;
+  }
+
+  /** The static part of a citadel keep and curtain wall, pre-rendered (cropped to its side). */
+  private keepLayer(team: Team, age: number): { canvas: HTMLCanvasElement; x: number; w: number } {
+    const key = `${team}:${age}`;
+    let c = this.keepCache.get(key);
+    if (!c) {
+      const L = this.layout;
+      const far = L.lanes[0];
+      const w = Math.ceil(far.x0 + 24);
+      const x = team === 0 ? 0 : L.width - w;
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(w * this.dpr));
+      canvas.height = Math.max(1, Math.round(L.height * this.dpr));
+      const cx = canvas.getContext('2d')!;
+      cx.setTransform(this.dpr, 0, 0, this.dpr, -x * this.dpr, 0);
+      drawCitadelKeep(cx, L, team, age, 1, 0, 0, 0, 0, 'static');
+      c = { canvas, x, w };
+      this.keepCache.set(key, c);
     }
     return c;
   }
@@ -444,20 +469,30 @@ export class Renderer {
     ctx.translate(shx, shy);
 
     // Backdrop (cross-fading between ages)
-    if (this.prevTheme >= 0 && this.themeFade < 1) {
-      ctx.drawImage(this.background(this.prevTheme), -4, -4, L.width + 8, L.height + 8);
-      ctx.globalAlpha = this.themeFade;
+    if (!this.skip.has('bg')) {
+      if (this.prevTheme >= 0 && this.themeFade < 1) {
+        ctx.drawImage(this.background(this.prevTheme), -4, -4, L.width + 8, L.height + 8);
+        ctx.globalAlpha = this.themeFade;
+      }
+      ctx.drawImage(this.background(this.theme), -4, -4, L.width + 8, L.height + 8);
+      ctx.globalAlpha = 1;
     }
-    ctx.drawImage(this.background(this.theme), -4, -4, L.width + 8, L.height + 8);
-    ctx.globalAlpha = 1;
-    this.drawAmbient(ctx, dt);
+    if (!this.skip.has('ambient')) this.drawAmbient(ctx, dt);
 
     const simTime = world.time - (1 - alpha) * TICK;
 
     // Citadel keeps (behind the lanes)
     for (const team of [0, 1] as Team[]) {
+      if (this.skip.has('keep')) break;
       const p = world.players[team];
-      drawCitadelKeep(ctx, L, team, p.age, p.baseHp / p.baseMaxHp, this.time, this.baseFlash[team], this.ageFlash[team], Math.max(0, this.collapse[team]));
+      const collapse = Math.max(0, this.collapse[team]);
+      if (collapse > 0) {
+        drawCitadelKeep(ctx, L, team, p.age, p.baseHp / p.baseMaxHp, this.time, this.baseFlash[team], this.ageFlash[team], collapse);
+      } else {
+        const c = this.keepLayer(team, p.age);
+        ctx.drawImage(c.canvas, c.x, 0, c.w, L.height);
+        drawCitadelKeep(ctx, L, team, p.age, p.baseHp / p.baseMaxHp, this.time, this.baseFlash[team], this.ageFlash[team], 0, 'dynamic');
+      }
     }
 
     this.hover = null;
@@ -466,9 +501,10 @@ export class Renderer {
     // Lanes far → near
     for (let lane = 0; lane < L.lanes.length; lane++) {
       const g = L.lanes[lane];
-      this.drawLaneHighlight(ctx, g, view);
-      this.drawShrine(ctx, world, g);
+      if (!this.skip.has('highlight')) this.drawLaneHighlight(ctx, g, view);
+      if (!this.skip.has('shrine')) this.drawShrine(ctx, world, g);
       for (const team of [0, 1] as Team[]) {
+        if (this.skip.has('gates')) break;
         const p = world.players[team];
         const gate = this.gateScreen(team, lane);
         drawCitadelGate(ctx, L, team, lane, p.age, gate.x, gate.y, gate.s, this.baseFlash[team], this.time, Math.max(0, this.collapse[team]));
@@ -505,7 +541,7 @@ export class Renderer {
       ctx.fillRect(0, 0, L.width, L.height);
       this.drawEmbers(ctx, dt);
     }
-    if (this.vignette) ctx.drawImage(this.vignette, 0, 0, L.width, L.height);
+    if (this.vignette && !this.skip.has('vignette')) ctx.drawImage(this.vignette, 0, 0, L.width, L.height);
     if (this.fx.flash > 0) {
       ctx.fillStyle = `rgba(${this.fx.flashColor},${Math.min(0.85, this.fx.flash * 0.7)})`;
       ctx.fillRect(0, 0, L.width, L.height);

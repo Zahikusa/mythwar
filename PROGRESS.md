@@ -151,9 +151,10 @@ See DESIGN.md for the game design.
 44. [x] Event effects (spawn flashes, shockwaves, strikes) are sized by the creature body scale,
     so they stay proportional on ultrawide screens.
 45. [x] Pausing now freezes particles/ghosts/coins too (renderer gets dt = 0 while paused).
-46. [ ] `src/render/citadel.ts drawCitadelKeep`: keep/wall are redrawn every frame with fresh
-    gradients; cache the static parts per (age, team, layout) in an offscreen canvas and only
-    draw animated bits (banner, windows, smoke) live — cheaper on phones.
+46. [x] Citadel keep + curtain wall are pre-rendered per (team, age) into a cropped offscreen
+    canvas; only window glow, banner, flashes and smoke draw live (`drawCitadelKeep(...,
+    'static' | 'dynamic')`). Software-raster frame cost on an empty field ~10.5 → ~7.9 ms
+    (`node scripts/perf2.mjs`, which also supports skipping passes via `renderer.skip`).
 47. [ ] Lane highlight / shrine / fimbul overlays allocate canvas gradients every frame; cache
     per layout.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and

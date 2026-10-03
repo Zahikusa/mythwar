@@ -1,0 +1,31 @@
+// Full frame cost incl. rasterization (forced via getImageData). node scripts/perf2.mjs [w] [h] [units]
+import puppeteer from 'puppeteer-core';
+import { createServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { join, extname, resolve } from 'node:path';
+const [w = '1600', h = '900', units = '0', skip = ''] = process.argv.slice(2);
+const root = resolve('dist');
+const server = createServer(async (req, res) => { const u = new URL(req.url, 'http://x'); let p = join(root, u.pathname); if (u.pathname === '/' || !extname(p)) p = join(root, 'index.html'); try { const b = await readFile(p); res.writeHead(200, { 'content-type': extname(p) === '.js' ? 'text/javascript' : extname(p) === '.css' ? 'text/css' : 'text/html' }); res.end(b); } catch { res.writeHead(404); res.end(); } });
+await new Promise((r) => server.listen(0, '127.0.0.1', r));
+const browser = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+const page = await browser.newPage();
+await page.setViewport({ width: +w, height: +h });
+await page.goto(`http://127.0.0.1:${server.address().port}/?play=adept&seed=5`);
+await new Promise((r) => setTimeout(r, 1500));
+const r = await page.evaluate((n, skip) => {
+  const a = window.__mythwar;
+  for (const k of skip.split(',').filter(Boolean)) a.renderer.skip.add(k);
+  const g = a.game;
+  g.paused = true;
+  const D = window.__mythwarData.UNITS;
+  const ids = Object.keys(D);
+  for (let lane = 0; lane < 3; lane++) for (let i = 0; i < n / 3; i++) g.world.spawnUnit(i % 2, lane, D[ids[(i * 7 + lane) % ids.length]], 100 + i * 20);
+  const ctx = a.canvas.getContext('2d');
+  const frame = () => { a.renderer.render(g.world, 1, 1 / 60, g.view); ctx.getImageData(0, 0, 1, 1); };
+  for (let i = 0; i < 5; i++) frame();
+  const t0 = performance.now();
+  for (let i = 0; i < 60; i++) frame();
+  return +((performance.now() - t0) / 60).toFixed(2);
+}, +units, skip);
+console.log(`${w}x${h} units=${units} skip=[${skip}]: ${r} ms/frame`);
+await browser.close(); server.close();

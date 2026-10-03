@@ -143,7 +143,12 @@ export function drawCitadelKeep(
   hitFlash: number,
   ageFlash: number,
   collapse = 0,
+  part: 'all' | 'static' | 'dynamic' = 'all',
 ): void {
+  // 'static' = masonry, roof, window frames, banner pole (cacheable);
+  // 'dynamic' = window glow, waving banner, flashes, smoke (drawn every frame).
+  const S = part !== 'dynamic';
+  const D = part !== 'static';
   const st = CITADEL_STYLES[age];
   const far = layout.lanes[0];
   const near = layout.lanes[layout.lanes.length - 1];
@@ -158,6 +163,7 @@ export function drawCitadelKeep(
     setLineWidth(1.2);
     // Curtain wall linking gates, running down toward the near lane
     const wallTopFar = baseY - 26 * s;
+    if (S) {
     ctx.fillStyle = st.wallDark;
     ctx.beginPath();
     ctx.moveTo(fx - 10, wallTopFar);
@@ -210,6 +216,7 @@ export function drawCitadelKeep(
       rrect(ctx, x - 9 * s, y - 6 * s, 7 * s, 7 * s, 1, st.wall);
     }
     for (let x = fx; x < far.x0 - 12 * s; x += 14 * s) rrect(ctx, x, wallTopFar - 6 * s, 7 * s, 7 * s, 1, st.wall);
+    }
 
     // Keep tower (sinks and topples when the citadel falls)
     if (collapse > 0) {
@@ -224,6 +231,15 @@ export function drawCitadelKeep(
     }
     const kx = keepX - w / 2;
     const ky = baseY - h;
+    const temple = st.roofKind === 'pediment';
+    const windows: [number, number, number, number, number][] = [
+      [keepX, ky + h * 0.42, w * (temple ? 0.13 : 0.2), h * 0.16, 0],
+      [keepX - w * (temple ? 0.213 : 0.25), ky + h * 0.68, w * (temple ? 0.09 : 0.12), h * 0.1, 1.3],
+      [keepX + w * (temple ? 0.213 : 0.25), ky + h * 0.68, w * (temple ? 0.09 : 0.12), h * 0.1, 2.1],
+    ];
+    const poleX = keepX;
+    const poleTop = ky - (st.roofKind === 'spire' ? w * 1.45 : st.roofKind === 'steep' ? w * 0.95 : st.roofKind === 'pagoda' ? w * 0.95 : w * 0.7) - 18 * s;
+    if (S) {
     const grad = ctx.createLinearGradient(kx, 0, kx + w, 0);
     grad.addColorStop(0, shade(st.wall, -0.2));
     grad.addColorStop(0.55, st.wall);
@@ -257,17 +273,14 @@ export function drawCitadelKeep(
     }
     // Trim band and windows
     line(ctx, kx + w * 0.04, ky + 4 * s, kx + w * 0.96, ky + 4 * s, Math.max(1.5, 3 * s), st.trim);
-    const temple = st.roofKind === 'pediment';
-    windowLight(ctx, keepX, ky + h * 0.42, w * (temple ? 0.13 : 0.2), h * 0.16, team, t, 0);
-    windowLight(ctx, keepX - w * (temple ? 0.213 : 0.25), ky + h * 0.68, w * (temple ? 0.09 : 0.12), h * 0.1, team, t, 1.3);
-    windowLight(ctx, keepX + w * (temple ? 0.213 : 0.25), ky + h * 0.68, w * (temple ? 0.09 : 0.12), h * 0.1, team, t, 2.1);
+    for (const [wx, wy, ww, wh] of windows) rrect(ctx, wx - ww / 2, wy - wh, ww, wh, ww / 2, '#1d1426');
     if (st.roofKind !== 'pagoda' && st.roofKind !== 'canopy') crenellations(ctx, st, kx + w * 0.04, kx + w * 0.96, ky + 1, s);
     roof(ctx, st, keepX, ky, w * 1.05, s, true);
-
     // Banner pole
-    const poleX = keepX;
-    const poleTop = ky - (st.roofKind === 'spire' ? w * 1.45 : st.roofKind === 'steep' ? w * 0.95 : st.roofKind === 'pagoda' ? w * 0.95 : w * 0.7) - 18 * s;
     line(ctx, poleX, poleTop + 22 * s, poleX, poleTop, Math.max(1.2, 1.8 * s), '#3a2c22');
+    }
+    if (!D) return;
+    for (const [wx, wy, ww, wh, fl] of windows) windowLight(ctx, wx, wy, ww, wh, team, t, fl);
     ctx.fillStyle = tc.main;
     ctx.beginPath();
     ctx.moveTo(poleX, poleTop);
