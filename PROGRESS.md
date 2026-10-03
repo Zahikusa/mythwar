@@ -49,6 +49,8 @@ See DESIGN.md for the game design.
 
 - Audio (`src/audio/audio.ts`): synthesized SFX (rate-limited, stereo-panned by lane position),
   generative per-age score (pad + bass + arpeggio, war drums scale with battle intensity).
+- `npm run verify` = typecheck + unit tests + build + smoke (non-zero exit on any failure);
+  run it before every commit.
 - `npm run smoke`: end-to-end Chrome test (desktop + phone): lane select, tap/drag summon, keys,
   turrets, power targeting, ascend, blessings, pause/resume, victory screen, no console errors.
 - All HUD/menu buttons use pointer-based `onTap` (synthesized clicks are dropped during

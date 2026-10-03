@@ -12,6 +12,7 @@
     "test": "vitest run",
     "sim": "node scripts/sim.ts",
     "smoke": "vite build && node scripts/smoke.ts",
+    "verify": "tsc --noEmit && vitest run && vite build && node scripts/smoke.ts",
     "shoot": "vite build && node scripts/shoot.ts"
   },
   "devDependencies": {
