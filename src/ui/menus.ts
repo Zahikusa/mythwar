@@ -31,6 +31,7 @@ export class Menus {
   private howtoPages: HTMLElement[] = [];
   private howtoDots: HTMLElement | null = null;
   private selected: Difficulty;
+  private syncers: (() => void)[] = [];
 
   constructor(parent: HTMLElement, settings: Settings, cb: MenuCallbacks) {
     this.cb = cb;
@@ -62,6 +63,7 @@ export class Menus {
     this.root.classList.toggle('dim', screen !== 'none' && screen !== 'title');
     if (screen === 'howto') this.setHowtoPage(0);
     if (screen === 'difficulty') this.refreshDifficulty();
+    if (screen === 'settings') for (const f of this.syncers) f();
   }
 
   private button(label: string, cls: string, onClick: () => void, icon?: string): HTMLButtonElement {
@@ -230,6 +232,7 @@ export class Menus {
     const toggleRow = (label: string, key: 'shake' | 'hints' | 'lowQuality' | 'fullscreen') => {
       const input = h('input', { type: 'checkbox' }) as HTMLInputElement;
       input.checked = !!s[key];
+      this.syncers.push(() => (input.checked = !!s[key]));
       input.addEventListener('change', () => {
         s[key] = input.checked;
         this.cb.settingsChanged(s);
@@ -237,6 +240,13 @@ export class Menus {
       return h('label', { class: 'srow check' }, h('span', { text: label }), input, h('i', { class: 'sw' }));
     };
     const back = this.button('Done', 'primary', () => this.show(this.back));
+    const resetTips = this.button('Show tips again', 'ghost', () => {
+      s.hintsSeen = [];
+      s.hints = true;
+      this.cb.settingsChanged(s);
+      resetTips.querySelector('span')!.textContent = 'Tips will show again';
+      for (const f of this.syncers) f();
+    });
     return h(
       'div',
       { class: 'screen settings' },
@@ -252,7 +262,7 @@ export class Menus {
         toggleRow('Battery saver (lower quality)', 'lowQuality'),
         toggleRow('Fullscreen on phones', 'fullscreen'),
       ),
-      h('div', { class: 'mrow' }, back),
+      h('div', { class: 'mrow' }, resetTips, back),
     );
   }
 
