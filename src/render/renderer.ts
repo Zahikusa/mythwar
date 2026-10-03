@@ -948,7 +948,9 @@ export class Renderer {
 
   private launchHeight(world: World, pr: Projectile, g: LaneGeom): number {
     const s = this.artScale(g);
-    if (pr.fromTurret) return (pr.sourceId <= -20 ? 46 : 62) * s;
+    // Match citadel.ts: the gate top sits at laneY + band/2 - 58s; the ward crystal floats
+    // ~10s above it and turret heads (drawn 1.5x) ~19s above it.
+    if (pr.fromTurret) return (pr.sourceId <= -20 ? 68 : 77) * s - g.band * 0.5;
     const src = world.unitById.get(pr.sourceId);
     if (src) {
       const art = artFor(src.def.id);
