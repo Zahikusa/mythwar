@@ -54,6 +54,10 @@ See DESIGN.md for the game design.
 - All HUD/menu buttons use pointer-based `onTap` (synthesized clicks are dropped during
   multi-touch on phones — found by the smoke test).
 
+- Difficulty calibration vs scripted naive players (`node scripts/bots.ts 10`,
+  `node scripts/calib.ts reactive adept 30`): a lane-reactive bot beats Novice ~90%, Adept ~37%,
+  Master ~20%, Mythic 0%; a random spammer beats Novice ~47%. Default difficulty: Novice.
+
 ## Next
 - First-game onboarding hints
 - Game-over citadel collapse effect; polish pass; balance re-check

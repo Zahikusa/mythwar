@@ -29,7 +29,7 @@ const DEFAULTS: Settings = {
   shake: true,
   hints: true,
   lowQuality: false,
-  difficulty: 'adept',
+  difficulty: 'novice',
   tutorialSeen: false,
   hintsSeen: [],
   records: {},

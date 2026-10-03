@@ -37,7 +37,7 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     id: 'novice',
     name: 'Novice',
     blurb: 'A wandering spirit. Slow to react and easily outwitted.',
-    think: 2.4,
+    think: 2.8,
     counterSkill: 0.15,
     laneSkill: 0.35,
     ascendSkill: 0.25,
@@ -46,7 +46,7 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     blessSkill: 0.1,
     maxQueue: 2,
     turretDelay: 150,
-    incomeMult: 0.8,
+    incomeMult: 0.7,
   },
   adept: {
     id: 'adept',
