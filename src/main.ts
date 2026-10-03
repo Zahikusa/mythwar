@@ -2,6 +2,7 @@ import './ui/style.css';
 import './ui/hud.css';
 import './ui/menus.css';
 import { App } from './app.ts';
+import { TURRETS, UNITS } from './sim/data.ts';
 
 const root = document.getElementById('app')!;
 if (new URLSearchParams(location.search).has('gallery')) {
@@ -10,6 +11,8 @@ if (new URLSearchParams(location.search).has('gallery')) {
   const app = new App(root);
   app.start();
   (window as unknown as { __mythwar: App }).__mythwar = app;
+  // Handy for debugging and the screenshot / smoke scripts.
+  (window as unknown as { __mythwarData: unknown }).__mythwarData = { UNITS, TURRETS };
 }
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator && location.protocol !== 'file:') {

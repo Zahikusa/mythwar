@@ -61,6 +61,15 @@ const SCENARIOS: Scenario[] = [
     script: `(() => { const w = window.__mythwar.game.world; w.players[0].baseHp = 1; w.damageBase(0, 10, 0, 1); })()`,
     after: 3600,
   },
+  ...[0, 2, 4].map((age) => ({
+    name: `turrets-age${age}`,
+    query: `play=adept&seed=4&theme=${age}`,
+    w: 1600,
+    h: 900,
+    wait: 1200,
+    script: `(() => { const g = window.__mythwar.game; const w = g.world; for (const p of w.players) { p.age = ${age}; p.gold = 1e6; } const ids = { 0: ['thornspitter','sporepod'], 2: ['runestone','frostcatapult'], 4: ['sunspire','starforge'] }[${age}]; for (const t of [0,1]) { g.command({type:'buildTurret', team:t, lane:0, turretId: ids[0]}); g.command({type:'buildTurret', team:t, lane:2, turretId: ids[1]}); } const U = { 0: 'redcap', 2: 'fenrir', 4: 'griffin' }[${age}]; const D = window.__mythwarData.UNITS; for (let i = 0; i < 3; i++) { w.spawnUnit(1, 0, D[U], 180 + i * 40); w.spawnUnit(1, 2, D[U], 170 + i * 40); w.spawnUnit(0, 0, D[U], 820 - i * 40); w.spawnUnit(0, 2, D[U], 830 - i * 40); } })()`,
+    after: 700,
+  })),
   { name: 'gallery', query: 'gallery&scale=2', w: 1440, h: 1600, wait: 1200 },
   { name: 'play-start', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 3000 },
 ];

@@ -431,9 +431,11 @@ export function drawTurret(
   const cx = gateX - dir * w * 0.45;
   const top = laneY + band * 0.5 - 58 * s - 4 * s;
   const since = simTime - slot.lastFire;
-  const recoil = since >= 0 && since < 0.25 ? (1 - since / 0.25) * 4 * s : 0;
   ctx.save();
   ctx.translate(cx, top);
+  // Turret art is authored small; draw it 1.5x so it reads at a glance.
+  s *= 1.5;
+  const recoil = since >= 0 && since < 0.25 ? (1 - since / 0.25) * 4 * s : 0;
   ctx.scale(dir, 1);
   setLineWidth(1.1);
   // Mount

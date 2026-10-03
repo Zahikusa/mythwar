@@ -238,8 +238,8 @@ export class Hud {
       const g = layout.lanes[i];
       const s = g.s * (layout.mode === 'mobile' ? 1.4 : 1.25);
       const tab = this.laneTabs[i];
-      tab.style.left = `${g.x0 - 40 * s - 4}px`;
-      tab.style.top = `${g.y - 34 * s}px`;
+      tab.style.left = `${g.x0 - 58 * s}px`;
+      tab.style.top = `${g.y - 22 * s}px`;
     }
     this.cardAge = -1;
   }
