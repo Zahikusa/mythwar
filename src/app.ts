@@ -28,6 +28,8 @@ export class App {
   game: Game | null = null;
   state: AppState = 'title';
   mode: LayoutMode = 'desktop';
+  /** True when a portrait phone screen is shown rotated into landscape. */
+  rotated = false;
   width = 0;
   height = 0;
   private difficulty: Difficulty;
@@ -70,14 +72,24 @@ export class App {
   }
 
   resize(): void {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
     const forced = this.params.get('mode');
-    this.mode = forced === 'mobile' || forced === 'desktop' ? forced : detectMode(w, h);
+    const coarse = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
+    // Phones held upright: rotate the whole game into landscape (side-view lanes need width).
+    this.rotated = (coarse || forced === 'mobile') && vh > vw && !this.params.has('norotate');
+    const w = this.rotated ? vh : vw;
+    const h = this.rotated ? vw : vh;
+    this.mode = forced === 'mobile' || forced === 'desktop' ? forced : this.rotated ? 'mobile' : detectMode(w, h);
     this.width = w;
     this.height = h;
     this.stage.style.width = `${w}px`;
     this.stage.style.height = `${h}px`;
+    this.stage.style.transformOrigin = '0 0';
+    this.stage.style.transform = this.rotated ? `translateX(${vw}px) rotate(90deg)` : '';
+    const toStage = (cx: number, cy: number): [number, number] => (this.rotated ? [cy, vw - cx] : [cx, cy]);
+    this.input.toStage = toStage;
+    this.hud.toStage = toStage;
     this.renderer.quality = this.settings.lowQuality ? 'low' : 'high';
     this.renderer.resize(w, h, this.mode, this.settings.lowQuality ? 1 : 2);
     this.hud.setLayout(this.renderer.layout);
@@ -96,8 +108,10 @@ export class App {
     const ff = Number(p.get('ff') ?? 0);
     if (p.has('demo')) {
       // Attract / screenshot mode: AI vs AI with the HUD visible.
-      this.startGame((p.get('difficulty') as Difficulty) ?? 'master', Number(p.get('seed') ?? 7), true);
+      const game = this.startGame((p.get('difficulty') as Difficulty) ?? 'master', Number(p.get('seed') ?? 7), true);
+      game.view.selectedLane = 1;
       this.state = 'playing';
+      this.hud.attach(game);
     } else if (p.has('play')) {
       const d = p.get('play') as Difficulty;
       this.play(DIFFICULTIES.includes(d) ? d : 'adept', Number(p.get('seed') ?? 0) || undefined);

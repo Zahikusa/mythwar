@@ -1,5 +1,9 @@
 import { circle, glowDot, oval } from '../draw.ts';
 import { pixie, redcap, treant } from './fae.ts';
+import { centaur, gorgon, minotaur } from './olympus.ts';
+import { fenrir, jotunn, valkyrie } from './asgard.ts';
+import { byakko, kitsune, oni } from './jade.ts';
+import { dragon, griffin, phoenix, titan } from './celestial.ts';
 import type { CreatureArt } from './types.ts';
 
 const placeholder: CreatureArt = {
@@ -20,6 +24,19 @@ export const CREATURES: Record<string, CreatureArt> = {
   treant,
   redcap,
   pixie,
+  minotaur,
+  centaur,
+  gorgon,
+  jotunn,
+  fenrir,
+  valkyrie,
+  oni,
+  byakko,
+  kitsune,
+  titan,
+  griffin,
+  phoenix,
+  dragon,
 };
 
 export function artFor(defId: string): CreatureArt {

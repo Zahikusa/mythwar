@@ -43,6 +43,7 @@ svg {
 .hud {
   position: absolute;
   inset: 0;
+  isolation: isolate;
   pointer-events: none;
   --bottom: 130px;
   --side: 96px;
@@ -51,6 +52,12 @@ svg {
 
 .hud > * {
   pointer-events: auto;
+  z-index: 1;
+}
+
+.hud::before,
+.hud::after {
+  z-index: 0;
 }
 
 .hud.desktop::before {

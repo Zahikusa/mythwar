@@ -61,6 +61,8 @@ export class Hud {
   private ghost: HTMLDivElement;
   /** Set by the input layer: maps a client point to a lane index (or -1). */
   laneAtPoint: (x: number, y: number) => number = () => -1;
+  /** Maps client coordinates into stage coordinates (the stage may be rotated on phones). */
+  toStage: (x: number, y: number) => [number, number] = (x, y) => [x, y];
 
   constructor(parent: HTMLElement, cb: HudCallbacks) {
     this.cb = cb;
@@ -433,7 +435,8 @@ export class Hud {
       this.hint(d.power ? 'Drop on a lane to unleash' : 'Drop on a lane to summon');
     }
     if (d.active) {
-      this.ghost.style.transform = `translate(${e.clientX - 32}px, ${e.clientY - 56}px)`;
+      const [gx, gy] = this.toStage(e.clientX, e.clientY);
+      this.ghost.style.transform = `translate(${gx - 32}px, ${gy - 56}px)`;
       this.game.view.hoverLane = this.laneAtPoint(e.clientX, e.clientY);
     }
   }
@@ -491,16 +494,23 @@ export class Hud {
       ${def.traitText ? `<div class="tttrait">${def.traitText}</div>` : ''}
       <div class="ttblurb">${def.blurb}</div>`;
     tt.classList.remove('hidden');
-    const r = anchor.getBoundingClientRect();
+    const br = anchor.getBoundingClientRect();
+    const [ax, ay] = this.toStage(br.left, br.top);
+    const [bx, by] = this.toStage(br.right, br.bottom);
+    const r = { left: Math.min(ax, bx), right: Math.max(ax, bx), top: Math.min(ay, by), bottom: Math.max(ay, by) };
+    const rw = r.right - r.left;
+    const rh = r.bottom - r.top;
+    const W = this.layoutInfo?.width ?? window.innerWidth;
+    const H = this.layoutInfo?.height ?? window.innerHeight;
     const tw = tt.offsetWidth;
     const th = tt.offsetHeight;
     let x: number;
     let y: number;
     if (this.layoutInfo?.mode === 'mobile') {
       x = r.right + 8;
-      y = Math.max(8, Math.min(window.innerHeight - th - 8, r.top + r.height / 2 - th / 2));
+      y = Math.max(8, Math.min(H - th - 8, r.top + rh / 2 - th / 2));
     } else {
-      x = Math.max(8, Math.min(window.innerWidth - tw - 8, r.left + r.width / 2 - tw / 2));
+      x = Math.max(8, Math.min(W - tw - 8, r.left + rw / 2 - tw / 2));
       y = r.top - th - 10;
     }
     tt.style.left = `${x}px`;

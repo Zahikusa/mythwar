@@ -18,9 +18,9 @@ See DESIGN.md for the game design.
 - [x] M1 Simulation core: data, lanes, units, combat, counters, projectiles, base, economy,
       queue, ages, turrets, god powers, shrines, events. Unit tests.
 - [x] M2 AI (4 difficulties) + headless AI-vs-AI runner, sanity tests (games end, harder wins)
-- [ ] M3 Renderer skeleton: game loop w/ interpolation, background, lanes, bases, placeholder units
-- [ ] M4 HUD + menus (title, difficulty, pause, end screen), input (lane select, cards, drag)
-- [ ] M5 Creature art & animation for all 16 creatures, turrets, citadels per age
+- [x] M3 Renderer skeleton: game loop w/ interpolation, background, lanes, bases, placeholder units
+- [x] M4 HUD + menus (title, difficulty, pause, end screen), input (lane select, cards, drag)
+- [x] M5 Creature art & animation for all 16 creatures, turrets, citadels per age
 - [ ] M6 FX: particles, projectiles, god-power visuals, ascend transition, shake, floating text
 - [ ] M7 Audio (synth SFX + ambient music), settings
 - [ ] M8 Mobile: landscape thumb layout, portrait rotation, touch drag, perf scaling
@@ -35,8 +35,22 @@ See DESIGN.md for the game design.
 - Balance snapshot (master vs master): ages at ~2/4.5/8.5/13.5 min, games ~20 min (Ragnarök
   ends stalemates). mythic>master 8-4, master>adept 9-3, adept>novice 12-0.
 
+- Renderer (`src/render`): themed pre-rendered backdrops per age (cross-fade on ascend), citadel
+  keep/gates/turrets per age style, shrines, 16 procedural animated creatures
+  (`render/creatures/*.ts`), projectiles, particle FX, god-power visuals, ghosts on death.
+- HUD (`src/ui/hud.ts` + `hud.css`): cards w/ portraits & tooltips, queue, lane tabs, power,
+  ascend, turret & blessing panels, toasts/banners; drag-and-drop cards/power onto lanes.
+- Menus (`src/ui/menus.ts`): title over a live AI battle, difficulty (with W/L records),
+  how-to-play (5 pages), settings (localStorage), pause, results.
+- Mobile: thumb columns (cards left, actions right); portrait phones get the stage rotated 90°.
+- Debug URLs: `?demo&ff=300&seed=5` (AI vs AI, fast-forward), `?play=adept`, `?screen=howto`,
+  `?gallery` (all creature animations), `?mode=mobile`, `?theme=2`.
+- `node scripts/shoot.ts [filter]` (after `npm run build`) → screenshots/*.png.
+
 ## Next
-- M3 renderer skeleton
+- Audio (WebAudio synth SFX + ambient music)
+- First-game onboarding hints
+- Game-over citadel collapse effect; polish pass; balance re-check
 
 ## Decisions log
 - Added **gate wards** (free built-in weak turret per lane, scales with age): without them, the

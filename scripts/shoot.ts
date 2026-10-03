@@ -33,6 +33,7 @@ const SCENARIOS: Scenario[] = [
   { name: 'menu-settings', query: 'screen=settings', w: 1600, h: 900, wait: 2000 },
   { name: 'mobile-title', query: '', w: 844, h: 390, mobile: true, dpr: 3, wait: 2500 },
   { name: 'mobile-diff', query: 'screen=difficulty', w: 844, h: 390, mobile: true, dpr: 3, wait: 2000 },
+  { name: 'gallery', query: 'gallery&scale=2', w: 1440, h: 1600, wait: 1200 },
   { name: 'play-start', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 3000 },
 ];
 
