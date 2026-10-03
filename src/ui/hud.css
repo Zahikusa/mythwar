@@ -1383,6 +1383,35 @@ svg {
   opacity: 0.92;
 }
 
+/* Compact desktop windows: keep four cards clear of the action buttons. */
+@media (max-width: 1180px) {
+  .hud.desktop .card {
+    width: 86px;
+  }
+
+  .hud.desktop .card .name {
+    font-size: 10px;
+  }
+
+  .hud.desktop .act.power,
+  .hud.desktop .act.ascend {
+    width: 84px;
+  }
+
+  .hud.desktop .act.small {
+    width: 86px;
+  }
+
+  .hud.desktop .res {
+    width: 170px;
+    left: 12px;
+  }
+
+  .hud.desktop .goldnum {
+    font-size: 24px;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Mobile layout                                                       */
 /* ------------------------------------------------------------------ */

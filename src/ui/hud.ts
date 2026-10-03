@@ -20,6 +20,7 @@ import {
 import type { BlessingId, UnitDef } from '../sim/data.ts';
 import type { SimEvent, Team } from '../sim/types.ts';
 import type { Game } from '../game.ts';
+import { artScaleOf } from '../render/layout.ts';
 import type { Layout } from '../render/layout.ts';
 import { h, fmt, fmtTime, onTap, setStyle, setText, toggle } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, CLASS_NAME, ICONS, POWER_ICONS } from './icons.ts';
@@ -246,7 +247,7 @@ export class Hud {
     // Lane tabs sit just behind the player's gates.
     for (let i = 0; i < LANE_COUNT; i++) {
       const g = layout.lanes[i];
-      const s = g.s * (layout.mode === 'mobile' ? 1.4 : 1.25);
+      const s = artScaleOf(layout, g);
       const tab = this.laneTabs[i];
       tab.style.left = `${g.x0 - 58 * s}px`;
       tab.style.top = `${g.y - 22 * s}px`;

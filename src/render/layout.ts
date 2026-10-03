@@ -94,6 +94,15 @@ export function computeLayout(width: number, height: number, mode: LayoutMode): 
   };
 }
 
+/**
+ * Drawing scale for creatures, gates and turrets in a lane. Follows the lane's horizontal scale,
+ * but is capped by the field height so ultrawide screens don't get giant creatures.
+ */
+export function artScaleOf(layout: Layout, g: LaneGeom): number {
+  const cap = (layout.field.h / 620) * (0.8 + 0.2 * g.depth);
+  return Math.min(g.s, cap) * (layout.mode === 'mobile' ? 1.4 : 1.25);
+}
+
 /** Screen x for a lane position. */
 export function laneX(g: LaneGeom, x: number): number {
   return g.x0 + (x / LANE_LENGTH) * (g.x1 - g.x0);

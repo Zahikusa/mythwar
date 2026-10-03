@@ -101,6 +101,11 @@ See DESIGN.md for the game design.
     `Game.toSave/fromSave` (`src/save.ts`); saved every 5 s of play, on tab hide and pagehide;
     title shows "Continue — <age> · <time>" and resumes paused. Leaving/finishing a battle
     clears it. Unit test: a restored battle continues bit-identically; smoke flow covers it.
+21. [x] Ultrawide screens (2560×1080) drew creatures ~1.6× too large (art scale followed lane
+    width only). `artScaleOf()` in layout.ts now caps it by field height; rings, health bars and
+    hit boxes use the same body scale; renderer/HUD/input share the helper.
+22. [x] Small desktop windows (~1024 px): four final-age cards collided with the action buttons;
+    added a compact desktop breakpoint (≤1180 px).
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
     Mystics beat *everything* at army scale (ranged units focus fire, melee fight one at a time),
     so "spam Mystics" was a dominant strategy. Added formation rules — Hunters hunt in packs

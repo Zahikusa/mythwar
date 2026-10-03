@@ -1,6 +1,6 @@
 import { AGE_UNITS, LANE_COUNT } from './sim/data.ts';
 import type { Game } from './game.ts';
-import { laneAt } from './render/layout.ts';
+import { artScaleOf, laneAt } from './render/layout.ts';
 import type { Renderer } from './render/renderer.ts';
 import type { Hud } from './ui/hud.ts';
 
@@ -45,7 +45,7 @@ export class Input {
     const [x, y] = this.toStage(cx, cy);
     const L = this.renderer.layout;
     const g = L.lanes[lane];
-    const s = g.s * (L.mode === 'mobile' ? 1.4 : 1.25);
+    const s = artScaleOf(L, g);
     return x < g.x0 + 4 && x > g.x0 - 44 * s && y < g.y + g.band * 0.5 && y > g.y - 80 * s;
   }
 

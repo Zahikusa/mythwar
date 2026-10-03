@@ -8,7 +8,7 @@ import { artFor } from './creatures/index.ts';
 import type { CreatureArt, Pose } from './creatures/types.ts';
 import { TAU, circle, drawGlow, ellipse, setLineWidth } from './draw.ts';
 import { Fx } from './fx.ts';
-import { computeLayout, laneX } from './layout.ts';
+import { artScaleOf, computeLayout, laneX } from './layout.ts';
 import type { LaneGeom, Layout, LayoutMode } from './layout.ts';
 import { drawProjectile, projectileImpact } from './projectiles.ts';
 import { TEAM_COLORS, THEMES } from './theme.ts';
@@ -152,7 +152,12 @@ export class Renderer {
   // -------------------------------------------------------------------------
 
   private artScale(g: LaneGeom): number {
-    return g.s * (this.layout.mode === 'mobile' ? 1.4 : 1.25);
+    return artScaleOf(this.layout, g);
+  }
+
+  /** Creature body scale without the art boost (rings, health bars, hit boxes). */
+  private bodyScale(g: LaneGeom): number {
+    return this.artScale(g) / (this.layout.mode === 'mobile' ? 1.4 : 1.25);
   }
 
   unitScreen(u: Unit, alpha: number): { x: number; y: number; s: number; art: CreatureArt } {
@@ -704,12 +709,12 @@ export class Renderer {
     // Shadows
     for (const u of sorted) {
       const p = this.unitScreen(u, alpha);
-      const r = u.def.radius * g.s * (u.flying ? 0.8 : 1.05);
+      const r = u.def.radius * this.bodyScale(g) * (u.flying ? 0.8 : 1.05);
       ellipse(ctx, p.x, p.y + 1, r, r * 0.3, u.flying ? 'rgba(0,0,0,0.14)' : 'rgba(0,0,0,0.25)');
       const tc = TEAM_COLORS[u.team];
       ctx.strokeStyle = tc.main;
       ctx.globalAlpha = 0.55;
-      ctx.lineWidth = Math.max(1, 1.6 * g.s);
+      ctx.lineWidth = Math.max(1, 1.6 * this.bodyScale(g));
       ctx.beginPath();
       ctx.ellipse(p.x, p.y + 1, r * 1.05, r * 0.32, 0, 0, TAU);
       ctx.stroke();
@@ -778,7 +783,7 @@ export class Renderer {
     const bodyY = y + art.body[1] * p.s;
     const m = this.mouseRef;
     if (m) {
-      const hw = Math.max(10, u.def.radius * g.s * 1.3);
+      const hw = Math.max(10, u.def.radius * this.bodyScale(g) * 1.3);
       const top = y - (art.height + 4) * p.s;
       if (m.x > p.x - hw && m.x < p.x + hw && m.y > top && m.y < p.y + 4) {
         const d = Math.abs(m.x - p.x) + Math.abs(m.y - bodyY) * 0.5;
@@ -797,7 +802,7 @@ export class Renderer {
       ctx.fillStyle = 'rgba(190, 235, 255, 0.6)';
       ctx.strokeStyle = 'rgba(255,255,255,0.85)';
       ctx.lineWidth = 1;
-      const hw = u.def.radius * g.s * 1.25;
+      const hw = u.def.radius * this.bodyScale(g) * 1.25;
       const hh = (art.height + 4) * p.s;
       ctx.beginPath();
       ctx.roundRect(p.x - hw, y - hh, hw * 2, hh + fly * 0 + 2, 3);
@@ -821,8 +826,8 @@ export class Renderer {
     const damaged = u.hp < u.maxHp - 0.5;
     v.hpAlpha = Math.max(0, Math.min(1, v.hpAlpha + (damaged ? dt * 6 : -dt * 2)));
     if (v.hpAlpha > 0.02) {
-      const w = Math.max(16, Math.min(60, u.def.radius * 2.1 * g.s));
-      const h = Math.max(3, 3.5 * Math.min(1.2, g.s));
+      const w = Math.max(16, Math.min(60, u.def.radius * 2.1 * this.bodyScale(g)));
+      const h = Math.max(3, 3.5 * Math.min(1.2, this.bodyScale(g)));
       const bx = p.x - w / 2;
       const by = y - (art.height + 6) * p.s - h;
       ctx.globalAlpha = v.hpAlpha;
