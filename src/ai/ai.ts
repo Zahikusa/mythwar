@@ -52,7 +52,7 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     id: 'adept',
     name: 'Adept',
     blurb: 'A cunning warlord who answers threats — eventually.',
-    think: 1.3,
+    think: 1.6,
     counterSkill: 0.5,
     laneSkill: 0.65,
     ascendSkill: 0.6,
@@ -61,7 +61,7 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     blessSkill: 0.4,
     maxQueue: 3,
     turretDelay: 90,
-    incomeMult: 1,
+    incomeMult: 0.9,
   },
   master: {
     id: 'master',

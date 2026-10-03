@@ -45,6 +45,9 @@ import type {
 } from './types.ts';
 
 const ALLY_SPACING = 3;
+/** Guardians' blows also hit enemies whose centre is this close to the target's. */
+const GUARDIAN_SWEEP = 10;
+const GUARDIAN_SWEEP_FALLOFF = 0.8;
 /** Extra reach allowed when an attack resolves (target may have stepped back a little). */
 const RESOLVE_SLACK = 14;
 
@@ -56,6 +59,11 @@ export interface WorldOptions {
 export function trait<K extends TraitKind>(def: UnitDef, kind: K): Extract<Trait, { kind: K }> | undefined {
   for (const t of def.traits) if (t.kind === kind) return t as Extract<Trait, { kind: K }>;
   return undefined;
+}
+
+/** Hunters do not block each other (pack behaviour). Flyers are handled separately. */
+function packs(a: UnitDef, b: UnitDef): boolean {
+  return a.cls === 'hunter' && b.cls === 'hunter';
 }
 
 export function other(team: Team): Team {
@@ -418,6 +426,7 @@ export class World {
     for (const u of this.lanes[lane]) {
       if (!u.alive || u.team !== team || u.flying) continue;
       if (u.def.projectile && !def.projectile) continue; // melee may pass ranged allies
+      if (packs(u.def, def)) continue; // hunters crowd together
       const gap = team === 0 ? u.x - u.def.radius - (x + def.radius) : x - def.radius - (u.x + u.def.radius);
       if (gap < ALLY_SPACING) return false;
     }
@@ -493,6 +502,8 @@ export class World {
       if (a === u || !a.alive || a.team !== u.team || a.flying) continue;
       // Ranged creatures hang back and let melee allies through to the front line.
       if (a.def.projectile && !u.def.projectile) continue;
+      // Hunters fight as a pack: they crowd together and strike the same foe at once.
+      if (packs(a.def, u.def)) continue;
       if (u.team === 0 ? a.x <= u.x : a.x >= u.x) continue;
       const g = u.team === 0 ? a.x - a.def.radius - (u.x + u.def.radius) : u.x - u.def.radius - (a.x + a.def.radius);
       if (g - ALLY_SPACING < gap) gap = g - ALLY_SPACING;
@@ -613,6 +624,13 @@ export class World {
         .sort((a, b) => this.edgeDist(u, a) - this.edgeDist(u, b))
         .slice(0, cleave.targets - 1);
       for (const e of extra) this.damageUnit(e, dmg * cleave.falloff, def.cls, 'unit', u);
+    }
+    // Guardians' sweeping blows also catch foes crowded around the target (breaks hunter packs).
+    if (def.cls === 'guardian') {
+      for (const e of list) {
+        if (!e.alive || e.team === u.team || e === target) continue;
+        if (Math.abs(e.x - target.x) <= GUARDIAN_SWEEP) this.damageUnit(e, dmg * GUARDIAN_SWEEP_FALLOFF, def.cls, 'unit', u);
+      }
     }
     const slam = trait(def, 'slam');
     if (slam) {

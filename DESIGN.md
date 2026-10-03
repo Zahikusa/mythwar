@@ -34,6 +34,12 @@ five mythic ages, and topple the enemy citadel.
 | Mystic | orb | fragile ranged caster | Guardian |
 
 Damage ×1.5 against the class you counter, ×0.75 against the class that counters you.
+To make the triangle hold for whole armies (not just duels — massed ranged units otherwise
+dominate because melee fight one at a time), each class has a formation rule:
+- **Hunters hunt in packs:** they don't block each other, so a pack strikes one foe together.
+- **Guardians sweep:** every blow also hits foes packed around the target (80%).
+- **Mystics hang back:** melee allies walk through them to the front line.
+Verified with `node scripts/classwar.ts` (equal-gold army battles per age).
 Final age adds a **Legend** (Elder Dragon): expensive, neutral, splash fire.
 
 ## Ages

@@ -160,8 +160,10 @@ export class Renderer {
     const xi = u.px + (u.x - u.px) * alpha;
     const v = this.vis.get(u.id);
     const art = artFor(u.def.id);
+    // Hunters crowd into packs at the same spot; fan them out a little so the pack reads.
+    const fan = v && u.def.cls === 'hunter' ? (v.seed - 0.5) * u.def.radius * 1.4 : 0;
     return {
-      x: laneX(g, xi),
+      x: laneX(g, xi + fan),
       y: g.y + (v ? v.yJit : 0) * g.band,
       s: this.artScale(g) * art.scale,
       art,

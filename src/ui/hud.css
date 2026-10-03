@@ -1356,6 +1356,11 @@ svg {
   color: var(--gold);
 }
 
+.ttclassnote {
+  color: #d9ccf5;
+  margin: 2px 0;
+}
+
 .tttrait {
   color: var(--gold-l);
   margin: 4px 0;

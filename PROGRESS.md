@@ -99,12 +99,19 @@ See DESIGN.md for the game design.
     pulses disabled.
 18. [ ] Mobile: browsers often kill background tabs — autosave the battle (World state with
     def ids) to localStorage and offer "Continue battle" on the title screen.
-19. [ ] Balance: Master/Mythic AIs rarely summon Mystics in late ages (phoenix ≈ half of
-    griffins); check whether late-age Mystics are under-tuned or the AI's counter logic is off.
+19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
+    Mystics beat *everything* at army scale (ranged units focus fire, melee fight one at a time),
+    so "spam Mystics" was a dominant strategy. Added formation rules — Hunters hunt in packs
+    (don't block each other), Guardians' blows sweep packed foes (80%) — and trimmed Fenrir
+    lifesteal 0.35→0.25. The triangle now holds at army scale in all ages (unit-tested).
+    Adept softened (think 1.6 s, 90% income) since counters matter more; a "follow the Counter!
+    badge" bot beats Novice 9/10, Adept ~27%, Master ~10%.
 20. [ ] `src/ui/hud.ts`: queue chips are rebuilt from scratch whenever the queue changes,
     restarting their pop-in animation for every chip; diff instead.
 
 ## Decisions log
+- Formation rules (packs/sweep/hang-back) instead of raw stat tuning: stats alone cannot fix
+  ranged focus-fire dominance without breaking the 1v1 triangle.
 - Added **gate wards** (free built-in weak turret per lane, scales with age): without them, the
   first side to win a lane fight snowballed to victory in 3–5 min (no defender's advantage).
 - Added **Blessings** (Might / Vitality / Bastion, 5 ranks each, cost scales with age): late-game

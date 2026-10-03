@@ -327,8 +327,8 @@ const UNIT_SPECS: UnitSpec[][] = [
       name: 'Fenrir Wolf',
       cls: 'hunter',
       blurb: 'The world-devouring wolf, unchained.',
-      traitText: 'Devour: heals for a third of the damage it deals.',
-      traits: [{ kind: 'lifesteal', frac: 0.35 }],
+      traitText: 'Devour: heals for a quarter of the damage it deals.',
+      traits: [{ kind: 'lifesteal', frac: 0.25 }],
       mul: { radius: 1.1 },
     },
     {

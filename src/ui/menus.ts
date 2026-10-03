@@ -177,7 +177,7 @@ export class Menus {
         body: [
           triangleArt(),
           p('Every creature belongs to a class. <b style="color:#f2b84b">Guardians</b> crush <b style="color:#7ed957">Hunters</b>, Hunters tear through <b style="color:#b48cff">Mystics</b>, and Mystics melt Guardians.'),
-          p('A counter deals <b>+50% damage</b> and takes less in return. The card marked <b>Counter!</b> answers whatever marches down your selected lane.'),
+          p('Hunters strike as a <b>pack</b>, Guardians’ <b>sweeping</b> blows break packs, and massed Mystics melt a Guardian line. A counter deals <b>+50% damage</b>; the card marked <b>Counter!</b> answers your selected lane.'),
         ],
       },
       {

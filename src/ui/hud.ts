@@ -514,6 +514,7 @@ export class Hud {
         <span>Range ${def.projectile ? Math.round(def.range) : 'melee'}</span>
         <span>Speed ${Math.round(def.speed)}</span>
       </div>
+      <div class="ttclassnote">${CLASS_NOTE[def.cls]}</div>
       ${def.traitText ? `<div class="tttrait">${def.traitText}</div>` : ''}
       <div class="ttblurb">${def.blurb}</div>`;
     tt.classList.remove('hidden');
@@ -860,6 +861,13 @@ export class Hud {
     return this.game?.playerTeam ?? 0;
   }
 }
+
+const CLASS_NOTE: Record<string, string> = {
+  guardian: 'Sweeping blows also strike foes packed around the target.',
+  hunter: 'Hunts in packs: Hunters crowd in to strike together.',
+  mystic: 'Ranged: stands back and lets melee allies through.',
+  legend: 'Flies over the fray.',
+};
 
 function chip(cls: string): string {
   return `<span class="clschip" style="color:${CLASS_COLOR[cls]}">${CLASS_ICON[cls]}${CLASS_NAME[cls]}</span>`;

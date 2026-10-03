@@ -379,3 +379,39 @@ describe('ragnarok', () => {
     expect(w.ragnarokAt).toBeLessThanOrEqual(1 + RAGNAROK_AFTER_FINAL + 0.01);
   });
 });
+
+describe('formations', () => {
+  it('hunters crowd into a pack instead of queueing', () => {
+    const w = new World();
+    const a = w.spawnUnit(0, 0, UNITS.redcap, 100);
+    const b = w.spawnUnit(0, 0, UNITS.redcap, 60);
+    w.spawnUnit(1, 0, UNITS.treant, 400);
+    w.lanes[0][2].def = { ...UNITS.treant, speed: 0, damage: 0 };
+    run(w, 10);
+    expect(Math.abs(a.x - b.x)).toBeLessThan(2);
+  });
+
+  it("guardians' blows sweep through packed foes", () => {
+    const w = new World();
+    w.spawnUnit(0, 0, UNITS.treant, 470);
+    const h1 = w.spawnUnit(1, 0, UNITS.redcap, 500);
+    const h2 = w.spawnUnit(1, 0, UNITS.redcap, 504);
+    for (const h of [h1, h2]) h.def = { ...h.def, damage: 0, speed: 0 };
+    run(w, 3);
+    expect(h1.hp).toBeLessThan(h1.maxHp);
+    expect(h2.hp).toBeLessThan(h2.maxHp);
+  });
+});
+
+describe('counter triangle at army scale (equal gold)', async () => {
+  const { battle } = await import('../scripts/classwar.ts');
+  for (let age = 0; age <= MAX_AGE; age++) {
+    it(`holds in age ${age + 1}`, () => {
+      const [g, h, m] = AGE_UNITS[age];
+      const budget = g.cost * 10;
+      expect(battle([g], [h], budget), 'guardians beat hunters').toBeGreaterThan(0);
+      expect(battle([h], [m], budget), 'hunters beat mystics').toBeGreaterThan(0);
+      expect(battle([m], [g], budget), 'mystics beat guardians').toBeGreaterThan(0);
+    });
+  }
+});
