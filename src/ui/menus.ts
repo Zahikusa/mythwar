@@ -307,6 +307,7 @@ export class Menus {
         this.button('Settings', '', () => this.show('settings'), ICONS.sound),
         this.button('Restart', '', () => this.cb.restart()),
         this.button('Leave battle', 'ghost', () => this.cb.quit()),
+        h('div', { class: 'mnote', text: 'Leaving or restarting after the first minute counts as a defeat.' }),
       ),
     );
   }

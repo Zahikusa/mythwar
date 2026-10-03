@@ -75,8 +75,14 @@ export class App {
       play: (d) => this.play(d),
       continueSaved: () => this.continueSaved(),
       resume: () => this.resume(),
-      restart: () => this.play(this.difficulty),
-      quit: () => this.toTitle(),
+      restart: () => {
+        this.forfeit();
+        this.play(this.difficulty);
+      },
+      quit: () => {
+        this.forfeit();
+        this.toTitle();
+      },
       settingsChanged: (s) => this.applySettings(s),
       sound: (k) => this.audio.ui(k),
     });
@@ -297,6 +303,13 @@ export class App {
     } catch {
       // unsupported
     }
+  }
+
+  /** Abandoning a battle that has properly started counts as a loss in the records. */
+  private forfeit(): void {
+    const g = this.game;
+    if (this.state !== 'playing' || !g || g.over || g.options.demo || g.world.time < 60) return;
+    recordResult(this.settings, this.difficulty, false, g.world.time);
   }
 
   /** Escape / P: leave a sub-menu, otherwise toggle pause. */

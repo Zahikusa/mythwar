@@ -141,8 +141,8 @@ See DESIGN.md for the game design.
     viewport while the stage is landscape — the difficulty screen overflowed with no title or
     buttons. #stage is now a size container; menus/HUD use `@container stage (...)` and
     cqw/cqh units. Screenshot scenarios `mobile-port-title/diff` added.
-40. [ ] Forfeits: "Leave battle"/"Restart" from the pause menu don't count as a loss in the
-    difficulty records; count them once the battle has run ≥ 60 s.
+40. [x] Forfeits: leaving/restarting from the pause menu after ≥ 60 s records a defeat (noted
+    under the pause buttons).
 41. [ ] `src/ui/menus.ts` how-to art uses portraits rendered with the default team colours
     only; show an enemy creature (red) on the counters page to reinforce team identity.
 42. [ ] `scripts/shoot.ts` scenarios list is long; add a `--list` flag and group names so a
