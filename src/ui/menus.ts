@@ -3,7 +3,7 @@ import type { Difficulty } from '../ai/ai.ts';
 import { AGES, AGE_UNITS, POWERS } from '../sim/data.ts';
 import type { World } from '../sim/world.ts';
 import type { Team } from '../sim/types.ts';
-import { h, fmt, fmtTime } from './dom.ts';
+import { h, fmt, fmtTime, onTap } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 import type { Settings } from './settings.ts';
@@ -66,7 +66,7 @@ export class Menus {
 
   private button(label: string, cls: string, onClick: () => void, icon?: string): HTMLButtonElement {
     const b = h('button', { class: `mbtn ${cls}` }, icon ? h('i', { html: icon }) : null, h('span', { text: label }));
-    b.addEventListener('click', () => {
+    onTap(b, () => {
       this.cb.sound('click');
       onClick();
     });
@@ -119,7 +119,7 @@ export class Menus {
       const rec = h('div', { class: 'record' });
       this.recordEls[d] = rec;
       const card = h('button', { class: `diff d-${d}` }, h('div', { class: 'dname', text: p.name }), skulls, h('div', { class: 'dblurb', text: p.blurb }), rec);
-      card.addEventListener('click', () => {
+      onTap(card, () => {
         this.selected = d;
         this.cb.sound('select');
         this.refreshDifficulty();
@@ -193,7 +193,7 @@ export class Menus {
     const dots = h('div', { class: 'hdots' });
     pages.forEach((_, i) => {
       const d = h('button', { class: 'hdot' });
-      d.addEventListener('click', () => this.setHowtoPage(i));
+      onTap(d, () => this.setHowtoPage(i));
       dots.appendChild(d);
     });
     this.howtoDots = dots;

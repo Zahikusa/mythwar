@@ -1,3 +1,4 @@
+import { Audio } from './audio/audio.ts';
 import { Game } from './game.ts';
 import { DIFFICULTIES } from './ai/ai.ts';
 import type { Difficulty } from './ai/ai.ts';
@@ -25,6 +26,7 @@ export class App {
   readonly input: Input;
   readonly menus: Menus;
   readonly settings: Settings;
+  readonly audio = new Audio();
   game: Game | null = null;
   state: AppState = 'title';
   mode: LayoutMode = 'desktop';
@@ -51,7 +53,7 @@ export class App {
     this.renderer = new Renderer(this.canvas);
     this.hud = new Hud(this.stage, {
       pause: () => this.pause(),
-      sound: () => {},
+      sound: (k) => this.audio.ui(k),
     });
     this.input = new Input(this.canvas, this.renderer, this.hud);
     this.input.onPause = () => (this.game?.paused ? this.resume() : this.pause());
@@ -61,7 +63,7 @@ export class App {
       restart: () => this.play(this.difficulty),
       quit: () => this.toTitle(),
       settingsChanged: (s) => this.applySettings(s),
-      sound: () => {},
+      sound: (k) => this.audio.ui(k),
     });
     window.addEventListener('resize', () => this.resize());
     document.addEventListener('visibilitychange', () => {
@@ -98,6 +100,7 @@ export class App {
 
   applySettings(s: Settings): void {
     saveSettings(s);
+    this.audio.setVolumes(s.master, s.music, s.sfx);
     this.renderer.shakeEnabled = s.shake;
     const q = s.lowQuality ? 'low' : 'high';
     if (this.renderer.quality !== q && this.width > 0) this.resize();
@@ -138,6 +141,7 @@ export class App {
     game.onEvents((ev) => {
       if (this.game !== game) return;
       this.renderer.onEvents(ev, game.world, game.view);
+      this.audio.onEvents(ev);
       if (this.state === 'playing') this.hud.onEvents(ev);
       for (const e of ev) if (e.type === 'gameOver' && this.state === 'playing' && !demo) this.onGameOver();
     });
@@ -151,6 +155,8 @@ export class App {
     const game = this.startGame(difficulty, seed, false);
     this.state = 'playing';
     this.overTimer = -1;
+    this.audio.ambience = 1;
+    this.audio.startMusic(0);
     this.menus.show('none');
     this.hud.attach(game);
     this.input.attach(game);
@@ -164,6 +170,8 @@ export class App {
     const demo = this.startGame('adept', (Math.random() * 1e9) | 0, true);
     // Start the backdrop battle mid-skirmish.
     demo.fastForward(40);
+    this.audio.ambience = 0.2;
+    this.audio.startMusic(0);
     this.menus.show('title');
   }
 
@@ -185,6 +193,7 @@ export class App {
     const g = this.game!;
     const won = g.world.winner === g.playerTeam;
     recordResult(this.settings, this.difficulty, won, g.world.time);
+    this.audio.ui(won ? 'victory' : 'defeat');
     this.overTimer = 2.6;
     this.hud.cancelTargeting();
     this.hud.banner(won ? 'Victory' : 'Defeat', won ? 'The enemy citadel crumbles' : 'Your citadel has fallen', won ? 'gold' : 'red');
@@ -205,6 +214,7 @@ export class App {
       // The title backdrop restarts when its battle ends.
       if (this.state === 'title' && g.over) this.toTitleBackdrop();
       const alpha = g.advance(dt);
+      this.audio.intensity = this.battleIntensity(g);
       this.renderer.render(g.world, alpha, dt, g.view);
       if (this.state === 'playing' || this.state === 'over') this.hud.update(dt);
       if (this.overTimer > 0) {
@@ -216,6 +226,17 @@ export class App {
       }
     }
     requestAnimationFrame((t) => this.frame(t));
+  }
+
+  private battleIntensity(g: Game): number {
+    if (this.state !== 'playing') return 0;
+    const w = g.world;
+    if (w.ragnarokStarted) return 1;
+    let n = 0;
+    for (const l of w.lanes) n += l.length;
+    const me = w.players[g.playerTeam];
+    const besieged = w.time - me.lastBaseHit < 3 ? 0.5 : 0;
+    return Math.min(1, n / 28 + besieged);
   }
 
   private toTitleBackdrop(): void {

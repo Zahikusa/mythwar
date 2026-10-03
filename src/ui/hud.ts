@@ -21,7 +21,7 @@ import type { BlessingId, UnitDef } from '../sim/data.ts';
 import type { SimEvent, Team } from '../sim/types.ts';
 import type { Game } from '../game.ts';
 import type { Layout } from '../render/layout.ts';
-import { h, fmt, fmtTime, setStyle, setText, toggle } from './dom.ts';
+import { h, fmt, fmtTime, onTap, setStyle, setText, toggle } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, CLASS_NAME, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 
@@ -99,8 +99,8 @@ export class Hud {
     E.rag = h('div', { class: 'ragnarok' });
     E.speed = h('button', { class: 'sysbtn speed', title: 'Game speed (F)', html: ICONS.fast + '<span>1×</span>' });
     E.pause = h('button', { class: 'sysbtn', title: 'Pause (Esc)', html: ICONS.pause });
-    E.speed.addEventListener('click', () => this.toggleSpeed());
-    E.pause.addEventListener('click', () => this.cb.pause());
+    onTap(E.speed, () => this.toggleSpeed());
+    onTap(E.pause, () => this.cb.pause());
     const top = h(
       'div',
       { class: 'topbar' },
@@ -137,19 +137,19 @@ export class Hud {
     E.ascFill = h('div', { class: 'ascfill' });
     E.ascSub = h('div', { class: 'asub' });
     E.ascend = h('button', { class: 'act ascend', title: 'Ascend to the next age (U)' }, E.ascFill, h('i', { class: 'aico', html: ICONS.ascend }), h('div', { class: 'aname', text: 'Ascend' }), E.ascSub);
-    E.ascend.addEventListener('click', () => this.tryAscend());
+    onTap(E.ascend, () => this.tryAscend());
 
     E.turretBtn = h('button', { class: 'act small turretbtn', title: 'Turrets (T)' }, h('i', { class: 'aico', html: ICONS.tower }), h('div', { class: 'aname', text: 'Turrets' }));
-    E.turretBtn.addEventListener('click', () => this.togglePanel('turret'));
+    onTap(E.turretBtn, () => this.togglePanel('turret'));
     E.blessBtn = h('button', { class: 'act small blessbtn', title: 'Blessings (B)' }, h('i', { class: 'aico', html: ICONS.bless }), h('div', { class: 'aname', text: 'Blessings' }));
-    E.blessBtn.addEventListener('click', () => this.togglePanel('bless'));
+    onTap(E.blessBtn, () => this.togglePanel('bless'));
     const acts = h('div', { class: 'acts' }, E.power, E.ascend, h('div', { class: 'actpair' }, E.turretBtn, E.blessBtn));
 
     // Lane tabs (near the player's gates)
     E.lanetabs = h('div', { class: 'lanetabs' });
     for (let i = 0; i < LANE_COUNT; i++) {
       const tab = h('button', { class: 'lanetab', title: `${LANE_NAMES[i]} lane` }, h('span', { class: 'arrow', text: '▶' }), h('span', { class: 'qn' }));
-      tab.addEventListener('click', () => this.selectLane(i));
+      onTap(tab, () => this.selectLane(i));
       this.laneTabs.push(tab);
       E.lanetabs.appendChild(tab);
     }
@@ -170,7 +170,7 @@ export class Hud {
   private buildTurretPanel(): HTMLElement {
     const panel = h('div', { class: 'panel turretpanel hidden' });
     const close = h('button', { class: 'pclose', html: ICONS.close });
-    close.addEventListener('click', () => this.togglePanel('none'));
+    onTap(close, () => this.togglePanel('none'));
     panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.tower }), 'Turrets', close));
     panel.appendChild(h('div', { class: 'pdesc', text: 'One turret per lane, mounted on your gate. Bolt turrets pick off single foes; Blast turrets hit groups.' }));
     for (let lane = 0; lane < LANE_COUNT; lane++) {
@@ -186,7 +186,7 @@ export class Hud {
   private buildBlessPanel(): HTMLElement {
     const panel = h('div', { class: 'panel blesspanel hidden' });
     const close = h('button', { class: 'pclose', html: ICONS.close });
-    close.addEventListener('click', () => this.togglePanel('none'));
+    onTap(close, () => this.togglePanel('none'));
     panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.bless }), 'Blessings', close));
     panel.appendChild(h('div', { class: 'pdesc', text: 'Permanent favours of the gods. Each rank costs more, and prices rise with every age.' }));
     for (const id of BLESSING_ORDER) {
@@ -194,7 +194,7 @@ export class Hud {
       const pips = h('div', { class: 'pips' });
       for (let i = 0; i < BLESSING_MAX_RANK; i++) pips.appendChild(h('i'));
       const buy = h('button', { class: 'buy' });
-      buy.addEventListener('click', () => this.tryBless(id));
+      onTap(buy, () => this.tryBless(id));
       const row = h('div', { class: `brow b-${id}` }, h('div', { class: 'bname', text: b.name }), pips, h('div', { class: 'bdesc', text: b.blurb }), buy);
       this.blessRows[id] = row;
       panel.appendChild(row);
@@ -726,7 +726,7 @@ export class Hud {
           h('span', { class: 'ql', text: LANE_NAMES[item.lane][0] }),
           h('div', { class: 'qprog' }),
         );
-        chip.addEventListener('click', () => {
+        onTap(chip, () => {
           const r = g.command({ type: 'cancel', team: g.playerTeam, index: idx });
           if (r.ok) this.cb.sound('cancel');
         });
@@ -759,7 +759,7 @@ export class Hud {
           const def = TURRETS[id];
           const b = h('button', { class: `tbuy ${def.kind}`, title: `${def.blurb} Damage ${def.damage}${def.splash ? ' (splash)' : ''}, range ${def.range}.` }, h('span', { class: 'tn', text: def.name }), h('span', { class: 'tc' }, h('i', { html: ICONS.gold }), String(def.cost)));
           b.dataset.id = id;
-          b.addEventListener('click', () => this.tryTurret(lane, id));
+          onTap(b, () => this.tryTurret(lane, id));
           return b;
         };
         const status = cur ? h('div', { class: 'tcur' }, h('b', { text: cur.name }), cur.age < me.age ? h('span', { class: 'old', text: 'outdated' }) : null) : h('div', { class: 'tcur empty', text: 'Empty — gate ward only' });
@@ -767,7 +767,7 @@ export class Hud {
         for (const id of [bolt.id, blast.id]) if (!cur || cur.id !== id) buttons.appendChild(mk(id));
         if (cur) {
           const sell = h('button', { class: 'tsell', title: 'Sell for half its cost' }, h('span', { class: 'tn', text: 'Sell' }), h('span', { class: 'tc', text: `+${Math.floor(cur.cost * SELL_REFUND)}` }));
-          sell.addEventListener('click', () => this.trySell(lane));
+          onTap(sell, () => this.trySell(lane));
           buttons.appendChild(sell);
         }
         row.append(h('div', { class: 'tlane', text: LANE_NAMES[lane] }), status, buttons);

@@ -45,3 +45,27 @@ export function fmtTime(sec: number): string {
   const s = Math.max(0, Math.floor(sec));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
+
+/**
+ * Tap/click handler driven by pointer events, so buttons also work during multi-touch
+ * (browsers do not synthesize `click` for a second finger). Keyboard activation
+ * (Enter/Space → click with detail 0) still works.
+ */
+export function onTap(el: HTMLElement, fn: (e: Event) => void): void {
+  let down: { id: number; x: number; y: number } | null = null;
+  el.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    down = { id: e.pointerId, x: e.clientX, y: e.clientY };
+  });
+  el.addEventListener('pointerup', (e) => {
+    const d = down;
+    down = null;
+    if (!d || d.id !== e.pointerId) return;
+    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 14) return;
+    fn(e);
+  });
+  el.addEventListener('pointercancel', () => (down = null));
+  el.addEventListener('click', (e) => {
+    if ((e as MouseEvent).detail === 0) fn(e);
+  });
+}

@@ -22,7 +22,7 @@ See DESIGN.md for the game design.
 - [x] M4 HUD + menus (title, difficulty, pause, end screen), input (lane select, cards, drag)
 - [x] M5 Creature art & animation for all 16 creatures, turrets, citadels per age
 - [ ] M6 FX: particles, projectiles, god-power visuals, ascend transition, shake, floating text
-- [ ] M7 Audio (synth SFX + ambient music), settings
+- [x] M7 Audio (synth SFX + ambient music), settings
 - [ ] M8 Mobile: landscape thumb layout, portrait rotation, touch drag, perf scaling
 - [ ] M9 Onboarding: how-to-play, first-game hints, tooltips
 - [ ] M10 Balance pass via headless sims, polish, screenshot review on desktop + mobile
@@ -47,8 +47,14 @@ See DESIGN.md for the game design.
   `?gallery` (all creature animations), `?mode=mobile`, `?theme=2`.
 - `node scripts/shoot.ts [filter]` (after `npm run build`) → screenshots/*.png.
 
+- Audio (`src/audio/audio.ts`): synthesized SFX (rate-limited, stereo-panned by lane position),
+  generative per-age score (pad + bass + arpeggio, war drums scale with battle intensity).
+- `npm run smoke`: end-to-end Chrome test (desktop + phone): lane select, tap/drag summon, keys,
+  turrets, power targeting, ascend, blessings, pause/resume, victory screen, no console errors.
+- All HUD/menu buttons use pointer-based `onTap` (synthesized clicks are dropped during
+  multi-touch on phones — found by the smoke test).
+
 ## Next
-- Audio (WebAudio synth SFX + ambient music)
 - First-game onboarding hints
 - Game-over citadel collapse effect; polish pass; balance re-check
 
