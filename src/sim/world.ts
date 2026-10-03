@@ -110,7 +110,7 @@ export class World {
       incomeMult,
       wardCooldown: Array.from({ length: LANE_COUNT }, () => 0),
       blessings: { might: 0, vitality: 0, bastion: 0 },
-      stats: { summoned: 0, kills: 0, losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0 },
+      stats: { summoned: 0, summonedBy: {}, kills: 0, losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0 },
       lastBaseHit: -10,
     };
   }
@@ -456,7 +456,9 @@ export class World {
     };
     this.lanes[lane].push(u);
     this.unitById.set(u.id, u);
-    this.players[team].stats.summoned++;
+    const st = this.players[team].stats;
+    st.summoned++;
+    st.summonedBy[def.id] = (st.summonedBy[def.id] ?? 0) + 1;
     this.emit({ type: 'spawn', unitId: u.id, team, lane, defId: def.id });
     return u;
   }

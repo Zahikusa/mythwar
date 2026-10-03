@@ -71,10 +71,9 @@ See DESIGN.md for the game design.
 2. [x] `src/input.ts onKey`: focused HUD buttons + Space. Turned out Chrome already suppresses
    the activation (onKey preventDefaults Space; verified with a smoke check that passes with and
    without the fix); the blur is kept as a guard for other browsers. Smoke check added.
-3. [ ] `src/ui/menus.ts showResults`: champion portrait is an arbitrary creature; show the
-   player's most-summoned creature (needs per-creature counts in TeamStats).
-4. [ ] `src/render/renderer.ts onEvents('baseHit')`: no impact effect at the gate when creatures
-   batter a citadel (only a red tint) — add debris sparks at the lane's gate.
+3. [x] Results show the player's most-summoned creature ("Your champion: X ×n");
+   `TeamStats.summonedBy` added.
+4. [x] Battered gates now throw stone chips + dust (throttled per lane) on `baseHit`.
 5. [ ] Desktop: hovering a creature on the battlefield shows nothing; add a light label
    (name, class icon colour, HP) to help learning.
 6. [ ] `src/ui/hud.ts updateTurretPanel/updateBlessPanel`: `querySelectorAll` every frame while

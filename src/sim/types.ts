@@ -75,6 +75,8 @@ export interface TurretSlot {
 
 export interface TeamStats {
   summoned: number;
+  /** Summons per creature id. */
+  summonedBy: Record<string, number>;
   kills: number;
   losses: number;
   goldEarned: number;

@@ -313,10 +313,21 @@ export class Menus {
         row('God powers cast', String(P.stats.powersCast), String(E.stats.powersCast)),
       ),
     );
-    const champion = AGE_UNITS[P.age][won ? 0 : 2];
+    // The player's signature creature: most summoned, later ages winning ties.
+    let champion = AGE_UNITS[P.age][0];
+    let best = -1;
+    for (const age of AGE_UNITS) {
+      for (const def of age) {
+        const n = P.stats.summonedBy[def.id] ?? 0;
+        if (n > 0 && n >= best) {
+          best = n;
+          champion = def;
+        }
+      }
+    }
     el.append(
       h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: won ? 'The enemy citadel has fallen.' : 'Your citadel lies in ruins.' })),
-      h('div', { class: 'vportrait' }, portrait(champion.id, 96, won ? 0 : 1, 1.3)),
+      h('div', { class: 'vportrait' }, portrait(champion.id, 96, me, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
       h('div', { class: 'vtime', text: `Battle length ${fmtTime(world.time)}` }),
       table,
       h(

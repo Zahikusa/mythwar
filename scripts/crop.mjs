@@ -3,7 +3,7 @@ import puppeteer from 'puppeteer-core';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, extname, resolve } from 'node:path';
-const [query, x, y, w, h, scale = '3', wait = '1500', script = ''] = process.argv.slice(2);
+const [query, x, y, w, h, scale = '3', wait = '1500', script = '', after = '700'] = process.argv.slice(2);
 const root = resolve('dist');
 const server = createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x');
@@ -26,7 +26,7 @@ await page.goto(`http://127.0.0.1:${server.address().port}/?${query}`);
 await new Promise((r) => setTimeout(r, Number(wait)));
 if (script) {
   await page.evaluate(script);
-  await new Promise((r) => setTimeout(r, 700));
+  await new Promise((r) => setTimeout(r, Number(after)));
 }
 await page.screenshot({ path: 'screenshots/crop.png', clip: { x: +x, y: +y, width: +w, height: +h } });
 await browser.close();

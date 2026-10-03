@@ -82,6 +82,7 @@ export class Renderer {
   private ragnarok = 0;
   private baseFlash: [number, number] = [0, 0];
   private shrinePulse = [0, 0, 0];
+  private gateChips = [-1, -1, -1, -1, -1, -1];
   private ageFlash: [number, number] = [0, 0];
   /** Citadel collapse progress per team (-1 = standing). */
   private collapse: [number, number] = [-1, -1];
@@ -233,6 +234,16 @@ export class Renderer {
         case 'baseHit': {
           this.baseFlash[e.team] = 1;
           if (e.team === view.playerTeam) this.shake = Math.max(this.shake, 1.5);
+          // Stone chips fly off the battered gate (throttled per lane).
+          const key = e.team * 3 + e.lane;
+          if (this.time - this.gateChips[key] > 0.25) {
+            this.gateChips[key] = this.time;
+            const gate = this.gateScreen(e.team, e.lane);
+            const dir = e.team === 0 ? 1 : -1;
+            const gy = gate.y - 18 * gate.s;
+            this.fx.burst(gate.x, gy, { count: 6, color: '#cbbfae', speed: 140, life: 0.6, size: 2.6, shape: 'shard', layer: e.lane, gravity: 320, dir: dir > 0 ? -0.6 : Math.PI + 0.6, spread: 1.6 });
+            this.fx.burst(gate.x, gy, { count: 3, color: 'rgba(90,80,75,0.5)', speed: 40, life: 0.8, size: 4 * gate.s + 2, shape: 'smoke', layer: e.lane, gravity: -20 });
+          }
           break;
         }
         case 'ageUp': {
