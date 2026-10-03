@@ -34,7 +34,7 @@ export class Game {
     this.world = new World({ seed });
     this.ai = new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);
     this.demoAi = opts.demo ? new AiController(this.world, 0, AI_PROFILES[opts.difficulty], seed ^ 0x1234567) : null;
-    this.view = { playerTeam: 0, selectedLane: 1, hoverLane: -1, targeting: 'none', paused: false };
+    this.view = { playerTeam: 0, selectedLane: opts.demo ? -1 : 1, hoverLane: -1, targeting: 'none', paused: false };
   }
 
   onEvents(fn: GameListener): void {

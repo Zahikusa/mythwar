@@ -28,7 +28,7 @@ body {
   overflow: hidden;
 }
 
-#stage canvas {
+#stage > canvas {
   position: absolute;
   left: 0;
   top: 0;

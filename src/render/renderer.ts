@@ -66,6 +66,7 @@ export class Renderer {
   layout!: Layout;
   dpr = 1;
   quality: 'high' | 'low' = 'high';
+  shakeEnabled = true;
   private bgCache = new Map<number, HTMLCanvasElement>();
   private vignette: HTMLCanvasElement | null = null;
   private theme = 0;
@@ -364,8 +365,9 @@ export class Renderer {
     this.ragnarok += ((world.ragnarokStarted ? 1 : 0) - this.ragnarok) * Math.min(1, dt * 0.8);
 
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    const shx = this.shake > 0 ? (Math.random() - 0.5) * this.shake : 0;
-    const shy = this.shake > 0 ? (Math.random() - 0.5) * this.shake : 0;
+    const sh = this.shakeEnabled ? this.shake : 0;
+    const shx = sh > 0 ? (Math.random() - 0.5) * sh : 0;
+    const shy = sh > 0 ? (Math.random() - 0.5) * sh : 0;
     ctx.translate(shx, shy);
 
     // Backdrop (cross-fading between ages)

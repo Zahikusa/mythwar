@@ -1,5 +1,6 @@
 import './ui/style.css';
 import './ui/hud.css';
+import './ui/menus.css';
 import { App } from './app.ts';
 
 const root = document.getElementById('app')!;
