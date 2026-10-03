@@ -131,6 +131,13 @@ See DESIGN.md for the game design.
 33. [x] Desktop controls card: "?" button in the top bar and ?/H/F1 keys.
 34. [x] Title backdrop battles use adept or master AIs and start at random moments (0:40–7:00),
     with the matching age backdrop.
+35. [x] Victors hop in celebration once the battle is decided; Ragnarök adds rising embers.
+36. [ ] Lane strength readout: players must eyeball who is winning each lane; consider a slim
+    blue/red value bar beside each lane tab (only when both sides have creatures there).
+37. [ ] `src/ui/hud.ts showTooltip`: tooltip stats show base values; blessings (Might/Vitality)
+    aren't reflected — show effective HP/DPS with blessing bonuses.
+38. [ ] Audio cannot be verified by ear here: check overall loudness/balance on real devices;
+    consider a "test sound" button in Settings.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
     Mystics beat *everything* at army scale (ranged units focus fire, melee fight one at a time),
     so "spam Mystics" was a dominant strategy. Added formation rules — Hunters hunt in packs
