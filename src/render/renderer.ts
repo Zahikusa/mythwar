@@ -201,15 +201,15 @@ export class Renderer {
           const g = L.lanes[e.lane];
           const gx = e.team === 0 ? g.x0 : g.x1;
           const tc = TEAM_COLORS[e.team];
-          this.fx.timedFx({ kind: 'flashAt', x: gx, y: g.y - 18 * g.s, dur: 0.45, layer: e.lane, size: 40 * g.s, rgb: tc.rgb });
-          this.fx.burst(gx, g.y - 10 * g.s, { count: 10, color: tc.light, rgb: tc.rgb, speed: 60, life: 0.6, size: 2.2, shape: 'glow', layer: e.lane, gravity: -40 });
+          this.fx.timedFx({ kind: 'flashAt', x: gx, y: g.y - 18 * this.bodyScale(g), dur: 0.45, layer: e.lane, size: 40 * this.bodyScale(g), rgb: tc.rgb });
+          this.fx.burst(gx, g.y - 10 * this.bodyScale(g), { count: 10, color: tc.light, rgb: tc.rgb, speed: 60, life: 0.6, size: 2.2, shape: 'glow', layer: e.lane, gravity: -40 });
           break;
         }
         case 'hit': {
           const v = this.vis.get(e.targetId);
           if (v) v.flash = 1;
           const u = world.unitById.get(e.targetId);
-          if (u && u.alive !== undefined) {
+          if (u) {
             const p = this.unitScreen(u, 1);
             const by = p.y - (p.art.body[1] * -1 + p.art.fly) * p.s;
             if (e.mult > 1) {
@@ -246,14 +246,14 @@ export class Renderer {
         case 'rebirth': {
           const g = L.lanes[e.lane];
           const x = laneX(g, e.x);
-          const y = g.y - 40 * g.s;
+          const y = g.y - 40 * this.bodyScale(g);
           this.fx.burst(x, y, { count: 40, color: '#ffb347', rgb: [255, 160, 60], speed: 160, life: 1, size: 3, shape: 'glow', layer: e.lane, gravity: -80 });
-          this.fx.timedFx({ kind: 'shockwave', x, y: g.y, dur: 0.7, layer: e.lane, size: 50 * g.s, color: '#ffcf70', rgb: [255, 190, 90] });
+          this.fx.timedFx({ kind: 'shockwave', x, y: g.y, dur: 0.7, layer: e.lane, size: 50 * this.bodyScale(g), color: '#ffcf70', rgb: [255, 190, 90] });
           break;
         }
         case 'impact': {
           const g = L.lanes[e.lane];
-          projectileImpact(this.fx, e.kind, laneX(g, e.x), g.y, g.s, e.lane, e.splash, e.team);
+          projectileImpact(this.fx, e.kind, laneX(g, e.x), g.y, this.bodyScale(g), e.lane, e.splash, e.team);
           if (e.splash > 0) this.shake = Math.max(this.shake, 2);
           break;
         }
@@ -275,10 +275,10 @@ export class Renderer {
         case 'ageUp': {
           this.ageFlash[e.team] = 1;
           const g = L.lanes[1];
-          const x = e.team === 0 ? g.x0 - 40 * g.s : g.x1 + 40 * g.s;
+          const x = e.team === 0 ? g.x0 - 40 * this.bodyScale(g) : g.x1 + 40 * this.bodyScale(g);
           const tc = TEAM_COLORS[e.team];
-          this.fx.timedFx({ kind: 'shockwave', x, y: g.y, dur: 1.2, layer: 3, size: 300 * g.s, color: '#fff3c4', rgb: tc.rgb });
-          this.fx.burst(x, g.y - 80 * g.s, { count: 70, color: '#fff3c4', rgb: [255, 230, 160], speed: 260, life: 1.6, size: 3.2, shape: 'glow', layer: 3, gravity: 40, drag: 1.4 });
+          this.fx.timedFx({ kind: 'shockwave', x, y: g.y, dur: 1.2, layer: 3, size: 300 * this.bodyScale(g), color: '#fff3c4', rgb: tc.rgb });
+          this.fx.burst(x, g.y - 80 * this.bodyScale(g), { count: 70, color: '#fff3c4', rgb: [255, 230, 160], speed: 260, life: 1.6, size: 3.2, shape: 'glow', layer: 3, gravity: 40, drag: 1.4 });
           if (e.team === view.playerTeam) {
             this.fx.flash = 0.8;
             this.fx.flashColor = '255,244,214';
@@ -292,8 +292,8 @@ export class Renderer {
           const x = laneX(g, SHRINE_X);
           const col = e.owner === -1 ? '#ffffff' : TEAM_COLORS[e.owner].light;
           const rgb: [number, number, number] = e.owner === -1 ? [255, 255, 255] : TEAM_COLORS[e.owner].rgb;
-          this.fx.timedFx({ kind: 'shockwave', x, y: g.y, dur: 0.9, layer: e.lane, size: 90 * g.s, color: col, rgb });
-          this.fx.burst(x, g.y - 30 * g.s, { count: 24, color: col, rgb, speed: 120, life: 1, size: 2.6, shape: 'glow', layer: e.lane, gravity: -30 });
+          this.fx.timedFx({ kind: 'shockwave', x, y: g.y, dur: 0.9, layer: e.lane, size: 90 * this.bodyScale(g), color: col, rgb });
+          this.fx.burst(x, g.y - 30 * this.bodyScale(g), { count: 24, color: col, rgb, speed: 120, life: 1, size: 2.6, shape: 'glow', layer: e.lane, gravity: -30 });
           break;
         }
         case 'turretBuilt': {
@@ -314,7 +314,7 @@ export class Renderer {
           const g = L.lanes[e.lane];
           const x = laneX(g, e.x);
           const fromX = x + (e.team === 0 ? -1 : 1) * L.field.h * 0.35;
-          this.fx.timedFx({ kind: 'meteor', x, y: g.y - 6 * g.s, x2: fromX, y2: -40, dur: e.fall, layer: 3, size: 9 * g.s + 4, rgb: [255, 200, 120], color: '#ffd38a' });
+          this.fx.timedFx({ kind: 'meteor', x, y: g.y - 6 * this.bodyScale(g), x2: fromX, y2: -40, dur: e.fall, layer: 3, size: 9 * this.bodyScale(g) + 4, rgb: [255, 200, 120], color: '#ffd38a' });
           break;
         }
         case 'gameOver':
@@ -362,7 +362,7 @@ export class Renderer {
       for (let i = 0; i < 70; i++) {
         this.fx.add({
           x: (team === 0 ? g.x0 : g.x1) + (Math.random() - 0.5) * 60,
-          y: g.y - Math.random() * 90 * g.s,
+          y: g.y - Math.random() * 90 * this.bodyScale(g),
           vx: (team === 0 ? 1 : -1) * (300 + Math.random() * 400),
           vy: 20 + Math.random() * 40,
           life: 1.6 + Math.random() * 1.2,
@@ -386,7 +386,7 @@ export class Renderer {
   private onStrike(kind: string, _team: Team, lane: number, lx: number, radius: number): void {
     const g = this.layout.lanes[lane];
     const x = laneX(g, lx);
-    const s = g.s;
+    const s = this.bodyScale(g);
     switch (kind) {
       case 'briar':
         this.fx.timedFx({ kind: 'vines', x, y: g.y + 2, dur: POWER_TIMING.briar.root + 0.2, layer: lane, size: Math.max(14, radius * 2.2) * s * 1.1 });
