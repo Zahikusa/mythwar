@@ -133,6 +133,9 @@ export class Input {
       this.hud.togglePanel('bless');
     } else if (k === 'f') {
       this.hud.toggleSpeed();
+    } else if (k === '?' || k === 'h' || k === 'f1') {
+      this.hud.togglePanel('keys');
+      e.preventDefault();
     }
   }
 }

@@ -60,7 +60,7 @@ export class Hud {
   private queueChips: QueueChip[] = [];
   private toastTimer = 0;
   private bannerTimer = 0;
-  private panel: 'none' | 'turret' | 'bless' = 'none';
+  private panel: 'none' | 'turret' | 'bless' | 'keys' = 'none';
   private turretRows: HTMLElement[] = [];
   private blessRows: Record<string, HTMLElement> = {};
   private blessRefs: Record<string, { pips: Element[]; buy: HTMLButtonElement; cost: number }> = {};
@@ -117,7 +117,9 @@ export class Hud {
       h('div', { class: 'mid' }, E.clock, E.shrines, E.rag),
       h('div', { class: 'side right' }, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpRd, E.hpR, E.hpRn), E.ageRn), E.ageR),
     );
-    const sys = h('div', { class: 'sys' }, E.speed, E.pause);
+    E.keysBtn = h('button', { class: 'sysbtn keysbtn', title: 'Controls (?)', text: '?' });
+    onTap(E.keysBtn, () => this.togglePanel('keys'));
+    const sys = h('div', { class: 'sys' }, E.keysBtn, E.speed, E.pause);
 
     // Resources
     E.gold = h('span', { class: 'goldnum' });
@@ -166,13 +168,14 @@ export class Hud {
     // Panels
     E.turretPanel = this.buildTurretPanel();
     E.blessPanel = this.buildBlessPanel();
+    E.keysPanel = this.buildKeysPanel();
 
     E.toast = h('div', { class: 'toast' });
     E.banner = h('div', { class: 'banner' }, h('div', { class: 'btitle' }), h('div', { class: 'bsub' }));
     E.hint = h('div', { class: 'hint' });
     E.tooltip = h('div', { class: 'tooltip hidden' });
 
-    this.root.append(top, sys, res, E.cards, E.queue, acts, E.lanetabs, E.turretPanel, E.blessPanel, E.toast, E.banner, E.hint, E.tooltip);
+    this.root.append(top, sys, res, E.cards, E.queue, acts, E.lanetabs, E.turretPanel, E.blessPanel, E.keysPanel, E.toast, E.banner, E.hint, E.tooltip);
     this.root.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
@@ -189,6 +192,28 @@ export class Hud {
       this.turretRows.push(row);
       panel.appendChild(row);
     }
+    return panel;
+  }
+
+  private buildKeysPanel(): HTMLElement {
+    const panel = h('div', { class: 'panel keyspanel hidden' });
+    const close = h('button', { class: 'pclose', html: ICONS.close });
+    onTap(close, () => this.togglePanel('none'));
+    panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.info }), 'Controls', close));
+    const rows: [string, string][] = [
+      ['1 – 4', 'Summon a creature into the selected lane'],
+      ['W / S  ·  ↑ / ↓  ·  Q A Z', 'Select a lane (or click it)'],
+      ['Drag a card', 'Summon straight into any lane'],
+      ['Space', 'God power on the selected lane'],
+      ['U', 'Ascend to the next age'],
+      ['T  ·  B', 'Turrets  ·  Blessings'],
+      ['F', 'Toggle 2× speed'],
+      ['Esc / P', 'Pause'],
+      ['Right-click', 'Cancel power targeting'],
+    ];
+    const list = h('div', { class: 'keys' });
+    for (const [k, d] of rows) list.append(h('kbd', { text: k }), h('span', { text: d }));
+    panel.appendChild(list);
     return panel;
   }
 
@@ -377,11 +402,13 @@ export class Hud {
     toggle(this.el.speed, 'on', this.game.speed > 1);
   }
 
-  togglePanel(which: 'none' | 'turret' | 'bless'): void {
+  togglePanel(which: 'none' | 'turret' | 'bless' | 'keys'): void {
     if (this.panel === which) which = 'none';
     this.panel = which;
     toggle(this.el.turretPanel, 'hidden', which !== 'turret');
     toggle(this.el.blessPanel, 'hidden', which !== 'bless');
+    toggle(this.el.keysPanel, 'hidden', which !== 'keys');
+    toggle(this.el.keysBtn, 'on', which === 'keys');
     toggle(this.el.turretBtn, 'on', which === 'turret');
     toggle(this.el.blessBtn, 'on', which === 'bless');
     if (which !== 'none') this.cancelTargeting();

@@ -126,10 +126,9 @@ See DESIGN.md for the game design.
     headless software raster vs ~0.6 ms for a typical field; real battles stay ≤ ~25 creatures
     (~7 ms). If real phones struggle, cache creature animation frames as sprites (LRU by
     def/team/scale/frame) — needs on-device profiling first.
-33. [ ] Hotkey/help overlay: desktop players have no in-game list of shortcuts except
-    tooltips; add a "?" key / button that shows a compact controls card.
-34. [ ] Title backdrop battle uses `adept` AIs only; vary difficulty/seed so returning players
-    see different ages more often (e.g. fast-forward 3–8 min into some backdrops).
+33. [x] Desktop controls card: "?" button in the top bar and ?/H/F1 keys.
+34. [x] Title backdrop battles use adept or master AIs and start at random moments (0:40–7:00),
+    with the matching age backdrop.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
     Mystics beat *everything* at army scale (ranged units focus fire, melee fight one at a time),
     so "spam Mystics" was a dominant strategy. Added formation rules — Hunters hunt in packs
