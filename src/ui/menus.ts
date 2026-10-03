@@ -54,6 +54,11 @@ export class Menus {
     return this.screen;
   }
 
+  /** Return from how-to / settings to whichever screen opened them. */
+  goBack(): void {
+    if (this.screen === 'howto' || this.screen === 'settings') this.show(this.back);
+  }
+
   show(screen: Screen): void {
     if (screen === 'howto' || screen === 'settings') {
       if (this.screen !== 'howto' && this.screen !== 'settings') this.back = this.screen === 'none' ? 'title' : this.screen;

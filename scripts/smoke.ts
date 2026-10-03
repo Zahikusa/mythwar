@@ -209,6 +209,16 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   await sleep(450);
   s = await state(page);
   check('pause button pauses with menu', s.paused && s.menu === 'pause', `paused=${s.paused} menu=${s.menu}`);
+  if (!viewport.mobile) {
+    // Escape inside a sub-menu of the pause menu goes back instead of resuming.
+    const hb = await center(page, '.screen.pause .mbtn:nth-child(2)');
+    await page.mouse.click(hb.x, hb.y);
+    await sleep(400);
+    await page.keyboard.press('Escape');
+    await sleep(400);
+    s = await state(page);
+    check('Escape in How to Play returns to the pause menu', s.paused && s.menu === 'pause', `paused=${s.paused} menu=${s.menu}`);
+  }
   const rb = await center(page, '.screen.pause .mbtn.primary');
   if (viewport.mobile) await page.touchscreen.tap(rb.x, rb.y);
   else await page.mouse.click(rb.x, rb.y);

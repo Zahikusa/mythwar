@@ -59,7 +59,7 @@ export class App {
     });
     this.input = new Input(this.canvas, this.renderer, this.hud);
     this.coach = new Coach(this.stage, this.settings);
-    this.input.onPause = () => (this.game?.paused ? this.resume() : this.pause());
+    this.input.onPause = () => this.escape();
     this.menus = new Menus(this.stage, this.settings, {
       play: (d) => this.play(d),
       resume: () => this.resume(),
@@ -69,6 +69,10 @@ export class App {
       sound: (k) => this.audio.ui(k),
     });
     window.addEventListener('resize', () => this.resize());
+    // Escape on the title screens (no battle input attached) steps back through the menus.
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.state === 'title') this.escape();
+    });
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && this.state === 'playing' && this.game && !this.game.paused) this.pause();
     });
@@ -218,11 +222,22 @@ export class App {
     this.menus.show('title');
   }
 
+  /** Escape / P: leave a sub-menu, otherwise toggle pause. */
+  private escape(): void {
+    const m = this.menus.current;
+    if (m === 'howto' || m === 'settings') this.menus.goBack();
+    else if (m === 'difficulty') this.menus.show(this.state === 'over' ? 'over' : 'title');
+    else if (this.state !== 'playing') return;
+    else if (this.game?.paused) this.resume();
+    else this.pause();
+  }
+
   pause(): void {
     if (this.state !== 'playing' || !this.game || this.game.over) return;
     this.game.paused = true;
     this.hud.cancelTargeting();
     this.hud.hideTooltip();
+    if (this.hud.panelOpen) this.hud.togglePanel('none');
     this.menus.show('pause');
   }
 

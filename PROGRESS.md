@@ -81,6 +81,10 @@ See DESIGN.md for the game design.
 8. [x] Results screen "Army strength over time" line chart (`Game.history`, sampled every 5 s):
    validated chart colours, legend + direct labels, hover crosshair/tooltip; side-by-side with
    the stats table on short phone screens.
+9. [x] Escape routing (`src/app.ts escape()`): Escape in How-to/Settings opened from the pause
+   menu used to resume the battle; on title sub-screens it did nothing. Now steps back.
+10. [x] Pausing left an open turret/blessing panel alive under the pause menu, swallowing
+    Escape. `pause()` now closes panels. (Both found by new smoke checks.)
 
 ## Decisions log
 - Added **gate wards** (free built-in weak turret per lane, scales with age): without them, the
