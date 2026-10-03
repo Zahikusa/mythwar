@@ -545,6 +545,12 @@ svg {
   display: block;
 }
 
+/* Shorter bottom bars (e.g. 1366x768 laptops): shrink portraits so names stay clear. */
+.hud.desktop .card .portrait canvas {
+  width: min(70px, calc(var(--bottom) - 54px)) !important;
+  height: min(70px, calc(var(--bottom) - 54px)) !important;
+}
+
 .card .clsico {
   position: absolute;
   top: 5px;

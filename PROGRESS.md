@@ -165,6 +165,15 @@ See DESIGN.md for the game design.
 52. [x] Coach tip "packs" explains Hunter packs vs Guardian sweeps when the player first
     fields 3+ Hunters in one lane.
 53. [x] Smoke flow drives title → difficulty → Begin Battle on a rotated portrait phone.
+54. [x] 1366×768 laptops: card portraits overlapped the names; portraits now scale with the
+    bottom-bar height (`desktop-laptop` screenshot scenario).
+55. [ ] `src/render/background.ts`: foliage/pebbles are random per theme but identical on both
+    halves' perspective; consider a subtle per-lane texture variation and soft grass tufts
+    hugging the lane edges for extra depth.
+56. [ ] Accessibility: team identity relies on blue/red rings + facing; add an optional
+    colour-blind palette (e.g. blue/orange) in Settings.
+57. [ ] Turret panel lacks numbers comparison (range/damage) in-panel on mobile (only titles);
+    show a compact stat line under each buy button.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
