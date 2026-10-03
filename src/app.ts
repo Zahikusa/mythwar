@@ -83,16 +83,18 @@ export class App {
     const coarse = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
     // Phones held upright: rotate the whole game into landscape (side-view lanes need width).
     this.rotated = (coarse || forced === 'mobile') && vh > vw && !this.params.has('norotate');
-    const w = this.rotated ? vh : vw;
-    const h = this.rotated ? vw : vh;
+    // Keep the game clear of notches / rounded corners (landscape phones).
+    const safe = this.rotated ? { l: 0, r: 0, t: 0, b: 0 } : this.safeArea();
+    const w = (this.rotated ? vh : vw) - safe.l - safe.r;
+    const h = (this.rotated ? vw : vh) - safe.t - safe.b;
     this.mode = forced === 'mobile' || forced === 'desktop' ? forced : this.rotated ? 'mobile' : detectMode(w, h);
     this.width = w;
     this.height = h;
     this.stage.style.width = `${w}px`;
     this.stage.style.height = `${h}px`;
     this.stage.style.transformOrigin = '0 0';
-    this.stage.style.transform = this.rotated ? `translateX(${vw}px) rotate(90deg)` : '';
-    const toStage = (cx: number, cy: number): [number, number] => (this.rotated ? [cy, vw - cx] : [cx, cy]);
+    this.stage.style.transform = this.rotated ? `translateX(${vw}px) rotate(90deg)` : `translate(${safe.l}px, ${safe.t}px)`;
+    const toStage = (cx: number, cy: number): [number, number] => (this.rotated ? [cy, vw - cx] : [cx - safe.l, cy - safe.t]);
     this.input.toStage = toStage;
     this.hud.toStage = toStage;
     this.coach.toStage = toStage;
@@ -100,6 +102,39 @@ export class App {
     this.renderer.resize(w, h, this.mode, this.settings.lowQuality ? 1 : 2);
     this.hud.setLayout(this.renderer.layout);
     this.stage.classList.toggle('mobile', this.mode === 'mobile');
+  }
+
+  private safeProbe: HTMLDivElement | null = null;
+
+  /** Safe-area insets (notches) in CSS pixels. */
+  private safeArea(): { l: number; r: number; t: number; b: number } {
+    if (!this.safeProbe) {
+      const d = document.createElement('div');
+      d.style.cssText =
+        'position:fixed;left:0;top:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
+      document.body.appendChild(d);
+      this.safeProbe = d;
+    }
+    const cs = getComputedStyle(this.safeProbe);
+    return { l: parseFloat(cs.paddingLeft) || 0, r: parseFloat(cs.paddingRight) || 0, t: parseFloat(cs.paddingTop) || 0, b: parseFloat(cs.paddingBottom) || 0 };
+  }
+
+  /** On phones, go fullscreen and lock landscape when a battle starts (needs a user gesture). */
+  private immersive(): void {
+    if (this.mode !== 'mobile' || !this.settings.fullscreen) return;
+    const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
+    try {
+      if (!document.fullscreenElement) {
+        const p = el.requestFullscreen?.({ navigationUI: 'hide' }) ?? el.webkitRequestFullscreen?.();
+        if (p && typeof (p as Promise<void>).then === 'function') {
+          (p as Promise<void>)
+            .then(() => (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.('landscape'))
+            .catch(() => {});
+        }
+      }
+    } catch {
+      // Not supported (e.g. iPhone Safari) — the rotated layout still works.
+    }
   }
 
   applySettings(s: Settings): void {
@@ -157,6 +192,7 @@ export class App {
     this.settings.difficulty = difficulty;
     saveSettings(this.settings);
     const game = this.startGame(difficulty, seed, false);
+    this.immersive();
     this.state = 'playing';
     this.overTimer = -1;
     this.audio.ambience = 1;

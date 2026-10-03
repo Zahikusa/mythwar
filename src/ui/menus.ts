@@ -227,7 +227,7 @@ export class Menus {
       });
       return h('label', { class: 'srow' }, h('span', { text: label }), input, val);
     };
-    const toggleRow = (label: string, key: 'shake' | 'hints' | 'lowQuality') => {
+    const toggleRow = (label: string, key: 'shake' | 'hints' | 'lowQuality' | 'fullscreen') => {
       const input = h('input', { type: 'checkbox' }) as HTMLInputElement;
       input.checked = !!s[key];
       input.addEventListener('change', () => {
@@ -250,6 +250,7 @@ export class Menus {
         toggleRow('Screen shake', 'shake'),
         toggleRow('Gameplay hints', 'hints'),
         toggleRow('Battery saver (lower quality)', 'lowQuality'),
+        toggleRow('Fullscreen on phones', 'fullscreen'),
       ),
       h('div', { class: 'mrow' }, back),
     );

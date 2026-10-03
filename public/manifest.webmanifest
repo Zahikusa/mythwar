@@ -1,0 +1,14 @@
+{
+  "name": "Mythwar: Ages of Legend",
+  "short_name": "Mythwar",
+  "description": "A three-lane, mythological take on Age of War.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0b0716",
+  "theme_color": "#140f24",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

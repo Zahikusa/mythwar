@@ -14,6 +14,7 @@ export interface Settings {
   shake: boolean;
   hints: boolean;
   lowQuality: boolean;
+  fullscreen: boolean;
   difficulty: Difficulty;
   tutorialSeen: boolean;
   hintsSeen: string[];
@@ -29,6 +30,7 @@ const DEFAULTS: Settings = {
   shake: true,
   hints: true,
   lowQuality: false,
+  fullscreen: true,
   difficulty: 'novice',
   tutorialSeen: false,
   hintsSeen: [],
