@@ -807,7 +807,9 @@ export class Renderer {
     const y = p.y - fly - cheer;
     ctx.save();
     ctx.globalAlpha = Math.min(1, spawnK * 1.5);
-    ctx.translate(p.x, y);
+    // Recoil: knocked back a touch when struck (visual only).
+    const recoil = v.flash * v.flash * 3 * p.s * (u.team === 0 ? -1 : 1);
+    ctx.translate(p.x + recoil, y);
     ctx.scale(u.team === 0 ? sc : -sc, sc);
     setLineWidth(Math.min(1.6, 1.25 / sc));
     if (u.enraged) drawGlow(ctx, 0, art.body[1], art.height * 0.7, [255, 70, 40], 0.45 + 0.15 * Math.sin(this.time * 12));
