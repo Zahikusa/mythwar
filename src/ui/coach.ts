@@ -110,9 +110,10 @@ export class Coach {
     this.el.classList.remove('show');
   }
 
-  update(): void {
+  /** `blocked`: a panel or menu covers the screen, so tips stay hidden for now. */
+  update(blocked = false): void {
     const g = this.game;
-    if (!g || !this.settings.hints || g.paused || g.over) {
+    if (!g || !this.settings.hints || g.paused || g.over || blocked) {
       if (this.current) this.el.classList.remove('show');
       return;
     }

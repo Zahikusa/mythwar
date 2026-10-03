@@ -260,7 +260,7 @@ export class App {
       this.audio.intensity = this.battleIntensity(g);
       this.renderer.render(g.world, alpha, dt, g.view);
       if (this.state === 'playing' || this.state === 'over') this.hud.update(dt);
-      if (this.state === 'playing') this.coach.update();
+      if (this.state === 'playing') this.coach.update(this.hud.panelOpen || this.menus.current !== 'none');
       if (this.overTimer > 0) {
         this.overTimer -= dt;
         if (this.overTimer <= 0) {
