@@ -42,6 +42,8 @@ const SCENARIOS: Scenario[] = [
   { name: 'menu-settings', query: 'screen=settings', w: 1600, h: 900, wait: 2000 },
   { name: 'mobile-title', query: '', w: 844, h: 390, mobile: true, dpr: 3, wait: 2500 },
   { name: 'mobile-diff', query: 'screen=difficulty', w: 844, h: 390, mobile: true, dpr: 3, wait: 2000 },
+  { name: 'mobile-port-title', query: '', w: 390, h: 844, mobile: true, dpr: 2, wait: 2500 },
+  { name: 'mobile-port-diff', query: 'screen=difficulty', w: 390, h: 844, mobile: true, dpr: 2, wait: 2000 },
   { name: 'power-briar', query: 'demo&ff=60&seed=3', w: 1600, h: 900, script: cast(0, 1), after: 700 },
   { name: 'power-zeus', query: 'demo&ff=200&seed=3', w: 1600, h: 900, script: cast(1, 1), after: 900 },
   { name: 'power-fimbul', query: 'demo&ff=300&seed=3', w: 1600, h: 900, script: cast(2, 1), after: 1300 },

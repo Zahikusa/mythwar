@@ -26,6 +26,10 @@ body {
   left: 0;
   top: 0;
   overflow: hidden;
+  /* Menus and HUD size themselves against the stage, which is rotated on portrait phones
+     (viewport media queries would see the wrong orientation). */
+  container-type: size;
+  container-name: stage;
 }
 
 #stage > canvas {

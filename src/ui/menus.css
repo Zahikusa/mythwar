@@ -144,7 +144,7 @@
 
 .logo-main {
   font-family: var(--title-font);
-  font-size: clamp(54px, 11vw, 124px);
+  font-size: clamp(54px, 11cqw, 124px);
   font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1.05;
@@ -272,7 +272,7 @@
 /* ------------------------------------------------------------------ */
 .hbook {
   position: relative;
-  width: min(620px, 92vw);
+  width: min(620px, 92cqw);
   min-height: 330px;
   border-radius: 20px;
   background: linear-gradient(180deg, rgba(48, 34, 80, 0.94), rgba(22, 14, 40, 0.96));
@@ -429,7 +429,7 @@
 /* Settings                                                            */
 /* ------------------------------------------------------------------ */
 .sbox {
-  width: min(460px, 92vw);
+  width: min(460px, 92cqw);
   padding: 18px 22px;
   border-radius: 18px;
   background: var(--panel);
@@ -506,7 +506,7 @@
 
 .verdict .vt {
   font-family: var(--title-font);
-  font-size: clamp(54px, 9vw, 96px);
+  font-size: clamp(54px, 9cqw, 96px);
   font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1;
@@ -555,7 +555,7 @@
 
 .stats {
   border-collapse: collapse;
-  min-width: min(440px, 92vw);
+  min-width: min(440px, 92cqw);
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -600,7 +600,7 @@
 }
 
 .chart {
-  width: min(440px, 92vw);
+  width: min(440px, 92cqw);
   padding: 10px 12px 8px;
   border-radius: 14px;
   background: #1a1230;
@@ -724,7 +724,7 @@
 /* ------------------------------------------------------------------ */
 /* Compact screens (phones in landscape)                               */
 /* ------------------------------------------------------------------ */
-@media (max-height: 520px) {
+@container stage (max-height: 520px) {
   .screen {
     gap: 10px;
     padding: 10px;
@@ -859,7 +859,7 @@
   }
 }
 
-@media (max-width: 720px) {
+@container stage (max-width: 720px) {
   .diffs {
     grid-template-columns: repeat(2, minmax(140px, 1fr));
   }

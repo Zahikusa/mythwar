@@ -137,6 +137,16 @@ See DESIGN.md for the game design.
 37. [x] Card tooltips show effective HP / DPS including Might/Vitality (+x% marked).
 38. [x] Effects/master volume sliders play a preview sound on release. (Overall loudness on
     real devices still unverified — no speakers here.)
+39. [x] Rotated-portrait phones: menu CSS used viewport media queries, which saw the portrait
+    viewport while the stage is landscape — the difficulty screen overflowed with no title or
+    buttons. #stage is now a size container; menus/HUD use `@container stage (...)` and
+    cqw/cqh units. Screenshot scenarios `mobile-port-title/diff` added.
+40. [ ] Forfeits: "Leave battle"/"Restart" from the pause menu don't count as a loss in the
+    difficulty records; count them once the battle has run ≥ 60 s.
+41. [ ] `src/ui/menus.ts` how-to art uses portraits rendered with the default team colours
+    only; show an enemy creature (red) on the counters page to reinforce team identity.
+42. [ ] `scripts/shoot.ts` scenarios list is long; add a `--list` flag and group names so a
+    future run can grab the right screenshots quickly.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
     Mystics beat *everything* at army scale (ranged units focus fire, melee fight one at a time),
     so "spam Mystics" was a dominant strategy. Added formation rules — Hunters hunt in packs
