@@ -366,7 +366,8 @@ export class App {
       const alpha = g.advance(dt);
       if (this.state === 'playing' && !g.paused && g.world.time - this.lastSave >= 5) this.persist();
       this.audio.intensity = this.battleIntensity(g);
-      this.renderer.render(g.world, alpha, dt, g.view);
+      // A paused battle is a true freeze-frame: effects stop too.
+      this.renderer.render(g.world, alpha, g.paused ? 0 : dt, g.view);
       if (this.state === 'playing' || this.state === 'over') this.hud.update(dt);
       if (this.renderer.fx.coinsArrived !== this.coinsSeen) {
         this.coinsSeen = this.renderer.fx.coinsArrived;
