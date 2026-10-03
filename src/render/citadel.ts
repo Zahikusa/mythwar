@@ -1,6 +1,6 @@
 import type { Team, TurretSlot } from '../sim/types.ts';
 import { TURRETS } from '../sim/data.ts';
-import { OUTLINE, TAU, circle, cluster, dots, drawGlow, ellipse, line, poly, rrect, setLineWidth } from './draw.ts';
+import { OUTLINE, TAU, circle, cluster, dots, drawGlow, ellipse, line, oval, poly, rrect, setLineWidth } from './draw.ts';
 import type { Layout } from './layout.ts';
 import { TEAM_COLORS, shade } from './theme.ts';
 
@@ -435,49 +435,258 @@ export function drawTurret(
   ctx.translate(cx, top);
   // Turret art is authored small; draw it 1.5x so it reads at a glance.
   s *= 1.5;
-  const recoil = since >= 0 && since < 0.25 ? (1 - since / 0.25) * 4 * s : 0;
   ctx.scale(dir, 1);
   setLineWidth(1.1);
-  // Mount
-  rrect(ctx, -10 * s, -6 * s, 20 * s, 8 * s, 2 * s, st.wallDark);
-  const aim = Math.atan2(-(laneY - 20 * s - top) * 0.15, Math.abs(aimScreenX - cx) + 1) * -1;
-  if (def.kind === 'bolt') {
-    ctx.save();
-    ctx.translate(0, -10 * s);
-    ctx.rotate(Math.max(-0.5, Math.min(0.3, aim)));
-    ctx.translate(-recoil, 0);
-    // stock
-    rrect(ctx, -10 * s, -3 * s, 22 * s, 6 * s, 2 * s, st.trim);
-    // bow limbs
-    ctx.strokeStyle = OUTLINE;
-    ctx.lineWidth = 3.2 * s + 1;
-    ctx.beginPath();
-    ctx.moveTo(8 * s, -11 * s);
-    ctx.quadraticCurveTo(13 * s, 0, 8 * s, 11 * s);
-    ctx.stroke();
-    ctx.strokeStyle = shade(st.wallDark, -0.1);
-    ctx.lineWidth = 3.2 * s;
-    ctx.stroke();
-    line(ctx, 8 * s, -11 * s, 2 * s - recoil, 0, 0.8, '#e8e0d0');
-    line(ctx, 8 * s, 11 * s, 2 * s - recoil, 0, 0.8, '#e8e0d0');
-    // bolt / gem tip
-    circle(ctx, 13 * s, 0, 2.6 * s, tc.main);
-    if (def.age >= 2) drawGlow(ctx, 13 * s, 0, 8 * s, def.age === 4 ? [255, 230, 150] : tc.rgb, 0.5);
-    ctx.restore();
-  } else {
-    ctx.save();
-    ctx.translate(0, -8 * s);
-    ctx.rotate(-0.6 + Math.min(0.2, recoil * 0.05));
-    rrect(ctx, -5 * s, -6 * s, 18 * s - recoil, 12 * s, 4 * s, st.trim);
-    ellipse(ctx, 13 * s - recoil, 0, 3 * s, 6 * s, '#1a1222');
-    const glowCol: [number, number, number] =
-      def.age === 0 ? [180, 255, 120] : def.age === 1 ? [255, 150, 60] : def.age === 2 ? [170, 230, 255] : def.age === 3 ? [255, 120, 60] : [255, 230, 160];
-    drawGlow(ctx, 13 * s - recoil, 0, 7 * s, glowCol, 0.6);
-    ctx.restore();
-    // supports
-    line(ctx, -6 * s, -2 * s, -2 * s, -9 * s, 2 * s, st.wallDark);
-    line(ctx, 6 * s, -2 * s, 2 * s, -9 * s, 2 * s, st.wallDark);
+  const aim = Math.max(-0.5, Math.min(0.3, Math.atan2(-(laneY - 20 * s - top) * 0.15, Math.abs(aimScreenX - cx) + 1) * -1));
+  const fire = since >= 0 && since < 0.35 ? 1 - since / 0.35 : 0;
+  const t = simTime;
+  switch (id) {
+    case 'thornspitter': {
+      // A briar bulb that spits thorns
+      for (const a of [-0.9, 0.9]) {
+        ctx.save();
+        ctx.rotate(a);
+        blobLeaf(ctx, 0, -2 * s, 9 * s, '#3f7d32');
+        ctx.restore();
+      }
+      line(ctx, 0, 0, 0, -8 * s, 3 * s, '#2f5f27');
+      ctx.save();
+      ctx.translate(0, -13 * s);
+      ctx.rotate(aim);
+      ctx.scale(1 + fire * 0.15, 1 - fire * 0.12);
+      oval(ctx, 0, 0, 7 * s, 6 * s, '#5aa04a');
+      for (let k = -1; k <= 1; k++) poly(ctx, [-3 * s + k * 3 * s, -5 * s, -2 * s + k * 3 * s, -9 * s, -1 * s + k * 3 * s, -5 * s], '#c9b77a', true, 0.8);
+      ellipse(ctx, 6 * s, 0, 2.6 * s, 2 * s + fire * 1.5 * s, '#2a1a10');
+      circle(ctx, 1 * s, -2 * s, 1.4 * s, tc.main);
+      ctx.restore();
+      break;
+    }
+    case 'sporepod': {
+      // Toadstool mortar
+      rrect(ctx, -4 * s, -12 * s, 8 * s, 12 * s, 3 * s, '#efe4cf');
+      ctx.save();
+      ctx.translate(0, -12 * s);
+      ctx.scale(1 + fire * 0.12, 1 - fire * 0.2);
+      blobCap(ctx, 13 * s, '#c8343f');
+      dots(ctx, [-6 * s, -5 * s, 1.8 * s, 0, -8 * s, 2 * s, 6 * s, -4 * s, 1.6 * s], '#fff4e4');
+      ctx.restore();
+      if (fire > 0.5) drawGlow(ctx, 0, -22 * s, 12 * s, [200, 255, 140], fire);
+      circle(ctx, 0, -6 * s, 1.5 * s, tc.main);
+      break;
+    }
+    case 'ballista': {
+      rrect(ctx, -10 * s, -6 * s, 20 * s, 8 * s, 2 * s, st.wallDark);
+      ctx.save();
+      ctx.translate(0, -10 * s);
+      ctx.rotate(aim);
+      ctx.translate(-fire * 4 * s, 0);
+      rrect(ctx, -12 * s, -2.5 * s, 26 * s, 5 * s, 2 * s, '#8a5a2b');
+      bow(ctx, 8 * s, 12 * s, s, '#c8913a');
+      line(ctx, 8 * s, -12 * s, (2 - fire * 4) * s, 0, 0.8, '#efe6d2');
+      line(ctx, 8 * s, 12 * s, (2 - fire * 4) * s, 0, 0.8, '#efe6d2');
+      if (fire < 0.5) poly(ctx, [12 * s, -1.5 * s, 18 * s, 0, 12 * s, 1.5 * s], '#d8dde6', true, 0.8);
+      circle(ctx, -10 * s, 0, 2 * s, tc.main);
+      ctx.restore();
+      break;
+    }
+    case 'brazier': {
+      // Bronze tripod with a bowl of Greek fire
+      line(ctx, -7 * s, 0, -3 * s, -12 * s, 2.2 * s, '#8c5f1e');
+      line(ctx, 7 * s, 0, 3 * s, -12 * s, 2.2 * s, '#8c5f1e');
+      line(ctx, 0, 0, 0, -12 * s, 2.2 * s, '#a8742a');
+      ctx.beginPath();
+      ctx.moveTo(-10 * s, -13 * s);
+      ctx.quadraticCurveTo(0, -4 * s, 10 * s, -13 * s);
+      ctx.closePath();
+      ctx.fillStyle = '#c8913a';
+      ctx.fill();
+      ctx.strokeStyle = OUTLINE;
+      ctx.lineWidth = 1.1;
+      ctx.stroke();
+      line(ctx, -10 * s, -13 * s, 10 * s, -13 * s, 1.6 * s, '#e9c25a');
+      const fl = 1 + Math.sin(t * 14) * 0.15 + fire * 0.6;
+      drawGlow(ctx, 0, -18 * s, 14 * s * fl, [255, 150, 50], 0.8);
+      poly(ctx, [-6 * s, -13 * s, -2 * s, -22 * s * fl, 0, -15 * s, 3 * s, -25 * s * fl, 6 * s, -13 * s], '#ffb347', false);
+      poly(ctx, [-3 * s, -13 * s, 0, -19 * s * fl, 3 * s, -13 * s], '#fff1b0', false);
+      circle(ctx, 0, -9 * s, 1.5 * s, tc.main);
+      break;
+    }
+    case 'runestone': {
+      // Carved standing stone with glowing runes and a hovering crystal
+      blobStone(ctx, s, '#7d8ea3');
+      const runeA = 0.6 + 0.4 * Math.max(fire, Math.sin(t * 3) * 0.5 + 0.5);
+      ctx.strokeStyle = 'rgba(140, 235, 255, ' + runeA.toFixed(3) + ')';
+      ctx.lineWidth = 1.4 * s;
+      ctx.beginPath();
+      ctx.moveTo(-2 * s, -6 * s);
+      ctx.lineTo(-2 * s, -18 * s);
+      ctx.lineTo(2 * s, -14 * s);
+      ctx.moveTo(2 * s, -6 * s);
+      ctx.lineTo(2 * s, -11 * s);
+      ctx.stroke();
+      drawGlow(ctx, 0, -12 * s, 10 * s, [120, 230, 255], 0.3 + fire * 0.6);
+      const cy = -28 * s + Math.sin(t * 2.5) * 1.5 * s;
+      drawGlow(ctx, 0, cy, 9 * s, [120, 230, 255], 0.6 + fire * 0.4);
+      poly(ctx, [0, cy - 5 * s, 3 * s, cy, 0, cy + 5 * s, -3 * s, cy], '#cdf6ff', true, 0.8);
+      circle(ctx, 0, -3 * s, 1.4 * s, tc.main);
+      break;
+    }
+    case 'frostcatapult': {
+      // Wooden frame with a throwing arm holding a chunk of glacier ice
+      rrect(ctx, -11 * s, -5 * s, 22 * s, 5 * s, 1.5 * s, '#6b5a48');
+      line(ctx, -6 * s, -5 * s, 0, -12 * s, 2 * s, '#5f4e40');
+      line(ctx, 6 * s, -5 * s, 0, -12 * s, 2 * s, '#5f4e40');
+      const armA = -2.3 + fire * 1.6;
+      ctx.save();
+      ctx.translate(0, -12 * s);
+      ctx.rotate(armA);
+      line(ctx, -4 * s, 0, 16 * s, 0, 2.2 * s, '#8a7462');
+      if (fire < 0.3) poly(ctx, [14 * s, -4 * s, 19 * s, -3 * s, 20 * s, 2 * s, 15 * s, 3 * s, 12 * s, 0], '#cdeeff', true, 0.8);
+      ctx.restore();
+      circle(ctx, 0, -12 * s, 1.6 * s, tc.main);
+      break;
+    }
+    case 'repeater': {
+      // Jade-lacquered repeating crossbow with a bolt magazine
+      rrect(ctx, -9 * s, -6 * s, 18 * s, 7 * s, 2 * s, '#7c2019');
+      ctx.save();
+      ctx.translate(0, -10 * s);
+      ctx.rotate(aim);
+      ctx.translate(-fire * 2 * s, 0);
+      rrect(ctx, -11 * s, -2.5 * s, 24 * s, 5 * s, 2 * s, '#b8382f');
+      rrect(ctx, -4 * s, -10 * s, 9 * s, 8 * s, 1.5 * s, '#2f7a62');
+      line(ctx, -3 * s, -6 * s, 4 * s, -6 * s, 0.8, '#e2b84a');
+      bow(ctx, 9 * s, 9 * s, s, '#3a2a1a');
+      line(ctx, 9 * s, -9 * s, 3 * s, 0, 0.8, '#efe6d2');
+      line(ctx, 9 * s, 9 * s, 3 * s, 0, 0.8, '#efe6d2');
+      circle(ctx, -9 * s, 0, 1.8 * s, tc.main);
+      ctx.restore();
+      break;
+    }
+    case 'rocketrack': {
+      // Angled rack of fire-lance rockets
+      rrect(ctx, -9 * s, -5 * s, 18 * s, 5 * s, 1.5 * s, '#7c2019');
+      ctx.save();
+      ctx.translate(0, -8 * s);
+      ctx.rotate(-0.55);
+      rrect(ctx, -8 * s, -7 * s, 18 * s, 14 * s, 2 * s, '#b8382f');
+      for (let k = 0; k < 3; k++) {
+        const y = (-4 + k * 4) * s;
+        ellipse(ctx, 10 * s, y, 1.6 * s, 1.6 * s, '#1a1222');
+        if (!(fire > 0.2 && k === 1)) poly(ctx, [10 * s, y - 1.2 * s, 14 * s, y, 10 * s, y + 1.2 * s], '#e2b84a', true, 0.6);
+      }
+      line(ctx, -8 * s, -7 * s, 10 * s, -7 * s, 1 * s, '#e2b84a');
+      ctx.restore();
+      if (fire > 0) drawGlow(ctx, -8 * s, -4 * s, 10 * s, [255, 170, 80], fire * 0.8);
+      circle(ctx, 0, -3 * s, 1.4 * s, tc.main);
+      break;
+    }
+    case 'sunspire': {
+      // Golden spire focusing sunlight through a crystal
+      poly(ctx, [-6 * s, 0, -2 * s, -20 * s, 2 * s, -20 * s, 6 * s, 0], '#e9c25a');
+      poly(ctx, [-6 * s, 0, -2 * s, -20 * s, 0, -20 * s, -1 * s, 0], '#ffe7a0', false);
+      const cy = -26 * s;
+      ctx.save();
+      ctx.translate(0, cy);
+      ctx.rotate(t * 0.8);
+      ctx.strokeStyle = 'rgba(255, 236, 170, 0.8)';
+      ctx.lineWidth = 1.2 * s;
+      for (let k = 0; k < 8; k++) {
+        const a = (k / 8) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * 6 * s, Math.sin(a) * 6 * s);
+        ctx.lineTo(Math.cos(a) * (9 + fire * 4) * s, Math.sin(a) * (9 + fire * 4) * s);
+        ctx.stroke();
+      }
+      ctx.restore();
+      drawGlow(ctx, 0, cy, (14 + fire * 10) * s, [255, 230, 150], 0.8);
+      circle(ctx, 0, cy, 4 * s, '#fff6d0');
+      circle(ctx, 0, -8 * s, 1.5 * s, tc.main);
+      break;
+    }
+    case 'starforge': {
+      // A floating ring that cradles a fallen star
+      rrect(ctx, -8 * s, -5 * s, 16 * s, 5 * s, 2 * s, '#c9bfae');
+      const cy = -18 * s + Math.sin(t * 2) * 1.5 * s;
+      ctx.strokeStyle = OUTLINE;
+      ctx.lineWidth = 3.4 * s + 1;
+      ctx.beginPath();
+      ctx.ellipse(0, cy, 10 * s, 10 * s, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = '#e9c25a';
+      ctx.lineWidth = 3.4 * s;
+      ctx.stroke();
+      drawGlow(ctx, 0, cy, (12 + fire * 10) * s, [255, 235, 170], 0.9);
+      ctx.save();
+      ctx.translate(0, cy);
+      ctx.rotate(t * 2);
+      const pts: number[] = [];
+      for (let k = 0; k < 10; k++) {
+        const a = (k / 10) * Math.PI * 2;
+        const r = (k % 2 ? 2.4 : 5.5) * s;
+        pts.push(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      poly(ctx, pts, '#fffbe6', false);
+      ctx.restore();
+      circle(ctx, 0, -2.5 * s, 1.4 * s, tc.main);
+      break;
+    }
   }
   ctx.restore();
   void dots;
+}
+
+function blobLeaf(ctx: CanvasRenderingContext2D, x: number, y: number, len: number, col: string): void {
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(x + len * 0.5, y - len * 0.5, x, y - len);
+  ctx.quadraticCurveTo(x - len * 0.5, y - len * 0.5, x, y);
+  ctx.fillStyle = col;
+  ctx.fill();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+}
+
+function blobCap(ctx: CanvasRenderingContext2D, r: number, col: string): void {
+  ctx.beginPath();
+  ctx.moveTo(-r, 0);
+  ctx.quadraticCurveTo(-r, -r * 0.95, 0, -r * 0.95);
+  ctx.quadraticCurveTo(r, -r * 0.95, r, 0);
+  ctx.quadraticCurveTo(0, r * 0.2, -r, 0);
+  ctx.closePath();
+  ctx.fillStyle = col;
+  ctx.fill();
+  ctx.lineWidth = 1.1;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+}
+
+function blobStone(ctx: CanvasRenderingContext2D, s: number, col: string): void {
+  ctx.beginPath();
+  ctx.moveTo(-6 * s, 0);
+  ctx.lineTo(-7 * s, -14 * s);
+  ctx.quadraticCurveTo(-5 * s, -21 * s, 0, -21 * s);
+  ctx.quadraticCurveTo(5 * s, -21 * s, 6 * s, -15 * s);
+  ctx.lineTo(6 * s, 0);
+  ctx.closePath();
+  ctx.fillStyle = col;
+  ctx.fill();
+  ctx.lineWidth = 1.1;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillRect(-5 * s, -18 * s, 3 * s, 16 * s);
+}
+
+function bow(ctx: CanvasRenderingContext2D, x: number, half: number, s: number, col: string): void {
+  ctx.strokeStyle = OUTLINE;
+  ctx.lineWidth = 3 * s + 1;
+  ctx.beginPath();
+  ctx.moveTo(x, -half);
+  ctx.quadraticCurveTo(x + 5 * s, 0, x, half);
+  ctx.stroke();
+  ctx.strokeStyle = col;
+  ctx.lineWidth = 3 * s;
+  ctx.stroke();
 }
