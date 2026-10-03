@@ -143,8 +143,8 @@ See DESIGN.md for the game design.
     cqw/cqh units. Screenshot scenarios `mobile-port-title/diff` added.
 40. [x] Forfeits: leaving/restarting from the pause menu after ≥ 60 s records a defeat (noted
     under the pause buttons).
-41. [ ] `src/ui/menus.ts` how-to art uses portraits rendered with the default team colours
-    only; show an enemy creature (red) on the counters page to reinforce team identity.
+41. [x] How-to page 1 shows your (blue-glow, facing right) creatures versus the enemy's
+    (red, facing left); `portrait()` can render facing left.
 42. [ ] `scripts/shoot.ts` scenarios list is long; add a `--list` flag and group names so a
     future run can grab the right screenshots quickly.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed

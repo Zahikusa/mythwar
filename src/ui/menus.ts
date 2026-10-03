@@ -175,7 +175,7 @@ export class Menus {
       {
         title: 'Topple their citadel',
         body: [
-          art(['treant', 'redcap', 'pixie'], 0),
+          versusArt(),
           p('Two citadels face each other across <b>three lanes</b>. Creatures march down their lane and fight anything in their way. Reach the enemy gate and they batter the citadel.'),
           p('Bring the enemy citadel’s health to zero to win. Protect your own — it is shared by all three lanes.'),
         ],
@@ -374,6 +374,17 @@ function p(html: string): HTMLElement {
 function art(ids: string[], team: Team): HTMLElement {
   const box = h('div', { class: 'hart' });
   ids.forEach((id) => box.appendChild(portrait(id, 72, team)));
+  return box;
+}
+
+/** Your creatures (blue) squaring up to the enemy's (red). */
+function versusArt(): HTMLElement {
+  const box = h('div', { class: 'hart versus' });
+  const mine = [portrait('pixie', 64, 0), portrait('treant', 72, 0)];
+  const theirs = [portrait('redcap', 72, 1, 0.4, true), portrait('treant', 72, 1, 1.1, true)];
+  for (const c of mine) c.classList.add('tblue');
+  for (const c of theirs) c.classList.add('tred');
+  box.append(...mine, h('span', { class: 'vsmark', text: 'vs' }), ...theirs);
   return box;
 }
 
