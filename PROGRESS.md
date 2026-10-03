@@ -106,8 +106,8 @@ See DESIGN.md for the game design.
     lifesteal 0.35→0.25. The triangle now holds at army scale in all ages (unit-tested).
     Adept softened (think 1.6 s, 90% income) since counters matter more; a "follow the Counter!
     badge" bot beats Novice 9/10, Adept ~27%, Master ~10%.
-20. [ ] `src/ui/hud.ts`: queue chips are rebuilt from scratch whenever the queue changes,
-    restarting their pop-in animation for every chip; diff instead.
+20. [x] Queue chips are reconciled (kept/moved/removed) instead of rebuilt, so only new chips
+    pop in; cancel uses the chip's live index. Smoke checks for chips + cancel added.
 
 ## Decisions log
 - Formation rules (packs/sweep/hang-back) instead of raw stat tuning: stats alone cannot fix

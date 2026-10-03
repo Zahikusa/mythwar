@@ -33,6 +33,13 @@ export interface HudCallbacks {
   sound(kind: string): void;
 }
 
+interface QueueChip {
+  unitId: string;
+  lane: number;
+  el: HTMLButtonElement;
+  prog: HTMLElement;
+}
+
 interface CardEl {
   def: UnitDef;
   el: HTMLButtonElement;
@@ -49,7 +56,7 @@ export class Hud {
   private cardAge = -1;
   private el: Record<string, HTMLElement> = {};
   private laneTabs: HTMLButtonElement[] = [];
-  private queueChips: HTMLElement[] = [];
+  private queueChips: QueueChip[] = [];
   private toastTimer = 0;
   private bannerTimer = 0;
   private panel: 'none' | 'turret' | 'bless' = 'none';
@@ -766,35 +773,49 @@ export class Hud {
     const me = g.world.players[g.playerTeam];
     const q = me.queue;
     const chips = this.queueChips;
-    // Rebuild when composition changed
     const sig = q.map((i) => `${i.unitId}:${i.lane}`).join(',');
     if (this.el.queue.dataset.sig !== sig) {
       this.el.queue.dataset.sig = sig;
-      this.el.queue.innerHTML = '';
+      // Reconcile instead of rebuilding, so surviving chips keep their place (no re-pop).
+      const next: QueueChip[] = [];
+      let k = 0;
+      for (const item of q) {
+        while (k < chips.length && (chips[k].unitId !== item.unitId || chips[k].lane !== item.lane)) chips[k++].el.remove();
+        if (k < chips.length) next.push(chips[k++]);
+        else next.push(this.makeChip(item.unitId, item.lane));
+      }
+      while (k < chips.length) chips[k++].el.remove();
       chips.length = 0;
-      q.forEach((item, idx) => {
-        const chip = h(
-          'button',
-          { class: 'qchip', title: `${UNITS[item.unitId].name} → ${LANE_NAMES[item.lane]} lane (click to cancel)` },
-          portrait(item.unitId, 30),
-          h('span', { class: 'ql', text: LANE_NAMES[item.lane][0] }),
-          h('div', { class: 'qprog' }),
-        );
-        onTap(chip, () => {
-          const r = g.command({ type: 'cancel', team: g.playerTeam, index: idx });
-          if (r.ok) this.cb.sound('cancel');
-        });
-        this.el.queue.appendChild(chip);
-        chips.push(chip);
-      });
-      for (let i = q.length; i < QUEUE_MAX; i++) this.el.queue.appendChild(h('div', { class: 'qslot' }));
+      chips.push(...next);
+      for (const c of chips) this.el.queue.appendChild(c.el); // keeps order; existing nodes move
+      for (const slot of [...this.el.queue.querySelectorAll('.qslot')]) slot.remove();
+      for (let n = q.length; n < QUEUE_MAX; n++) this.el.queue.appendChild(h('div', { class: 'qslot' }));
     }
-    if (chips.length > 0 && q.length > 0) {
-      const def = UNITS[q[0].unitId];
-      const k = Math.min(1, me.trainProgress / def.trainTime);
-      setStyle(chips[0].querySelector('.qprog') as HTMLElement, 'width', `${(k * 100).toFixed(1)}%`);
-      toggle(chips[0], 'waiting', k >= 1);
+    for (let n = 0; n < chips.length; n++) {
+      const prog = n === 0 ? Math.min(1, me.trainProgress / UNITS[q[0].unitId].trainTime) : 0;
+      setStyle(chips[n].prog, 'width', `${(prog * 100).toFixed(1)}%`);
+      toggle(chips[n].el, 'waiting', n === 0 && prog >= 1);
     }
+  }
+
+  private makeChip(unitId: string, lane: number): QueueChip {
+    const g = this.game!;
+    const prog = h('div', { class: 'qprog' });
+    const el = h(
+      'button',
+      { class: 'qchip', title: `${UNITS[unitId].name} → ${LANE_NAMES[lane]} lane (click to cancel)` },
+      portrait(unitId, 30),
+      h('span', { class: 'ql', text: LANE_NAMES[lane][0] }),
+      prog,
+    );
+    const chip: QueueChip = { unitId, lane, el, prog };
+    onTap(el, () => {
+      const index = this.queueChips.indexOf(chip);
+      if (index < 0) return;
+      const r = g.command({ type: 'cancel', team: g.playerTeam, index });
+      if (r.ok) this.cb.sound('cancel');
+    });
+    return chip;
   }
 
   private updateTurretPanel(): void {

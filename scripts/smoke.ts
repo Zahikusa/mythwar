@@ -126,6 +126,18 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     check('number key summons', s.queue === Math.min(5, q0 + 1), `queue=${s.queue}`);
   }
 
+  // Queue chips mirror the queue; tapping one cancels it (refund).
+  {
+    const before = await page.evaluate(() => ({ q: (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.length, chips: document.querySelectorAll('.qchip').length }));
+    check('queue chips match the queue', before.q === before.chips && before.q > 0, JSON.stringify(before));
+    const chip = await center(page, '.qchip:last-of-type');
+    if (viewport.mobile) await page.touchscreen.tap(chip.x, chip.y);
+    else await page.mouse.click(chip.x, chip.y);
+    await sleep(120);
+    const after = await page.evaluate(() => ({ q: (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.length, chips: document.querySelectorAll('.qchip').length }));
+    check('tapping a queue chip cancels that summon', after.q === before.q - 1 && after.chips === after.q, JSON.stringify(after));
+  }
+
   // Turret panel: open and build
   await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].gold = 1000));
   const tb = await center(page, '.turretbtn');
