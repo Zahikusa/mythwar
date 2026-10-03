@@ -98,6 +98,9 @@ export class Input {
       return;
     }
     if (g.paused || g.over) return;
+    // A HUD button clicked earlier keeps focus; don't let Space/Enter also activate it.
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active !== document.body && active.closest('.hud')) active.blur();
     const me = g.world.players[g.playerTeam];
     if (k >= '1' && k <= '4') {
       const def = AGE_UNITS[me.age][Number(k) - 1];

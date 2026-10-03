@@ -357,6 +357,8 @@ export class Audio {
   private schedule(): void {
     const ctx = this.ctx;
     if (!ctx || !this.musicOn || ctx.state !== 'running') return;
+    // After a stall (backgrounded tab, suspended context) don't replay every missed bar at once.
+    if (this.nextBar < ctx.currentTime - 0.1) this.nextBar = ctx.currentTime + 0.1;
     while (this.nextBar < ctx.currentTime + 0.6) {
       this.scheduleBar(this.nextBar);
       const sc = SCALES[this.musicAge];

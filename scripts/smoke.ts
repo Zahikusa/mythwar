@@ -157,6 +157,23 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   const cast = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].stats.powersCast);
   check('choosing a lane casts the power', cast === 1, `cast=${cast}`);
 
+  // Keyboard after clicking HUD buttons: Space must cast, not re-activate the focused button.
+  if (!viewport.mobile) {
+    const tb2 = await center(page, '.turretbtn');
+    await page.mouse.click(tb2.x, tb2.y); // open the panel…
+    await sleep(80);
+    await page.mouse.click(tb2.x, tb2.y); // …and close it again (the button keeps focus)
+    await sleep(80);
+    await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].powerCooldown = 0));
+    await page.keyboard.press(' ');
+    await sleep(120);
+    const r = await page.evaluate(() => ({
+      cast: (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].stats.powersCast,
+      panel: !document.querySelector('.turretpanel')!.classList.contains('hidden'),
+    }));
+    check('Space casts the power without toggling a focused button', r.cast === 2 && !r.panel, JSON.stringify(r));
+  }
+
   // Ascend
   await page.evaluate(() => {
     const p = (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0];

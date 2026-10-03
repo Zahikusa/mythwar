@@ -1,6 +1,6 @@
 # PROGRESS
 
-Status: in development (run #1 started 2026-10-03)
+Status: complete, in verification mode (since run #1, 2026-10-04 ~01:15)
 
 See DESIGN.md for the game design.
 
@@ -25,7 +25,7 @@ See DESIGN.md for the game design.
 - [x] M7 Audio (synth SFX + ambient music), settings
 - [x] M8 Mobile: landscape thumb layout, portrait rotation, touch drag, perf scaling
 - [x] M9 Onboarding: how-to-play, first-game hints, tooltips
-- [ ] M10 Balance pass via headless sims, polish, screenshot review on desktop + mobile
+- [x] M10 Balance pass via headless sims, polish, screenshot review on desktop + mobile
 
 ## Done
 - Sim core (`src/sim`): world.ts (step, combat, projectiles, turrets, gate wards, shrines, ragnarök),
@@ -64,9 +64,25 @@ See DESIGN.md for the game design.
 - Citadel collapse finale; README.md; `node scripts/soak.ts 60 16` (no errors in all ages,
   headless software-rendered fps 44–85 at 16× speed).
 
-## Next
-- First-game onboarding hints
-- Game-over citadel collapse effect; polish pass; balance re-check
+## Improvement backlog
+(verification mode: complete ≥2 per run, verify, commit, add new findings)
+1. [x] `src/audio/audio.ts schedule()`: after the tab was backgrounded, `nextBar` lagged far behind
+   `currentTime`, so the loop scheduled every missed bar at once (audio burst). Now clamped.
+2. [x] `src/input.ts onKey`: focused HUD buttons + Space. Turned out Chrome already suppresses
+   the activation (onKey preventDefaults Space; verified with a smoke check that passes with and
+   without the fix); the blur is kept as a guard for other browsers. Smoke check added.
+3. [ ] `src/ui/menus.ts showResults`: champion portrait is an arbitrary creature; show the
+   player's most-summoned creature (needs per-creature counts in TeamStats).
+4. [ ] `src/render/renderer.ts onEvents('baseHit')`: no impact effect at the gate when creatures
+   batter a citadel (only a red tint) — add debris sparks at the lane's gate.
+5. [ ] Desktop: hovering a creature on the battlefield shows nothing; add a light label
+   (name, class icon colour, HP) to help learning.
+6. [ ] `src/ui/hud.ts updateTurretPanel/updateBlessPanel`: `querySelectorAll` every frame while
+   a panel is open; cache element refs.
+7. [ ] `src/render/renderer.ts drawUnits`: comparator calls `vis.get` O(n log n) per lane per
+   frame plus array allocs; precompute sort keys.
+8. [ ] Results screen: add an "army value over time" sparkline for both sides (needs periodic
+   samples recorded in the sim or app).
 
 ## Decisions log
 - Added **gate wards** (free built-in weak turret per lane, scales with age): without them, the
