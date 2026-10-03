@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AGES, AGE_UNITS, LANE_LENGTH, MAX_AGE, POWERS, SHRINE_X, TICK, UNITS, counterMultiplier } from '../src/sim/data.ts';
+import { AGES, AGE_UNITS, BLESSINGS, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_TIME, SHRINE_X, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
 import { World } from '../src/sim/world.ts';
 import type { Team } from '../src/sim/types.ts';
 
@@ -307,5 +307,75 @@ describe('victory', () => {
     const ev = w.drainEvents();
     expect(ev.some((e) => e.type === 'gameOver')).toBe(true);
     expect(w.apply({ type: 'train', team: 0, unitId: 'redcap', lane: 0 }).ok).toBe(false);
+  });
+});
+
+describe('blessings', () => {
+  it('cost gold, rank up and cap at five', () => {
+    const w = new World();
+    w.players[0].gold = blessingCost(0, 0) - 1;
+    expect(w.apply({ type: 'bless', team: 0, blessing: 'might' }).ok).toBe(false);
+    w.players[0].gold = 1e6;
+    for (let i = 0; i < 5; i++) expect(w.apply({ type: 'bless', team: 0, blessing: 'might' }).ok).toBe(true);
+    expect(w.players[0].blessings.might).toBe(5);
+    expect(w.apply({ type: 'bless', team: 0, blessing: 'might' }).ok).toBe(false);
+    expect(blessingCost(1, 0)).toBeGreaterThan(blessingCost(0, 0));
+    expect(blessingCost(0, 4)).toBeGreaterThan(blessingCost(0, 0));
+  });
+
+  it('might raises creature damage', () => {
+    const hitFor = (rank: number) => {
+      const w = new World();
+      w.players[0].blessings.might = rank;
+      w.spawnUnit(0, 0, UNITS.redcap, 480);
+      const e = w.spawnUnit(1, 0, UNITS.redcap, 520);
+      run(w, 5, () => e.hp < e.maxHp);
+      return e.maxHp - e.hp;
+    };
+    expect(hitFor(3)).toBeCloseTo(hitFor(0) * (1 + 3 * BLESSINGS.might.perRank), 5);
+  });
+
+  it('vitality raises the health of new creatures', () => {
+    const w = new World();
+    w.players[0].blessings.vitality = 2;
+    const u = w.spawnUnit(0, 0, UNITS.treant);
+    expect(u.maxHp).toBeCloseTo(UNITS.treant.hp * 1.2);
+  });
+
+  it('bastion raises citadel health immediately and after ascending', () => {
+    const w = new World();
+    w.players[0].gold = 1e6;
+    const before = w.players[0].baseMaxHp;
+    w.apply({ type: 'bless', team: 0, blessing: 'bastion' });
+    expect(w.players[0].baseMaxHp).toBeCloseTo(before * (1 + BLESSINGS.bastion.perRank));
+    expect(w.players[0].baseHp).toBeCloseTo(w.players[0].baseMaxHp);
+    w.players[0].xp = AGES[1].xpRequired;
+    w.apply({ type: 'ageUp', team: 0 });
+    expect(w.players[0].baseMaxHp).toBeCloseTo(AGES[1].baseHp * (1 + BLESSINGS.bastion.perRank));
+  });
+});
+
+describe('ragnarok', () => {
+  it('begins on time, silences wards and ramps citadel damage', () => {
+    const w = new World();
+    w.time = RAGNAROK_TIME - 0.01;
+    run(w, 0.1);
+    expect(w.ragnarokStarted).toBe(true);
+    expect(w.drainEvents().some((e) => e.type === 'ragnarok')).toBe(true);
+    // Wards do not fire any more.
+    w.spawnUnit(1, 0, UNITS.redcap, 60);
+    run(w, 2);
+    expect(w.projectiles.filter((p) => p.fromTurret).length).toBe(0);
+    // Damage to citadels grows over time.
+    const m0 = w.siegeMult();
+    run(w, 30);
+    expect(w.siegeMult()).toBeGreaterThan(m0);
+  });
+
+  it('comes early once both sides reach the final age', () => {
+    const w = new World();
+    setAge(w, MAX_AGE);
+    run(w, 1);
+    expect(w.ragnarokAt).toBeLessThanOrEqual(1 + RAGNAROK_AFTER_FINAL + 0.01);
   });
 });

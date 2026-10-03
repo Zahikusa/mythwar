@@ -85,6 +85,9 @@ See DESIGN.md for the game design.
    menu used to resume the battle; on title sub-screens it did nothing. Now steps back.
 10. [x] Pausing left an open turret/blessing panel alive under the pause menu, swallowing
     Escape. `pause()` now closes panels. (Both found by new smoke checks.)
+11. [x] Unit tests for Blessings (cost/rank cap, might/vitality/bastion effects) and Ragnarök
+    (timing, silent wards, damage ramp, early start in the final age). 38 tests.
+12. [x] Code cleanup: removed `void x;` hacks, unused imports/params.
 
 ## Decisions log
 - Added **gate wards** (free built-in weak turret per lane, scales with age): without them, the
