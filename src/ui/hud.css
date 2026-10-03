@@ -1775,3 +1775,13 @@ svg {
 #stage.mobile .coach.free {
   top: 74px !important;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .act.power.ready,
+  .act.ascend.ready,
+  .lanetab.danger:not(.sel),
+  .act.blessbtn.avail .aico,
+  .hpbar.low .hpfill {
+    animation: none !important;
+  }
+}

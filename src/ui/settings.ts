@@ -47,7 +47,9 @@ export function loadSettings(): Settings {
   } catch {
     // ignore (private mode / corrupted)
   }
-  return { ...DEFAULTS, hintsSeen: [], records: {} };
+  // First run: respect the OS "reduce motion" preference.
+  const calm = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return { ...DEFAULTS, shake: !calm, hintsSeen: [], records: {} };
 }
 
 export function saveSettings(s: Settings): void {

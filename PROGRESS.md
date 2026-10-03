@@ -91,6 +91,18 @@ See DESIGN.md for the game design.
 13. [x] `glowSprite` would build an invalid gradient colour from a hex string; now accepts
     hex / rgb() / triples.
 14. [x] Kill rewards: gold coins arc from slain foes to the gold counter, which pulses.
+15. [x] Haptics on phones (summon, error, ascend, citadel hit, result) via `navigator.vibrate`,
+    gated by the "Screen shake & vibration" setting.
+16. [x] Renderer kept every visited theme backdrop cached at full DPR (up to ~165 MB on 4K);
+    now only the current/previous theme are kept.
+17. [x] `prefers-reduced-motion`: shake/vibration default off on first run; looping CSS
+    pulses disabled.
+18. [ ] Mobile: browsers often kill background tabs — autosave the battle (World state with
+    def ids) to localStorage and offer "Continue battle" on the title screen.
+19. [ ] Balance: Master/Mythic AIs rarely summon Mystics in late ages (phoenix ≈ half of
+    griffins); check whether late-age Mystics are under-tuned or the AI's counter logic is off.
+20. [ ] `src/ui/hud.ts`: queue chips are rebuilt from scratch whenever the queue changes,
+    restarting their pop-in animation for every chip; diff instead.
 
 ## Decisions log
 - Added **gate wards** (free built-in weak turret per lane, scales with age): without them, the

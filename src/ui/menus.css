@@ -851,3 +851,11 @@
     grid-template-columns: repeat(2, minmax(140px, 1fr));
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .title-creatures canvas,
+  .logo,
+  .verdict {
+    animation: none !important;
+  }
+}

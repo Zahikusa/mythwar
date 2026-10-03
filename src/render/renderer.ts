@@ -141,13 +141,10 @@ export class Renderer {
     if (!c) {
       c = renderBackground(this.layout, THEMES[index], this.dpr, index);
       this.bgCache.set(index, c);
+      // Full-screen backdrops are big (tens of MB on 4K screens): keep only the ones in use.
+      for (const k of this.bgCache.keys()) if (k !== this.theme && k !== this.prevTheme && k !== index) this.bgCache.delete(k);
     }
     return c;
-  }
-
-  /** Pre-render all theme backgrounds (avoids a hitch on the first ascension). */
-  warm(): void {
-    for (let i = 0; i < THEMES.length; i++) this.background(i);
   }
 
   // -------------------------------------------------------------------------
