@@ -388,6 +388,26 @@ async function largeDesktopFlow(page: Page): Promise<void> {
       return { early, text };
     });
     check('coach teaches saving up for the tithe', !r.early && /Save up to Ascend/.test(r.text ?? ''), JSON.stringify(r));
+    // A tip covered by a panel for longer than it shows is still there afterwards (not used up).
+    const r2 = await page.evaluate(async () => {
+      const app = (window as unknown as { __mythwar: any }).__mythwar;
+      const hints = app.settings.hintsSeen.slice();
+      app.settings.hintsSeen = ['summon'];
+      const g = app.game;
+      app.coach.attach(g);
+      g.world.players[0].stats.summoned = 3;
+      app.coach.update();
+      const first = document.querySelector('.coach .ctext')!.textContent ?? '';
+      app.coach.update(true);
+      g.world.time += 20;
+      app.coach.update(true);
+      app.coach.update();
+      const after = document.querySelector('.coach')!.classList.contains('show') ? (document.querySelector('.coach .ctext')!.textContent ?? '') : '';
+      app.settings.hintsSeen = hints;
+      app.coach.attach(g);
+      return { first: first.slice(0, 30), after: after.slice(0, 30) };
+    });
+    check('a coach tip covered by a panel is not used up', /lane/.test(r2.first) && r2.after === r2.first, JSON.stringify(r2));
   }
   // Narrow desktop windows (half a laptop screen) stack the bottom bar in two rows; with the four
   // final-age cards nothing may overlap (a card under the power button would cast the power).

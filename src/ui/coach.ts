@@ -84,7 +84,12 @@ const TIPS: Tip[] = [
       const p = g.world.players[g.playerTeam];
       return p.age < MAX_AGE && p.xp >= AGES[p.age + 1].xpRequired;
     },
-    done: (g, t, s) => g.world.players[g.playerTeam].age > 0 || t - s > 14,
+    // Done once they have ascended (the next age's XP isn't there yet) — not merely "past the
+    // first age", which made the tip vanish unseen when it first came up in a later age.
+    done: (g, t, s) => {
+      const p = g.world.players[g.playerTeam];
+      return p.age >= MAX_AGE || p.xp < AGES[p.age + 1].xpRequired || t - s > 14;
+    },
   },
   {
     // Never saving for the tithe is the classic way to fall an age behind (and lose).
@@ -137,6 +142,8 @@ export class Coach {
   private game: Game | null = null;
   private current: Tip | null = null;
   private shownAt = 0;
+  /** Sim time when the current tip got covered (panel, menu), -1 while it shows. */
+  private hiddenAt = -1;
   private settings: Settings;
   private stage: HTMLElement;
   toStage: (x: number, y: number) => [number, number] = (x, y) => [x, y];
@@ -170,6 +177,7 @@ export class Coach {
     this.xpReadySince = -1;
     this.xpReadyAge = -1;
     this.current = null;
+    this.hiddenAt = -1;
     this.el.classList.remove('show');
   }
 
@@ -193,10 +201,18 @@ export class Coach {
   update(blocked = false): void {
     const g = this.game;
     if (!g || !this.settings.hints || g.paused || g.over || blocked) {
-      if (this.current) this.el.classList.remove('show');
+      if (this.current) {
+        this.el.classList.remove('show');
+        if (g && this.hiddenAt < 0) this.hiddenAt = g.world.time;
+      }
       return;
     }
     const t = g.world.time;
+    // Time spent covered by a panel doesn't count as time the tip was read.
+    if (this.hiddenAt >= 0) {
+      this.shownAt += t - this.hiddenAt;
+      this.hiddenAt = -1;
+    }
     const me = g.world.players[g.playerTeam];
     const ready = me.age < MAX_AGE && me.xp >= AGES[me.age + 1].xpRequired;
     if (!ready) this.xpReadySince = -1;

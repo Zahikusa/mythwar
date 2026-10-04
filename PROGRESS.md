@@ -660,8 +660,10 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     same rate before run #3's sim changes). None in 1,200 bot-vs-AI games (max 34 min), so it
     doesn't affect players; the title backdrop is AI vs AI but just keeps going. Possible fix:
     Ragnarök also erodes both citadels a little per minute, so the healthier one wins.
-221. [ ] Coach tips used up unseen: the "ascend" tip's done-check is `age > 0` (fires after an ascend →
+221. [x] Coach tips used up unseen: the "ascend" tip's done-check is `age > 0` (fires after an ascend →
     one frame, marked seen); timed tips keep counting while hidden behind a panel.
+    ("ascend" is done once the player is no longer XP-ready, i.e. has ascended; covered time
+    is added back to `shownAt`. Smoke: a tip covered for 20 s of battle is still there.)
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
