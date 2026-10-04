@@ -65,7 +65,8 @@ turret (splash). Turrets can be sold for 50%.
   defender an edge so one lost skirmish doesn't snowball into a 3-minute loss.
 - **Blessings:** permanent upgrades bought with gold — Might (+10% damage), Vitality (+10%
   health for new creatures), Bastion (+15% citadel health, +7.5% ward/turret damage); five ranks
-  each, prices scale with rank and age. A late-game gold sink.
+  each, prices scale with rank and age but never drop below the Asgard price (cheap permanent
+  first-age blessings were the best buy in the game). A late-game gold sink.
 - **Ragnarök:** at 18:00, or 3 minutes after both sides reach the final age, the wards fall
   silent and damage to citadels ramps +100% per minute — long stalemates end.
 
@@ -82,7 +83,7 @@ turret (splash). Turrets can be sold for 50%.
 Same command API as the player. Four difficulties: Novice, Adept, Master, Mythic.
 Evaluates per-lane threat, picks counters, contests shrines, saves to ascend,
 builds turrets, buys blessings, aims god powers, and piles into the weakest lane during
-Ragnarök. Difficulty scales reaction time, decision quality and income (Novice 70%,
+Ragnarök. Difficulty scales reaction time, decision quality and income (Novice 50%,
 Adept 90%, Master 100%, Mythic 120%). Mythic also plans ahead: it holds summons back to mount
 a turret as soon as foes push past midfield, and keeps buying blessings instead of hoarding
 gold for them (calibrated against the scripted bots in `scripts/bots.ts`).

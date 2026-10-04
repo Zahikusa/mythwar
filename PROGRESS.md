@@ -604,12 +604,32 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     Ladder after the fix (smart bot, n=300): Novice 100%, Adept 66%, Master 26%, Mythic 3%.)
 215. [x] DESIGN.md "a neighbour never takes more than the target" is false across classes (the counter
     multiplier is per victim: Jötunn hits a Mystic ×0.75, cleaves a Hunter ×1.5). Fix the wording.
-216. [ ] Adept/Master (and every AI-vs-AI game) never buy blessings: `gold − cost ≥ reserve + 4 unit
+216. [x] Adept/Master (and every AI-vs-AI game) never buy blessings: `gold − cost ≥ reserve + 4 unit
     costs` never happens while the queue soaks up gold (0 blessings in 36 AI games). Also the AI
     never saves for the Elder Dragon (only offered when already affordable): 1 dragon in 54 games.
-217. [ ] Novice practically never ascends: `ascendSkill` (0.25) is used both as the per-decision chance
+    Investigating it found #223. After #223, `blessMargin` per tier (Novice 4, Adept 2, Master 1,
+    Mythic 0): Mythic buys ~1.2 blessings/game, Adept/Master ~0.1 — lower margins don't change
+    their strength any more (Master margin 1 vs 4: 25% vs 22% bot wins, noise), so the ladder
+    stays. Dragon saving left as is (the dragon is a luxury; smart bots never buy it either).
+217. [x] Novice practically never ascends: `ascendSkill` (0.25) is used both as the per-decision chance
     and as the saved fraction of the tithe → it holds the full tithe ~1 s per game; ascended in
     6/24 games. Players vs Novice see it stuck in the Fae Wilds.
+    Saving every tithe reliably made Novice far too strong (spam bot 74% → 30%, Adept vs smart
+    68% → 40%: ascending is a big power spike). Compromise: new profile field `saveRamp` — the
+    saved share grows with XP past the mark (`ascendSkill + saveRamp × overshoot`; Novice 0.3,
+    others 0, i.e. unchanged), and Novice income 70% → 50% to keep it a beginner level. Novice
+    now ascends more often (vs the spam bot it never ascended in 78% of games, now 65%) while
+    the naive bots win as before (spam 70% (was 74%), counter 88% (88%), smart 100%).
+223. [x] Found while checking #216: **first-age blessings were the best buy in the game.** Prices
+    scaled with the *current* age but the effect is permanent, so Might 1 cost 120 g in the Fae
+    Wilds vs 2280 g in the Celestial age for the same +10%. A smart bot that simply bought Might
+    and Vitality as soon as it could beat Master 53% (normal smart play 22%), Adept 90% (68%),
+    Mythic 11% (3%). Mythic's own edge came largely from the same trick. Fix: blessing prices
+    never drop below the Asgard price (`BLESSING_PRICE_FLOOR_AGE = 2`: 528 g for rank 1). Now
+    eager blessing ≈ normal play vs Master (28% vs 25%); vs Adept 81% vs 67% (an edge, not a
+    must). Mythic re-tuned with `blessMargin` 0. Final ladder (smart bot, n=300): Novice 100%,
+    Adept 67%, Master 25%, Mythic 5%; AI vs AI: Adept>Novice 37–3, Master>Adept 34–6,
+    Mythic>Master 36–4. Counter bot: Novice 88%, Adept 8.5%, Master 4%. Unit test for the floor.
 218. [ ] Title "New battle" while an autosave exists silently deletes it (`app.ts play()` →
     `clearBattle()`) without counting the defeat the pause menu promises for leaving after 1 min;
     a stray tap under "Continue" destroys a 10-minute battle with no confirmation.

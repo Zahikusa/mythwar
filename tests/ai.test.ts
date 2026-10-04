@@ -51,9 +51,10 @@ describe('ai', () => {
       for (let i = 0; i < 3 / TICK; i++) ai.update(TICK);
       return w.players[1].blessings.might + w.players[1].blessings.vitality;
     };
+    // Mythic buys with any gold to spare; Master keeps a creature's cost (30) in hand.
     const cost = blessingCost(0, 0);
-    expect(blessingsWith('mythic', cost + 40)).toBe(1);
-    expect(blessingsWith('master', cost + 40)).toBe(0);
+    expect(blessingsWith('mythic', cost + 20)).toBe(1);
+    expect(blessingsWith('master', cost + 20)).toBe(0);
   });
 
   it('mirror matches finish (Ragnarök resolves stalemates)', () => {

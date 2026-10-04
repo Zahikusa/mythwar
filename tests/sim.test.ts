@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AGES, AGE_UNITS, BLESSINGS, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_TIME, SHRINE_X, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
+import { AGES, AGE_UNITS, BLESSINGS, BLESSING_PRICE_FLOOR_AGE, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_TIME, SHRINE_X, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
 import { World } from '../src/sim/world.ts';
 import type { Team } from '../src/sim/types.ts';
 
@@ -350,6 +350,15 @@ describe('blessings', () => {
     expect(w.apply({ type: 'bless', team: 0, blessing: 'might' }).ok).toBe(false);
     expect(blessingCost(1, 0)).toBeGreaterThan(blessingCost(0, 0));
     expect(blessingCost(0, 4)).toBeGreaterThan(blessingCost(0, 0));
+  });
+
+  it('never cost less than at the Asgard price (no first-age bargain)', () => {
+    for (let rank = 0; rank < 5; rank++) {
+      expect(blessingCost(rank, 0)).toBe(blessingCost(rank, BLESSING_PRICE_FLOOR_AGE));
+      expect(blessingCost(rank, 1)).toBe(blessingCost(rank, BLESSING_PRICE_FLOOR_AGE));
+    }
+    expect(AGES[BLESSING_PRICE_FLOOR_AGE].name).toBe('Asgard');
+    expect(blessingCost(0, 3)).toBeGreaterThan(blessingCost(0, 2));
   });
 
   it('might raises creature damage', () => {

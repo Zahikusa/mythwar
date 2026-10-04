@@ -578,9 +578,16 @@ export const BLESSINGS: Record<BlessingId, BlessingDef> = {
 export const BLESSING_ORDER: BlessingId[] = ['might', 'vitality', 'bastion'];
 export const BLESSING_MAX_RANK = 5;
 
+/**
+ * Blessings never cost less than in this age. They are permanent, so at first-age prices
+ * (120 gold for +10% damage for the rest of the battle) they were the best buy in the game:
+ * a bot that bought Might and Vitality as soon as it could went from 22% to 53% wins vs Master.
+ */
+export const BLESSING_PRICE_FLOOR_AGE = 2;
+
 /** Cost of buying the next rank (rank = ranks already owned). Scales with the current age. */
 export function blessingCost(rank: number, age: number): number {
-  return Math.round(120 * (rank + 1) * COST_SCALE[age]);
+  return Math.round(120 * (rank + 1) * COST_SCALE[Math.max(age, BLESSING_PRICE_FLOOR_AGE)]);
 }
 
 // ---------------------------------------------------------------------------

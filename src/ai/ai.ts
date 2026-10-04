@@ -17,8 +17,11 @@ export interface AiProfile {
   counterSkill: number;
   /** Probability of reinforcing the lane that needs it most. */
   laneSkill: number;
-  /** Probability per decision of ascending when able (and safe). */
+  /** Probability per decision of ascending when able (and safe); also the share of the tithe it
+   *  holds back once it has the XP... */
   ascendSkill: number;
+  /** ...plus this much per 100% of XP past the requirement (a slow saver still gets there). */
+  saveRamp: number;
   /** Probability per decision of considering a turret. */
   turretSkill: number;
   /** Probability of aiming the god power well (else it is cast at a random lane with enemies). */
@@ -45,6 +48,7 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     counterSkill: 0.15,
     laneSkill: 0.35,
     ascendSkill: 0.25,
+    saveRamp: 0.3,
     turretSkill: 0.15,
     powerSkill: 0.3,
     blessSkill: 0.1,
@@ -52,7 +56,7 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     plansTurrets: false,
     maxQueue: 2,
     turretDelay: 150,
-    incomeMult: 0.7,
+    incomeMult: 0.5,
   },
   adept: {
     id: 'adept',
@@ -62,10 +66,11 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     counterSkill: 0.5,
     laneSkill: 0.65,
     ascendSkill: 0.6,
+    saveRamp: 0,
     turretSkill: 0.45,
     powerSkill: 0.7,
     blessSkill: 0.4,
-    blessMargin: 4,
+    blessMargin: 2,
     plansTurrets: false,
     maxQueue: 3,
     turretDelay: 90,
@@ -79,10 +84,11 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     counterSkill: 0.85,
     laneSkill: 0.9,
     ascendSkill: 0.95,
+    saveRamp: 0,
     turretSkill: 0.8,
     powerSkill: 0.95,
     blessSkill: 0.8,
-    blessMargin: 4,
+    blessMargin: 1,
     plansTurrets: false,
     maxQueue: 5,
     turretDelay: 45,
@@ -96,12 +102,13 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     counterSkill: 1,
     laneSkill: 1,
     ascendSkill: 1,
+    saveRamp: 0,
     turretSkill: 1,
     powerSkill: 1,
     blessSkill: 1,
     // Keeps its blessings coming instead of sinking every coin into the queue, and mounts
     // turrets before the foe reaches its gates (the two things that most often beat it).
-    blessMargin: 1,
+    blessMargin: 0,
     plansTurrets: true,
     maxQueue: 5,
     turretDelay: 30,
@@ -250,8 +257,11 @@ export class AiController {
           if (w.apply({ type: 'ageUp', team: this.team }).ok) return;
         }
         saveThroughSiege = w.players[this.team === 0 ? 1 : 0].age > me.age;
-        // Save up for the tithe (less strictly while the citadel is in trouble).
-        reserve = next.ascendCost * p.ascendSkill * (underSiege && !saveThroughSiege ? 0.5 : 1);
+        // Save up for the tithe (less strictly while the citadel is in trouble). Less able AIs
+        // are slow to commit: they hold back part of it at first and all of it once their XP is
+        // well past the mark (otherwise a Novice practically never ascended).
+        const resolve = Math.min(1, p.ascendSkill + p.saveRamp * (me.xp / next.xpRequired - 1));
+        reserve = next.ascendCost * resolve * (underSiege && !saveThroughSiege ? 0.5 : 1);
       } else if (me.xp >= next.xpRequired * 0.8 && !underSiege) {
         reserve = next.ascendCost * 0.5 * p.ascendSkill;
       }
