@@ -10,7 +10,6 @@ import {
   MAX_AGE,
   POWERS,
   QUEUE_MAX,
-  RAGNAROK_TIME,
   SELL_REFUND,
   TURRETS,
   UNITS,
@@ -60,7 +59,7 @@ export class Hud {
   private cardAge = -1;
   private el: Record<string, HTMLElement> = {};
   private laneTabs: HTMLButtonElement[] = [];
-  private laneBars: { bar: HTMLElement; fill: HTMLElement }[] = [];
+  private laneBars: { bar: HTMLElement; fill: HTMLElement; count: HTMLElement }[] = [];
   private queueChips: QueueChip[] = [];
   private toastTimer = 0;
   private toastQueue: { text: string; kind: 'bad' | 'good' | 'info' }[] = [];
@@ -174,7 +173,7 @@ export class Hud {
         h('span', { class: 'lbar', title: 'Lane strength: yours vs. the enemy' }, h('i')),
       );
       const bar = tab.querySelector('.lbar') as HTMLElement;
-      this.laneBars.push({ bar, fill: bar.firstElementChild as HTMLElement });
+      this.laneBars.push({ bar, fill: bar.firstElementChild as HTMLElement, count: tab.querySelector('.qn') as HTMLElement });
       onTap(tab, () => this.selectLane(i));
       this.laneTabs.push(tab);
       E.lanetabs.appendChild(tab);
@@ -709,7 +708,6 @@ export class Hud {
     else if (w.ragnarokAt - w.time < 120) setText(E.rag, `Ragnarök in ${fmtTime(w.ragnarokAt - w.time)}`);
     else setText(E.rag, '');
     toggle(E.rag, 'active', w.ragnarokStarted);
-    void RAGNAROK_TIME;
 
     // Resources
     setText(E.gold, fmt(me.gold));
@@ -763,7 +761,7 @@ export class Hud {
       if (mine > 0 && theirs > 0) setStyle(fill, 'width', `${((mine / (mine + theirs)) * 100).toFixed(0)}%`);
       toggle(tab, 'sel', g.view.selectedLane === i);
       toggle(tab, 'hover', g.view.hoverLane === i && g.view.targeting !== 'none');
-      setText(tab.querySelector('.qn')!, counts[i] ? String(counts[i]) : '');
+      setText(this.laneBars[i].count, counts[i] ? String(counts[i]) : '');
     }
 
     // God power

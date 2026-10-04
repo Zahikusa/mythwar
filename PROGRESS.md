@@ -234,6 +234,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     leak to the lane underneath). Cards/actions are already ≥ 70 px.
 96. [x] Checked, no change: the battle keeps rendering behind the results (collapsing citadel,
     celebrating victors), which already shows the decisive moment.
+97. [x] HUD cleanup: dropped a leftover `void RAGNAROK_TIME` hack/import; lane-tab queue
+    counters cached instead of `querySelector` per frame.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
 92. [x] Card tooltips also show on keyboard focus (focus-visible).
