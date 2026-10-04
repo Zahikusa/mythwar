@@ -27,6 +27,18 @@ button {
   touch-action: none;
 }
 
+button:focus {
+  outline: none;
+}
+
+/* Keyboard users get a clear, on-theme focus ring (mouse/touch focus stays invisible). */
+button:focus-visible,
+input:focus-visible + .sw,
+input[type='range']:focus-visible {
+  outline: 2px solid var(--gold-l);
+  outline-offset: 2px;
+}
+
 svg {
   display: block;
   width: 100%;

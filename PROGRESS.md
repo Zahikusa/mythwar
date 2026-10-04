@@ -194,10 +194,9 @@ See DESIGN.md for the game design.
 68. [x] Difficulty cards show stat chips: reaction speed, how often it counters, income %.
 69. [x] Settings has an About block (version injected from package.json via Vite `define`;
     package version bumped to 1.0.0).
-70. [ ] Settings panel is translucent over the live backdrop battle; consider a slightly more
-    opaque panel for readability on bright ages (Olympus/Celestial).
-71. [ ] Keyboard-only play: menu buttons are focusable but there is no visible focus ring style
-    matching the theme; add `:focus-visible` styles.
+70. [x] Settings panel more opaque (0.94) over the live backdrop.
+71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
+    stays invisible).
 67. [ ] `src/render/citadel.ts drawCitadelGate`: gates (6 per frame) still draw gradients and
     brickwork live; could share the keep-layer caching approach (~0.4 ms software).
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
