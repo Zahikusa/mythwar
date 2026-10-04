@@ -27,6 +27,9 @@ npm run build      # static build in dist/ (open via any static web server)
 npm run preview    # serve the production build
 ```
 
+To try it on a phone, run `npm run dev` and open the **Network** URL it prints on a phone
+in the same Wi-Fi (landscape recommended; portrait is rotated automatically).
+
 The build is a static site with a web manifest and offline service worker, so it can be
 installed as an app on phones ("Add to Home Screen"), which also locks landscape.
 
