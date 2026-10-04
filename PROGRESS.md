@@ -195,6 +195,12 @@ See DESIGN.md for the game design.
 69. [x] Settings has an About block (version injected from package.json via Vite `define`;
     package version bumped to 1.0.0).
 70. [x] Settings panel more opaque (0.94) over the live backdrop.
+72. [x] Free-floating coach tips overlapped toasts (both top-centre); tips now sit lower.
+73. [ ] Toasts replace each other instantly; when several events happen at once (shrine lost +
+    enemy ascends) the first is lost — queue them (max ~3, 1.5 s each).
+74. [ ] `src/input.ts`: no mouse-wheel / pinch interactions are needed, but trackpad
+    two-finger scroll on Mac Safari may scroll/zoom the page despite touch-action; verify
+    `overscroll-behavior` and `gesturestart` prevention on iOS.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
     stays invisible).
 67. [ ] `src/render/citadel.ts drawCitadelGate`: gates (6 per frame) still draw gradients and

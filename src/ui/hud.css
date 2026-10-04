@@ -1883,7 +1883,7 @@ svg {
 
 .coach.free {
   left: 50% !important;
-  top: 96px !important;
+  top: 140px !important;
   translate: -50% 0;
 }
 
@@ -1948,7 +1948,7 @@ svg {
 }
 
 #stage.mobile .coach.free {
-  top: 74px !important;
+  top: 108px !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
