@@ -416,7 +416,7 @@ export class App {
         this.coinsSeen = this.renderer.fx.coinsArrived;
         this.hud.pulseGold();
       }
-      if (this.state === 'playing') this.coach.update(this.hud.panelOpen || this.menus.current !== 'none');
+      if (this.state === 'playing') this.coach.update(this.hud.panelOpen || this.hud.bannerShowing || this.menus.current !== 'none');
       if (this.overTimer > 0) {
         this.overTimer -= dt;
         if (this.overTimer <= 0) {

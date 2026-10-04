@@ -466,6 +466,11 @@ export class Hud {
     return this.panel !== 'none';
   }
 
+  /** True while a centre-screen banner (ascension, Ragnarök, verdict) is showing. */
+  get bannerShowing(): boolean {
+    return this.bannerTimer > 0;
+  }
+
   private fail(reason: string, el?: HTMLElement): void {
     this.toast(reason, 'bad', true);
     this.cb.sound('error');

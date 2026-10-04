@@ -271,9 +271,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     fastest victory).
 103. [x] Pause screen shows a one-line battle summary (foe, time, ages, foes slain).
 104. [x] Preferred game speed (1×/2×) is remembered across battles (`settings.speed`).
-105. [ ] Phone: the pause summary line can wrap on very narrow phones (<700 px); shorten to
-    "0:01 · Fae Wilds vs Fae Wilds" there.
-106. [ ] Coach tips can show while the "Ragnarök" banner is up; delay tips during banners.
+105. [x] Pause summary stays on one line (ellipsis) on narrow screens.
+106. [x] Coach tips wait while a centre banner (ascension, Ragnarök, verdict) is showing.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

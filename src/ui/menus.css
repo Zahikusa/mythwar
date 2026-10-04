@@ -63,6 +63,11 @@
   color: #d9ccf5;
   margin-top: -8px;
   text-shadow: 0 1px 3px #000;
+  text-align: center;
+  max-width: 92cqw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mnote {
