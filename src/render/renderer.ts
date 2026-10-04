@@ -521,6 +521,7 @@ export class Renderer {
         this.fx.burst(x, g.y - 6 * s, { count: 8, color: '#4e8f3a', speed: 120, life: 0.7, size: 2.5, shape: 'leaf', layer: lane, gravity: 260 });
         break;
       case 'zeus':
+        this.fx.timedFx({ kind: 'scorch', x, y: g.y + 2, dur: 1.8, layer: lane, size: 22 * s, rgb: [170, 200, 255] });
         this.fx.timedFx({ kind: 'lightning', x, y: g.y - 4 * s, x2: x + (Math.random() - 0.5) * 80, y2: -20, dur: 0.35, layer: 3, size: 16 * s + 4, rgb: [170, 200, 255] });
         this.fx.timedFx({ kind: 'shockwave', x, y: g.y, dur: 0.5, layer: lane, size: 45 * s, color: '#dfe8ff', rgb: [170, 200, 255] });
         this.fx.burst(x, g.y - 6 * s, { count: 14, color: '#e8f0ff', speed: 220, life: 0.45, size: 2, shape: 'spark', layer: lane, drag: 3 });
@@ -534,6 +535,7 @@ export class Renderer {
         this.fx.burst(x, g.y - 20 * s, { count: 16, color: '#7dffcf', rgb: [110, 255, 200], speed: 160, life: 0.7, size: 2.6, shape: 'glow', layer: lane, drag: 2.5 });
         break;
       case 'starfall':
+        this.fx.timedFx({ kind: 'scorch', x, y: g.y + 2, dur: 2, layer: lane, size: radius * 1.6 * s, rgb: [255, 170, 90] });
         this.fx.timedFx({ kind: 'shockwave', x, y: g.y, dur: 0.6, layer: lane, size: radius * 2.4 * s, color: '#ffe3a0', rgb: [255, 200, 120] });
         this.fx.burst(x, g.y - 6 * s, { count: 26, color: '#ffcf7a', rgb: [255, 180, 90], speed: 260, life: 0.8, size: 3, shape: 'glow', layer: lane, gravity: 300, drag: 1.5 });
         this.fx.burst(x, g.y - 4 * s, { count: 10, color: 'rgba(90,60,50,0.6)', speed: 90, life: 1, size: 6 * s + 2, shape: 'smoke', layer: lane, gravity: -20 });

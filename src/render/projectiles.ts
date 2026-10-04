@@ -275,6 +275,7 @@ export function projectileImpact(fx: Fx, kind: ProjectileKind, x: number, laneY:
   const glow = GLOW[kind];
   if (splash > 0) {
     const r = splash * s;
+    fx.timedFx({ kind: 'scorch', x, y: laneY + 2, dur: 1.6, layer: lane, size: r * 0.9, rgb: glow ?? [255, 160, 80] });
     fx.timedFx({ kind: 'shockwave', x, y: laneY, dur: 0.5, layer: lane, size: r * 1.4, color: glow ? `rgb(${glow.join(',')})` : '#ffe0a0', rgb: glow ?? [255, 220, 160] });
     fx.burst(x, laneY - 6 * s, { count: 18, color: glow ? `rgb(${glow.join(',')})` : '#ffcf8a', rgb: glow ?? [255, 200, 120], speed: 180, life: 0.6, size: 2.6, shape: 'glow', layer: lane, gravity: 260 });
     fx.burst(x, laneY - 4 * s, { count: 6, color: 'rgba(80,70,70,0.55)', speed: 60, life: 0.9, size: 5 * s + 2, shape: 'smoke', layer: lane, gravity: -15 });

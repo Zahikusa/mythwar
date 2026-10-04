@@ -285,9 +285,13 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 113. [x] Creature-specific death flourishes: leaves (Treant), ice shards (Jötunn), feathers
     (Valkyrie, Griffin), foxfire (Kitsune), marble + light (Titan), embers (Phoenix, Dragon)...
 114. [x] Phoenix rebirth: a flame flare plus a fading white-hot glow on the bird (`reborn`).
-115. [ ] Valkyrie spear projectile and Gorgon gaze could leave a brief impact decal on the ground
-    (scorch/stone) for 1 s to sell weight.
+115. [x] Heavy impacts (splash shots, Zeus bolts, Starfall meteors) leave a fading scorch decal
+    under the creatures.
 116. [x] HUD shrine pips pulse when a shrine changes hands.
+117. [ ] Fimbulwinter: frozen creatures could get frost-white tint on the creature itself (now
+    only a translucent ice block overlay).
+118. [ ] Lane paths could show faint footprint/wear along the middle over time (cosmetic).
+119. [ ] Title: subtle parallax drift of the backdrop camera to make the menu feel alive.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

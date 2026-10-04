@@ -38,7 +38,7 @@ export interface FloatText {
 
 /** Bespoke timed effects drawn with custom code. */
 export interface TimedFx {
-  kind: 'lightning' | 'ring' | 'meteor' | 'vines' | 'ice' | 'beam' | 'flashAt' | 'slash' | 'shockwave' | 'coin' | 'pillar';
+  kind: 'lightning' | 'ring' | 'meteor' | 'vines' | 'ice' | 'beam' | 'flashAt' | 'slash' | 'shockwave' | 'coin' | 'pillar' | 'scorch';
   x: number;
   y: number;
   x2: number;
@@ -380,6 +380,19 @@ export class Fx {
         case 'pillar':
           drawPillar(ctx, f, k);
           break;
+        case 'scorch': {
+          // Ground decal under heavy impacts; fades out.
+          const a = (1 - k) * 0.35;
+          ctx.fillStyle = `rgba(30, 18, 14, ${a.toFixed(3)})`;
+          ctx.beginPath();
+          ctx.ellipse(f.x, f.y, f.size, f.size * 0.32, 0, 0, TAU);
+          ctx.fill();
+          ctx.fillStyle = `rgba(${f.rgb.join(',')}, ${(a * 0.6).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.ellipse(f.x, f.y, f.size * 0.45, f.size * 0.14, 0, 0, TAU);
+          ctx.fill();
+          break;
+        }
       }
     }
   }
