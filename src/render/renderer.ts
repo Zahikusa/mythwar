@@ -99,6 +99,8 @@ export class Renderer {
   readonly fx = new Fx();
   private ambient: { x: number; y: number; vx: number; vy: number; p: number; s: number }[] = [];
   private time = 0;
+  /** Seconds since the previous rendered frame (0 while paused). */
+  private frameDt = 0;
   private shake = 0;
   private ragnarok = 0;
   private baseFlash: [number, number] = [0, 0];
@@ -554,6 +556,7 @@ export class Renderer {
     const ctx = this.ctx;
     const L = this.layout;
     this.time += dt;
+    this.frameDt = dt;
     this.fx.update(dt);
     this.themeFade = Math.min(1, this.themeFade + dt / 1.6);
     this.shake = Math.max(0, this.shake - dt * 18);
@@ -570,7 +573,8 @@ export class Renderer {
     this.updateCollapse(dt);
 
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    const sh = this.shakeEnabled ? this.shake : 0;
+    // A paused frame is a still: no shake (it would never decay at dt = 0).
+    const sh = this.shakeEnabled && dt > 0 ? this.shake : 0;
     const shx = sh > 0 ? (Math.random() - 0.5) * sh : 0;
     const shy = sh > 0 ? (Math.random() - 0.5) * sh : 0;
     ctx.translate(shx, shy);
@@ -1197,7 +1201,7 @@ export class Renderer {
       }
       const fromX = laneX(g, pr.x0);
       const fromY = g.y - pv.h0;
-      drawProjectile(ctx, this.fx, pr.kind, pr.team, sx, sy, pv.angle, this.artScale(g), lane, this.time, fromX, fromY, t);
+      drawProjectile(ctx, this.fx, pr.kind, pr.team, sx, sy, pv.angle, this.artScale(g), lane, this.time, fromX, fromY, t, this.frameDt);
       pv.lastSx = sx;
       pv.lastSy = sy;
     }
@@ -1267,14 +1271,14 @@ export class Renderer {
       ctx.stroke();
       circle(ctx, 8, -4, 1.8, '#ff4060');
       ctx.restore();
-      if (Math.random() < 0.6) this.fx.burst(hx, hy, { count: 1, color: '#9fffe0', rgb: [140, 255, 220], speed: 30, life: 0.8, size: 2.5, shape: 'glow', layer: inst.lane });
+      if (Math.random() < this.frameDt * 36) this.fx.burst(hx, hy, { count: 1, color: '#9fffe0', rgb: [140, 255, 220], speed: 30, life: 0.8, size: 2.5, shape: 'glow', layer: inst.lane });
     }
     for (const inst of world.powers) {
       if (inst.kind !== 'fimbul') continue;
       const g = this.layout.lanes[inst.lane];
       const k = inst.t / POWER_TIMING.fimbul.duration;
       const a = Math.sin(Math.min(1, k) * Math.PI) * 0.4;
-      const top = g.y - 90 * g.s;
+      const top = g.y - 72 * this.artScale(g);
       const bot = g.y + g.band * 0.6;
       const grad = ctx.createLinearGradient(0, top, 0, bot);
       grad.addColorStop(0, 'rgba(200, 235, 255, 0)');

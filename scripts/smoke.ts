@@ -444,6 +444,17 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   await sleep(450);
   s = await state(page);
   check('pause button pauses with menu', s.paused && s.menu === 'pause', `paused=${s.paused} menu=${s.menu}`);
+  {
+    // A paused battle is a still frame: no new particles from projectiles in flight, no shake.
+    const p0 = await page.evaluate(() => {
+      const app = (window as unknown as { __mythwar: any }).__mythwar;
+      app.renderer.shake = 12;
+      return app.renderer.fx.particles.length;
+    });
+    await sleep(500);
+    const p1 = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.renderer.fx.particles.length);
+    check('pausing freezes effects (no new particles)', p1 === p0, `${p0} → ${p1}`);
+  }
   if (!viewport.mobile) {
     // Escape inside a sub-menu of the pause menu goes back instead of resuming.
     const hb = await center(page, '.screen.pause .mbtn:nth-child(2)');

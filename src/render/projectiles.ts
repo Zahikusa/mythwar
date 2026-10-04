@@ -36,9 +36,12 @@ export function drawProjectile(
   fromX: number,
   fromY: number,
   _t: number,
+  dt: number,
 ): void {
   const tc = TEAM_COLORS[team];
-  const emit = Math.random() < 0.5;
+  // Trails emit per second, not per frame (same density at 144 Hz; none while paused).
+  const always = Math.random() < dt * 60;
+  const emit = Math.random() < dt * 30;
   switch (kind) {
     case 'spark':
     case 'ward': {
@@ -102,7 +105,7 @@ export function drawProjectile(
       const big = kind === 'dragonfire' ? 2 : 1;
       drawGlow(ctx, x, y, 14 * s * big + 3, GLOW[kind]!, 0.95);
       circle(ctx, x, y, 3.2 * s * big, '#fff1b0');
-      for (let i = 0; i < big + 1; i++) {
+      for (let i = 0; i < big + 1 && always; i++) {
         fx.add({
           x: x + (Math.random() - 0.5) * 4 * s,
           y: y + (Math.random() - 0.5) * 4 * s,
@@ -169,7 +172,7 @@ export function drawProjectile(
       drawGlow(ctx, x, y, 12 * s, GLOW.firepot!, 0.7);
       circle(ctx, x, y, 4 * s, '#8a4a2a');
       circle(ctx, x, y - 3 * s, 2.5 * s, '#ffb347');
-      fx.add({ x, y: y - 3 * s, life: 0.4, color: '#ff9b3d', size: 2.4, shape: 'glow', rgb: [255, 140, 50], layer: lane, vy: -25 });
+      if (always) fx.add({ x, y: y - 3 * s, life: 0.4, color: '#ff9b3d', size: 2.4, shape: 'glow', rgb: [255, 140, 50], layer: lane, vy: -25 });
       break;
     }
     case 'rune': {
@@ -225,7 +228,7 @@ export function drawProjectile(
       ctx.closePath();
       ctx.fill();
       ctx.restore();
-      fx.add({ x: x - Math.cos(angle) * 6 * s, y: y - Math.sin(angle) * 6 * s, life: 0.3, color: '#ffcf70', size: 2, shape: 'glow', rgb: [255, 190, 90], layer: lane });
+      if (always) fx.add({ x: x - Math.cos(angle) * 6 * s, y: y - Math.sin(angle) * 6 * s, life: 0.3, color: '#ffcf70', size: 2, shape: 'glow', rgb: [255, 190, 90], layer: lane });
       if (emit) fx.add({ x, y, life: 0.6, color: 'rgba(120,110,110,0.5)', size: 3, shape: 'smoke', layer: lane, vy: -6 });
       break;
     }

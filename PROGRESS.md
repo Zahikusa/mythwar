@@ -342,9 +342,10 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 142. [x] A window narrower than ~156 px gave a negative field width → `ctx.ellipse` threw →
     the rAF loop died for good. Field size is clamped ≥ 1 and the next frame is scheduled
     before rendering. Smoke check squeezes the window to 120×300 and 1×1.
-143. [ ] Paused game: screen shake never decays (dt = 0 → new random offset every frame), and
-    projectiles/spirit dragon keep emitting particles per frame (also per-frame, not per-second
-    emission: 144 Hz screens get 2.4× the particles).
+143. [x] Paused game: screen shake never decayed (dt = 0 → a new random offset every frame) and
+    projectiles / the spirit dragon kept emitting trail particles; emission was also per frame
+    (144 Hz screens got 2.4× the particles). Trails now emit per second (scaled by the frame
+    dt, none while paused) and paused frames don't shake. Smoke check: particle count frozen.
 144. [ ] `renderer.ts` frozen creatures use `ctx.filter` for every fill (Fimbulwinter on a crowded
     lane); cache the static frozen pose as a sprite.
 145. [ ] `draw.ts drawGlow` builds a key string per call (`rgb.join(',')`) — up to 1400/frame.
@@ -356,7 +357,7 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 150. [ ] `citadel.ts`: latent save/restore imbalance (`if (!D) return` inside the collapse save).
 151. [ ] Title camera drift (±10 px) can expose a dark strip at the edges below ~800 px width.
 152. [ ] Powers are drawn after all lanes: a far-lane spirit dragon paints over near-lane
-    creatures; Fimbul veil uses `g.s` instead of the capped art scale.
+    creatures. (Fimbul veil height now uses the capped art scale.)
 153. [ ] `asgard.ts:73` Jötunn breath sets globalAlpha absolutely (ignores ghost/spawn fade).
 154. [ ] Moving the window to a monitor with another DPR doesn't re-size the canvas.
 155. [ ] Particles/ghosts/texts keep stale screen positions after a mid-battle resize.
