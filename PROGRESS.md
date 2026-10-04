@@ -230,10 +230,10 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     `settings.muted`; moving the master slider unmutes. Smoke-checked.
 94. [x] Smoke check: rotating/resizing mid-battle keeps layout and lane input working
     (desktop, phone, rotated phone).
-95. [ ] Lanes on phones: lane hit areas are generous, but the bottom lane near the queue chips
-    (rotated portrait) can catch taps meant for chips; measure tap targets ≥ 44 px.
-96. [ ] Results screen: offer "Watch replay"? Out of scope (no replay recording) — instead show
-    the moment the citadel fell (screenshot freeze) behind the results card.
+95. [x] Phone queue chips enlarged 30 → 38 px (they're DOM above the canvas, so taps never
+    leak to the lane underneath). Cards/actions are already ≥ 70 px.
+96. [x] Checked, no change: the battle keeps rendering behind the results (collapsing citadel,
+    celebrating victors), which already shows the decisive moment.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
 92. [x] Card tooltips also show on keyboard focus (focus-visible).

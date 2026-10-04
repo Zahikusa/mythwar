@@ -1740,9 +1740,9 @@ svg {
 
 .hud.mobile .qchip,
 .hud.mobile .qslot {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
 }
 
 .hud.mobile .qslot {
