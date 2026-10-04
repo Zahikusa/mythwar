@@ -446,6 +446,15 @@ export class Menus {
         }
       }
     }
+    const shareText = `Mythwar: ${won ? 'Victory' : 'Defeat'} vs ${AI_PROFILES[difficulty].name} in ${fmtTime(world.time)} — reached ${AGES[P.age].name}, ${P.stats.kills} foes slain.`;
+    const share = this.button('Copy result', 'ghost', () => {
+      const done = (ok: boolean) => (share.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed');
+      try {
+        navigator.clipboard.writeText(shareText).then(() => done(true), () => done(false));
+      } catch {
+        done(false);
+      }
+    });
     el.append(
       h(
         'div',
@@ -459,6 +468,7 @@ export class Menus {
         'div',
         { class: 'mrow' },
         this.button('Main menu', 'ghost', () => this.cb.quit()),
+        share,
         this.button('Change foe', '', () => this.show('difficulty')),
         this.button('Rematch', 'primary', () => this.cb.restart(), ICONS.swords),
       ),

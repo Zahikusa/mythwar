@@ -279,10 +279,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     are hidden).
 109. [x] Turrets button shows a "!" badge when a turret is from an earlier age.
 110. [x] Blocked cards say why ("One at a time" for the Elder Dragon, "Queue full").
-111. [ ] Desktop: right-click on a lane could quick-cast the god power there (power users);
-    currently right-click only cancels targeting.
-112. [ ] Results: a "Share" button copying a one-line summary (difficulty, time, verdict) to
-    the clipboard.
+111. [x] Decided against right-click quick-cast (too easy to waste a 60 s power by accident);
+    Space already casts instantly on the selected lane.
+112. [x] Results: "Copy result" copies a one-line summary (verdict, foe, time, age, kills).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
