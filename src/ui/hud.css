@@ -1710,6 +1710,8 @@ svg {
   top: 0;
   width: 64px;
   height: 64px;
+  /* JS translates it to the pointer and scales it with the HUD zoom from this corner. */
+  transform-origin: 0 0;
   z-index: 60;
   pointer-events: none;
   filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
