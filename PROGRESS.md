@@ -198,9 +198,11 @@ See DESIGN.md for the game design.
 72. [x] Free-floating coach tips overlapped toasts (both top-centre); tips now sit lower.
 73. [x] Event toasts queue (max 3, shorter while queued); failed-action feedback still replaces
     immediately.
-74. [ ] `src/input.ts`: no mouse-wheel / pinch interactions are needed, but trackpad
-    two-finger scroll on Mac Safari may scroll/zoom the page despite touch-action; verify
-    `overscroll-behavior` and `gesturestart` prevention on iOS.
+74. [x] iOS Safari pinch/rotate gestures and double-tap zoom are blocked (`gesture*` and quick
+    second `touchend` preventDefault in main.ts; inputs exempt). Not verifiable on a real iPhone
+    here — buttons use pointer events so the click suppression doesn't affect them.
+75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
+    fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
     stays invisible).
 67. [ ] `src/render/citadel.ts drawCitadelGate`: gates (6 per frame) still draw gradients and

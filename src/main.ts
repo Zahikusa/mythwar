@@ -4,6 +4,21 @@ import './ui/menus.css';
 import { App } from './app.ts';
 import { TURRETS, UNITS } from './sim/data.ts';
 
+// iOS Safari ignores user-scalable=no; block its pinch/rotate gestures and double-tap zoom.
+for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
+  document.addEventListener(type, (e) => e.preventDefault(), { passive: false });
+}
+let lastTouchEnd = 0;
+document.addEventListener(
+  'touchend',
+  (e) => {
+    const now = performance.now();
+    if (now - lastTouchEnd < 300 && !(e.target instanceof HTMLInputElement)) e.preventDefault();
+    lastTouchEnd = now;
+  },
+  { passive: false },
+);
+
 const root = document.getElementById('app')!;
 if (new URLSearchParams(location.search).has('gallery')) {
   import('./gallery.ts').then((m) => m.runGallery(root));
