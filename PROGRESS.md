@@ -397,8 +397,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     comes and that counters take 25% less in return; controls card lists gate-click, ?/H,
     Backspace/Del; turret DPS includes Bastion (+N%); "top / middle / bottom"; queue chips say
     click or tap per device. Screenshot scenarios `mobile-howto-4/5` (667×375 fits).
-159. [ ] Rotated portrait ignores safe-area insets (`app.ts resize`): in standalone/PWA mode the
-    status bar / Dynamic Island covers the card column, the home bar the action column.
+159. [x] Rotated portrait now respects safe-area insets (screen top → stage left, bottom → right,
+    …); transform and toStage include them. Smoke: faked 47/34 px insets keep the stage clear
+    and lane taps still map. (Real iPhone check still pending, see #75.)
 160. [x] Difficulty screen on small phones: the 2×2 grid now only applies to tall stages, compact
     menu screens use `justify-content: safe center` (overflow scrolls instead of leaving the
     top); `mobile-diff-se` (667×375) scenario fits.

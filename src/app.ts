@@ -140,8 +140,11 @@ export class App {
     const coarse = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
     // Phones held upright: rotate the whole game into landscape (side-view lanes need width).
     this.rotated = (coarse || forced === 'mobile') && vh > vw && !this.params.has('norotate');
-    // Keep the game clear of notches / rounded corners (landscape phones).
-    const safe = this.rotated ? { l: 0, r: 0, t: 0, b: 0 } : this.safeArea();
+    // Keep the game clear of notches / rounded corners / the home bar. Upright phones rotate the
+    // stage 90° clockwise, so the screen's top inset becomes the stage's left, bottom → right,
+    // right → top and left → bottom.
+    const phys = this.safeArea();
+    const safe = this.rotated ? { l: phys.t, r: phys.b, t: phys.r, b: phys.l } : phys;
     const w = (this.rotated ? vh : vw) - safe.l - safe.r;
     const h = (this.rotated ? vw : vh) - safe.t - safe.b;
     this.mode = forced === 'mobile' || forced === 'desktop' ? forced : this.rotated ? 'mobile' : detectMode(w, h);
@@ -150,8 +153,9 @@ export class App {
     this.stage.style.width = `${w}px`;
     this.stage.style.height = `${h}px`;
     this.stage.style.transformOrigin = '0 0';
-    this.stage.style.transform = this.rotated ? `translateX(${vw}px) rotate(90deg)` : `translate(${safe.l}px, ${safe.t}px)`;
-    const toStage = (cx: number, cy: number): [number, number] => (this.rotated ? [cy, vw - cx] : [cx - safe.l, cy - safe.t]);
+    // Rotated: stage (0,0) sits at the screen's top-right corner inside the insets.
+    this.stage.style.transform = this.rotated ? `translate(${vw - phys.r}px, ${phys.t}px) rotate(90deg)` : `translate(${safe.l}px, ${safe.t}px)`;
+    const toStage = (cx: number, cy: number): [number, number] => (this.rotated ? [cy - phys.t, vw - phys.r - cx] : [cx - safe.l, cy - safe.t]);
     this.input.toStage = toStage;
     this.hud.toStage = toStage;
     this.coach.toStage = toStage;

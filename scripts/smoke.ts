@@ -186,6 +186,28 @@ async function rotatedMenusFlow(page: Page): Promise<void> {
   await sleep(600);
   const st = await page.evaluate(() => ({ state: (window as unknown as { __mythwar: any }).__mythwar.state, menu: (window as unknown as { __mythwar: any }).__mythwar.menus.current }));
   check('rotated: Skip starts the battle', st.state === 'playing' && st.menu === 'none', JSON.stringify(st));
+  // Notch + home bar (upright iPhone, standalone): the rotated stage stays inside the insets and
+  // taps still land on the right lane.
+  const ins = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    app.safeArea = () => ({ l: 0, r: 0, t: 47, b: 34 });
+    app.resize();
+    const r = document.getElementById('stage')!.getBoundingClientRect();
+    const g = app.renderer.layout.lanes[2];
+    // Stage → client for the rotated stage: x' = vw - inset.r - y, y' = inset.t + x.
+    const lane = { x: window.innerWidth - 0 - (g.y - 10), y: 47 + (g.x0 + (g.x1 - g.x0) * 0.4) };
+    return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, lane };
+  });
+  check('rotated: stage keeps clear of notch and home bar', Math.abs(ins.top - 47) < 1 && Math.abs(ins.bottom - (844 - 34)) < 1, JSON.stringify(ins));
+  await page.touchscreen.tap(ins.lane.x, ins.lane.y);
+  await sleep(150);
+  const laneSel = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.view.selectedLane);
+  check('rotated with insets: tapping a lane selects it', laneSel === 2, `lane=${laneSel}`);
+  await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    delete app.safeArea;
+    app.resize();
+  });
   // Slow-device fallback: 4 s under 40 fps mid-battle switches to battery saver once.
   const q = await page.evaluate(() => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;
