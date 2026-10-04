@@ -1314,6 +1314,13 @@ svg {
   filter: saturate(0.3) brightness(0.75);
 }
 
+.foebless {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffb0bd;
+  margin: -4px 0 4px;
+}
+
 .brow {
   display: grid;
   grid-template-columns: 1fr auto;

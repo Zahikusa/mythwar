@@ -275,8 +275,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 106. [x] Coach tips wait while a centre banner (ascension, Ragnarök, verdict) is showing.
 107. [x] Blessing chips (swords / heart / tower + rank) beside both sides' age names on desktop,
     so your and the enemy's upgrades are readable at a glance (tooltips explain each).
-108. [ ] Phones hide the blessing chips (no room in the compact top bar); consider showing them
-    inside the blessings panel header as "Enemy: Might I, Bastion III".
+108. [x] The blessings panel lists the enemy's blessings (covers phones, where the top-bar chips
+    are hidden).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

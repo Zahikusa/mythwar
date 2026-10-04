@@ -244,6 +244,8 @@ export class Hud {
     onTap(close, () => this.togglePanel('none'));
     panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.bless }), 'Blessings', close));
     panel.appendChild(h('div', { class: 'pdesc', text: 'Permanent favours of the gods. Each rank costs more, and prices rise with every age.' }));
+    this.el.foeBless = h('div', { class: 'foebless' });
+    panel.appendChild(this.el.foeBless);
     for (const id of BLESSING_ORDER) {
       const b = BLESSINGS[id];
       const pips = h('div', { class: 'pips' });
@@ -1031,6 +1033,9 @@ export class Hud {
     const g = this.game!;
     const w = g.world;
     const me = w.players[g.playerTeam];
+    const foe = w.players[g.playerTeam === 0 ? 1 : 0];
+    const foeList = BLESSING_ORDER.filter((id) => foe.blessings[id] > 0).map((id) => `${BLESSINGS[id].name} ${ROMAN[foe.blessings[id] - 1]}`);
+    setText(this.el.foeBless, foeList.length ? `Enemy blessings: ${foeList.join(', ')}` : 'The enemy has no blessings yet.');
     for (const id of BLESSING_ORDER) {
       const ref = this.blessRefs[id];
       const rank = me.blessings[id];
