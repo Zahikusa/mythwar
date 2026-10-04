@@ -594,10 +594,14 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
 207. [x] Noise buffer is 1 s, random offset ≤ 0.5 s, rate 0.8–1.2, no loop → long noise sounds
     (Fimbulwinter 2.4 s, Spirit Dragon 2 s, Ragnarök 2.5 s) cut off early (`audio.ts:84,155`).
     (`src.loop = true`; unverified by ear — no speakers here, see #75.)
-208. [ ] Kitsune bounce shots start at the struck target's un-fanned x and the original shooter's
+208. [x] Kitsune bounce shots start at the struck target's un-fanned x and the original shooter's
     muzzle height → visible jump between hit and next bolt (`world.ts:967`, `renderer.ts:1330`).
-209. [ ] Screen shake pre-fills exposed edges with `ground[1]`, also at the sky edge → light band
+209. [x] Screen shake pre-fills exposed edges with `ground[1]`, also at the sky edge → light band
     flickers atop dark skies (Asgard, Celestial) on game over / Ragnarök (`renderer.ts:729`).
+    (#208: the renderer remembers where bounce shots land on each foe (`aimAt`: height + fan)
+    and the next bounce leaves from there; measured in Chrome (3 Kitsune vs 4 Byakko, 2×):
+    gap between a shot's last drawn spot and its bounce's first went from median 21 px to
+    12 px (the rest is frame sampling of a fast shot). #209: sky colour above the horizon.)
 210. [ ] Per-frame allocations: gate-portal gradients + colour strings, `archPath`/`withSide`
     closures, keep window arrays (`citadel.ts`), per-creature screen-pos/pose objects, comparator
     per lane, `filter()` copies of ghosts/embers (`renderer.ts`).

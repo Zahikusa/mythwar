@@ -67,6 +67,8 @@ interface Ghost {
 interface ProjVis {
   /** The target's pack fan-out (lane units), so the shot flies at the hunter actually drawn. */
   fan: number;
+  /** Fan-out where the shot starts (a bounce leaves from the foe it just struck). */
+  fan0: number;
   h0: number;
   h1: number;
   lastSx: number;
@@ -111,6 +113,8 @@ export class Renderer {
   private vis = new Map<number, UnitVis>();
   private ghosts: Ghost[] = [];
   private projVis = new Map<number, ProjVis>();
+  /** Where shots at a unit visibly land (height above the feet line, fan-out), by unit id. */
+  private aimAt = new Map<number, { h: number; fan: number }>();
   private artBounds = new Map<string, { l: number; r: number; t: number; b: number }>();
   readonly fx = new Fx();
   /** Ambient particles (fireflies, snow, petals…); `th` = the theme they belong to. */
@@ -184,6 +188,7 @@ export class Renderer {
     this.vis.clear();
     this.ghosts = [];
     this.projVis.clear();
+    this.aimAt.clear();
     this.fx.clear();
     this.ragnarok = 0;
     this.shake = 0;
@@ -733,9 +738,14 @@ export class Renderer {
     // Backdrop (cross-fading between ages)
     if (!this.skip.has('bg')) {
       // 1:1 blits (no resampling); during screen shake the few exposed edge pixels are pre-filled.
+      // (Sky colour above the horizon: ground colour there flickered as a light band atop the
+      // dark Asgard and Celestial skies.)
       if (sh > 0) {
-        ctx.fillStyle = THEMES[this.theme].ground[1];
-        ctx.fillRect(-sh, -sh, L.width + sh * 2, L.height + sh * 2);
+        const th = THEMES[this.theme];
+        ctx.fillStyle = th.sky[0];
+        ctx.fillRect(-sh, -sh, L.width + sh * 2, L.horizon + sh);
+        ctx.fillStyle = th.ground[1];
+        ctx.fillRect(-sh, L.horizon, L.width + sh * 2, L.height - L.horizon + sh);
       }
       if (this.prevTheme >= 0 && this.themeFade < 1) {
         ctx.drawImage(this.background(this.prevTheme), 0, 0, L.width, L.height);
@@ -818,6 +828,8 @@ export class Renderer {
       for (const pr of world.projectiles) live.add(pr.id);
       for (const id of this.projVis.keys()) if (!live.has(id)) this.projVis.delete(id);
     }
+    // Landing spots are only needed for the frame a bounce leaves from them.
+    if (this.aimAt.size > 64) this.aimAt.clear();
     this.fx.drawTimed(ctx, 3);
     this.fx.drawParticles(ctx, 3);
     this.fx.drawTexts(ctx, Math.max(0.8, L.ui));
@@ -1362,7 +1374,13 @@ export class Renderer {
       if (pr.lane !== lane || pr.done) continue;
       let pv = this.projVis.get(pr.id);
       if (!pv) {
-        pv = { fan: 0, h0: this.launchHeight(world, pr, g), h1: 0, lastSx: NaN, lastSy: NaN, angle: 0, trail: 0 };
+        pv = { fan: 0, fan0: 0, h0: this.launchHeight(world, pr, g), h1: 0, lastSx: NaN, lastSy: NaN, angle: 0, trail: 0 };
+        // A bouncing shot (Kitsune foxfire) leaves from where the last one struck its foe.
+        const from = pr.bounce && pr.bounce.hit.length > 0 ? this.aimAt.get(pr.bounce.hit[pr.bounce.hit.length - 1]) : undefined;
+        if (from) {
+          pv.h0 = from.h;
+          pv.fan0 = from.fan;
+        }
         this.projVis.set(pr.id, pv);
       }
       const target = pr.targetId >= 0 ? world.unitById.get(pr.targetId) : undefined;
@@ -1370,13 +1388,14 @@ export class Renderer {
         const art = artFor(target.def.id);
         pv.h1 = (-art.body[1] + art.fly) * this.artScale(g) * art.scale;
         pv.fan = this.fanOf(target.def, this.vis.get(target.id)?.seed);
+        if (pr.bounce) this.aimAt.set(target.id, { h: pv.h1, fan: pv.fan });
       } else if (pr.targetId < 0) {
         pv.h1 = 40 * this.artScale(g);
       }
       const xi = pr.px + (pr.x - pr.px) * alpha;
       const span = pr.tx - pr.x0;
       const t = Math.abs(span) < 1e-3 ? 1 : Math.max(0, Math.min(1, (xi - pr.x0) / span));
-      const sx = laneX(g, xi + pv.fan * t);
+      const sx = laneX(g, xi + pv.fan0 * (1 - t) + pv.fan * t);
       const sy = g.y - (pv.h0 + (pv.h1 - pv.h0) * t) - pr.arc * this.artScale(g) * 4 * t * (1 - t);
       if (!Number.isNaN(pv.lastSx)) {
         const dx = sx - pv.lastSx;
@@ -1385,7 +1404,7 @@ export class Renderer {
       } else {
         pv.angle = pr.team === 0 ? 0 : Math.PI;
       }
-      const fromX = laneX(g, pr.x0);
+      const fromX = laneX(g, pr.x0 + pv.fan0);
       const fromY = g.y - pv.h0;
       drawProjectile(ctx, this.fx, pr.kind, pr.team, sx, sy, pv.angle, this.artScale(g), lane, this.time, fromX, fromY, t, this.frameDt);
       pv.lastSx = sx;
