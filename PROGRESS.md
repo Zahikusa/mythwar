@@ -232,14 +232,14 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
     stays invisible).
-67. [ ] `src/render/citadel.ts drawCitadelGate`: gates (6 per frame) still draw gradients and
-    brickwork live; could share the keep-layer caching approach (~0.4 ms software).
+67. [x] Gate towers cache their static layer per (team, lane, age) in small canvases
+    (`gateBounds`); only portal glow, arch trim, ward crystal, pennant and hit flash draw live.
 88. [x] `startMusic()` created the AudioContext on page load (before any gesture → browser
     warning, suspended context). It now only flags the music on; the context is created by the
     first tap/click/key, which then starts the score.
 89. [x] XP bar reads "Ready to ascend" (gold fill) once the requirement is met.
-48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
-    the AI each decision; fine now, but a per-tick lane index would scale better.
+48. [x] Checked, not worth changing: `enemiesInLane` only runs while a god power is active
+    (a few calls per second); the AI's assessment already iterates lanes directly.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
     Mystics beat *everything* at army scale (ranged units focus fire, melee fight one at a time),
     so "spam Mystics" was a dominant strategy. Added formation rules — Hunters hunt in packs

@@ -3,7 +3,7 @@ import { POWER_TIMING, spiritDragonHead } from '../sim/powers.ts';
 import type { Projectile, SimEvent, Team, Unit } from '../sim/types.ts';
 import type { World } from '../sim/world.ts';
 import { renderAurora, renderBackground, renderVignette } from './background.ts';
-import { drawCitadelGate, drawCitadelKeep, drawTurret } from './citadel.ts';
+import { drawCitadelGate, drawCitadelKeep, drawTurret, gateBounds } from './citadel.ts';
 import { artFor } from './creatures/index.ts';
 import type { CreatureArt, Pose } from './creatures/types.ts';
 import { TAU, circle, drawGlow, ellipse, setLineWidth } from './draw.ts';
@@ -82,6 +82,7 @@ export class Renderer {
   private bgCache = new Map<number, HTMLCanvasElement>();
   private keepCache = new Map<string, { canvas: HTMLCanvasElement; x: number; w: number }>();
   private gradCache = new Map<string, CanvasGradient>();
+  private gateCache = new Map<string, { canvas: HTMLCanvasElement; x: number; y: number; w: number; h: number }>();
   private aurora: HTMLCanvasElement | null = null;
   private twinkles: { x: number; y: number; p: number; s: number }[] = [];
   private vignette: HTMLCanvasElement | null = null;
@@ -125,6 +126,7 @@ export class Renderer {
     this.bgCache.clear();
     this.keepCache.clear();
     this.gradCache.clear();
+    this.gateCache.clear();
     this.aurora = null;
     this.twinkles = [];
     this.vignette = renderVignette(width, height, this.dpr);
@@ -165,6 +167,25 @@ export class Renderer {
       this.bgCache.set(index, c);
       // Full-screen backdrops are big (tens of MB on 4K screens): keep only the ones in use.
       for (const k of this.bgCache.keys()) if (k !== this.theme && k !== this.prevTheme && k !== index) this.bgCache.delete(k);
+    }
+    return c;
+  }
+
+  /** The static part of a gate tower, pre-rendered into a small canvas. */
+  private gateLayer(team: Team, lane: number, age: number): { canvas: HTMLCanvasElement; x: number; y: number; w: number; h: number } {
+    const key = `g${team}:${lane}:${age}`;
+    let c = this.gateCache.get(key);
+    if (!c) {
+      const gate = this.gateScreen(team, lane);
+      const b = gateBounds(this.layout, team, lane, gate.y, gate.s);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(b.w * this.dpr));
+      canvas.height = Math.max(1, Math.round(b.h * this.dpr));
+      const cx = canvas.getContext('2d')!;
+      cx.setTransform(this.dpr, 0, 0, this.dpr, -b.x * this.dpr, -b.y * this.dpr);
+      drawCitadelGate(cx, this.layout, team, lane, age, gate.x, gate.y, gate.s, 0, 0, 0, 'static');
+      c = { canvas, ...b };
+      this.gateCache.set(key, c);
     }
     return c;
   }
@@ -535,7 +556,14 @@ export class Renderer {
         if (this.skip.has('gates')) break;
         const p = world.players[team];
         const gate = this.gateScreen(team, lane);
-        drawCitadelGate(ctx, L, team, lane, p.age, gate.x, gate.y, gate.s, this.baseFlash[team], this.time, Math.max(0, this.collapse[team]));
+        const collapse = Math.max(0, this.collapse[team]);
+        if (collapse > 0) {
+          drawCitadelGate(ctx, L, team, lane, p.age, gate.x, gate.y, gate.s, this.baseFlash[team], this.time, collapse);
+        } else {
+          const c = this.gateLayer(team, lane, p.age);
+          ctx.drawImage(c.canvas, c.x, c.y, c.w, c.h);
+          drawCitadelGate(ctx, L, team, lane, p.age, gate.x, gate.y, gate.s, this.baseFlash[team], this.time, 0, 'dynamic');
+        }
       }
       this.fx.drawTimed(ctx, lane);
       this.drawUnits(ctx, world, lane, alpha, simTime, dt);

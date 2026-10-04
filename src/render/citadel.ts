@@ -334,7 +334,12 @@ export function drawCitadelGate(
   hitFlash: number,
   t: number,
   collapse = 0,
+  part: 'all' | 'static' | 'dynamic' = 'all',
 ): void {
+  // 'static' = masonry, dark archway, trim, crenellations, pennant pole (cacheable);
+  // 'dynamic' = portal glow, arch trim on top of it, ward crystal, pennant flag, hit flash.
+  const S = part !== 'dynamic';
+  const D = part !== 'static';
   const st = CITADEL_STYLES[age];
   const g = layout.lanes[lane];
   withSide(ctx, layout, team, () => {
@@ -352,6 +357,19 @@ export function drawCitadelGate(
     const bx = x - w * 0.95;
     const by = laneY + g.band * 0.5;
     setLineWidth(1.2);
+    const ax = bx + w * 0.62;
+    const aw = w * 0.5;
+    const ah = h * 0.55;
+    const archPath = () => {
+      ctx.beginPath();
+      ctx.moveTo(ax - aw / 2, by);
+      ctx.lineTo(ax - aw / 2, by - ah + aw / 2);
+      ctx.arc(ax, by - ah + aw / 2, aw / 2, Math.PI, 0);
+      ctx.lineTo(ax + aw / 2, by);
+    };
+    const px = bx + w * 0.08;
+    const tc = TEAM_COLORS[team];
+    if (S) {
     const grad = ctx.createLinearGradient(bx, 0, bx + w, 0);
     grad.addColorStop(0, shade(st.wall, -0.18));
     grad.addColorStop(1, st.wallLight);
@@ -372,19 +390,25 @@ export function drawCitadelGate(
       ctx.stroke();
     }
     // Archway the lane passes through (opening faces the battlefield)
-    const ax = bx + w * 0.62;
-    const aw = w * 0.5;
-    const ah = h * 0.55;
-    ctx.beginPath();
-    ctx.moveTo(ax - aw / 2, by);
-    ctx.lineTo(ax - aw / 2, by - ah + aw / 2);
-    ctx.arc(ax, by - ah + aw / 2, aw / 2, Math.PI, 0);
-    ctx.lineTo(ax + aw / 2, by);
+    archPath();
     ctx.closePath();
     ctx.fillStyle = '#1a1222';
     ctx.fill();
+    ctx.strokeStyle = st.trim;
+    ctx.lineWidth = Math.max(1.5, 2.5 * s);
+    archPath();
+    ctx.stroke();
+    // Top: crenellations (turret platform)
+    crenellations(ctx, st, bx - 1, bx + w + 1, by - h + 1, s);
+    line(ctx, px, by - h - 2, px, by - h - 20 * s, Math.max(1, 1.4 * s), '#3a2c22');
+    }
+    if (!D) {
+      if (collapse > 0) ctx.restore();
+      return;
+    }
     // Portal glow inside the arch
-    const tc = TEAM_COLORS[team];
+    archPath();
+    ctx.closePath();
     ctx.save();
     ctx.clip();
     const pg = ctx.createLinearGradient(0, by - ah, 0, by);
@@ -395,21 +419,13 @@ export function drawCitadelGate(
     ctx.restore();
     ctx.strokeStyle = st.trim;
     ctx.lineWidth = Math.max(1.5, 2.5 * s);
-    ctx.beginPath();
-    ctx.moveTo(ax - aw / 2, by);
-    ctx.lineTo(ax - aw / 2, by - ah + aw / 2);
-    ctx.arc(ax, by - ah + aw / 2, aw / 2, Math.PI, 0);
-    ctx.lineTo(ax + aw / 2, by);
+    archPath();
     ctx.stroke();
-    // Top: crenellations (turret platform)
-    crenellations(ctx, st, bx - 1, bx + w + 1, by - h + 1, s);
     // Ward crystal (built-in defence)
     const wy = by - h - 10 * s + Math.sin(t * 2 + lane) * 1.5 * s;
     drawGlow(ctx, bx + w * 0.2, wy, 9 * s, tc.rgb, 0.5);
     circle(ctx, bx + w * 0.2, wy, 2.4 * s, tc.light);
     // Small team pennant
-    const px = bx + w * 0.08;
-    line(ctx, px, by - h - 2, px, by - h - 20 * s, Math.max(1, 1.4 * s), '#3a2c22');
     poly(ctx, [px, by - h - 20 * s, px + 10 * s, by - h - 17 * s + Math.sin(t * 5 + lane) * s, px, by - h - 13 * s], tc.main, true, 1);
     if (hitFlash > 0) {
       ctx.globalAlpha = hitFlash * 0.3;
@@ -419,6 +435,23 @@ export function drawCitadelGate(
     }
     if (collapse > 0) ctx.restore();
   });
+}
+
+/** Screen-space bounding box of a gate tower (for caching its static layer). */
+export function gateBounds(layout: Layout, team: Team, lane: number, laneY: number, s: number): { x: number; y: number; w: number; h: number } {
+  const g = layout.lanes[lane];
+  const w = 40 * s;
+  const h = 58 * s;
+  const bx = g.x0 - w * 0.95 - 3;
+  const by = laneY + g.band * 0.5;
+  const top = by - h - 24 * s;
+  let x = bx;
+  const width = w + 6;
+  if (team === 1) {
+    const cx = layout.field.x + layout.field.w / 2;
+    x = 2 * cx - (bx + width);
+  }
+  return { x: Math.floor(x), y: Math.floor(top), w: Math.ceil(width) + 1, h: Math.ceil(by - top) + 3 };
 }
 
 /** Turret mounted on top of a lane's gate tower. */
