@@ -842,6 +842,8 @@ export class Renderer {
       if (a >= 0 && a < 1) attack = a;
     }
     if (u.freezeTimer > 0) attack = -1;
+    // Victory: brandish weapons (the wind-up pose) in time with the celebration hop.
+    if (this.winner === u.team) attack = (0.5 + 0.5 * Math.sin(this.time * 7 + v.seed * 6)) * (u.def.windup / animDur) * 0.75;
     const pose: Pose = {
       t: u.freezeTimer > 0 ? v.seed * 10 : this.time,
       walk: v.walk,
