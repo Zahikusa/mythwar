@@ -742,7 +742,10 @@ export class Hud {
     for (const c of this.cards) {
       const why = w.trainBlocker(g.playerTeam, c.def.id);
       toggle(c.el, 'poor', why === 'Not enough gold');
-      toggle(c.el, 'blocked', !!why && why !== 'Not enough gold');
+      const blocked = !!why && why !== 'Not enough gold';
+      toggle(c.el, 'blocked', blocked);
+      const label = blocked ? (why!.startsWith('Only') ? 'One at a time' : why === 'Summoning queue is full' ? 'Queue full' : '') : '';
+      if (c.el.dataset.why !== label) c.el.dataset.why = label;
       toggle(c.el, 'advised', advice === c.def.cls);
     }
 
@@ -834,6 +837,9 @@ export class Hud {
     if (this.panel === 'bless') this.updateBlessPanel();
     const canBless = BLESSING_ORDER.some((id) => w.blessingBlocker(g.playerTeam, id) === null);
     toggle(E.blessBtn, 'avail', canBless);
+    // Nudge: a turret from an earlier age can be upgraded.
+    const outdated = me.turrets.some((t) => t.def && t.def.age < me.age);
+    toggle(E.turretBtn, 'outdated', outdated);
 
     // Timers
     if (this.toastTimer > 0) {

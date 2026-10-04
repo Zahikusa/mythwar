@@ -277,6 +277,12 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     so your and the enemy's upgrades are readable at a glance (tooltips explain each).
 108. [x] The blessings panel lists the enemy's blessings (covers phones, where the top-bar chips
     are hidden).
+109. [x] Turrets button shows a "!" badge when a turret is from an earlier age.
+110. [x] Blocked cards say why ("One at a time" for the Elder Dragon, "Queue full").
+111. [ ] Desktop: right-click on a lane could quick-cast the god power there (power users);
+    currently right-click only cancels targeting.
+112. [ ] Results: a "Share" button copying a one-line summary (difficulty, time, verdict) to
+    the clipboard.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
