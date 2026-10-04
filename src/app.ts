@@ -223,6 +223,7 @@ export class App {
       this.audio.onEvents(ev);
       if (this.state === 'playing') {
         this.hud.onEvents(ev);
+        this.coach.onEvents(ev);
         for (const e of ev) {
           if (e.type === 'ageUp' && e.team === game.playerTeam) this.buzz([30, 60, 30, 60, 60]);
           else if (e.type === 'baseHit' && e.team === game.playerTeam && game.world.time - this.lastBuzz > 1.5) {

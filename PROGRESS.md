@@ -223,6 +223,8 @@ See DESIGN.md for the game design.
 86. [x] Enter presses the current menu screen's primary (gold) button (Play/Continue, Begin,
     Next, Resume, Rematch, Done); smoke flow now continues a save via Enter.
 87. [x] One-time coach tip explains gold-bordered "waiting at a jammed gate" queue chips.
+90. [x] Coach tip "wards": after 3 of the player's creatures die near the enemy gate, explain
+    gate wards/turrets and suggest pushing in groups or using the god power.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,

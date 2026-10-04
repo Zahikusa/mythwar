@@ -1,5 +1,6 @@
 import { AGES, MAX_AGE } from '../sim/data.ts';
 import type { Game } from '../game.ts';
+import type { SimEvent } from '../sim/types.ts';
 import { h, onTap } from './dom.ts';
 import type { Settings } from './settings.ts';
 import { saveSettings } from './settings.ts';
@@ -9,7 +10,7 @@ interface Tip {
   text: string;
   /** Element the bubble points at. */
   anchor?: string;
-  when: (g: Game, t: number) => boolean;
+  when: (g: Game, t: number, coach?: Coach) => boolean;
   /** Hide the tip once this becomes true (defaults to a timeout). */
   done?: (g: Game, t: number, shownAt: number) => boolean;
   minTime?: number;
@@ -55,6 +56,12 @@ const TIPS: Tip[] = [
     anchor: '.queue',
     when: (g) => g.world.players[g.playerTeam].queue.some((q) => q.ready),
     done: (g, t, s) => !g.world.players[g.playerTeam].queue.some((q) => q.ready) || t - s > 9,
+  },
+  {
+    id: 'wards',
+    text: 'Every gate is guarded by a ward (and maybe a turret). Lone creatures melt there — push with a group, or soften the gate with your god power.',
+    when: (_g, _t, c) => (c?.diedAtEnemyGate ?? 0) >= 3,
+    done: (_g, t, s) => t - s > 10,
   },
   {
     id: 'power',
@@ -105,6 +112,8 @@ export class Coach {
   private settings: Settings;
   private stage: HTMLElement;
   toStage: (x: number, y: number) => [number, number] = (x, y) => [x, y];
+  /** Player creatures killed close to the enemy gate this battle. */
+  diedAtEnemyGate = 0;
 
   constructor(stage: HTMLElement, settings: Settings) {
     this.stage = stage;
@@ -118,8 +127,17 @@ export class Coach {
 
   attach(game: Game | null): void {
     this.game = game;
+    this.diedAtEnemyGate = 0;
     this.current = null;
     this.el.classList.remove('show');
+  }
+
+  onEvents(events: SimEvent[]): void {
+    const g = this.game;
+    if (!g) return;
+    for (const e of events) {
+      if (e.type === 'death' && e.team === g.playerTeam && (g.playerTeam === 0 ? e.x > 820 : e.x < 180)) this.diedAtEnemyGate++;
+    }
   }
 
   private finish(): void {
@@ -149,7 +167,7 @@ export class Coach {
     }
     for (const tip of TIPS) {
       if (this.settings.hintsSeen.includes(tip.id)) continue;
-      if (tip.when(g, t)) {
+      if (tip.when(g, t, this)) {
         this.current = tip;
         this.shownAt = t;
         this.text.textContent = tip.text;
