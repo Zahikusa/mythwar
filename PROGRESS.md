@@ -425,8 +425,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     (`coinsInFlight`), `unitScreen` runs once per creature per frame (shadow pass result reused).
     (Per-gate portal gradients left as is: 6 per frame.)
 172. [ ] Calibration drift: after the fairness fixes (#125–127) the counter-following bot's wins vs
-    Adept dropped 19% → ~11% (n=90). If testers find Adept too hard, ease `AI_PROFILES.adept`
-    (think time / incomeMult) a notch.
+    Adept dropped 19% → ~11% (n=90). Tried Adept variants (think 1.6–1.9 s, income 85–90%): bot
+    wins 9–16/90 with no clear trend, i.e. noise at this n — kept unchanged. If human testers find
+    Adept too hard, ease `AI_PROFILES.adept` (think time / incomeMult) a notch.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
