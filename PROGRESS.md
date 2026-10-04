@@ -2,7 +2,7 @@
 
 Status: complete, in verification mode (since run #1, 2026-10-04 ~01:15; run #2 03:33–07:30:
 sim fairness fixes, large-screen HUD zoom, portal flares, frozen-sprite perf, mobile/text polish,
-see backlog #122–#187)
+see backlog #122–#188)
 
 See DESIGN.md for the game design.
 
@@ -13,11 +13,11 @@ See DESIGN.md for the game design.
 - **New for players:** gate portals flare ~1 s before a creature steps out (read the enemy's next
   lane); creature labels say what beats them; gold shown in turret/blessing panels; the Ascend
   button fills with tithe gold (and chimes when ascending is possible) and a coach tip teaches
-  saving up; the cursor marks clickable
-  lanes/gates; the results screen gives one concrete tip from the lost battle (or suggests the
-  next difficulty after a win).
+  saving up; the cursor marks clickable lanes/gates; the results screen gives one concrete tip
+  from the lost battle (or suggests the next difficulty after a win).
 - **Difficulty evidence:** a new scripted "smart" player (counters, powers, turrets, blessings,
-  saves to ascend) wins vs Novice 100%, Adept 72%, Master 23%, Mythic 8% — kept as is.
+  saves to ascend) wins vs Novice 100%, Adept ~70%, Master ~22%, Mythic ~13% — kept as is
+  (Mythic headroom noted in #184).
 - **Screens:** HUD + menus scale up on 1440p/4K desktops; many phone fixes (small phones, safe
   areas when upright, ≥ 10 px text, bigger buttons, HUD hidden under menus, queue clear of gate).
 - **Robustness:** corrupt saves/settings, tiny windows, tutorial hand-off, drags surviving pause,
