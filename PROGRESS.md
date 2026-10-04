@@ -20,7 +20,7 @@ See DESIGN.md for the game design.
   areas when upright, ≥ 10 px text, bigger buttons, HUD hidden under menus, queue clear of gate).
 - **Robustness:** corrupt saves/settings, tiny windows, tutorial hand-off, drags surviving pause,
   focused buttons behind menus, hidden-tab audio, service-worker cache growth — all fixed and
-  smoke-tested (`npm run verify`: 75 unit tests + 103 browser checks).
+  smoke-tested (`npm run verify`: 77 unit tests + 104 browser checks).
 - **Perf:** frozen creatures 145 → 13 ms/frame for 30 frozen (headless software raster).
 - **Try:** `npm run dev`, play Adept; on a phone check the items under "Open questions".
 
@@ -489,6 +489,10 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 184. [ ] Mythic headroom: a scripted bot beats Mythic 8–13% of the time; for a "god of war" level a
     strong human may find it beatable. Knob if needed: `AI_PROFILES.mythic.incomeMult` 1.2 → 1.3
     (and update the difficulty blurb/README, which quote +20%).
+185. [x] Results screen: one concrete tip from the battle just lost (fell an age behind → save for the
+    tithe; never cast the god power; no turrets; enemy held the shrines; else the Counter! badge)
+    or, after a win, "Ready for more? Try <next difficulty>". Unit-tested (`tests/tips.test.ts`);
+    fits the 844×390 phone results screen.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

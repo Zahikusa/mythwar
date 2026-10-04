@@ -634,6 +634,15 @@
 /* ------------------------------------------------------------------ */
 /* Results                                                             */
 /* ------------------------------------------------------------------ */
+.vtip {
+  max-width: min(560px, 92cqw);
+  margin-top: -8px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--gold-l);
+  text-shadow: 0 1px 3px #000;
+}
+
 .verdict {
   text-align: center;
   animation: logoin 0.9s cubic-bezier(0.2, 1, 0.3, 1) both;

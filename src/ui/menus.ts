@@ -466,6 +466,7 @@ export class Menus {
         h('div', { class: 'vportrait' }, portrait(champion.id, 96, me, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
       ),
       h('div', { class: 'vtime', text: `Battle length ${fmtTime(world.time)}` }),
+      h('div', { class: 'vtip', text: battleTip(world, me, difficulty, ageUps) }),
       h('div', { class: 'vstats' }, table, history.length >= 3 ? armyChart(history, me, AI_PROFILES[difficulty].name, ageUps) : null),
       h(
         'div',
@@ -478,6 +479,30 @@ export class Menus {
     );
     this.show('over');
   }
+}
+
+/** One concrete lesson from the battle just played (or, after a win, what to try next). */
+export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps: { t: number; team: Team; age: number }[]): string {
+  const foe: Team = me === 0 ? 1 : 0;
+  const P = world.players[me];
+  if (world.winner === me) {
+    const i = DIFFICULTIES.indexOf(difficulty);
+    return i < DIFFICULTIES.length - 1 ? `Ready for more? Try ${AI_PROFILES[DIFFICULTIES[i + 1]].name}.` : 'You have humbled a god of war. Can you win faster?';
+  }
+  // Fell behind in the ages?
+  for (let age = 1; age < AGES.length; age++) {
+    const theirs = ageUps.find((a) => a.team === foe && a.age === age);
+    if (!theirs) break;
+    const mine = ageUps.find((a) => a.team === me && a.age === age);
+    const gap = (mine ? mine.t : world.time) - theirs.t;
+    if (gap > 45) {
+      return `Tip: the enemy reached ${AGES[age].name} ${mine ? fmtTime(gap) + ' before you' : 'and you never did'}. Once you have the XP, save gold for the tithe — a new age outclasses extra creatures.`;
+    }
+  }
+  if (P.stats.powersCast === 0 && world.time > 90) return 'Tip: you never cast your god power. It recharges — unleash it on the lane under the most pressure.';
+  if (P.turrets.every((t) => !t.def) && world.time > 150) return 'Tip: mount turrets on your gates (click a gate or press T) — they hold a lane while you fight elsewhere.';
+  if (world.shrines.filter((s) => s.owner === foe).length >= 2) return 'Tip: the enemy held the Ley Shrines. Retake them when a lane is quiet — each one pays extra gold.';
+  return 'Tip: follow the Counter! badge — the card it marks beats what is coming down your selected lane.';
 }
 
 function p(html: string): HTMLElement {
