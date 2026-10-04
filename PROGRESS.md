@@ -192,8 +192,12 @@ See DESIGN.md for the game design.
     fanfare) instead of switching scale mid-progression.
 66. [x] Victory pose: the winners brandish weapons (wind-up pose) in time with their hop.
 68. [x] Difficulty cards show stat chips: reaction speed, how often it counters, income %.
-69. [ ] Title screen: no credits/about line for the procedural tech; add a tiny "About" in
-    Settings (version, how it was made, controls).
+69. [x] Settings has an About block (version injected from package.json via Vite `define`;
+    package version bumped to 1.0.0).
+70. [ ] Settings panel is translucent over the live backdrop battle; consider a slightly more
+    opaque panel for readability on bright ages (Olympus/Celestial).
+71. [ ] Keyboard-only play: menu buttons are focusable but there is no visible focus ring style
+    matching the theme; add `:focus-visible` styles.
 67. [ ] `src/render/citadel.ts drawCitadelGate`: gates (6 per frame) still draw gradients and
     brickwork live; could share the keep-layer caching approach (~0.4 ms software).
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and

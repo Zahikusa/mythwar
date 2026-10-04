@@ -294,6 +294,12 @@ export class Menus {
         toggleRow('Gameplay hints', 'hints'),
         toggleRow('Battery saver (lower quality)', 'lowQuality'),
         toggleRow('Fullscreen on phones', 'fullscreen'),
+        h(
+          'div',
+          { class: 'about' },
+          h('b', { text: `Mythwar: Ages of Legend · v${typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'dev'}` }),
+          h('span', { text: 'A tribute to the Flash classic Age of War. Every creature, citadel and effect is drawn in code and every sound is synthesized live — no image or audio files.' }),
+        ),
       ),
       h('div', { class: 'mrow' }, resetTips, back),
     );
