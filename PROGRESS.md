@@ -353,9 +353,13 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     projectiles / the spirit dragon kept emitting trail particles; emission was also per frame
     (144 Hz screens got 2.4× the particles). Trails now emit per second (scaled by the frame
     dt, none while paused) and paused frames don't shake. Smoke check: particle count frozen.
-144. [ ] `renderer.ts` frozen creatures use `ctx.filter` for every fill (Fimbulwinter on a crowded
-    lane); cache the static frozen pose as a sprite.
-145. [ ] `draw.ts drawGlow` builds a key string per call (`rgb.join(',')`) — up to 1400/frame.
+144. [x] Frozen creatures used `ctx.filter` on every fill: 30 frozen creatures cost 145 ms/frame
+    (headless software raster) vs 14 ms unfrozen. The frozen pose is now rendered once into a
+    sprite cropped to the creature's measured bounds (`artBoundsOf`, alpha-scanned once per
+    creature type) and tinted with a source-atop frost wash (works in Safari too, which lacks
+    ctx.filter): 12.6 ms/frame. `power-fimbul` scenario re-pointed to seed 2 (seed 3's demo
+    battle is over by 5:00 after the sim fairness changes).
+145. [x] `glowSprite` keys rgb triples by a packed number (no string per glow draw).
 146. [x] Hunter pack fan-out was draw-only: death ghosts/bursts/gold and projectile flights and
     impacts used the unfanned x (dying hunters jumped ~12–15 px). `fanOf()` is now applied to
     deaths, and shots carry their target's fan (impact events carry the projectile id).

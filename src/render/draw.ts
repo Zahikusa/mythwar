@@ -184,10 +184,10 @@ export function swing(a: number, hit: number): number {
   return 1 - easeInOut((a - hit) / (1 - hit));
 }
 
-/** Pre-rendered radial glow sprites keyed by colour. */
-const glowCache = new Map<string, HTMLCanvasElement>();
+/** Pre-rendered radial glow sprites keyed by colour (triples by a packed number: no garbage). */
+const glowCache = new Map<string | number, HTMLCanvasElement>();
 export function glowSprite(rgb: [number, number, number] | string): HTMLCanvasElement {
-  const key = typeof rgb === 'string' ? rgb : rgb.join(',');
+  const key = typeof rgb === 'string' ? rgb : ((rgb[0] & 255) << 16) | ((rgb[1] & 255) << 8) | (rgb[2] & 255);
   let c = glowCache.get(key);
   if (c) return c;
   c = document.createElement('canvas');

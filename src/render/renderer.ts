@@ -43,6 +43,8 @@ interface UnitVis {
   lastSlash: number;
   /** 1 → 0 after a rebirth: the creature glows white-hot and re-forms. */
   reborn: number;
+  /** The frost-tinted frozen pose, rendered once while the creature is frozen solid. */
+  frozen: { canvas: HTMLCanvasElement; sc: number } | null;
   /** Where the body was last drawn (screen), for effects of the blow that kills it. */
   hx: number;
   hy: number;
@@ -105,6 +107,7 @@ export class Renderer {
   private vis = new Map<number, UnitVis>();
   private ghosts: Ghost[] = [];
   private projVis = new Map<number, ProjVis>();
+  private artBounds = new Map<string, { l: number; r: number; t: number; b: number }>();
   readonly fx = new Fx();
   private ambient: { x: number; y: number; vx: number; vy: number; p: number; s: number }[] = [];
   private time = 0;
@@ -285,6 +288,78 @@ export class Renderer {
     }
     for (const q of p.queue) if (q.ready && q.lane === lane) e = Math.max(e, 0.45 + 0.15 * Math.sin(this.time * 4));
     return e;
+  }
+
+  /**
+   * Frozen solid: the creature is washed in frost. The frozen pose doesn't change, so it is
+   * rendered once into a sprite (cropped to the creature's measured bounds) and tinted with a
+   * cheap source-atop fill — a ctx.filter on every fill was ~4 ms per creature per frame.
+   * `ctx` is in the creature's art space (already scaled by sc).
+   */
+  private drawFrozen(ctx: CanvasRenderingContext2D, v: UnitVis, defId: string, art: CreatureArt, pose: Pose, sc: number): void {
+    const b = this.artBoundsOf(defId, art, pose);
+    const w = b.r - b.l;
+    const hgt = b.b - b.t;
+    if (!v.frozen || Math.abs(v.frozen.sc - sc) > 1e-3) {
+      const k = sc * this.dpr;
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.ceil(w * k));
+      canvas.height = Math.max(1, Math.ceil(hgt * k));
+      const cx = canvas.getContext('2d')!;
+      cx.setTransform(k, 0, 0, k, -b.l * k, -b.t * k);
+      setLineWidth(Math.min(1.6, 1.25 / sc));
+      art.draw(cx, pose);
+      cx.setTransform(1, 0, 0, 1, 0, 0);
+      cx.globalCompositeOperation = 'source-atop';
+      cx.fillStyle = 'rgba(205, 238, 255, 0.62)';
+      cx.fillRect(0, 0, canvas.width, canvas.height);
+      v.frozen = { canvas, sc };
+    }
+    ctx.drawImage(v.frozen.canvas, b.l, b.t, w, hgt);
+  }
+
+  /** A creature's drawn extent around its feet (art units, facing right), measured once. */
+  private artBoundsOf(defId: string, art: CreatureArt, pose: Pose): { l: number; r: number; t: number; b: number } {
+    let b = this.artBounds.get(defId);
+    if (b) return b;
+    const h = art.height;
+    // Generous fallback if the canvas can't be read back.
+    b = { l: -h * 1.6 - 20, r: h * 1.6 + 20, t: -h * 1.4 - 20, b: h * 0.3 + 10 };
+    try {
+      const k = 2;
+      const W = Math.ceil((b.r - b.l) * k);
+      const H = Math.ceil((b.b - b.t) * k);
+      const c = document.createElement('canvas');
+      c.width = W;
+      c.height = H;
+      const cx = c.getContext('2d', { willReadFrequently: true })!;
+      cx.setTransform(k, 0, 0, k, -b.l * k, -b.t * k);
+      setLineWidth(1);
+      // A few poses, so walk/idle swings are inside the box.
+      for (const t of [0, 0.7, 1.9]) art.draw(cx, { ...pose, t, walk: t * 3, attack: -1 });
+      const data = cx.getImageData(0, 0, W, H).data;
+      let x0 = W;
+      let y0 = H;
+      let x1 = -1;
+      let y1 = -1;
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          if (data[(y * W + x) * 4 + 3] === 0) continue;
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+      if (x1 >= 0) {
+        const pad = 4 + h * 0.08;
+        b = { l: b.l + x0 / k - pad, r: b.l + (x1 + 1) / k + pad, t: b.t + y0 / k - pad, b: b.t + (y1 + 1) / k + pad };
+      }
+    } catch {
+      // keep the fallback box
+    }
+    this.artBounds.set(defId, b);
+    return b;
   }
 
   /** Screen position of a citadel gate for a lane. */
@@ -1009,7 +1084,7 @@ export class Renderer {
       let v = this.vis.get(u.id);
       if (!v) {
         const seed = ((u.id * 2654435761) >>> 0) / 4294967296;
-        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn: 0, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1, reborn: 0, hx: NaN, hy: NaN, radius: u.def.radius };
+        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn: 0, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1, reborn: 0, frozen: null, hx: NaN, hy: NaN, radius: u.def.radius };
         this.vis.set(u.id, v);
       }
     }
@@ -1101,11 +1176,11 @@ export class Renderer {
         ctx.stroke();
       }
     }
-    // Frozen solid: drain the colour toward frost (browsers without ctx.filter just skip it).
-    const frozen = u.freezeTimer > 0;
-    if (frozen) ctx.filter = 'grayscale(0.7) brightness(1.35) hue-rotate(160deg) saturate(0.6)';
-    art.draw(ctx, pose);
-    if (frozen) ctx.filter = 'none';
+    if (u.freezeTimer > 0) this.drawFrozen(ctx, v, u.def.id, art, pose, sc);
+    else {
+      v.frozen = null;
+      art.draw(ctx, pose);
+    }
     ctx.restore();
     ctx.globalAlpha = 1;
 
