@@ -273,6 +273,10 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 104. [x] Preferred game speed (1×/2×) is remembered across battles (`settings.speed`).
 105. [x] Pause summary stays on one line (ellipsis) on narrow screens.
 106. [x] Coach tips wait while a centre banner (ascension, Ragnarök, verdict) is showing.
+107. [x] Blessing chips (swords / heart / tower + rank) beside both sides' age names on desktop,
+    so your and the enemy's upgrades are readable at a glance (tooltips explain each).
+108. [ ] Phones hide the blessing chips (no room in the compact top bar); consider showing them
+    inside the blessings panel header as "Enemy: Might I, Bastion III".
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

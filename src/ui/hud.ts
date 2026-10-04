@@ -109,6 +109,8 @@ export class Hud {
     E.ageR = h('div', { class: 'agebadge', title: 'Enemy age' });
     E.ageRn = h('div', { class: 'agename' });
     E.foePow = h('i', { class: 'foepow', title: 'Enemy god power' });
+    E.blessL = h('div', { class: 'blesschips' });
+    E.blessR = h('div', { class: 'blesschips' });
     E.clock = h('div', { class: 'clock' });
     E.shrines = h('div', { class: 'shrines', title: 'Ley Shrines: hold them for extra gold' });
     for (let i = 0; i < LANE_COUNT; i++) E.shrines.appendChild(h('i', { html: ICONS.shrine }));
@@ -120,9 +122,9 @@ export class Hud {
     const top = h(
       'div',
       { class: 'topbar' },
-      h('div', { class: 'side left' }, E.ageL, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpLd, E.hpL, E.hpLn), E.ageLn)),
+      h('div', { class: 'side left' }, E.ageL, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpLd, E.hpL, E.hpLn), h('div', { class: 'agerow left' }, E.ageLn, E.blessL))),
       h('div', { class: 'mid' }, E.clock, E.shrines, E.rag),
-      h('div', { class: 'side right' }, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpRd, E.hpR, E.hpRn), h('div', { class: 'agerow' }, E.foePow, E.ageRn)), E.ageR),
+      h('div', { class: 'side right' }, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpRd, E.hpR, E.hpRn), h('div', { class: 'agerow' }, E.blessR, E.foePow, E.ageRn)), E.ageR),
     );
     E.keysBtn = h('button', { class: 'sysbtn keysbtn', title: 'Controls (?)', text: '?' });
     onTap(E.keysBtn, () => this.togglePanel('keys'));
@@ -773,6 +775,10 @@ export class Hud {
       setText(this.laneBars[i].count, counts[i] ? String(counts[i]) : '');
     }
 
+    // Blessing ranks for both sides (e.g. "Might II"), so upgrades are readable at a glance.
+    this.updateBlessChips(E.blessL, me);
+    this.updateBlessChips(E.blessR, foe);
+
     // Enemy god power: dim while recharging, glowing when ready (fair, visible information).
     const foePower = POWERS[AGES[foe.age].power];
     if (E.foePow.dataset.id !== foePower.id) {
@@ -839,6 +845,19 @@ export class Hud {
     if (this.bannerTimer > 0) {
       this.bannerTimer -= dt;
       if (this.bannerTimer <= 0) E.banner.classList.remove('show');
+    }
+  }
+
+  private updateBlessChips(el: HTMLElement, p: { blessings: Record<string, number> }): void {
+    const sig = BLESSING_ORDER.map((id) => p.blessings[id]).join(',');
+    if (el.dataset.sig === sig) return;
+    el.dataset.sig = sig;
+    el.innerHTML = '';
+    for (const id of BLESSING_ORDER) {
+      const r = p.blessings[id];
+      if (!r) continue;
+      const icon = id === 'might' ? ICONS.swords : id === 'vitality' ? ICONS.heart : ICONS.tower;
+      el.appendChild(h('span', { class: `bchip b-${id}`, title: `${BLESSINGS[id].name} ${ROMAN[r - 1]}: ${BLESSINGS[id].blurb}` }, h('i', { html: icon }), ROMAN[r - 1]));
     }
   }
 

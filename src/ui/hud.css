@@ -224,6 +224,48 @@ svg {
   gap: 6px;
 }
 
+.agerow.left {
+  justify-content: flex-start;
+}
+
+.blesschips {
+  display: flex;
+  gap: 3px;
+  margin-top: 4px;
+  pointer-events: auto;
+}
+
+.bchip i {
+  width: 10px;
+  height: 10px;
+}
+
+.bchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 5px 0 4px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 15px;
+  color: #2a1a06;
+  background: linear-gradient(180deg, var(--gold-l), var(--gold));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.bchip.b-vitality {
+  background: linear-gradient(180deg, #c6ffd0, #7ee08a);
+}
+
+.bchip.b-bastion {
+  background: linear-gradient(180deg, #d8ecff, #8fc4ff);
+}
+
+.hud.mobile .blesschips {
+  display: none;
+}
+
 .foepow {
   width: 18px;
   height: 18px;
