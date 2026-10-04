@@ -339,6 +339,8 @@ export class Renderer {
       setLineWidth(1);
       // Many idle phases (wing flaps, swaying), so any frozen moment fits inside the box.
       for (let i = 0; i < 10; i++) art.draw(cx, { ...pose, t: i * 0.37, walk: i * 0.9, attack: -1 });
+      // …and a swing (a creature can be frozen mid-attack).
+      for (const attack of [0.2, 0.45, 0.7]) art.draw(cx, { ...pose, attack });
       const data = cx.getImageData(0, 0, W, H).data;
       let x0 = W;
       let y0 = H;

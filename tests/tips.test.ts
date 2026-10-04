@@ -24,3 +24,14 @@ describe('results tip', () => {
     expect(battleTip(w, 0, 'adept', [])).toMatch(/turrets/);
   });
 });
+
+describe('results tip with older saves', () => {
+  it("doesn't claim you never reached an age you are in", () => {
+    const w = new World();
+    w.winner = 1;
+    w.time = 600;
+    w.players[0].age = 1; // reached before a reload that lost the ascension times
+    w.players[0].stats.powersCast = 2;
+    expect(battleTip(w, 0, 'adept', [{ t: 300, team: 1, age: 1 }])).not.toMatch(/never did/);
+  });
+});

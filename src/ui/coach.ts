@@ -95,7 +95,11 @@ const TIPS: Tip[] = [
       const p = g.world.players[g.playerTeam];
       return !!c && c.xpReadySince >= 0 && t - c.xpReadySince > 40 && p.age < MAX_AGE && p.gold < AGES[p.age + 1].ascendCost;
     },
-    done: (g, t, s) => g.world.players[g.playerTeam].gold >= AGES[Math.min(MAX_AGE, g.world.players[g.playerTeam].age + 1)].ascendCost || t - s > 12,
+    done: (g, t, s) => {
+      const p = g.world.players[g.playerTeam];
+      // Ascended (the next age's XP isn't there yet), can pay now, or shown long enough.
+      return p.age >= MAX_AGE || p.xp < AGES[p.age + 1].xpRequired || p.gold >= AGES[p.age + 1].ascendCost || t - s > 12;
+    },
   },
   {
     id: 'turret',

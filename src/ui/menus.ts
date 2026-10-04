@@ -494,6 +494,8 @@ export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps
     const theirs = ageUps.find((a) => a.team === foe && a.age === age);
     if (!theirs) break;
     const mine = ageUps.find((a) => a.team === me && a.age === age);
+    // (Saves from older builds may lack ascension times: trust the age actually reached.)
+    if (!mine && P.age >= age) continue;
     const gap = (mine ? mine.t : world.time) - theirs.t;
     if (gap > 45) {
       return `Tip: the enemy reached ${AGES[age].name} ${mine ? fmtTime(gap) + ' before you' : 'and you never did'}. Once you have the XP, save gold for the tithe — a new age outclasses extra creatures.`;

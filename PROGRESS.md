@@ -22,7 +22,7 @@ See DESIGN.md for the game design.
   areas when upright, ≥ 10 px text, bigger buttons, HUD hidden under menus, queue clear of gate).
 - **Robustness:** corrupt saves/settings, tiny windows, tutorial hand-off, drags surviving pause,
   focused buttons behind menus, hidden-tab audio, service-worker cache growth — all fixed and
-  smoke-tested (`npm run verify`: 77 unit tests + 104 browser checks).
+  smoke-tested (`npm run verify`: 78 unit tests + 104 browser checks).
 - **Perf:** frozen creatures 145 → 13 ms/frame for 30 frozen (headless software raster).
 - **Try:** `npm run dev`, play Adept; on a phone check the items under "Open questions".
 
@@ -500,6 +500,10 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     called `vibrate`, logging Chrome autoplay warnings / a "blocked vibrate" console error.
 187. [x] A soft two-note chime when ascending becomes possible (XP and gold), at most every 20 s.
     (Loudness unverified without speakers — see #75.)
+188. [x] Last fresh-eyes review of the newest changes: results tip no longer says "you never did" for
+    saves that lack ascension times (test); the "save" coach tip ends once you ascend; the
+    cursor/gate hint is off during power targeting, pause and game over; frost-sprite bounds
+    also sample attack poses.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

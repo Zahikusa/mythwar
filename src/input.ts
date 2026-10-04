@@ -79,8 +79,10 @@ export class Input {
       const [x, y] = this.toStage(e.clientX, e.clientY);
       g.view.mouse = { x, y };
       // Show what's clickable: lanes select, your gates open their turret slot.
-      const lane = g.options.demo ? -1 : this.laneAtClient(e.clientX, e.clientY);
-      const state = lane < 0 ? '' : this.onGate(e.clientX, e.clientY, lane) ? 'gate' : 'lane';
+      const lane = g.options.demo || g.over || g.paused ? -1 : this.laneAtClient(e.clientX, e.clientY);
+      // While aiming a god power, a click anywhere on a lane (gates included) casts it.
+      const gate = lane >= 0 && g.view.targeting !== 'power' && this.onGate(e.clientX, e.clientY, lane);
+      const state = lane < 0 ? '' : gate ? 'gate' : 'lane';
       if (state !== this.cursorState) {
         this.cursorState = state;
         this.canvas.style.cursor = state ? 'pointer' : '';
