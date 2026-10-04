@@ -70,6 +70,14 @@ export class Menus {
     this.playBtn.querySelector('span')!.textContent = label ? 'New battle' : 'Play';
   }
 
+  /** Click the visible primary button of the current screen (keyboard Enter). */
+  pressPrimary(): boolean {
+    const el = this.screens[this.screen]?.querySelector<HTMLButtonElement>('.mbtn.primary:not(.hidden)');
+    if (!el) return false;
+    el.click();
+    return true;
+  }
+
   /** Return from how-to / settings to whichever screen opened them. */
   goBack(): void {
     if (this.screen === 'howto' || this.screen === 'settings') this.show(this.back);

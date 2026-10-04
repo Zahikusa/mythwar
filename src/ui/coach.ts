@@ -50,6 +50,13 @@ const TIPS: Tip[] = [
     done: (_g, t, s) => t - s > 10,
   },
   {
+    id: 'jammed',
+    text: 'A gate is jammed by your own creatures. The waiting summon (gold border) steps out as soon as there is room — others keep coming meanwhile.',
+    anchor: '.queue',
+    when: (g) => g.world.players[g.playerTeam].queue.some((q) => q.ready),
+    done: (g, t, s) => !g.world.players[g.playerTeam].queue.some((q) => q.ready) || t - s > 9,
+  },
+  {
     id: 'power',
     text: 'Your god power is ready! Tap it, then choose a lane to unleash it.',
     anchor: '.act.power',

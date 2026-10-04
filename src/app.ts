@@ -92,6 +92,10 @@ export class App {
     // Escape on the title screens (no battle input attached) steps back through the menus.
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.state === 'title') this.escape();
+      // Enter on a menu screen presses its main (gold) button, unless a button is focused.
+      if (e.key === 'Enter' && this.menus.current !== 'none' && !(document.activeElement instanceof HTMLButtonElement)) {
+        if (this.menus.pressPrimary()) e.preventDefault();
+      }
     });
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) return;

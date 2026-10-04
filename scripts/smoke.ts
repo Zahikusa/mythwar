@@ -77,8 +77,8 @@ async function resumeFlow(page: Page): Promise<void> {
   await sleep(1200);
   const visible = await page.evaluate(() => !document.querySelector('.mbtn.continue')!.classList.contains('hidden'));
   check('title offers "Continue battle" after an autosave', visible);
-  const cb = await center(page, '.mbtn.continue');
-  await page.mouse.click(cb.x, cb.y);
+  // Enter presses the title's primary button (here: Continue).
+  await page.keyboard.press('Enter');
   await sleep(500);
   const st = await page.evaluate(() => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;

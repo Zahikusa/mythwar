@@ -220,6 +220,9 @@ See DESIGN.md for the game design.
     smoke-checked.
 85. [x] Touch: press and hold on a creature shows the same name/class/HP label as desktop
     hover (`view.inspect`); smoke-checked on phone viewports.
+86. [x] Enter presses the current menu screen's primary (gold) button (Play/Continue, Begin,
+    Next, Resume, Rematch, Done); smoke flow now continues a save via Enter.
+87. [x] One-time coach tip explains gold-bordered "waiting at a jammed gate" queue chips.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
@@ -228,6 +231,11 @@ See DESIGN.md for the game design.
     stays invisible).
 67. [ ] `src/render/citadel.ts drawCitadelGate`: gates (6 per frame) still draw gradients and
     brickwork live; could share the keep-layer caching approach (~0.4 ms software).
+88. [ ] Title: the backdrop battle's sounds play at 20% even before any interaction would be
+    allowed; verify no "AudioContext was not allowed to start" warnings on first load (Chrome
+    logs them only when created before a gesture — currently created lazily, so likely fine).
+89. [ ] HUD: the XP bar text "25.4k / 20.0k" after the XP requirement is met reads oddly; show
+    "Ready to ascend" when xp ≥ requirement.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
