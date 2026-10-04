@@ -444,3 +444,77 @@ describe('counter triangle at army scale (equal gold)', async () => {
     });
   }
 });
+
+describe('fairness between the sides', () => {
+  it('mirror duels end in mutual destruction (update order picks no winner)', () => {
+    for (const id of Object.keys(UNITS)) expect(duel(id, id), id).toBeNull();
+  });
+
+  it('swapping sides never changes who wins a duel', () => {
+    const ids = Object.keys(UNITS);
+    for (const a of ids) {
+      for (const b of ids) {
+        if (a >= b) continue;
+        const first = duel(a, b);
+        const swapped = duel(b, a);
+        const winner = (r: Team | null, left: string, right: string) => (r === null ? null : r === 0 ? left : right);
+        expect(winner(swapped, b, a), `${a} vs ${b}`).toBe(winner(first, a, b));
+      }
+    }
+  });
+
+  it('when both citadels fall in the same tick, the harder-hitting side wins', () => {
+    for (const strong of [0, 1] as Team[]) {
+      const w = new World();
+      w.players[strong].stats.damageToBase = 500;
+      for (const p of w.players) p.baseHp = 1;
+      w.damageBase(0, 10, 0, 1);
+      w.damageBase(1, 10, 0, 0);
+      w.step();
+      expect(w.winner).toBe(strong);
+    }
+  });
+});
+
+describe('splash damage', () => {
+  /** One blow from `attacker` (team 0) into a target with a foe packed right behind it. */
+  function blow(attacker: string): { target: number; neighbour: number } {
+    const w = new World();
+    const a = w.spawnUnit(0, 0, UNITS[attacker], 470);
+    a.def = { ...a.def, cooldown: 99 };
+    const t = w.spawnUnit(1, 0, UNITS.redcap, 470 + a.def.radius + UNITS.redcap.radius + 2);
+    const n = w.spawnUnit(1, 0, UNITS.redcap, t.x + 4);
+    for (const u of [t, n]) {
+      u.def = { ...u.def, damage: 0, speed: 0 };
+      u.hp = u.maxHp = 1e6;
+    }
+    run(w, 2);
+    return { target: u0(t), neighbour: u0(n) };
+    function u0(u: { hp: number; maxHp: number }): number {
+      return u.maxHp - u.hp;
+    }
+  }
+
+  it('sweep, cleave and slam do not stack on one foe', () => {
+    for (const id of ['treant', 'jotunn', 'titan']) {
+      const r = blow(id);
+      expect(r.target, id).toBeGreaterThan(0);
+      expect(r.neighbour, id).toBeGreaterThan(0);
+      expect(r.neighbour, id).toBeLessThanOrEqual(r.target + 1e-9);
+    }
+  });
+
+  it('cleave strikes a second foe in reach', () => {
+    const w = new World();
+    const a = w.spawnUnit(0, 0, UNITS.jotunn, 470);
+    a.def = { ...a.def, cooldown: 99 };
+    const t = w.spawnUnit(1, 0, UNITS.minotaur, 470 + a.def.radius + UNITS.minotaur.radius + 2);
+    const n = w.spawnUnit(1, 0, UNITS.minotaur, t.x + 20);
+    for (const u of [t, n]) {
+      u.def = { ...u.def, damage: 0, speed: 0 };
+      u.hp = u.maxHp = 1e6;
+    }
+    run(w, 2);
+    expect(n.maxHp - n.hp).toBeGreaterThan(0);
+  });
+});

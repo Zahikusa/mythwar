@@ -318,8 +318,8 @@ const UNIT_SPECS: UnitSpec[][] = [
       name: 'Frost Jötunn',
       cls: 'guardian',
       blurb: 'A giant of the frozen wastes.',
-      traitText: 'Cleave: each swing also strikes a second foe.',
-      traits: [{ kind: 'cleave', targets: 2, falloff: 0.6 }],
+      traitText: 'Cleave: each swing strikes a second foe at full force.',
+      traits: [{ kind: 'cleave', targets: 2, falloff: 1 }],
       mul: { radius: 1.15, speed: 0.95 },
     },
     {

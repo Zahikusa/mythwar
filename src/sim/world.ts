@@ -111,6 +111,8 @@ export class World {
   private finalAgeAt: number | null = null;
   private nextId = 1;
   private events: SimEvent[] = [];
+  /** Scratch: each unit's distance to its target at the start of the lane update. */
+  private startDist: number[] = [];
 
   constructor(opts: WorldOptions = {}) {
     this.rng = new Rng(opts.seed ?? 12345);
@@ -583,9 +585,35 @@ export class World {
   private updateLane(lane: number, dt: number): void {
     const list = this.lanes[lane];
     list.sort((a, b) => a.x - b.x);
+    // Both sides decide whether a foe is in reach from the same start-of-tick positions, so the
+    // side updated second doesn't get the first blow by seeing the other's step already made.
+    const startDist = this.startDist;
+    startDist.length = list.length;
+    for (let i = 0; i < list.length; i++) {
+      const u = list[i];
+      startDist[i] = this.findTarget(u, list).dist;
+      // Enrage also follows start-of-tick health, for the same reason.
+      const enrage = trait(u.def, 'enrage');
+      u.enraged = !!enrage && u.hp < u.maxHp * enrage.below;
+    }
     // Front-most units first so followers can close up within the same tick.
-    for (let i = list.length - 1; i >= 0; i--) if (list[i].team === 0 && list[i].alive) this.updateUnit(list[i], list, dt);
-    for (let i = 0; i < list.length; i++) if (list[i].team === 1 && list[i].alive) this.updateUnit(list[i], list, dt);
+    for (let i = list.length - 1; i >= 0; i--) if (list[i].team === 0) this.updateOrLastBlow(list[i], list, dt, startDist[i]);
+    for (let i = 0; i < list.length; i++) if (list[i].team === 1) this.updateOrLastBlow(list[i], list, dt, startDist[i]);
+  }
+
+  private updateOrLastBlow(u: Unit, list: Unit[], dt: number, startDist: number): void {
+    if (u.alive) {
+      this.updateUnit(u, list, dt, startDist);
+      return;
+    }
+    // Slain this very tick by a unit updated earlier: blows that land in the same tick are
+    // simultaneous, so a swing finishing now still lands (update order mustn't pick the winner).
+    if (u.windupTimer > 0 && u.freezeTimer <= 0) {
+      const enrage = trait(u.def, 'enrage');
+      const atkRate = (u.slowTimer > 0 ? u.slowFactor : 1) * (u.enraged && enrage ? enrage.attackSpeed : 1);
+      u.windupTimer -= dt * atkRate;
+      if (u.windupTimer <= 0) this.resolveAttack(u, list);
+    }
   }
 
   /** Nearest enemy unit (or the citadel) in front of `u`. */
@@ -618,7 +646,7 @@ export class World {
     return gap;
   }
 
-  private updateUnit(u: Unit, list: Unit[], dt: number): void {
+  private updateUnit(u: Unit, list: Unit[], dt: number, startDist: number): void {
     const def = u.def;
     if (u.slowTimer > 0) {
       u.slowTimer -= dt;
@@ -634,7 +662,6 @@ export class World {
       return;
     }
     const enrage = trait(def, 'enrage');
-    u.enraged = !!enrage && u.hp < u.maxHp * enrage.below;
     const speedMult = u.slowTimer > 0 ? u.slowFactor : 1;
     const atkRate = speedMult * (u.enraged && enrage ? enrage.attackSpeed : 1);
     if (u.attackTimer > 0) u.attackTimer -= dt * atkRate;
@@ -647,7 +674,8 @@ export class World {
     }
 
     const { target, dist } = this.findTarget(u, list);
-    if (dist <= def.range) {
+    // In reach since the start of the tick (and the foe hasn't just died or slipped away).
+    if (startDist <= def.range && dist <= def.range + RESOLVE_SLACK) {
       u.moving = false;
       u.movedFor = 0;
       if (u.attackTimer <= 0) {
@@ -724,27 +752,25 @@ export class World {
     const dealt = this.damageUnit(target, dmg, def.cls, 'unit', u);
     const lifesteal = trait(def, 'lifesteal');
     if (lifesteal) u.hp = Math.min(u.maxHp, u.hp + dealt * lifesteal.frac);
+    // Splash around the target: Guardians' sweeping blows catch foes crowded around it (breaks
+    // hunter packs), cleave strikes the nearest other foes in reach, a slam crushes everyone close
+    // by. Shares don't stack: each foe takes the largest one that applies.
     const cleave = trait(def, 'cleave');
-    if (cleave) {
-      const extra = list
-        .filter((e) => e.alive && e.team !== u.team && e !== target && this.edgeDist(u, e) <= def.range + 30)
-        .sort((a, b) => this.edgeDist(u, a) - this.edgeDist(u, b))
-        .slice(0, cleave.targets - 1);
-      for (const e of extra) this.damageUnit(e, dmg * cleave.falloff, def.cls, 'unit', u);
-    }
-    // Guardians' sweeping blows also catch foes crowded around the target (breaks hunter packs).
-    if (def.cls === 'guardian') {
-      for (const e of list) {
-        if (!e.alive || e.team === u.team || e === target) continue;
-        if (Math.abs(e.x - target.x) <= GUARDIAN_SWEEP) this.damageUnit(e, dmg * GUARDIAN_SWEEP_FALLOFF, def.cls, 'unit', u);
-      }
-    }
     const slam = trait(def, 'slam');
-    if (slam) {
-      for (const e of list) {
-        if (!e.alive || e.team === u.team || e === target) continue;
-        if (Math.abs(e.x - target.x) <= slam.radius + e.def.radius) this.damageUnit(e, dmg * slam.falloff, def.cls, 'unit', u);
-      }
+    if (def.cls !== 'guardian' && !cleave && !slam) return;
+    const cleaved = cleave
+      ? list
+          .filter((e) => e.alive && e.team !== u.team && e !== target && this.edgeDist(u, e) <= def.range + 30)
+          .sort((a, b) => this.edgeDist(u, a) - this.edgeDist(u, b))
+          .slice(0, cleave.targets - 1)
+      : null;
+    for (const e of list) {
+      if (!e.alive || e.team === u.team || e === target) continue;
+      const dx = Math.abs(e.x - target.x);
+      let share = def.cls === 'guardian' && dx <= GUARDIAN_SWEEP ? GUARDIAN_SWEEP_FALLOFF : 0;
+      if (slam && dx <= slam.radius + e.def.radius) share = Math.max(share, slam.falloff);
+      if (cleave && cleaved!.includes(e)) share = Math.max(share, cleave.falloff);
+      if (share > 0) this.damageUnit(e, dmg * share, def.cls, 'unit', u);
     }
   }
 
@@ -1062,11 +1088,15 @@ export class World {
   }
 
   private checkWin(): void {
-    for (const p of this.players) {
-      if (p.baseHp <= 0 && this.winner === null) {
-        this.winner = other(p.team);
-        this.emit({ type: 'gameOver', winner: this.winner });
-      }
-    }
+    if (this.winner !== null) return;
+    const [p0, p1] = this.players;
+    const fallen0 = p0.baseHp <= 0;
+    const fallen1 = p1.baseHp <= 0;
+    if (!fallen0 && !fallen1) return;
+    // Both citadels falling in the same tick (Ragnarök makes it possible): the side that dealt
+    // more siege damage over the battle wins, rather than whichever is checked first.
+    if (fallen0 && fallen1) this.winner = p0.stats.damageToBase >= p1.stats.damageToBase ? 0 : 1;
+    else this.winner = fallen0 ? 1 : 0;
+    this.emit({ type: 'gameOver', winner: this.winner });
   }
 }

@@ -302,6 +302,39 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     measure with getBoundingClientRect (Chrome: zoomed) instead of offsetWidth (unzoomed).
     Portraits render at DPR × zoom so they stay crisp. Smoke flow "large desktop (QHD)";
     screenshot `menu-diff-qhd`. The results-chart hover now also works on rotated phones.
+124. [ ] `src/ui/menus.ts goBack()`: Esc out of the first-run how-to never clears `afterHowto`;
+    later Pause → How to Play → Skip/"To battle!" starts a new battle, discarding the live one.
+125. [x] `src/sim/world.ts` unit update order: team 0 always moved first, so team 1 (the AI)
+    started attacking one tick earlier when two melee units met — won 9/16 mirror duels vs 4.
+    Now both sides decide "foe in reach" (and enrage) from start-of-tick positions, and a unit
+    slain in the tick its swing completes still lands it. All 16 mirror duels are draws; tests
+    for mirror duels and side-swapped duels (all 120 pairs).
+126. [x] `world.ts checkWin`: both citadels falling in the same tick went to team 1; now the side
+    with more total siege damage wins (test).
+127. [x] `world.ts meleeHit`: Guardian sweep stacked with Jötunn cleave / Titan slam (neighbours
+    took 1.3–1.4× the target's damage). Splash shares no longer stack (largest applies); to
+    keep the Jötunn's edge vs packs, cleave now strikes the second foe at full force (army
+    G-v-H age 3: +0.09, ×2 budget +0.13). Ladder after #125–127: master>adept 16-4,
+    adept>novice 20-0, mythic>master 14-2, master mirror 9-7 (avg 21 min). Tests added.
+128. [ ] `src/ui/hud.ts` drags survive Esc / pause / leaving: releasing still summons while
+    paused; ghost can stay visible into the next battle.
+129. [ ] Enter/Space activate a focused HUD button behind a menu (e.g. click Pause, press
+    Enter → pause toggles instead of Resume); HUD should be `inert` while a menu is open.
+130. [ ] `src/app.ts toTitle`: a malformed autosave (v=1, wrong shape) throws before the
+    game loop starts — the game never loads; settings values aren't validated either.
+131. [ ] Music keeps playing in a hidden tab (game pauses, AudioContext doesn't suspend).
+132. [ ] `app.ts lastBuzz` not reset between battles (no base-hit vibration after a rematch).
+133. [ ] Card tooltip and drag ghost render under the coach bubble (`.hud` isolation).
+134. [ ] Shortcuts ignore modifiers: Ctrl+F toggles speed, Ctrl+P pauses, Ctrl+1–4 summon.
+135. [ ] A11y: icon-only panel close buttons / how-to dots have no accessible name; cards and
+    the power button can't be activated with Enter.
+136. [ ] `continueSaved` shows the pause menu without the pause summary line.
+137. [ ] `src/game.ts fastForward` discards events (a gameOver during ff never ends the game).
+138. [ ] Results-chart age-up times read `world.time` after the frame (up to ~0.5 s late).
+139. [ ] `World.deserialize` aliases/mutates the snapshot (structuredClone it).
+140. [ ] `src/ai/ai.ts` fallback purchase keeps the ascend reserve even under siege.
+141. [ ] Missing sim tests: unit traits (cleave, slam, sweep, lifesteal, charge, enrage, bounce,
+    slow), side symmetry, simultaneous citadel deaths, power effects (briar root, dragon hits).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
