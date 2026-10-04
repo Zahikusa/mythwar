@@ -142,7 +142,16 @@ export class Menus {
       for (let k = 0; k < 4; k++) skulls.appendChild(h('i', { class: k <= i ? 'on' : '', html: ICONS.skull }));
       const rec = h('div', { class: 'record' });
       this.recordEls[d] = rec;
-      const card = h('button', { class: `diff d-${d}` }, h('div', { class: 'dname', text: p.name }), skulls, h('div', { class: 'dblurb', text: p.blurb }), rec);
+      const reaction = p.think >= 2 ? 'Slow' : p.think >= 1.2 ? 'Steady' : p.think >= 0.5 ? 'Quick' : 'Instant';
+      const counters = p.counterSkill < 0.3 ? 'Rarely' : p.counterSkill < 0.7 ? 'Sometimes' : p.counterSkill < 0.95 ? 'Usually' : 'Always';
+      const chips = h(
+        'div',
+        { class: 'dchips' },
+        h('span', { title: 'How quickly it reacts' }, h('b', { text: 'Reacts' }), reaction),
+        h('span', { title: 'How often it summons the right counter' }, h('b', { text: 'Counters' }), counters),
+        h('span', { title: 'Its gold income compared with yours' }, h('b', { text: 'Income' }), `${Math.round(p.incomeMult * 100)}%`),
+      );
+      const card = h('button', { class: `diff d-${d}` }, h('div', { class: 'dname', text: p.name }), skulls, h('div', { class: 'dblurb', text: p.blurb }), chips, rec);
       onTap(card, () => {
         this.selected = d;
         this.cb.sound('select');

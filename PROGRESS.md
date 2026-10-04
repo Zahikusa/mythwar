@@ -191,8 +191,7 @@ See DESIGN.md for the game design.
 65. [x] On ascension the score restarts at the new age's first chord ~1.4 s later (after the
     fanfare) instead of switching scale mid-progression.
 66. [x] Victory pose: the winners brandish weapons (wind-up pose) in time with their hop.
-68. [ ] `src/ui/menus.ts` difficulty cards: show the AI's income bonus/penalty and think speed
-    as small stat chips so players know what changes between levels.
+68. [x] Difficulty cards show stat chips: reaction speed, how often it counters, income %.
 69. [ ] Title screen: no credits/about line for the procedural tech; add a tiny "About" in
     Settings (version, how it was made, controls).
 67. [ ] `src/render/citadel.ts drawCitadelGate`: gates (6 per frame) still draw gradients and
