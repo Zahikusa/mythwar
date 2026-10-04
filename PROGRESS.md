@@ -2,7 +2,7 @@
 
 Status: complete, in verification mode (since run #1, 2026-10-04 ~01:15; run #2 03:33–07:30:
 sim fairness fixes, large-screen HUD zoom, portal flares, frozen-sprite perf, mobile/text polish,
-see backlog #122–#178)
+see backlog #122–#183)
 
 See DESIGN.md for the game design.
 
@@ -11,7 +11,11 @@ See DESIGN.md for the game design.
   and won simultaneous citadel falls. Fixed; all mirror duels now draw (tests). Splash no longer
   stacks; Jötunn cleave buffed to compensate. AI no longer death-spirals when an age behind.
 - **New for players:** gate portals flare ~1 s before a creature steps out (read the enemy's next
-  lane); creature labels say what beats them; gold shown in turret/blessing panels.
+  lane); creature labels say what beats them; gold shown in turret/blessing panels; the Ascend
+  button fills with tithe gold and a coach tip teaches saving up; the cursor marks clickable
+  lanes/gates.
+- **Difficulty evidence:** a new scripted "smart" player (counters, powers, turrets, blessings,
+  saves to ascend) wins vs Novice 100%, Adept 72%, Master 23%, Mythic 8% — kept as is.
 - **Screens:** HUD + menus scale up on 1440p/4K desktops; many phone fixes (small phones, safe
   areas when upright, ≥ 10 px text, bigger buttons, HUD hidden under menus, queue clear of gate).
 - **Robustness:** corrupt saves/settings, tiny windows, tutorial hand-off, drags surviving pause,
