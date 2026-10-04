@@ -498,6 +498,10 @@ svg {
   transition: width 0.3s;
 }
 
+.xpfill.full {
+  background: linear-gradient(90deg, #c9952e, #ffe7a6);
+}
+
 .xptext {
   position: absolute;
   inset: 0;

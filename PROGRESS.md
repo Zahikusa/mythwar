@@ -234,8 +234,7 @@ See DESIGN.md for the game design.
 88. [ ] Title: the backdrop battle's sounds play at 20% even before any interaction would be
     allowed; verify no "AudioContext was not allowed to start" warnings on first load (Chrome
     logs them only when created before a gesture — currently created lazily, so likely fine).
-89. [ ] HUD: the XP bar text "25.4k / 20.0k" after the XP requirement is met reads oddly; show
-    "Ready to ascend" when xp ≥ requirement.
+89. [x] XP bar reads "Ready to ascend" (gold fill) once the requirement is met.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed

@@ -700,7 +700,8 @@ export class Hud {
       const prev = AGES[me.age].xpRequired;
       const k = Math.min(1, (me.xp - prev) / (next.xpRequired - prev));
       setStyle(E.xpfill, 'width', `${(Math.max(0, k) * 100).toFixed(1)}%`);
-      setText(E.xptext, `${fmt(me.xp)} / ${fmt(next.xpRequired)}`);
+      setText(E.xptext, me.xp >= next.xpRequired ? 'Ready to ascend' : `${fmt(me.xp)} / ${fmt(next.xpRequired)}`);
+      toggle(E.xpfill, 'full', me.xp >= next.xpRequired);
     } else {
       setStyle(E.xpfill, 'width', '100%');
       setText(E.xptext, `${fmt(me.xp)} — final age`);
