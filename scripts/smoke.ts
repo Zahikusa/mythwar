@@ -584,6 +584,16 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   check('destroying the citadel ends the game with results', s.over && s.menu === 'over', `over=${s.over} menu=${s.menu}`);
   const verdict = await page.evaluate(() => document.querySelector('.verdict .vt')?.textContent);
   check('results show Victory', verdict === 'Victory', String(verdict));
+  // Rematch: a fresh battle with the HUD back (phones hide it under menus).
+  const rm = await center(page, '.screen.over .mbtn.primary');
+  if (viewport.mobile) await page.touchscreen.tap(rm.x, rm.y);
+  else await page.mouse.click(rm.x, rm.y);
+  await sleep(500);
+  const re = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    return { state: app.state, menu: app.menus.current, over: app.game.over, time: app.game.world.time, hud: getComputedStyle(app.hud.root).visibility, inert: app.hud.root.inert };
+  });
+  check('rematch starts a fresh battle with the HUD visible', re.state === 'playing' && re.menu === 'none' && !re.over && re.time < 5 && re.hud === 'visible' && !re.inert, JSON.stringify(re));
 }
 
 let base = '';
