@@ -257,6 +257,24 @@ async function largeDesktopFlow(page: Page): Promise<void> {
   await sleep(100);
   const s = await state(page);
   check('zoomed lane tab sits by its gate and selects the lane', s.lane === 0 && Math.abs(tab.y - lane0.y) < 80 && tab.x < lane0.x, JSON.stringify({ tab, lane0, lane: s.lane }));
+  // Dragging a card: the (zoomed) ghost follows the pointer.
+  {
+    const c = await center(page, '.card');
+    await page.mouse.move(c.x, c.y);
+    await page.mouse.down();
+    const to = { x: 1100, y: 700 };
+    for (let i = 1; i <= 6; i++) {
+      await page.mouse.move(c.x + ((to.x - c.x) * i) / 6, c.y + ((to.y - c.y) * i) / 6);
+      await sleep(16);
+    }
+    const gr = await page.evaluate(() => {
+      const r = document.querySelector('.drag-ghost')!.getBoundingClientRect();
+      return { cx: r.left + r.width / 2, top: r.top, bottom: r.bottom, w: r.width };
+    });
+    await page.keyboard.press('Escape');
+    await page.mouse.up();
+    check('zoomed drag ghost sits over the pointer', Math.abs(gr.cx - to.x) < 3 && gr.top < to.y && gr.bottom > to.y - 10 && gr.w > 70, JSON.stringify(gr));
+  }
   // A window squeezed to a sliver (degenerate layout) must not kill the render loop.
   for (const [w, h] of [[120, 300], [1, 1]]) {
     await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
