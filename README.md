@@ -68,8 +68,8 @@ long-press on a card shows its details. Held upright, the game rotates into land
 ## Difficulty
 
 Novice, Adept, Master and Mythic AI opponents. They read lane threats, counter your creatures,
-contest shrines, save up to ascend, build turrets, buy blessings and aim god powers. Mythic also
-gets +20% income.
+contest shrines, save up to ascend, build turrets, buy blessings and aim god powers. AI gold income
+(over time and from shrines): Novice 70%, Adept 90%, Master 100%, Mythic 120%.
 
 ## Development
 

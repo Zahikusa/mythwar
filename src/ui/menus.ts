@@ -190,7 +190,7 @@ export class Menus {
         { class: 'dchips' },
         h('span', { title: 'How quickly it reacts' }, h('b', { text: 'Reacts' }), reaction),
         h('span', { title: 'How often it summons the right counter' }, h('b', { text: 'Counters' }), counters),
-        h('span', { title: 'Its gold income compared with yours' }, h('b', { text: 'Income' }), `${Math.round(p.incomeMult * 100)}%`),
+        h('span', { title: 'Its gold over time and from shrines, compared with yours (gold from kills is the same)' }, h('b', { text: 'Income' }), `${Math.round(p.incomeMult * 100)}%`),
       );
       const card = h('button', { class: `diff d-${d}` }, h('div', { class: 'dname', text: p.name }), skulls, h('div', { class: 'dblurb', text: p.blurb }), chips, rec);
       onTap(card, () => {
@@ -255,15 +255,15 @@ export class Menus {
         body: [
           triangleArt(),
           p('Every creature belongs to a class. <b style="color:#f2b84b">Guardians</b> crush <b style="color:#7ed957">Hunters</b>, Hunters tear through <b style="color:#b48cff">Mystics</b>, and Mystics melt Guardians.'),
-          p('Hunters strike as a <b>pack</b>, Guardians’ <b>sweeping</b> blows break packs, and massed Mystics melt a Guardian line. A counter deals <b>+50% damage</b>; the card marked <b>Counter!</b> answers your selected lane.'),
+          p('Hunters strike as a <b>pack</b>, Guardians’ <b>sweeping</b> blows break packs, and massed Mystics melt a Guardian line. A counter deals <b>+50% damage</b> and takes 25% less in return; the card marked <b>Counter!</b> answers your selected lane.'),
         ],
       },
       {
         title: 'Gold, shrines and ages',
         body: [
           art(['treant', 'minotaur', 'jotunn', 'oni', 'titan'], 0),
-          p('Gold flows in over time and from every kill. <b>Ley Shrines</b> in the middle of each lane add income while your creatures hold them.'),
-          p('Kills grant <b>XP</b>. With enough XP and a gold tithe you can <b>Ascend</b> through five mythic ages — Fae Wilds, Olympus, Asgard, the Jade Empire and the Celestial realm — each with stronger creatures and a sturdier citadel.'),
+          p('Gold flows in over time and from every kill. Stand at a lane’s <b>Ley Shrine</b> with no foes nearby to capture it: it pays extra income until the enemy takes it back.'),
+          p('<b>XP</b> comes from kills, blows against the enemy citadel and the passing of time. With enough XP and a gold tithe you can <b>Ascend</b> through five mythic ages — Fae Wilds, Olympus, Asgard, the Jade Empire and the Celestial realm — each with stronger creatures and a sturdier citadel.'),
         ],
       },
       {
@@ -271,7 +271,7 @@ export class Menus {
         body: [
           powersArt(),
           p('Each age grants a <b>god power</b>. Press it (or <b>Space</b>) and choose a lane to unleash it. <b>Turrets</b> guard one lane each from your gates; <b>Blessings</b> permanently strengthen your army.'),
-          p('If the war drags on, <b>Ragnarök</b> comes: the citadels’ wards fall silent and every blow against them grows deadlier.'),
+          p('At 18:00 — or 3 minutes after both sides reach the Celestial age — <b>Ragnarök</b> comes: the citadels’ wards fall silent and every blow against them grows deadlier, minute by minute.'),
         ],
       },
     ];
@@ -431,7 +431,7 @@ export class Menus {
         row('Highest age', AGES[P.age].name, AGES[E.age].name),
         row('Creatures summoned', String(P.stats.summoned), String(E.stats.summoned)),
         row('Foes slain', String(P.stats.kills), String(E.stats.kills)),
-        row('… top / mid / bottom', P.stats.killsByLane.join(' / '), E.stats.killsByLane.join(' / ')),
+        row('… top / middle / bottom', P.stats.killsByLane.join(' / '), E.stats.killsByLane.join(' / ')),
         row('Gold earned', fmt(P.stats.goldEarned), fmt(E.stats.goldEarned)),
         row('Damage to citadel', fmt(P.stats.damageToBase), fmt(E.stats.damageToBase)),
         row('God powers cast', String(P.stats.powersCast), String(E.stats.powersCast)),

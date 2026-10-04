@@ -389,6 +389,14 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 157. [x] `public/sw.js`: hashed bundles of every earlier build piled up in the offline cache
     (cache-first, one cache name). A fresh page now prunes `/assets/` entries it no longer
     references; cache bumped to v3. Smoke flow "service worker".
+158. [x] Text vs mechanics pass (fresh-eyes review): Ragnarök banner said "the gods fall silent"
+    (only wards do; powers/turrets work); XP was described as kill-only (also time and citadel
+    hits); shrines "pay while your creatures hold them" (they pay until recaptured); the XP bar
+    said "Ready to ascend" without the gold → "XP ready"; difficulty Income chip / README income
+    lines clarified (time + shrine gold only, all four levels); how-to now says when Ragnarök
+    comes and that counters take 25% less in return; controls card lists gate-click, ?/H,
+    Backspace/Del; turret DPS includes Bastion (+N%); "top / middle / bottom"; queue chips say
+    click or tap per device. Screenshot scenarios `mobile-howto-4/5` (667×375 fits).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

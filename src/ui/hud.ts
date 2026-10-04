@@ -112,7 +112,7 @@ export class Hud {
     E.blessL = h('div', { class: 'blesschips' });
     E.blessR = h('div', { class: 'blesschips' });
     E.clock = h('div', { class: 'clock' });
-    E.shrines = h('div', { class: 'shrines', title: 'Ley Shrines: hold them for extra gold' });
+    E.shrines = h('div', { class: 'shrines', title: 'Ley Shrines: capture them for extra gold' });
     for (let i = 0; i < LANE_COUNT; i++) E.shrines.appendChild(h('i', { html: ICONS.shrine }));
     E.rag = h('div', { class: 'ragnarok' });
     E.speed = h('button', { class: 'sysbtn speed', title: 'Game speed (F)', html: ICONS.fast + '<span>1×</span>' });
@@ -141,7 +141,7 @@ export class Hud {
       'div',
       { class: 'res' },
       h('div', { class: 'goldrow', title: 'Gold — earned over time, from kills and from held shrines' }, h('i', { class: 'ico', html: ICONS.gold }), E.gold, E.income),
-      h('div', { class: 'xprow', title: 'Experience — earned from kills. Needed to ascend.' }, h('i', { class: 'ico', html: ICONS.xp }), h('div', { class: 'xpbar' }, E.xpfill, E.xptext)),
+      h('div', { class: 'xprow', title: 'Experience — earned over time, from kills and from blows against the enemy citadel. Needed to ascend.' }, h('i', { class: 'ico', html: ICONS.xp }), h('div', { class: 'xpbar' }, E.xpfill, E.xptext)),
     );
 
     // Cards
@@ -228,11 +228,13 @@ export class Hud {
       ['W / S  ·  ↑ / ↓  ·  Q A Z', 'Select a lane (or click it)'],
       ['Drag a card', 'Summon straight into any lane'],
       ['Space', 'God power on the selected lane'],
-      ['Backspace', 'Cancel the last summon (refund)'],
+      ['Backspace / Del', 'Cancel the last summon (refund)'],
       ['U', 'Ascend to the next age'],
       ['T  ·  B', 'Turrets  ·  Blessings'],
       ['F', 'Toggle 2× speed'],
       ['M', 'Mute / unmute'],
+      ['Click your gate', 'Turret panel for that lane'],
+      ['? · H', 'This panel'],
       ['Esc / P', 'Pause'],
       ['Right-click', 'Cancel power targeting'],
     ];
@@ -706,7 +708,7 @@ export class Hud {
       } else if (e.type === 'power' && e.team !== me) {
         this.toast(`Enemy casts ${POWERS[e.kind].name}!`, 'bad');
       } else if (e.type === 'ragnarok') {
-        this.banner('Ragnarök', 'The gods fall silent — citadels crumble', 'red');
+        this.banner('Ragnarök', 'The wards fall silent — citadels crumble', 'red');
       } else if (e.type === 'blessing' && e.team !== me) {
         this.toast(`Enemy gains ${BLESSINGS[e.blessing].name} ${ROMAN[e.rank - 1]}`, 'info');
       }
@@ -768,7 +770,9 @@ export class Hud {
       const prev = AGES[me.age].xpRequired;
       const k = Math.min(1, (me.xp - prev) / (next.xpRequired - prev));
       setStyle(E.xpfill, 'width', `${(Math.max(0, k) * 100).toFixed(1)}%`);
-      setText(E.xptext, me.xp >= next.xpRequired ? 'Ready to ascend' : `${fmt(me.xp)} / ${fmt(next.xpRequired)}`);
+      // XP alone isn't enough: ascending also takes the gold tithe.
+      const xpReady = me.xp >= next.xpRequired;
+      setText(E.xptext, xpReady ? (me.gold >= next.ascendCost ? 'Ready to ascend' : 'XP ready') : `${fmt(me.xp)} / ${fmt(next.xpRequired)}`);
       toggle(E.xpfill, 'full', me.xp >= next.xpRequired);
     } else {
       setStyle(E.xpfill, 'width', '100%');
@@ -1002,7 +1006,8 @@ export class Hud {
       setStyle(chips[n].prog, 'width', `${(prog * 100).toFixed(1)}%`);
       // Gold border = trained, waiting for room at a jammed gate.
       toggle(chips[n].el, 'waiting', ready);
-      const title = ready ? `${UNITS[q[n].unitId].name}: ready — waiting for room at the ${LANE_NAMES[q[n].lane].toLowerCase()} gate (tap to cancel)` : `${UNITS[q[n].unitId].name} → ${LANE_NAMES[q[n].lane]} lane (tap to cancel)`;
+      const cancel = this.layoutInfo?.mode === 'mobile' ? '(tap to cancel)' : '(click to cancel)';
+      const title = ready ? `${UNITS[q[n].unitId].name}: ready — waiting for room at the ${LANE_NAMES[q[n].lane].toLowerCase()} gate ${cancel}` : `${UNITS[q[n].unitId].name} → ${LANE_NAMES[q[n].lane]} lane ${cancel}`;
       if (chips[n].el.title !== title) chips[n].el.title = title;
     }
   }
@@ -1035,14 +1040,16 @@ export class Hud {
     for (let lane = 0; lane < LANE_COUNT; lane++) {
       const row = this.turretRows[lane];
       const cur = me.turrets[lane].def;
-      const sig = `${me.age}:${cur?.id ?? '-'}`;
+      const bastion = w.defenseMult(g.playerTeam);
+      const sig = `${me.age}:${cur?.id ?? '-'}:${bastion}`;
       if (row.dataset.sig !== sig) {
         row.dataset.sig = sig;
         row.innerHTML = '';
         const mk = (id: string) => {
           const def = TURRETS[id];
-          const dps = def.damage / def.cooldown;
-          const stats = `${dps < 10 ? dps.toFixed(1) : Math.round(dps)} dmg/s${def.splash ? ' · splash' : ''}${def.slow ? ' · slows' : ''} · range ${def.range}`;
+          // Includes the Bastion blessing, like card tooltips include Might/Vitality.
+          const dps = (def.damage / def.cooldown) * bastion;
+          const stats = `${dps < 10 ? dps.toFixed(1) : Math.round(dps)} dmg/s${bastion > 1 ? ` (+${Math.round((bastion - 1) * 100)}%)` : ''}${def.splash ? ' · splash' : ''}${def.slow ? ' · slows' : ''} · range ${def.range}`;
           const b = h(
             'button',
             { class: `tbuy ${def.kind}`, title: `${def.blurb} ${stats}.` },

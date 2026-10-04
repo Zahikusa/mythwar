@@ -78,7 +78,7 @@ const TIPS: Tip[] = [
   },
   {
     id: 'ascend',
-    text: 'You have enough XP to Ascend! A new age brings stronger creatures and a sturdier citadel.',
+    text: 'You have the XP to Ascend! Pay the gold tithe shown on the Ascend button: a new age brings stronger creatures and a sturdier citadel.',
     anchor: '.act.ascend',
     when: (g) => {
       const p = g.world.players[g.playerTeam];
