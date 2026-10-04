@@ -199,8 +199,9 @@ export class Hud {
     E.blessPanel = this.buildBlessPanel();
     E.keysPanel = this.buildKeysPanel();
 
-    E.toast = h('div', { class: 'toast' });
-    E.banner = h('div', { class: 'banner' }, h('div', { class: 'btitle' }), h('div', { class: 'bsub' }));
+    // Screen readers announce event toasts and banners (ascensions, Ragnarök, the verdict).
+    E.toast = h('div', { class: 'toast', role: 'status', 'aria-live': 'polite' });
+    E.banner = h('div', { class: 'banner', role: 'status', 'aria-live': 'polite' }, h('div', { class: 'btitle' }), h('div', { class: 'bsub' }));
     E.hint = h('div', { class: 'hint' });
     E.tooltip = h('div', { class: 'tooltip hidden' });
 
