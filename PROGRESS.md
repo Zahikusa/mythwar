@@ -1,6 +1,8 @@
 # PROGRESS
 
-Status: complete, in verification mode (since run #1, 2026-10-04 ~01:15)
+Status: complete, in verification mode (since run #1, 2026-10-04 ~01:15; run #2 03:33–07:30:
+sim fairness fixes, large-screen HUD zoom, portal flares, frozen-sprite perf, mobile/text polish,
+see backlog #122–#172)
 
 See DESIGN.md for the game design.
 
@@ -51,8 +53,9 @@ See DESIGN.md for the game design.
   powers.ts (5 god powers), data.ts (all balance numbers), types.ts (state, events, commands).
 - AI (`src/ai/ai.ts`): lane threat assessment, counters, ascend saving, turrets, blessings, powers.
 - `npm run sim -- 20 master adept` headless balance runs; `node scripts/trace.ts <seed>` timeline.
-- Balance snapshot (after the formation rules, see backlog #19): master vs master games ~18 min
-  (Ragnarök ends stalemates); mythic>master 20-10, master>adept 24-6, adept>novice 19-1.
+- Balance snapshot (run #2, after the fairness fixes #125–127 and the AI siege-saving fix #156):
+  master mirror 24-16, avg ~21 min, no games under 8 min (Ragnarök ends stalemates);
+  mythic>master 20-10, master>adept 28-2, adept>novice 30-0.
 
 - Renderer (`src/render`): themed pre-rendered backdrops per age (cross-fade on ascend), citadel
   keep/gates/turrets per age style, shrines, 16 procedural animated creatures
@@ -76,9 +79,10 @@ See DESIGN.md for the game design.
   multi-touch on phones — found by the smoke test).
 
 - Difficulty calibration vs scripted naive players (`node scripts/bots.ts 10`,
-  `node scripts/calib.ts counter adept 30`): a bot that follows the Counter! badge beats Novice
-  ~90%, Adept ~27%, Master ~10%, Mythic 0% (bots don't use turrets/blessings/shrines, so real
-  players should do better). Default difficulty: Novice.
+  `node scripts/calib.ts counter adept 90`): a bot that follows the Counter! badge beats Novice
+  ~83%, Adept ~11%, Master 0/30 (run #2 numbers, n=90; run #1 build measured 89% / 19% with the
+  same n). Bots don't use turrets/blessings/shrines/powers, so real players should do better.
+  Default difficulty: Novice. (See #172.)
 
 - Coach tips (`src/ui/coach.ts`), lane danger pulses, "Counter!" card badge.
 - PWA: manifest (landscape, fullscreen), offline service worker; phones go fullscreen and
