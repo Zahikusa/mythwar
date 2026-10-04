@@ -479,6 +479,14 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
   device emulation (touch, rotation, layouts) and audio only for "no errors". Worth a quick
   check on a real Android/iOS phone: frame rate in late-game battles, audio loudness/mix,
   vibration, fullscreen + landscape lock (Android), pinch-zoom blocking (iOS).
+- Run #2 additions worth a real-device look: upright iPhone in standalone (home-screen) mode —
+  the rotated stage now honours the notch/home-bar insets (#159, only emulated); the Android
+  launcher icon (new maskable icons, #174); frozen-lane frame rate during Fimbulwinter on a
+  mid-range phone (#144, measured only in headless software raster).
+- Design call made overnight (#125–127): melee meetings are now strictly side-symmetric and
+  Guardian splash no longer stacks with Jötunn cleave / Titan slam; Jötunn's cleave was raised
+  to full force to keep Guardians > Hunters at army scale. Revert the cleave buff in
+  `src/sim/data.ts` if Asgard Guardians feel too strong.
 - Difficulty: Novice is the default for a first game; Adept is tuned to be a fair fight for a
   player who uses counters + turrets. If it feels too easy/hard, `AI_PROFILES` in
   `src/ai/ai.ts` (think time, counterSkill, incomeMult) are the knobs.
