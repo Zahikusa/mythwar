@@ -80,6 +80,8 @@ export interface TeamStats {
   /** Summons per creature id. */
   summonedBy: Record<string, number>;
   kills: number;
+  /** Kills made in each lane. */
+  killsByLane: number[];
   losses: number;
   goldEarned: number;
   goldSpent: number;

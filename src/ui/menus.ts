@@ -333,6 +333,7 @@ export class Menus {
         row('Highest age', AGES[P.age].name, AGES[E.age].name),
         row('Creatures summoned', String(P.stats.summoned), String(E.stats.summoned)),
         row('Foes slain', String(P.stats.kills), String(E.stats.kills)),
+        row('… top / mid / bottom', P.stats.killsByLane.join(' / '), E.stats.killsByLane.join(' / ')),
         row('Gold earned', fmt(P.stats.goldEarned), fmt(E.stats.goldEarned)),
         row('Damage to citadel', fmt(P.stats.damageToBase), fmt(E.stats.damageToBase)),
         row('God powers cast', String(P.stats.powersCast), String(E.stats.powersCast)),

@@ -137,7 +137,7 @@ export class World {
       incomeMult,
       wardCooldown: Array.from({ length: LANE_COUNT }, () => 0),
       blessings: { might: 0, vitality: 0, bastion: 0 },
-      stats: { summoned: 0, summonedBy: {}, kills: 0, losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0 },
+      stats: { summoned: 0, summonedBy: {}, kills: 0, killsByLane: [0, 0, 0], losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0 },
       lastBaseHit: -10,
     };
   }
@@ -177,6 +177,9 @@ export class World {
     w.finalAgeAt = snap.finalAgeAt;
     for (let i = 0; i < 2; i++) {
       const p = snap.players[i];
+      // Older saves may predate some stats fields.
+      p.stats.killsByLane ??= [0, 0, 0];
+      p.stats.summonedBy ??= {};
       w.players[i] = {
         ...p,
         turrets: p.turrets.map((t) => {
@@ -971,6 +974,7 @@ export class World {
     killer.gold += gold;
     killer.xp += u.def.cost * KILL_XP_MULT;
     killer.stats.kills++;
+    killer.stats.killsByLane[u.lane]++;
     killer.stats.goldEarned += gold;
     this.players[u.team].stats.losses++;
     if (attacker) attacker.kills++;

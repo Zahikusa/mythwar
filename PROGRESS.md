@@ -182,7 +182,8 @@ See DESIGN.md for the game design.
 62. [x] Age badges pulse when that side has the XP to ascend (enemy badge tooltip warns too).
     Also: the top bar had pointer-events:none, so badge/shrine tooltips never appeared — the
     badges, shrine pips and Ragnarök label now accept hover.
-63. [ ] Results: add per-lane breakdown (kills per lane) to help players see where they won.
+63. [x] Results show kills per lane ("… top / mid / bottom"); `TeamStats.killsByLane`, older
+    saves are back-filled on load.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
