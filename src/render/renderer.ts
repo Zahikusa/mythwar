@@ -607,7 +607,8 @@ export class Renderer {
         const far = L.lanes[0];
         const near = L.lanes[L.lanes.length - 1];
         const left = team === 0;
-        const x0 = left ? L.field.x : near.x1;
+        // From the screen edge to the far lane's gate (the innermost one), mirrored per side.
+        const x0 = left ? L.field.x : far.x1;
         const x1 = left ? far.x0 : L.field.x + L.field.w;
         const x = x0 + Math.random() * (x1 - x0);
         const y = L.horizon + Math.random() * (near.y - L.horizon);
@@ -787,7 +788,17 @@ export class Renderer {
         const slot = world.players[team].turrets[lane];
         if (slot.def) {
           const gate = this.gateScreen(team, lane);
+          // A crumbling citadel's turrets sink with their gate towers (same clip and drop).
+          const collapse = Math.max(0, this.collapse[team]);
+          if (collapse > 0) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, -10000, L.width, gate.y + g.band * 0.5 + 10000);
+            ctx.clip();
+            ctx.translate(0, collapse * collapse * 60 * gate.s);
+          }
           drawTurret(ctx, slot.def.id, team, gate.x, gate.y, g.band, gate.s, slot, simTime, laneX(g, slot.aimX));
+          if (collapse > 0) ctx.restore();
         }
       }
       this.drawProjectiles(ctx, world, lane, alpha);

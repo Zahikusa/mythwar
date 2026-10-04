@@ -66,7 +66,7 @@ const SCENARIOS: Scenario[] = [
     w: 1600,
     h: 900,
     wait: 2000,
-    script: `(() => { const w = window.__mythwar.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0); })()`,
+    script: `(() => { const w = window.__mythwar.game.world; w.players[1].gold = 1e4; for (let l = 0; l < 3; l++) w.apply({ type: 'buildTurret', team: 1, lane: l, turretId: l === 1 ? 'sporepod' : 'thornspitter' }); w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0); })()`,
     after: 1400,
   },
   {

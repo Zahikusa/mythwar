@@ -554,12 +554,14 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     Now a creature's fade-in starts from its age in sim time (`simTime - bornAt`), so creatures
     already on the field are drawn in full (also fixes the pop-in on the fast-forwarded title
     battle). Smoke check: a continued battle (fast-forwarded 25 s) shows its 7 creatures.
-202. [ ] Turrets float in mid-air while the losing citadel collapses (`renderer.ts:786` draws them at
+202. [x] Turrets float in mid-air while the losing citadel collapses (`renderer.ts:786` draws them at
     the original gate top; gates sink by collapse²·60 px in `citadel.ts:351`).
 203. [ ] Power visuals use real time but sim timings: at 2× speed meteors land (impact/shake fire)
     at ~24% of their fall; vines/ice outlast the root/freeze 2× (`renderer.ts:529,655,666`).
-204. [ ] Enemy citadel collapse explosions use `[near.x1, right]` instead of the mirrored
+204. [x] Enemy citadel collapse explosions use `[near.x1, right]` instead of the mirrored
     `[far.x1, right]` (`renderer.ts:610`): its far/middle gates never explode.
+    (#202 + #204: turrets get the gate's clip and drop; the `gameover-collapse` screenshot
+    scenario now mounts enemy turrets to show it.)
 205. [ ] Fireflies stuck in the sky after starting a game from an Asgard/Jade title backdrop: instant
     theme switch keeps the old ambient particles; fireflies only wobble (`renderer.ts:163,889`).
 206. [ ] On ascend the old theme's aurora/stars and ambient particles vanish instantly while the old
