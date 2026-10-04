@@ -231,9 +231,9 @@ See DESIGN.md for the game design.
     stays invisible).
 67. [ ] `src/render/citadel.ts drawCitadelGate`: gates (6 per frame) still draw gradients and
     brickwork live; could share the keep-layer caching approach (~0.4 ms software).
-88. [ ] Title: the backdrop battle's sounds play at 20% even before any interaction would be
-    allowed; verify no "AudioContext was not allowed to start" warnings on first load (Chrome
-    logs them only when created before a gesture — currently created lazily, so likely fine).
+88. [x] `startMusic()` created the AudioContext on page load (before any gesture → browser
+    warning, suspended context). It now only flags the music on; the context is created by the
+    first tap/click/key, which then starts the score.
 89. [x] XP bar reads "Ready to ascend" (gold fill) once the requirement is met.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.

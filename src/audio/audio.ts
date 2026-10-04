@@ -342,8 +342,9 @@ export class Audio {
     this.musicAge = age;
     this.bar = 0;
     this.musicOn = true;
-    this.ensure();
-    this.startScheduler();
+    // Don't create the AudioContext here: browsers only allow it after a user gesture. The
+    // unlock listener creates it on the first tap/click/key and then starts the score.
+    if (this.ctx) this.startScheduler();
   }
 
   setMusicAge(age: number): void {
