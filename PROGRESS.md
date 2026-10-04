@@ -570,6 +570,44 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
 210. [ ] Per-frame allocations: gate-portal gradients + colour strings, `archPath`/`withSide`
     closures, keep window arrays (`citadel.ts`), per-creature screen-pos/pose objects, comparator
     per lane, `filter()` copies of ghosts/embers (`renderer.ts`).
+211. [x] Side asymmetry in target ties (`world.ts findTarget`, strict `<` over the x-sorted list): pack
+    hunters / flyers stack at the same x; team 0 keeps the foe it is already hitting (focus fire),
+    team 1 picks the fresh one behind (spread). Mirrored redcap/centaur/griffin/phoenix battles:
+    team 0 (the human) wins 24/24. Same pattern in turret/ward/bounce targeting, cleave sort.
+212. [x] Movement asymmetry: team 0 moves first, so team 1 sees team 0's same-tick move (movement limit
+    + "still in reach" re-check use live positions). Once #211 is fixed, mirrored byakko/griffin
+    battles go 5:19 / 4:20 for team 1.
+213. [x] Lifesteal / regen apply before the other side's simultaneous last blow for team 0 and after it
+    for team 1 → perfectly mirrored Fenrir duels: team 0 wins 62/200 hp values, team 1 0.
+    Lifesteal also heals on overkill.
+214. [x] Double knockout with equal citadel damage goes to team 0 (`world.ts:1101` `>=`).
+    (#211–#214 fixed together, see "Side symmetry, part 2" in the decisions log. Tests: mirrored
+    armies for all 16 creatures, lifesteal overkill, dead-heat coin toss — all fail on the old
+    code. Two more causes turned up while fixing: re-targeting after a kill used live positions,
+    and equal-x packs were updated youngest-first by team 0 but oldest-first by team 1.
+    Ladder after the fix (smart bot, n=300): Novice 100%, Adept 66%, Master 26%, Mythic 3%.)
+215. [x] DESIGN.md "a neighbour never takes more than the target" is false across classes (the counter
+    multiplier is per victim: Jötunn hits a Mystic ×0.75, cleaves a Hunter ×1.5). Fix the wording.
+216. [ ] Adept/Master (and every AI-vs-AI game) never buy blessings: `gold − cost ≥ reserve + 4 unit
+    costs` never happens while the queue soaks up gold (0 blessings in 36 AI games). Also the AI
+    never saves for the Elder Dragon (only offered when already affordable): 1 dragon in 54 games.
+217. [ ] Novice practically never ascends: `ascendSkill` (0.25) is used both as the per-decision chance
+    and as the saved fraction of the tithe → it holds the full tithe ~1 s per game; ascended in
+    6/24 games. Players vs Novice see it stuck in the Fae Wilds.
+218. [ ] Title "New battle" while an autosave exists silently deletes it (`app.ts play()` →
+    `clearBattle()`) without counting the defeat the pause menu promises for leaving after 1 min;
+    a stray tap under "Continue" destroys a 10-minute battle with no confirmation.
+219. [ ] Enter after clicking a difficulty card doesn't begin the battle (the card is a focused button,
+    so `pressPrimary()` is skipped and the keyboard click just re-selects it).
+220. [ ] Touch press-and-hold inspect is not cancelled when the finger moves (`input.ts:27-41`): a swipe
+    pops an inspect label at the start point that stays until release.
+222. [ ] Rare stalemates past Ragnarök: ~1% of Adept-vs-Adept AI mirrors are still running at 45 min
+    (armies grind in midfield, nothing reaches a gate, so the citadel-damage ramp never bites;
+    same rate before run #3's sim changes). None in 1,200 bot-vs-AI games (max 34 min), so it
+    doesn't affect players; the title backdrop is AI vs AI but just keeps going. Possible fix:
+    Ragnarök also erodes both citadels a little per minute, so the healthier one wins.
+221. [ ] Coach tips used up unseen: the "ascend" tip's done-check is `age > 0` (fires after an ascend →
+    one frame, marked seen); timed tips keep counting while hidden behind a panel.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
@@ -598,6 +636,14 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
   mirror duels draw). Master mirrors after the fixes: team 0 won 160 of 300 (53%, ~1 SE) — no
   meaningful side bias left. (Movement order still lets team 0 cover the last sub-step when two
   units meet; it only shifts where they meet by < 1 tick of walking.)
+- Side symmetry, part 2 (run #3, #211–#214): duels were symmetric but *armies* were not. Every
+  per-unit decision now reads foes at their start-of-tick positions (`findTarget(…, atStart)`,
+  also when a blow is redirected), equally near foes go to the older one (`nearer()`), packs at
+  the same x update oldest-first on both sides (sort on x to 1e-4, then team, then id),
+  lifesteal heals after all of the tick's blows (and not for overkill), regrowth before them,
+  and a dead-heat double knockout is a seeded coin toss. Mirrored armies of every creature
+  (16 × 36 setups) now all draw (before: 8 creatures biased, griffin 32–1 for team 0); 400
+  random mixed mirrored armies: 383 draws, 8 vs 9. Master mirrors: team 0 220 of 450.
 - Splash shares don't stack (largest applies); Jötunn cleave raised to full force to compensate.
 - Formation rules (packs/sweep/hang-back) instead of raw stat tuning: stats alone cannot fix
   ranged focus-fire dominance without breaking the 1v1 triangle.

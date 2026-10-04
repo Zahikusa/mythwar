@@ -62,6 +62,18 @@ describe('creature traits', () => {
     expect(f.hp).toBeCloseTo(f.maxHp * 0.5 + dealt * 0.25, 3);
   });
 
+  it("Fenrir's lifesteal counts only the health its victim had left", () => {
+    const w = new World();
+    const f = w.spawnUnit(0, 0, UNITS.fenrir, 480);
+    f.hp = f.maxHp * 0.5;
+    const victim = w.spawnUnit(1, 0, UNITS.redcap, 520);
+    victim.def = { ...victim.def, damage: 0, speed: 0 };
+    victim.hp = 2;
+    run(w, 3);
+    expect(victim.alive).toBe(false);
+    expect(f.hp).toBeCloseTo(f.maxHp * 0.5 + 2 * 0.25, 3);
+  });
+
   it('the Oni attacks faster once enraged', () => {
     const attacks = (hpFrac: number) => {
       const w = new World();

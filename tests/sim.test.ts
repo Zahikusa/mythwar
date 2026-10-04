@@ -463,6 +463,46 @@ describe('fairness between the sides', () => {
     }
   });
 
+  it('mirrored armies end even for every creature (packs, flyers, lifesteal, splash)', () => {
+    /** Waves of `count` creatures per side at mirrored spots and times; returns the survivor side. */
+    const mirrored = (id: string, count: number, gap: number, spacing: number): Team | null => {
+      const w = new World();
+      let spawned = 0;
+      for (let t = 0; t < 120; t += TICK) {
+        if (spawned < count && t >= spawned * gap) {
+          const x = 300 - spawned * spacing;
+          w.spawnUnit(0, 0, UNITS[id], x);
+          w.spawnUnit(1, 0, UNITS[id], LANE_LENGTH - x);
+          spawned++;
+        }
+        w.step();
+        const alive = w.lanes[0].filter((u) => u.alive);
+        const a0 = alive.some((u) => u.team === 0);
+        const a1 = alive.some((u) => u.team === 1);
+        if (spawned === count && (!a0 || !a1)) return a0 ? 0 : a1 ? 1 : null;
+      }
+      return null;
+    };
+    for (const id of Object.keys(UNITS)) {
+      for (const count of [3, 5]) {
+        for (const gap of [0, 0.4]) for (const spacing of [0, 7]) expect(mirrored(id, count, gap, spacing), `${id} ×${count} gap ${gap} spacing ${spacing}`).toBeNull();
+      }
+    }
+  });
+
+  it('a dead heat when both citadels fall is a coin toss, not a win for team 0', () => {
+    const winners = new Set<Team | null>();
+    for (let seed = 1; seed <= 12; seed++) {
+      const w = new World({ seed });
+      for (const p of w.players) p.baseHp = 1;
+      w.damageBase(0, 10, 0, 1);
+      w.damageBase(1, 10, 0, 0);
+      w.step();
+      winners.add(w.winner);
+    }
+    expect([...winners].sort()).toEqual([0, 1]);
+  });
+
   it('when both citadels fall in the same tick, the harder-hitting side wins', () => {
     for (const strong of [0, 1] as Team[]) {
       const w = new World();

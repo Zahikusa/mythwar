@@ -52,6 +52,15 @@ const GUARDIAN_SWEEP_FALLOFF = 0.8;
 /** Extra reach allowed when an attack resolves (target may have stepped back a little). */
 const RESOLVE_SLACK = 14;
 
+/**
+ * "Is foe `e` at distance `d` nearer than the best so far?" Equally near foes (pack hunters and
+ * flyers stack at the same x) go to the older one, the same way for both sides — scanning the
+ * x-sorted lane would otherwise pick the front foe for one side and the rear one for the other.
+ */
+function nearer(d: number, e: Unit, bestD: number, best: Unit | null): boolean {
+  return d < bestD - 1e-6 || (d <= bestD + 1e-6 && best !== null && e.id < best.id);
+}
+
 export interface WorldOptions {
   seed?: number;
   incomeMult?: [number, number];
@@ -113,6 +122,8 @@ export class World {
   private events: SimEvent[] = [];
   /** Scratch: each unit's distance to its target at the start of the lane update. */
   private startDist: number[] = [];
+  /** Lifesteal earned during a lane update, applied once both sides have struck. */
+  private heals: { u: Unit; amount: number }[] = [];
 
   constructor(opts: WorldOptions = {}) {
     this.rng = new Rng(opts.seed ?? 12345);
@@ -275,7 +286,12 @@ export class World {
 
   /** Edge-to-edge distance from unit `u` to enemy unit `e` (positive = gap). */
   edgeDist(u: Unit, e: Unit): number {
-    return u.team === 0 ? e.x - e.def.radius - (u.x + u.def.radius) : u.x - u.def.radius - (e.x + e.def.radius);
+    return this.edgeDistTo(u, e, e.x);
+  }
+
+  /** Edge-to-edge distance from `u` to enemy `e` standing at `ex`. */
+  private edgeDistTo(u: Unit, e: Unit, ex: number): number {
+    return u.team === 0 ? ex - e.def.radius - (u.x + u.def.radius) : u.x - u.def.radius - (ex + e.def.radius);
   }
 
   /** Edge distance from unit `u` to the enemy citadel. */
@@ -586,7 +602,10 @@ export class World {
 
   private updateLane(lane: number, dt: number): void {
     const list = this.lanes[lane];
-    list.sort((a, b) => a.x - b.x);
+    // Team 0 walks this list backwards, team 1 forwards: creatures standing at the same x (packs;
+    // compared to 1e-4, as their positions pick up rounding noise) are ordered so that both
+    // sides update the older one first.
+    list.sort((a, b) => Math.round(a.x * 1e4) - Math.round(b.x * 1e4) || a.team - b.team || (a.team === 0 ? b.id - a.id : a.id - b.id));
     // Both sides decide whether a foe is in reach from the same start-of-tick positions, so the
     // side updated second doesn't get the first blow by seeing the other's step already made.
     const startDist = this.startDist;
@@ -594,13 +613,19 @@ export class World {
     for (let i = 0; i < list.length; i++) {
       const u = list[i];
       startDist[i] = this.findTarget(u, list).dist;
-      // Enrage also follows start-of-tick health, for the same reason.
+      // Enrage also follows start-of-tick health, for the same reason, and regrowth happens
+      // before anyone strikes.
       const enrage = trait(u.def, 'enrage');
       u.enraged = !!enrage && u.hp < u.maxHp * enrage.below;
+      const regen = trait(u.def, 'regen');
+      if (regen && u.alive && u.hp < u.maxHp) u.hp = Math.min(u.maxHp, u.hp + regen.perSec * u.maxHp * dt);
     }
     // Front-most units first so followers can close up within the same tick.
     for (let i = list.length - 1; i >= 0; i--) if (list[i].team === 0) this.updateOrLastBlow(list[i], list, dt, startDist[i]);
     for (let i = 0; i < list.length; i++) if (list[i].team === 1) this.updateOrLastBlow(list[i], list, dt, startDist[i]);
+    // Blows in one tick are simultaneous: lifesteal only heals a creature that survived them all.
+    for (const { u, amount } of this.heals) if (u.alive) u.hp = Math.min(u.maxHp, u.hp + amount);
+    this.heals.length = 0;
   }
 
   private updateOrLastBlow(u: Unit, list: Unit[], dt: number, startDist: number): void {
@@ -618,14 +643,17 @@ export class World {
     }
   }
 
-  /** Nearest enemy unit (or the citadel) in front of `u`. */
-  findTarget(u: Unit, list: Unit[]): { target: Unit | null; dist: number } {
+  /**
+   * Nearest enemy unit (or the citadel) in front of `u`. With `atStart`, foes are measured where
+   * they stood at the start of the tick, so the side updated second doesn't see the other's step.
+   */
+  findTarget(u: Unit, list: Unit[], atStart = false): { target: Unit | null; dist: number } {
     let best: Unit | null = null;
     let bestDist = this.baseDist(u);
     for (const e of list) {
       if (!e.alive || e.team === u.team) continue;
-      const d = this.edgeDist(u, e);
-      if (d < bestDist) {
+      const d = atStart ? this.edgeDistTo(u, e, e.px) : this.edgeDist(u, e);
+      if (nearer(d, e, bestDist, best)) {
         bestDist = d;
         best = e;
       }
@@ -655,8 +683,6 @@ export class World {
       if (u.slowTimer <= 0) u.slowFactor = 1;
     }
     if (u.rootTimer > 0) u.rootTimer -= dt;
-    const regen = trait(def, 'regen');
-    if (regen && u.hp < u.maxHp) u.hp = Math.min(u.maxHp, u.hp + regen.perSec * u.maxHp * dt);
     if (u.freezeTimer > 0) {
       u.freezeTimer -= dt;
       u.windupTimer = 0;
@@ -675,10 +701,11 @@ export class World {
       return;
     }
 
-    const { target, dist } = this.findTarget(u, list);
+    const { target, dist } = this.findTarget(u, list, true);
     // In reach since the start of the tick, and still in reach now (if the foe just died, the
     // next one must be in reach too — no swinging at a foe a step away).
-    if (startDist <= def.range && dist <= def.range) {
+    // (A hair of tolerance: mirrored positions round differently on the two sides.)
+    if (startDist <= def.range + 1e-6 && dist <= def.range + 1e-6) {
       u.moving = false;
       u.movedFor = 0;
       if (u.attackTimer <= 0) {
@@ -713,18 +740,14 @@ export class World {
     const def = u.def;
     let target: Unit | null = null;
     let dist: number;
-    if (u.pendingTarget >= 0) {
-      const t = this.unitById.get(u.pendingTarget);
-      if (t && t.alive) {
-        target = t;
-        dist = this.edgeDist(u, t);
-      } else {
-        const found = this.findTarget(u, list);
-        target = found.target;
-        dist = found.dist;
-      }
+    // Foes are measured where they stood at the start of the tick (as in updateUnit), so a
+    // blow redirected after its target fell doesn't favour the side updated second.
+    const t = u.pendingTarget >= 0 ? this.unitById.get(u.pendingTarget) : undefined;
+    if (t && t.alive) {
+      target = t;
+      dist = this.edgeDistTo(u, t, t.px);
     } else {
-      const found = this.findTarget(u, list);
+      const found = this.findTarget(u, list, true);
       target = found.target;
       dist = found.dist;
     }
@@ -752,9 +775,11 @@ export class World {
       this.damageBase(other(u.team), dmg, u.lane, u.team);
       return;
     }
+    const hpBefore = target.hp;
     const dealt = this.damageUnit(target, dmg, def.cls, 'unit', u);
     const lifesteal = trait(def, 'lifesteal');
-    if (lifesteal) u.hp = Math.min(u.maxHp, u.hp + dealt * lifesteal.frac);
+    // Heals for the damage actually taken (no overkill), once the tick's blows are all in.
+    if (lifesteal) this.heals.push({ u, amount: Math.min(dealt, Math.max(0, hpBefore)) * lifesteal.frac });
     // Splash around the target: Guardians' sweeping blows catch foes crowded around it (breaks
     // hunter packs), cleave strikes the nearest other foes in reach, a slam crushes everyone close
     // by. Shares don't stack: each foe takes the largest one that applies.
@@ -764,7 +789,7 @@ export class World {
     const cleaved = cleave
       ? list
           .filter((e) => e.alive && e.team !== u.team && e !== target && this.edgeDist(u, e) <= def.range + 30)
-          .sort((a, b) => this.edgeDist(u, a) - this.edgeDist(u, b))
+          .sort((a, b) => this.edgeDist(u, a) - this.edgeDist(u, b) || a.id - b.id)
           .slice(0, cleave.targets - 1)
       : null;
     for (const e of list) {
@@ -862,7 +887,7 @@ export class World {
         for (const e of this.lanes[lane]) {
           if (!e.alive || e.team === p.team) continue;
           const d = p.team === 0 ? e.x - e.def.radius : LANE_LENGTH - (e.x + e.def.radius);
-          if (d < bestD) {
+          if (nearer(d, e, bestD, best)) {
             bestD = d;
             best = e;
           }
@@ -958,7 +983,7 @@ export class World {
       for (const e of this.lanes[pr.lane]) {
         if (!e.alive || e.team === pr.team || hit.includes(e.id)) continue;
         const d = Math.abs(e.x - target.x);
-        if (d <= pr.bounce.range + e.def.radius && d < nd) {
+        if (d <= pr.bounce.range + e.def.radius && nearer(d, e, nd, next)) {
           nd = d;
           next = e;
         }
@@ -1097,9 +1122,13 @@ export class World {
     const fallen1 = p1.baseHp <= 0;
     if (!fallen0 && !fallen1) return;
     // Both citadels falling in the same tick (Ragnarök makes it possible): the side that dealt
-    // more siege damage over the battle wins, rather than whichever is checked first.
-    if (fallen0 && fallen1) this.winner = p0.stats.damageToBase >= p1.stats.damageToBase ? 0 : 1;
-    else this.winner = fallen0 ? 1 : 0;
+    // more siege damage over the battle wins, rather than whichever is checked first (a dead
+    // heat on that too is a coin toss, not a win for the side checked first).
+    if (fallen0 && fallen1) {
+      const d0 = p0.stats.damageToBase;
+      const d1 = p1.stats.damageToBase;
+      this.winner = d0 !== d1 ? (d0 > d1 ? 0 : 1) : this.rng.chance(0.5) ? 0 : 1;
+    } else this.winner = fallen0 ? 1 : 0;
     this.emit({ type: 'gameOver', winner: this.winner });
   }
 }

@@ -76,7 +76,7 @@ contest shrines, save up to ascend, build turrets, buy blessings and aim god pow
 mounts turrets before you reach its gates and keeps its blessings coming.
 
 A scripted "smart" player (follows the Counter! badge, casts powers, builds turrets, buys
-blessings, saves to ascend) wins about 100% / 67% / 21% / 2% of games against Novice / Adept /
+blessings, saves to ascend) wins about 100% / 66% / 26% / 3% of games against Novice / Adept /
 Master / Mythic over 300+ games each (`node scripts/calib.ts smart mythic 300`).
 
 ## Development

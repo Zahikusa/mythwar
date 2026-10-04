@@ -40,8 +40,8 @@ To make the triangle hold for whole armies (not just duels — massed ranged uni
 dominate because melee fight one at a time), each class has a formation rule:
 - **Hunters hunt in packs:** they don't block each other, so a pack strikes one foe together.
 - **Guardians sweep:** every blow also hits foes packed around the target (80%). Splash from one
-  blow doesn't stack: a foe caught by sweep, cleave or slam takes only the largest share, so a
-  neighbour never takes more than the target.
+  blow doesn't stack: a foe caught by sweep, cleave or slam takes only the largest share of the
+  blow (its own class counter still applies, so a Hunter beside a Mystic target can take more).
 - **Mystics hang back:** melee allies walk through them to the front line.
 Verified with `node scripts/classwar.ts` (equal-gold army battles per age).
 Final age adds a **Legend** (Elder Dragon): expensive, neutral, splash fire.
