@@ -2,9 +2,23 @@
 
 Status: complete, in verification mode (since run #1, 2026-10-04 ~01:15; run #2 03:33–07:30:
 sim fairness fixes, large-screen HUD zoom, portal flares, frozen-sprite perf, mobile/text polish,
-see backlog #122–#172)
+see backlog #122–#178)
 
 See DESIGN.md for the game design.
+
+## Run #2 in short (for the morning)
+- **Fairness:** the AI (team 1) used to win ties — it got the first melee blow when two units met
+  and won simultaneous citadel falls. Fixed; all mirror duels now draw (tests). Splash no longer
+  stacks; Jötunn cleave buffed to compensate. AI no longer death-spirals when an age behind.
+- **New for players:** gate portals flare ~1 s before a creature steps out (read the enemy's next
+  lane); creature labels say what beats them; gold shown in turret/blessing panels.
+- **Screens:** HUD + menus scale up on 1440p/4K desktops; many phone fixes (small phones, safe
+  areas when upright, ≥ 10 px text, bigger buttons, HUD hidden under menus, queue clear of gate).
+- **Robustness:** corrupt saves/settings, tiny windows, tutorial hand-off, drags surviving pause,
+  focused buttons behind menus, hidden-tab audio, service-worker cache growth — all fixed and
+  smoke-tested (`npm run verify`: 75 unit tests + ~70 browser checks).
+- **Perf:** frozen creatures 145 → 13 ms/frame for 30 frozen (headless software raster).
+- **Try:** `npm run dev`, play Adept; on a phone check the items under "Open questions".
 
 ## Requirements check (TASK.md)
 - **Age of War concept** — two citadels, summon units for gold, kill for gold + XP, evolve through
