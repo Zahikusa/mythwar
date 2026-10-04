@@ -1,4 +1,4 @@
-import { AGES, MAX_AGE } from '../sim/data.ts';
+import { AGES, MAX_AGE, UNITS } from '../sim/data.ts';
 import type { Game } from '../game.ts';
 import type { SimEvent } from '../sim/types.ts';
 import { h, onTap } from './dom.ts';
@@ -92,6 +92,19 @@ const TIPS: Tip[] = [
     anchor: '.turretbtn',
     when: (g, t) => t > 70 && g.world.players[g.playerTeam].gold > 200 && g.world.players[g.playerTeam].turrets.every((s) => !s.def),
     done: (g, t, s) => g.world.players[g.playerTeam].turrets.some((s) => !!s.def) || t - s > 10,
+  },
+  {
+    id: 'portals',
+    text: 'Watch the enemy gates: a portal flares red just before their next creature steps out — you can see which lane it is coming down.',
+    when: (g, t) => {
+      if (t < 50) return false;
+      const foe = g.playerTeam === 0 ? 1 : 0;
+      const i = g.world.trainingIndex(foe);
+      if (i < 0) return false;
+      const p = g.world.players[foe];
+      return UNITS[p.queue[i].unitId].trainTime - p.trainProgress < 0.8;
+    },
+    done: (_g, t, s) => t - s > 9,
   },
   {
     id: 'bless',

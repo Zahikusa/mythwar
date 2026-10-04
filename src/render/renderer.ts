@@ -74,6 +74,8 @@ interface ProjVis {
 }
 
 const DEATH_TIME = 0.9;
+/** Seconds of warning before a creature steps out of its gate. */
+const EMERGE_WARN = 1.2;
 const CLASS_COLORS: Record<string, string> = { guardian: '#f2b84b', hunter: '#7ed957', mystic: '#b48cff', legend: '#ff8a3d' };
 const SPAWN_TIME = 0.35;
 
@@ -253,6 +255,25 @@ export class Renderer {
       s: this.artScale(g) * art.scale,
       art,
     };
+  }
+
+  /**
+   * 0..1: how soon a creature steps out of this gate (the portal flares for the last
+   * EMERGE_WARN seconds of training, and glows while a trained one waits for room). Shown for
+   * both sides, so attentive players can see where the enemy's next creature is coming.
+   */
+  private emergeAt(world: World, team: Team, lane: number): number {
+    if (world.winner !== null) return 0;
+    const p = world.players[team];
+    let e = 0;
+    const i = world.trainingIndex(team);
+    if (i >= 0 && p.queue[i].lane === lane) {
+      const left = UNITS[p.queue[i].unitId].trainTime - p.trainProgress;
+      const k = Math.max(0, Math.min(1, 1 - left / EMERGE_WARN));
+      e = k * k;
+    }
+    for (const q of p.queue) if (q.ready && q.lane === lane) e = Math.max(e, 0.45 + 0.15 * Math.sin(this.time * 4));
+    return e;
   }
 
   /** Screen position of a citadel gate for a lane. */
@@ -659,7 +680,7 @@ export class Renderer {
         } else {
           const c = this.gateLayer(team, lane, p.age);
           ctx.drawImage(c.canvas, c.x, c.y, c.w, c.h);
-          drawCitadelGate(ctx, L, team, lane, p.age, gate.x, gate.y, gate.s, this.baseFlash[team], this.time, 0, 'dynamic');
+          drawCitadelGate(ctx, L, team, lane, p.age, gate.x, gate.y, gate.s, this.baseFlash[team], this.time, 0, 'dynamic', this.emergeAt(world, team, lane));
         }
       }
       this.fx.drawTimed(ctx, lane, 'ground');

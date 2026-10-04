@@ -335,9 +335,11 @@ export function drawCitadelGate(
   t: number,
   collapse = 0,
   part: 'all' | 'static' | 'dynamic' = 'all',
+  emerge = 0,
 ): void {
   // 'static' = masonry, dark archway, trim, crenellations, pennant pole (cacheable);
   // 'dynamic' = portal glow, arch trim on top of it, ward crystal, pennant flag, hit flash.
+  // `emerge` (0..1): a creature is about to step out of this gate — the portal flares.
   const S = part !== 'dynamic';
   const D = part !== 'static';
   const st = CITADEL_STYLES[age];
@@ -413,10 +415,15 @@ export function drawCitadelGate(
     ctx.clip();
     const pg = ctx.createLinearGradient(0, by - ah, 0, by);
     pg.addColorStop(0, `rgba(${tc.rgb.join(',')},0.15)`);
-    pg.addColorStop(1, `rgba(${tc.rgb.join(',')},${0.5 + 0.15 * Math.sin(t * 3 + lane)})`);
+    pg.addColorStop(1, `rgba(${tc.rgb.join(',')},${Math.min(1, 0.5 + 0.15 * Math.sin(t * 3 + lane) + 0.5 * emerge)})`);
     ctx.fillStyle = pg;
     ctx.fillRect(ax - aw / 2, by - ah, aw, ah);
+    if (emerge > 0) {
+      // A bright core rising in the archway.
+      drawGlow(ctx, ax, by - ah * 0.35, aw * (0.5 + 0.4 * emerge), [255, 255, 255], 0.55 * emerge);
+    }
     ctx.restore();
+    if (emerge > 0) drawGlow(ctx, ax, by - ah * 0.45, aw * 0.9 + 12 * s * emerge, tc.rgb, 0.7 * emerge);
     ctx.strokeStyle = st.trim;
     ctx.lineWidth = Math.max(1.5, 2.5 * s);
     archPath();

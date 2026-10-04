@@ -294,8 +294,10 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 119. [x] Title backdrop has a slow cinematic camera drift (off when shake/reduced motion is off).
 120. [x] Desktop action buttons show their keys (Space / U / T / B) like the cards' 1–4.
 121. [x] Phones vibrate briefly when a god power is cast.
-122. [ ] The enemy's queued/ready creatures are invisible; consider showing a small "incoming"
-    marker at enemy gates 1 s before a creature emerges (portal flare) to reward attention.
+122. [x] Gate portals flare (team colour + white core) for the last 1.2 s of a creature's
+    training and glow while a trained one waits for room — for both sides, so the enemy's next
+    lane is readable. One-time coach tip "portals" explains it the first time an enemy portal
+    flares after 0:50. (DESIGN.md updated.)
 123. [x] Large desktop screens (above 1920×1080) zoom the HUD and menu screens (CSS `zoom`,
     `hudZoom()` in layout.ts, 1–1.6 in 0.05 steps; bottom inset scales with it). JS-positioned
     parts (tooltip, coach tip, lane tabs, drag ghost) divide their left/top by the zoom and

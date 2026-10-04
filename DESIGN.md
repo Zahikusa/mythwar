@@ -25,6 +25,8 @@ five mythic ages, and topple the enemy citadel.
 - Each lane has a **Ley Shrine** at its centre. Only your creatures near it ⇒ you
   capture it over a few seconds. Each held shrine adds gold income.
 - Each lane has one **turret slot** on each citadel.
+- A gate's portal **flares** for the last ~1.2 s before a creature steps out of it (both sides),
+  so an attentive player sees which lane the enemy's next creature is coming down.
 
 ## Creature classes (counter triangle)
 | Class | Icon | Role | Strong vs |
