@@ -206,7 +206,9 @@ export class Hud {
     const panel = h('div', { class: 'panel turretpanel hidden' });
     const close = h('button', { class: 'pclose', html: ICONS.close, 'aria-label': 'Close' });
     onTap(close, () => this.togglePanel('none'));
-    panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.tower }), 'Turrets', close));
+    // Your gold, right where you spend it (on phones the panel covers the gold counter).
+    this.el.pgoldT = h('span', { class: 'pgold', title: 'Your gold' });
+    panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.tower }), 'Turrets', this.el.pgoldT, close));
     panel.appendChild(h('div', { class: 'pdesc', text: 'One turret per lane, mounted on your gate. Bolt turrets pick off single foes; Blast turrets hit groups.' }));
     for (let lane = 0; lane < LANE_COUNT; lane++) {
       const row = h('div', { class: 'trow', 'data-lane': lane });
@@ -248,7 +250,8 @@ export class Hud {
     const panel = h('div', { class: 'panel blesspanel hidden' });
     const close = h('button', { class: 'pclose', html: ICONS.close, 'aria-label': 'Close' });
     onTap(close, () => this.togglePanel('none'));
-    panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.bless }), 'Blessings', close));
+    this.el.pgoldB = h('span', { class: 'pgold', title: 'Your gold' });
+    panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.bless }), 'Blessings', this.el.pgoldB, close));
     panel.appendChild(h('div', { class: 'pdesc', text: 'Permanent favours of the gods. Each rank costs more, and prices rise with every age.' }));
     this.el.foeBless = h('div', { class: 'foebless' });
     panel.appendChild(this.el.foeBless);
@@ -875,6 +878,14 @@ export class Hud {
     }
 
     // Panels
+    if (this.panel === 'turret' || this.panel === 'bless') {
+      const pg = this.panel === 'turret' ? this.el.pgoldT : this.el.pgoldB;
+      const txt = fmt(g.world.players[g.playerTeam].gold);
+      if (pg.dataset.v !== txt) {
+        pg.dataset.v = txt;
+        pg.innerHTML = `${ICONS.gold}<b>${txt}</b>`;
+      }
+    }
     if (this.panel === 'turret') this.updateTurretPanel();
     if (this.panel === 'bless') this.updateBlessPanel();
     const canBless = BLESSING_ORDER.some((id) => w.blessingBlocker(g.playerTeam, id) === null);

@@ -403,7 +403,7 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 160. [x] Difficulty screen on small phones: the 2×2 grid now only applies to tall stages, compact
     menu screens use `justify-content: safe center` (overflow scrolls instead of leaving the
     top); `mobile-diff-se` (667×375) scenario fits.
-161. [ ] Mobile turret/blessing panels cover the gold pill: you can't see your gold while spending.
+161. [x] Turret/blessing panel headers show your gold (phones: the panel covers the gold pill).
 162. [ ] Mobile queue chips (bottom-left) overlap the bottom-lane gate: tapping the gate for a
     turret can cancel a summon instead.
 163. [x] Mobile text ≥ 10 px (difficulty chip labels in sentence case to fit, XP text, action

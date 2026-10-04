@@ -1259,6 +1259,28 @@ svg {
   color: var(--gold);
 }
 
+.ptitle .pgold {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px 2px 6px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--gold-l);
+}
+
+.ptitle .pgold svg {
+  width: 15px;
+  height: 15px;
+}
+
+.ptitle .pgold + .pclose {
+  margin-left: 4px;
+}
+
 .pclose {
   margin-left: auto;
   width: 28px;
