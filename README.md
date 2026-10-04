@@ -41,13 +41,16 @@ installed as an app on phones ("Add to Home Screen"), which also locks landscape
 - **Counter:** Guardians (shield) beat Hunters (fang), Hunters beat Mystics (orb), Mystics beat
   Guardians. Hunters strike as packs, Guardians' sweeping blows break packs, and Mystics hang
   back behind the front line. The card marked **Counter!** answers what's in your selected lane.
-- **Economy:** gold trickles in and comes from kills. Hold the **Ley Shrine** in a lane's centre for
-  extra income.
-- **Ascend:** kills give XP; with enough XP and a gold tithe you advance to the next age (new
+- **Economy:** gold trickles in and comes from kills. Capture the **Ley Shrine** in a lane's centre
+  (stand there with no foes nearby) for extra income until the enemy takes it back.
+- **Read the enemy:** a gate's portal flares just before a creature steps out — watch the enemy
+  gates to see which lane their next creature is coming down.
+- **Ascend:** XP comes from kills, blows against the enemy citadel and time; with enough XP and a gold tithe you advance to the next age (new
   creatures, turrets, god power, stronger citadel). The final age adds the Elder Dragon.
 - **God powers:** one per age, recharging. Tap it, then a lane.
 - **Turrets & blessings:** a turret per lane on your gates; blessings are permanent upgrades.
-- **Ragnarök:** long wars end in Ragnarök — the gate wards fall silent and citadels crumble faster.
+- **Ragnarök:** at 18:00 (or 3 minutes after both sides reach the final age) the gate wards fall
+  silent and damage to citadels grows every minute.
 
 ### Controls (desktop)
 
