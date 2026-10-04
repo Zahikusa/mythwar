@@ -56,6 +56,8 @@ svg {
   position: absolute;
   inset: 0;
   isolation: isolate;
+  /* Above coach tips (15) so card tooltips and the drag ghost cover them; below menus (20). */
+  z-index: 16;
   pointer-events: none;
   --bottom: 130px;
   --side: 96px;

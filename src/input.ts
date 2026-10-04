@@ -125,8 +125,9 @@ export class Input {
     }
     if (g.paused || g.over) return;
     // A HUD button clicked earlier keeps focus; don't let Space/Enter also activate it.
+    // (Buttons reached with Tab keep focus, so keyboard users can press them with Enter.)
     const active = document.activeElement;
-    if (active instanceof HTMLElement && active !== document.body && active.closest('.hud')) active.blur();
+    if (active instanceof HTMLElement && active !== document.body && active.closest('.hud') && !active.matches(':focus-visible')) active.blur();
     const me = g.world.players[g.playerTeam];
     if (k >= '1' && k <= '4') {
       const def = AGE_UNITS[me.age][Number(k) - 1];

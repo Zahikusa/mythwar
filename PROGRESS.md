@@ -328,10 +328,12 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     settings are sanitized field by field. Smoke check plants corrupt storage.
 131. [x] The AudioContext is suspended while the page is hidden (resumed when visible).
 132. [x] `lastBuzz` reset when a battle starts.
-133. [ ] Card tooltip and drag ghost render under the coach bubble (`.hud` isolation).
+133. [x] Card tooltip and drag ghost rendered under the coach bubble; the HUD layer now sits above
+    coach tips (z 16) and below menus (20).
 134. [x] Battle shortcuts ignore Ctrl/Alt/Meta combos (Ctrl+F, Ctrl+P, Ctrl+1–4 are the browser's).
-135. [ ] A11y: icon-only panel close buttons / how-to dots have no accessible name; cards and
-    the power button can't be activated with Enter.
+135. [x] A11y: panel close buttons and how-to dots have accessible names, cards have a "Summon X
+    (class), N gold" label; Tab-focused cards / power button activate with Enter (only
+    mouse-focused HUD buttons are blurred on key presses). Smoke: Tab to a card + Enter.
 136. [x] `continueSaved` goes through `pause()`, so the pause summary shows (smoke-checked).
 137. [x] `src/game.ts fastForward` discarded events: a game over during ff never ended the game
     (a title backdrop could sit on a finished battle). Now ff records ascensions, chart samples

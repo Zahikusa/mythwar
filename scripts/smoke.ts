@@ -325,6 +325,16 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     await sleep(50);
     s = await state(page);
     check('Backspace cancels the last summon with a refund', s.queue === before.queue - 1 && s.gold > before.gold, `queue ${before.queue} → ${s.queue}`);
+    // Keyboard users can Tab to a card and press Enter to summon it.
+    let tabs = 0;
+    while (tabs++ < 40 && !(await page.evaluate(() => document.activeElement?.classList.contains('card')))) await page.keyboard.press('Tab');
+    await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].trainProgress = 0));
+    const q1 = (await state(page)).queue;
+    await page.keyboard.press('Enter');
+    await sleep(80);
+    const q2 = (await state(page)).queue;
+    check('Tab to a card + Enter summons it', q2 === Math.min(5, q1 + 1) && tabs < 40, `tabs=${tabs} queue ${q1} → ${q2}`);
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   }
 
   // Queue chips mirror the queue; tapping one cancels it (refund).

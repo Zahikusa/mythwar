@@ -155,6 +155,10 @@ export class Hud {
     E.powerName = h('div', { class: 'aname' });
     E.power = h('button', { class: 'act power', title: 'God power (Space)' }, E.powerIcon, E.powerCd, E.powerTime, E.powerName, h('span', { class: 'akey', text: 'Space' }));
     E.power.addEventListener('pointerdown', (e) => this.startDrag(e as PointerEvent, null, true));
+    // Keyboard activation (Enter on the focused button; pointer taps go through startDrag).
+    E.power.addEventListener('click', (e) => {
+      if (e.detail === 0) this.beginPowerTargeting();
+    });
 
     E.ascFill = h('div', { class: 'ascfill' });
     E.ascSub = h('div', { class: 'asub' });
@@ -200,7 +204,7 @@ export class Hud {
 
   private buildTurretPanel(): HTMLElement {
     const panel = h('div', { class: 'panel turretpanel hidden' });
-    const close = h('button', { class: 'pclose', html: ICONS.close });
+    const close = h('button', { class: 'pclose', html: ICONS.close, 'aria-label': 'Close' });
     onTap(close, () => this.togglePanel('none'));
     panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.tower }), 'Turrets', close));
     panel.appendChild(h('div', { class: 'pdesc', text: 'One turret per lane, mounted on your gate. Bolt turrets pick off single foes; Blast turrets hit groups.' }));
@@ -216,7 +220,7 @@ export class Hud {
 
   private buildKeysPanel(): HTMLElement {
     const panel = h('div', { class: 'panel keyspanel hidden' });
-    const close = h('button', { class: 'pclose', html: ICONS.close });
+    const close = h('button', { class: 'pclose', html: ICONS.close, 'aria-label': 'Close' });
     onTap(close, () => this.togglePanel('none'));
     panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.info }), 'Controls', close));
     const rows: [string, string][] = [
@@ -240,7 +244,7 @@ export class Hud {
 
   private buildBlessPanel(): HTMLElement {
     const panel = h('div', { class: 'panel blesspanel hidden' });
-    const close = h('button', { class: 'pclose', html: ICONS.close });
+    const close = h('button', { class: 'pclose', html: ICONS.close, 'aria-label': 'Close' });
     onTap(close, () => this.togglePanel('none'));
     panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.bless }), 'Blessings', close));
     panel.appendChild(h('div', { class: 'pdesc', text: 'Permanent favours of the gods. Each rank costs more, and prices rise with every age.' }));
@@ -936,7 +940,7 @@ export class Hud {
       const cost = h('div', { class: 'cost' }, h('i', { html: ICONS.gold }), String(def.cost));
       const el = h(
         'button',
-        { class: `card cls-${def.cls}`, style: `--cls:${CLASS_COLOR[def.cls]}` },
+        { class: `card cls-${def.cls}`, style: `--cls:${CLASS_COLOR[def.cls]}`, 'aria-label': `Summon ${def.name} (${CLASS_NAME[def.cls]}), ${def.cost} gold` },
         h('div', { class: 'portrait' }, portrait(def.id, size, 0, 0.4, false, this.zoom)),
         h('div', { class: 'clsico', html: CLASS_ICON[def.cls] }),
         h('div', { class: 'name', text: def.name }),
@@ -946,6 +950,9 @@ export class Hud {
       );
       el.style.animationDelay = `${i * 60}ms`;
       el.addEventListener('pointerdown', (e) => this.startDrag(e as PointerEvent, def.id, false));
+      el.addEventListener('click', (e) => {
+        if (e.detail === 0) this.tryTrain(def.id); // Enter on a keyboard-focused card
+      });
       el.addEventListener('pointerenter', (e) => {
         if ((e as PointerEvent).pointerType === 'mouse') this.showTooltip(def, el);
       });
