@@ -343,8 +343,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 138. [x] `ageUp` events carry their sim time (results-chart ticks were up to ~0.5 s late).
 139. [x] `World.deserialize` works on a structuredClone of the snapshot (test).
 140. [x] `src/ai/ai.ts`: the fallback purchase no longer keeps the ascend reserve under siege.
-141. [ ] Missing sim tests: unit traits (cleave, slam, sweep, lifesteal, charge, enrage, bounce,
-    slow), side symmetry, simultaneous citadel deaths, power effects (briar root, dragon hits).
+141. [x] Sim tests added: `tests/traits.test.ts` (regen, charge ×2, slow, lifesteal, enrage cadence,
+    bounce, splash; Briar root, Zeus 7 bolts, Spirit Dragon once per foe, Starfall meteors), plus
+    the symmetry / simultaneous-fall / splash-stacking tests (#125–127). 69 tests.
 142. [x] A window narrower than ~156 px gave a negative field width → `ctx.ellipse` threw →
     the rAF loop died for good. Field size is clamped ≥ 1 and the next frame is scheduled
     before rendering. Smoke check squeezes the window to 120×300 and 1×1.
