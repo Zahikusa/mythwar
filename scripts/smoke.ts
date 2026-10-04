@@ -109,6 +109,25 @@ async function resumeFlow(page: Page): Promise<void> {
   await page.evaluate(() => localStorage.clear());
 }
 
+/** Offline cache: the service worker keeps the current build's bundles and drops older ones. */
+async function serviceWorkerFlow(page: Page): Promise<void> {
+  console.log('== service worker ==');
+  await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
+  await page.goto(`${base}/`, { waitUntil: 'load' });
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  // A bundle left over from an earlier build…
+  await page.evaluate(async () => {
+    const c = await caches.open('mythwar-v3');
+    await c.put(new Request('./assets/index-OLDBUILD.js'), new Response('// old'));
+  });
+  await page.reload({ waitUntil: 'load' });
+  await sleep(800);
+  const keys = await page.evaluate(async () => (await (await caches.open('mythwar-v3')).keys()).map((r) => new URL(r.url).pathname));
+  const current = await page.evaluate(() => [...document.querySelectorAll('script[src], link[rel=stylesheet]')].map((e) => new URL((e as HTMLScriptElement).src || (e as HTMLLinkElement).href).pathname));
+  check('service worker drops bundles of older builds', !keys.some((k) => k.includes('OLDBUILD')), JSON.stringify(keys));
+  check('service worker caches the current bundles', current.every((c) => keys.includes(c)), JSON.stringify({ current, keys }));
+}
+
 /** Esc out of the first-run how-to must not leave its "then start a battle" hand-off behind. */
 async function tutorialHandoffFlow(page: Page): Promise<void> {
   console.log('== first-run tutorial hand-off ==');
@@ -563,6 +582,10 @@ async function main(): Promise<void> {
     page2.on('pageerror', (e) => errors.push(`rotated menus: ${String(e)}`));
     await rotatedMenusFlow(page2);
     await page2.close();
+    const page5 = await browser.newPage();
+    page5.on('pageerror', (e) => errors.push(`service worker: ${String(e)}`));
+    await serviceWorkerFlow(page5);
+    await page5.close();
     const page4 = await browser.newPage();
     page4.on('pageerror', (e) => errors.push(`tutorial: ${String(e)}`));
     await tutorialHandoffFlow(page4);

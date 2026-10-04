@@ -386,6 +386,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     Calibration (counter-following bot, n=90, old → new build): Novice 89% → 83%, Adept 19% →
     11–12%; the saving rule itself doesn't move these (same with it disabled), the shift comes
     from #125–127. Not retuned: within ~1.5 SE and the bot ignores turrets/blessings/shrines.
+157. [x] `public/sw.js`: hashed bundles of every earlier build piled up in the offline cache
+    (cache-first, one cache name). A fresh page now prunes `/assets/` entries it no longer
+    references; cache bumped to v3. Smoke flow "service worker".
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
