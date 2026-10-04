@@ -35,6 +35,9 @@ export class Menus {
   private selected: Difficulty;
   private syncers: (() => void)[] = [];
   private continueBtn: HTMLButtonElement | null = null;
+  private skipBtn: HTMLButtonElement | null = null;
+  /** Set when the how-to is shown before a player's first battle. */
+  private afterHowto: (() => void) | null = null;
   private playBtn: HTMLButtonElement | null = null;
 
   constructor(parent: HTMLElement, settings: Settings, cb: MenuCallbacks) {
@@ -80,7 +83,10 @@ export class Menus {
     for (const [k, el] of Object.entries(this.screens)) el!.classList.toggle('active', k === screen);
     this.root.classList.toggle('open', screen !== 'none');
     this.root.classList.toggle('dim', screen !== 'none' && screen !== 'title');
-    if (screen === 'howto') this.setHowtoPage(0);
+    if (screen === 'howto') {
+      this.setHowtoPage(0);
+      this.skipBtn?.classList.toggle('hidden', !this.afterHowto);
+    }
     if (screen === 'difficulty') this.refreshDifficulty();
     if (screen === 'settings') for (const f of this.syncers) f();
   }
@@ -157,13 +163,25 @@ export class Menus {
         this.cb.sound('select');
         this.refreshDifficulty();
       });
-      card.addEventListener('dblclick', () => this.cb.play(d));
+      card.addEventListener('dblclick', () => this.begin(d));
       this.diffCards[d] = card;
       grid.appendChild(card);
     });
-    const begin = this.button('Begin Battle', 'primary big', () => this.cb.play(this.selected), ICONS.swords);
+    const begin = this.button('Begin Battle', 'primary big', () => this.begin(this.selected), ICONS.swords);
     const back = this.button('Back', 'ghost', () => this.show('title'));
     return h('div', { class: 'screen difficulty' }, h('h2', { text: 'Choose your foe' }), grid, h('div', { class: 'mrow' }, back, begin));
+  }
+
+  /** Start a battle — first-timers see the five-page how-to first (skippable). */
+  private begin(d: Difficulty): void {
+    if (!this.settings.tutorialSeen) {
+      this.settings.tutorialSeen = true;
+      this.cb.settingsChanged(this.settings);
+      this.afterHowto = () => this.cb.play(d);
+      this.show('howto');
+      return;
+    }
+    this.cb.play(d);
   }
 
   private refreshDifficulty(): void {
@@ -230,10 +248,24 @@ export class Menus {
       dots.appendChild(d);
     });
     this.howtoDots = dots;
-    const prev = this.button('Back', 'ghost', () => (this.howtoPage === 0 ? this.show(this.back) : this.setHowtoPage(this.howtoPage - 1)));
-    const next = this.button('Next', 'primary', () => (this.howtoPage === pages.length - 1 ? this.show(this.back) : this.setHowtoPage(this.howtoPage + 1)));
+    const finish = () => {
+      // First battle: the tutorial leads straight into the fight.
+      const then = this.afterHowto;
+      this.afterHowto = null;
+      if (then) then();
+      else this.show(this.back);
+    };
+    const prev = this.button('Back', 'ghost', () => {
+      if (this.howtoPage > 0) this.setHowtoPage(this.howtoPage - 1);
+      else {
+        this.afterHowto = null;
+        this.show(this.back);
+      }
+    });
+    const next = this.button('Next', 'primary', () => (this.howtoPage === pages.length - 1 ? finish() : this.setHowtoPage(this.howtoPage + 1)));
     next.classList.add('hnext');
-    return h('div', { class: 'screen howto' }, h('div', { class: 'hbook' }, ...this.howtoPages), dots, h('div', { class: 'mrow' }, prev, next));
+    this.skipBtn = this.button('Skip', 'ghost hskip hidden', finish);
+    return h('div', { class: 'screen howto' }, h('div', { class: 'hbook' }, ...this.howtoPages), dots, h('div', { class: 'mrow' }, prev, this.skipBtn, next));
   }
 
   private setHowtoPage(i: number): void {
@@ -241,7 +273,7 @@ export class Menus {
     this.howtoPages.forEach((p, k) => p.classList.toggle('active', k === i));
     this.howtoDots?.querySelectorAll('.hdot').forEach((d, k) => d.classList.toggle('on', k === i));
     const next = this.screens.howto?.querySelector('.hnext span');
-    if (next) next.textContent = i === this.howtoPages.length - 1 ? 'Got it' : 'Next';
+    if (next) next.textContent = i === this.howtoPages.length - 1 ? (this.afterHowto ? 'To battle!' : 'Got it') : 'Next';
   }
 
   // -------------------------------------------------------------------------

@@ -109,8 +109,14 @@ async function rotatedMenusFlow(page: Page): Promise<void> {
   check('rotated: Begin Battle is on screen', inView, JSON.stringify(begin));
   await page.touchscreen.tap(begin.x, begin.y);
   await sleep(600);
+  // A first-time player sees the how-to first, with a Skip button straight into battle.
+  menu = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current);
+  check('rotated: first battle opens the how-to first', menu === 'howto', menu);
+  const skip = await center(page, '.screen.howto .hskip');
+  await page.touchscreen.tap(skip.x, skip.y);
+  await sleep(600);
   const st = await page.evaluate(() => ({ state: (window as unknown as { __mythwar: any }).__mythwar.state, menu: (window as unknown as { __mythwar: any }).__mythwar.menus.current }));
-  check('rotated: tapping Begin Battle starts a battle', st.state === 'playing' && st.menu === 'none', JSON.stringify(st));
+  check('rotated: Skip starts the battle', st.state === 'playing' && st.menu === 'none', JSON.stringify(st));
   // Slow-device fallback: 4 s under 40 fps mid-battle switches to battery saver once.
   const q = await page.evaluate(() => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;
