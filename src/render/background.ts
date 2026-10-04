@@ -346,6 +346,25 @@ function drawLanePath(ctx: CanvasRenderingContext2D, layout: Layout, index: numb
   ctx.fillRect(x0, yTop, x1 - x0, band * 0.12);
   ctx.restore();
 
+  // Grass tufts hugging both edges of the path (skipping the citadel gates).
+  const step = band * 0.32;
+  for (const edge of [yTop + band * 0.02, yBot - band * 0.04]) {
+    for (let x = g.x0 + band * 0.6; x < g.x1 - band * 0.6; x += step * (0.6 + rng.next())) {
+      if (rng.chance(0.45)) continue;
+      const k = 0.6 + rng.next() * 0.7;
+      const hgt = band * 0.16 * k;
+      ctx.fillStyle = theme.foliage[rng.int(theme.foliage.length)];
+      for (let b = -1; b <= 1; b++) {
+        const bx = x + b * band * 0.035;
+        ctx.beginPath();
+        ctx.moveTo(bx - band * 0.02, edge);
+        ctx.quadraticCurveTo(bx + b * band * 0.02, edge - hgt * 0.6, bx + b * band * 0.05, edge - hgt * (b === 0 ? 1.2 : 0.9));
+        ctx.quadraticCurveTo(bx + band * 0.005, edge - hgt * 0.4, bx + band * 0.02, edge);
+        ctx.fill();
+      }
+    }
+  }
+
   // Shrine dais
   const sx = laneX(g, SHRINE_X);
   const rx = band * 1.25;

@@ -167,9 +167,7 @@ See DESIGN.md for the game design.
 53. [x] Smoke flow drives title → difficulty → Begin Battle on a rotated portrait phone.
 54. [x] 1366×768 laptops: card portraits overlapped the names; portraits now scale with the
     bottom-bar height (`desktop-laptop` screenshot scenario).
-55. [ ] `src/render/background.ts`: foliage/pebbles are random per theme but identical on both
-    halves' perspective; consider a subtle per-lane texture variation and soft grass tufts
-    hugging the lane edges for extra depth.
+55. [x] Grass tufts (theme foliage colours) hug both edges of every lane path.
 56. [x] Checked, no change: the blue/red team pair passes the dataviz CVD check (worst
     adjacent ΔE 18, protan) and teams also differ by facing direction and ground rings.
 57. [x] Turret buttons show "dmg/s · splash · slows · range" under the name; buttons stay
@@ -181,6 +179,9 @@ See DESIGN.md for the game design.
 61. [ ] `src/sim/data.ts`: Elder Dragon beats equal gold of any class by 59–86% value
     (scripts/classwar battle); fine as a one-at-a-time capstone, but re-check if players
     report it dominating late Ragnarök games.
+62. [ ] HUD on desktop: there's no indicator of the enemy's training/queue or gold; consider an
+    "enemy is ascending soon" hint when the AI has the XP (fair information, like the age badge).
+63. [ ] Results: add per-lane breakdown (kills per lane) to help players see where they won.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
