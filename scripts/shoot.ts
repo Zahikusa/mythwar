@@ -194,6 +194,13 @@ async function main(): Promise<void> {
         await new Promise((r) => setTimeout(r, sc.after ?? 0));
       }
       const fps = await page.evaluate(() => (window as unknown as { __fps?: number }).__fps ?? -1);
+      // Demo seeds play out differently whenever the sim or AI changes: flag scenarios that meant
+      // to show a live battle but caught one that is already decided.
+      const decided = await page.evaluate(() => {
+        const g = (window as unknown as { __mythwar?: { game?: { world: { winner: number | null } } } }).__mythwar?.game;
+        return !!g && g.world.winner !== null;
+      });
+      if (decided && sc.query.includes('demo')) errors.push('warning: the demo battle is already over — pick another seed/ff');
       await page.screenshot({ path: `screenshots/${name}.png` });
       console.log(`${name}: ${Date.now() - t0}ms fps=${fps}${errors.length ? '\n  ' + errors.join('\n  ') : ''}`);
       await page.close();
