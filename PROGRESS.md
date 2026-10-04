@@ -184,6 +184,11 @@ See DESIGN.md for the game design.
     badges, shrine pips and Ragnarök label now accept hover.
 63. [x] Results show kills per lane ("… top / mid / bottom"); `TeamStats.killsByLane`, older
     saves are back-filled on load.
+64. [ ] AI ignores Ragnarök: it could buy Bastion before it starts and shift to all-out
+    pressure once citadel damage ramps (Master/Mythic).
+65. [ ] Music switches scale abruptly at the next bar after ascending; add a short swell/
+    transition.
+66. [ ] Creatures have no victory pose (only the generic hop).
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed
