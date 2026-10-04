@@ -72,7 +72,12 @@ long-press on a card shows its details. Held upright, the game rotates into land
 
 Novice, Adept, Master and Mythic AI opponents. They read lane threats, counter your creatures,
 contest shrines, save up to ascend, build turrets, buy blessings and aim god powers. AI gold income
-(over time and from shrines): Novice 70%, Adept 90%, Master 100%, Mythic 120%.
+(over time and from shrines): Novice 70%, Adept 90%, Master 100%, Mythic 120%. Mythic also
+mounts turrets before you reach its gates and keeps its blessings coming.
+
+A scripted "smart" player (follows the Counter! badge, casts powers, builds turrets, buys
+blessings, saves to ascend) wins about 100% / 67% / 21% / 2% of games against Novice / Adept /
+Master / Mythic over 300+ games each (`node scripts/calib.ts smart mythic 300`).
 
 ## Development
 

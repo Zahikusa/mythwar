@@ -488,9 +488,17 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     tint — saving up visibly fills the button.
 183. [x] Smart calibration bot also retakes enemy-held shrines and pushes the emptiest lane when no foe
     is past midfield: Novice 60/60, Adept 61/90 (68%), Master 13/60 (22%), Mythic 8/60 (13%).
-184. [ ] Mythic headroom: a scripted bot beats Mythic 8–13% of the time; for a "god of war" level a
-    strong human may find it beatable. Knob if needed: `AI_PROFILES.mythic.incomeMult` 1.2 → 1.3
-    (and update the difficulty blurb/README, which quote +20%).
+184. [x] Mythic headroom (run #3). With larger samples the old Mythic was barely harder than Master:
+    the smart bot won 18% (109/600) vs Mythic and 21% (64/300) vs Master; the earlier 8–13% was
+    small-sample luck. Analysis (throwaway scripts): Mythic never bought a single blessing (its
+    "4 creature costs left over" rule never triggers while it spends on a 5-deep queue) and
+    rarely built turrets, while the bot held it off for minutes behind turrets. +30% income did
+    nothing (19/120). New profile knobs `blessMargin` (Mythic 1, others 4) and `plansTurrets`
+    (Mythic only: once foes push past midfield in a lane without an up-to-date turret it holds
+    the queue at ≤1 until it can mount one). Now smart bot vs Mythic 11/600 (2%), Master and
+    Adept unchanged (21%, 67%); Mythic beats Master 39–1 head to head (was 20–10); Mythic
+    mirrors still finish (avg 26 min). Unit tests for both behaviours (fail with the old
+    settings). README/DESIGN updated.
 185. [x] Results screen: one concrete tip from the battle just lost (fell an age behind → save for the
     tithe; never cast the god power; no turrets; enemy held the shrines; else the Counter! badge)
     or, after a win, "Ready for more? Try <next difficulty>". Unit-tested (`tests/tips.test.ts`);

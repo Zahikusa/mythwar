@@ -1,6 +1,6 @@
 import { AGES, AGE_TURRETS, AGE_UNITS, BLESSING_MAX_RANK, CLASS_ORDER, LANE_COUNT, LANE_LENGTH, UNITS, blessingCost, counterOf } from '../sim/data.ts';
 import type { BlessingId } from '../sim/data.ts';
-import type { UnitClass, UnitDef } from '../sim/data.ts';
+import type { TurretDef, UnitClass, UnitDef } from '../sim/data.ts';
 import { Rng } from '../sim/rng.ts';
 import type { Team } from '../sim/types.ts';
 import type { World } from '../sim/world.ts';
@@ -25,6 +25,10 @@ export interface AiProfile {
   powerSkill: number;
   /** Probability per decision of buying a blessing with spare gold. */
   blessSkill: number;
+  /** Gold kept in hand after buying a blessing, in units of the age's cheapest creature. */
+  blessMargin: number;
+  /** Holds summons back to mount an up-to-date turret on a lane the foe has pushed into. */
+  plansTurrets: boolean;
   /** Max summons waiting in the queue. */
   maxQueue: number;
   /** Seconds before the AI first considers turrets. */
@@ -44,6 +48,8 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     turretSkill: 0.15,
     powerSkill: 0.3,
     blessSkill: 0.1,
+    blessMargin: 4,
+    plansTurrets: false,
     maxQueue: 2,
     turretDelay: 150,
     incomeMult: 0.7,
@@ -59,6 +65,8 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     turretSkill: 0.45,
     powerSkill: 0.7,
     blessSkill: 0.4,
+    blessMargin: 4,
+    plansTurrets: false,
     maxQueue: 3,
     turretDelay: 90,
     incomeMult: 0.9,
@@ -74,6 +82,8 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     turretSkill: 0.8,
     powerSkill: 0.95,
     blessSkill: 0.8,
+    blessMargin: 4,
+    plansTurrets: false,
     maxQueue: 5,
     turretDelay: 45,
     incomeMult: 1,
@@ -89,6 +99,10 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     turretSkill: 1,
     powerSkill: 1,
     blessSkill: 1,
+    // Keeps its blessings coming instead of sinking every coin into the queue, and mounts
+    // turrets before the foe reaches its gates (the two things that most often beat it).
+    blessMargin: 1,
+    plansTurrets: true,
     maxQueue: 5,
     turretDelay: 30,
     incomeMult: 1.2,
@@ -244,7 +258,14 @@ export class AiController {
     }
     const keep = underSiege && !saveThroughSiege ? 0 : reserve;
 
-    // 3. Turrets.
+    // 3. Turrets. A planning AI mounts one as soon as foes push past midfield in a lane without
+    // an up-to-date turret, and holds further summons back until it can afford it.
+    let maxQueue = p.maxQueue;
+    const plan = p.plansTurrets ? this.turretPlan(lanes) : null;
+    if (plan) {
+      if (me.gold >= plan.def.cost) w.apply({ type: 'buildTurret', team: this.team, lane: plan.lane, turretId: plan.def.id });
+      else maxQueue = Math.min(maxQueue, Math.max(1, me.queue.length));
+    }
     if (w.time >= p.turretDelay && this.rng.chance(p.turretSkill)) this.considerTurret(lanes, reserve, saveThroughSiege);
 
     // 4. Blessings with clearly spare gold.
@@ -252,7 +273,7 @@ export class AiController {
 
     // 5. Summons.
     let guard = 0;
-    while (me.queue.length < p.maxQueue && guard++ < 6) {
+    while (me.queue.length < maxQueue && guard++ < 6) {
       const lane = this.pickLane(lanes, danger, unitCost);
       const def = this.pickUnit(lanes[lane]);
       if (!def) break;
@@ -327,7 +348,7 @@ export class AiController {
     // Cheapest rank first (keeps the tracks even), bastion first when the citadel is hurt.
     const pick = hurt && options[0] === 'bastion' ? 'bastion' : options.sort((a, b) => me.blessings[a] - me.blessings[b])[0];
     const cost = blessingCost(me.blessings[pick], me.age);
-    if (me.gold - cost < reserve + unitCost * 4) return;
+    if (me.gold - cost < reserve + unitCost * this.profile.blessMargin) return;
     w.apply({ type: 'bless', team: this.team, blessing: pick });
   }
 
@@ -345,6 +366,20 @@ export class AiController {
       lane = this.rng.pick(withEnemies.length ? withEnemies : lanes).lane;
     }
     w.apply({ type: 'power', team: this.team, lane });
+  }
+
+  /** The turret a planning AI wants next: for the most threatened lane foes have pushed into. */
+  private turretPlan(lanes: LaneInfo[]): { lane: number; def: TurretDef } | null {
+    const me = this.world.players[this.team];
+    let target: LaneInfo | null = null;
+    for (const l of lanes) {
+      const cur = me.turrets[l.lane].def;
+      if ((cur && cur.age >= me.age) || l.enemyFront >= 0.5) continue;
+      if (!target || l.enemyThreat > target.enemyThreat) target = l;
+    }
+    if (!target) return null;
+    const [bolt, blast] = AGE_TURRETS[me.age];
+    return { lane: target.lane, def: target.enemyCount >= 3 ? blast : bolt };
   }
 
   private considerTurret(lanes: LaneInfo[], reserve: number, saving: boolean): void {
