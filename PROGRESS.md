@@ -188,8 +188,8 @@ See DESIGN.md for the game design.
     (Tried Bastion-buying before/while Ragnarök too: it only lengthened mirror games, so not
     kept.) Mirror length 19.8 → 21.0 min over 30 games (within noise); ladder unchanged
     (master>adept 21-9, mythic>master 15-5).
-65. [ ] Music switches scale abruptly at the next bar after ascending; add a short swell/
-    transition.
+65. [x] On ascension the score restarts at the new age's first chord ~1.4 s later (after the
+    fanfare) instead of switching scale mid-progression.
 66. [ ] Creatures have no victory pose (only the generic hop).
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.

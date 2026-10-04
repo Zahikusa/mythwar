@@ -340,13 +340,18 @@ export class Audio {
 
   startMusic(age: number): void {
     this.musicAge = age;
+    this.bar = 0;
     this.musicOn = true;
     this.ensure();
     this.startScheduler();
   }
 
   setMusicAge(age: number): void {
+    if (age === this.musicAge) return;
     this.musicAge = age;
+    // Start the new age's progression from its first chord, right after the ascension fanfare.
+    this.bar = 0;
+    if (this.ctx) this.nextBar = Math.max(this.nextBar, this.ctx.currentTime + 1.4);
   }
 
   stopMusic(): void {
