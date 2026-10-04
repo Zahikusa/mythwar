@@ -179,8 +179,9 @@ See DESIGN.md for the game design.
 61. [ ] `src/sim/data.ts`: Elder Dragon beats equal gold of any class by 59–86% value
     (scripts/classwar battle); fine as a one-at-a-time capstone, but re-check if players
     report it dominating late Ragnarök games.
-62. [ ] HUD on desktop: there's no indicator of the enemy's training/queue or gold; consider an
-    "enemy is ascending soon" hint when the AI has the XP (fair information, like the age badge).
+62. [x] Age badges pulse when that side has the XP to ascend (enemy badge tooltip warns too).
+    Also: the top bar had pointer-events:none, so badge/shrine tooltips never appeared — the
+    badges, shrine pips and Ragnarök label now accept hover.
 63. [ ] Results: add per-lane breakdown (kills per lane) to help players see where they won.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.

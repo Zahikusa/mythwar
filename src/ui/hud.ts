@@ -96,12 +96,12 @@ export class Hud {
     E.hpL = h('div', { class: 'hpfill' });
     E.hpLd = h('div', { class: 'hpdmg' });
     E.hpLn = h('span', { class: 'hpnum' });
-    E.ageL = h('div', { class: 'agebadge' });
+    E.ageL = h('div', { class: 'agebadge', title: 'Your age' });
     E.ageLn = h('div', { class: 'agename' });
     E.hpR = h('div', { class: 'hpfill' });
     E.hpRd = h('div', { class: 'hpdmg' });
     E.hpRn = h('span', { class: 'hpnum' });
-    E.ageR = h('div', { class: 'agebadge' });
+    E.ageR = h('div', { class: 'agebadge', title: 'Enemy age' });
     E.ageRn = h('div', { class: 'agename' });
     E.clock = h('div', { class: 'clock' });
     E.shrines = h('div', { class: 'shrines', title: 'Ley Shrines: hold them for extra gold' });
@@ -646,6 +646,12 @@ export class Hud {
     setText(E.hpRn, fmt(Math.ceil(foe.baseHp)));
     setText(E.ageL, ROMAN[me.age]);
     setText(E.ageR, ROMAN[foe.age]);
+    // Badges pulse when that side has the XP to ascend (the enemy's too: fair warning).
+    const canAscend = (p: typeof me) => p.age < MAX_AGE && p.xp >= AGES[p.age + 1].xpRequired;
+    toggle(E.ageL, 'ripe', canAscend(me));
+    toggle(E.ageR, 'ripe', canAscend(foe));
+    const foeTitle = canAscend(foe) ? `The enemy has the XP to ascend to ${AGES[foe.age + 1].name}!` : `Enemy age: ${AGES[foe.age].name}`;
+    if (E.ageR.title !== foeTitle) E.ageR.title = foeTitle;
     setText(E.ageLn, AGES[me.age].name);
     setText(E.ageRn, AGES[foe.age].name);
     toggle(E.hpL.parentElement!, 'low', fracs[0] < 0.3);

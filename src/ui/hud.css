@@ -109,6 +109,13 @@ svg {
   pointer-events: none;
 }
 
+/* The bar itself lets clicks through to the battlefield; its badges still show tooltips. */
+.topbar .agebadge,
+.topbar .shrines,
+.topbar .ragnarok {
+  pointer-events: auto;
+}
+
 .topbar .side {
   display: flex;
   align-items: center;
@@ -211,6 +218,17 @@ svg {
   color: #2a1a06;
   background: radial-gradient(circle at 35% 30%, var(--gold-l), var(--gold) 55%, var(--gold-d));
   border: 2px solid #2a1a06;
+}
+
+.agebadge.ripe {
+  animation: ripe 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes ripe {
+  to {
+    filter: brightness(1.35);
+    transform: scale(1.08);
+  }
 }
 
 .side.left .agebadge {
@@ -1926,7 +1944,8 @@ svg {
   .act.ascend.ready,
   .lanetab.danger:not(.sel),
   .act.blessbtn.avail .aico,
-  .hpbar.low .hpfill {
+  .hpbar.low .hpfill,
+  .agebadge.ripe {
     animation: none !important;
   }
 }
