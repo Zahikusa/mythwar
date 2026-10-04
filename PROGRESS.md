@@ -196,8 +196,8 @@ See DESIGN.md for the game design.
     package version bumped to 1.0.0).
 70. [x] Settings panel more opaque (0.94) over the live backdrop.
 72. [x] Free-floating coach tips overlapped toasts (both top-centre); tips now sit lower.
-73. [ ] Toasts replace each other instantly; when several events happen at once (shrine lost +
-    enemy ascends) the first is lost — queue them (max ~3, 1.5 s each).
+73. [x] Event toasts queue (max 3, shorter while queued); failed-action feedback still replaces
+    immediately.
 74. [ ] `src/input.ts`: no mouse-wheel / pinch interactions are needed, but trackpad
     two-finger scroll on Mac Safari may scroll/zoom the page despite touch-action; verify
     `overscroll-behavior` and `gesturestart` prevention on iOS.

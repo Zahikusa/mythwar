@@ -60,6 +60,7 @@ export class Hud {
   private laneBars: { bar: HTMLElement; fill: HTMLElement }[] = [];
   private queueChips: QueueChip[] = [];
   private toastTimer = 0;
+  private toastQueue: { text: string; kind: 'bad' | 'good' | 'info' }[] = [];
   private bannerTimer = 0;
   private panel: 'none' | 'turret' | 'bless' | 'keys' = 'none';
   private turretRows: HTMLElement[] = [];
@@ -261,6 +262,8 @@ export class Hud {
     this.root.classList.remove('hidden');
     setText(this.el.toast, '');
     this.el.toast.classList.remove('show');
+    this.toastQueue = [];
+    this.toastTimer = 0;
     this.el.banner.classList.remove('show');
     this.hint('');
   }
@@ -436,7 +439,7 @@ export class Hud {
   }
 
   private fail(reason: string, el?: HTMLElement): void {
-    this.toast(reason, 'bad');
+    this.toast(reason, 'bad', true);
     this.cb.sound('error');
     if (el) {
       el.classList.remove('shake');
@@ -445,11 +448,24 @@ export class Hud {
     }
   }
 
-  toast(text: string, kind: 'bad' | 'good' | 'info' = 'info'): void {
+  /**
+   * Shows a toast. Event toasts queue behind the current one (max 3) so simultaneous events
+   * aren't lost; `immediate` (used for failed actions) replaces whatever is showing.
+   */
+  toast(text: string, kind: 'bad' | 'good' | 'info' = 'info', immediate = false): void {
+    if (!immediate && this.toastTimer > 0) {
+      const t = this.el.toast.textContent;
+      if (t !== text && !this.toastQueue.some((q) => q.text === text) && this.toastQueue.length < 3) this.toastQueue.push({ text, kind });
+      return;
+    }
+    this.showToast(text, kind);
+  }
+
+  private showToast(text: string, kind: 'bad' | 'good' | 'info'): void {
     const t = this.el.toast;
     setText(t, text);
     t.className = `toast show ${kind}`;
-    this.toastTimer = 1.8;
+    this.toastTimer = this.toastQueue.length ? 1.4 : 1.8;
   }
 
   banner(title: string, sub: string, kind = ''): void {
@@ -768,7 +784,11 @@ export class Hud {
     // Timers
     if (this.toastTimer > 0) {
       this.toastTimer -= dt;
-      if (this.toastTimer <= 0) E.toast.classList.remove('show');
+      if (this.toastTimer <= 0) {
+        const next = this.toastQueue.shift();
+        if (next) this.showToast(next.text, next.kind);
+        else E.toast.classList.remove('show');
+      }
     }
     if (this.bannerTimer > 0) {
       this.bannerTimer -= dt;
