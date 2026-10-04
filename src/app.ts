@@ -48,6 +48,8 @@ export class App {
   private coinsSeen = 0;
   private lastSave = 0;
   private lastBuzz = -10;
+  private slowSeconds = 0;
+  private autoLowDone = false;
   private params = new URLSearchParams(location.search);
 
   constructor(root: HTMLElement) {
@@ -298,6 +300,25 @@ export class App {
     this.menus.show('title');
   }
 
+  /**
+   * Slow device? After 4 consecutive seconds under 40 fps mid-battle, switch to battery-saver
+   * quality once (lower resolution, fewer particles) and say so.
+   */
+  private watchPerformance(fps: number): void {
+    const g = this.game;
+    if (this.autoLowDone || this.settings.lowQuality || this.state !== 'playing' || !g || g.paused || g.world.time < 10) {
+      this.slowSeconds = 0;
+      return;
+    }
+    this.slowSeconds = fps < 40 ? this.slowSeconds + 1 : 0;
+    if (this.slowSeconds >= 4) {
+      this.autoLowDone = true;
+      this.settings.lowQuality = true;
+      this.applySettings(this.settings);
+      this.hud.toast('Battery saver on for smoother play (change in Settings)', 'info');
+    }
+  }
+
   /** Short vibration on phones (tied to the screen-shake setting). */
   private buzz(pattern: number | number[]): void {
     if (this.mode !== 'mobile' || !this.settings.shake) return;
@@ -357,9 +378,11 @@ export class App {
     this.fpsAcc += dt;
     this.fpsFrames++;
     if (this.fpsAcc >= 1) {
-      (window as unknown as { __fps: number }).__fps = Math.round(this.fpsFrames / this.fpsAcc);
+      const fps = Math.round(this.fpsFrames / this.fpsAcc);
+      (window as unknown as { __fps: number }).__fps = fps;
       this.fpsAcc = 0;
       this.fpsFrames = 0;
+      this.watchPerformance(fps);
     }
     const g = this.game;
     if (g) {

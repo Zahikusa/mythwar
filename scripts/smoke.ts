@@ -111,6 +111,17 @@ async function rotatedMenusFlow(page: Page): Promise<void> {
   await sleep(600);
   const st = await page.evaluate(() => ({ state: (window as unknown as { __mythwar: any }).__mythwar.state, menu: (window as unknown as { __mythwar: any }).__mythwar.menus.current }));
   check('rotated: tapping Begin Battle starts a battle', st.state === 'playing' && st.menu === 'none', JSON.stringify(st));
+  // Slow-device fallback: 4 s under 40 fps mid-battle switches to battery saver once.
+  const q = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    app.game.world.time = 30;
+    for (let i = 0; i < 4; i++) app.watchPerformance(25);
+    const r = { low: app.settings.lowQuality, quality: app.renderer.quality };
+    app.settings.lowQuality = false;
+    app.applySettings(app.settings);
+    return r;
+  });
+  check('slow frame rate switches to battery saver', q.low === true && q.quality === 'low', JSON.stringify(q));
 }
 
 async function run(page: Page, label: string, viewport: { width: number; height: number; mobile: boolean }): Promise<void> {

@@ -201,6 +201,9 @@ See DESIGN.md for the game design.
 74. [x] iOS Safari pinch/rotate gestures and double-tap zoom are blocked (`gesture*` and quick
     second `touchend` preventDefault in main.ts; inputs exempt). Not verifiable on a real iPhone
     here — buttons use pointer events so the click suppression doesn't affect them.
+77. [x] Held shrines shed occasional golden glints (shrines = income).
+78. [x] Automatic battery-saver fallback: 4 consecutive seconds under 40 fps mid-battle switch
+    to low quality once (DPR 1, fewer particles) with a toast; smoke-checked.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
