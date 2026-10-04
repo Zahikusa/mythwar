@@ -142,7 +142,10 @@ export class App {
     this.coach.toStage = toStage;
     this.renderer.quality = this.settings.lowQuality ? 'low' : 'high';
     this.renderer.resize(w, h, this.mode, this.settings.lowQuality ? 1 : 2);
+    // Large desktop screens zoom the HUD and menus (see hudZoom in layout.ts).
+    this.stage.style.setProperty('--hs', String(this.renderer.layout.hud));
     this.hud.setLayout(this.renderer.layout);
+    this.coach.zoom = this.renderer.layout.hud;
     this.stage.classList.toggle('mobile', this.mode === 'mobile');
     this.coinTarget = this.hud.goldTarget();
   }

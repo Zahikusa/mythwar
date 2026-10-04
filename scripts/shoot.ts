@@ -42,6 +42,7 @@ const SCENARIOS: Scenario[] = [
   { name: 'mobile-port', query: 'demo&ff=120&seed=3', w: 390, h: 844, mobile: true, dpr: 3 },
   { name: 'menu-title', query: '', w: 1600, h: 900, wait: 2500 },
   { name: 'menu-diff', query: 'screen=difficulty', w: 1600, h: 900, wait: 2000 },
+  { name: 'menu-diff-qhd', query: 'screen=difficulty', w: 2560, h: 1440, wait: 2000 },
   { name: 'menu-howto', query: 'screen=howto', w: 1600, h: 900, wait: 2000 },
   { name: 'menu-settings', query: 'screen=settings', w: 1600, h: 900, wait: 2000 },
   { name: 'mobile-title', query: '', w: 844, h: 390, mobile: true, dpr: 3, wait: 2500 },

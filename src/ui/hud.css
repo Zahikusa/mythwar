@@ -67,6 +67,17 @@ svg {
   z-index: 1;
 }
 
+/* Large desktop screens: the HUD's px layout is zoomed as a whole (--hs, set from the layout).
+   Inside, --bottom is given in unzoomed px so it still matches the reserved bottom inset. */
+.hud.desktop > :is(.topbar, .sys, .res, .cards, .queue, .acts, .panel, .toast, .hint, .tooltip) {
+  zoom: var(--hs, 1);
+  --bottom: var(--bottom-z, 130px);
+}
+
+.hud.desktop .lanetab {
+  zoom: var(--hs, 1);
+}
+
 .hud::before,
 .hud::after {
   z-index: 0;

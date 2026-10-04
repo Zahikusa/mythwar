@@ -599,7 +599,9 @@ function armyChart(history: HistorySample[], me: Team, foeName: string, ageUps: 
   const hair = plot.querySelector('.ch') as SVGLineElement;
   plot.addEventListener('pointermove', (e) => {
     const r = plot.querySelector('svg')!.getBoundingClientRect();
-    const sx = ((e.clientX - r.left) / r.width) * W;
+    // On rotated portrait phones the chart's time axis runs down the screen (the chart is wide).
+    const frac = r.height > r.width ? (e.clientY - r.top) / r.height : (e.clientX - r.left) / r.width;
+    const sx = frac * W;
     const t = Math.max(0, Math.min(tMax, ((sx - pad.l) / pw) * tMax));
     let best = history[0];
     for (const s of history) if (Math.abs(s.t - t) < Math.abs(best.t - t)) best = s;
@@ -612,8 +614,10 @@ function armyChart(history: HistorySample[], me: Team, foeName: string, ageUps: 
       '<span><i style="background:' + CHART_YOU + '"></i>You ' + fmt(best.army[me]) + '</span>' +
       '<span><i style="background:' + CHART_FOE + '"></i>' + foeName + ' ' + fmt(best.army[foe]) + '</span>';
     tip.classList.remove('hidden');
-    const px = (x / W) * r.width;
-    tip.style.left = Math.max(0, Math.min(r.width - tip.offsetWidth, px - tip.offsetWidth / 2)) + 'px';
+    // Place the tip in the plot's own px (unzoomed, unrotated), like its offsetWidth.
+    const cw = plot.clientWidth;
+    const px = (x / W) * cw;
+    tip.style.left = Math.max(0, Math.min(cw - tip.offsetWidth, px - tip.offsetWidth / 2)) + 'px';
   });
   plot.addEventListener('pointerleave', () => {
     hair.setAttribute('visibility', 'hidden');

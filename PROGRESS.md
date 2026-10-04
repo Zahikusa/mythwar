@@ -296,8 +296,12 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 121. [x] Phones vibrate briefly when a god power is cast.
 122. [ ] The enemy's queued/ready creatures are invisible; consider showing a small "incoming"
     marker at enemy gates 1 s before a creature emerges (portal flare) to reward attention.
-123. [ ] On very large desktop screens (2560×1440+) the HUD stays at fixed pixel sizes; scale
-    the bottom bar and cards with `--ui` for better proportion.
+123. [x] Large desktop screens (above 1920×1080) zoom the HUD and menu screens (CSS `zoom`,
+    `hudZoom()` in layout.ts, 1–1.6 in 0.05 steps; bottom inset scales with it). JS-positioned
+    parts (tooltip, coach tip, lane tabs, drag ghost) divide their left/top by the zoom and
+    measure with getBoundingClientRect (Chrome: zoomed) instead of offsetWidth (unzoomed).
+    Portraits render at DPR × zoom so they stay crisp. Smoke flow "large desktop (QHD)";
+    screenshot `menu-diff-qhd`. The results-chart hover now also works on rotated phones.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

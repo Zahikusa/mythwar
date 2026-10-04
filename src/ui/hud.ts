@@ -289,12 +289,14 @@ export class Hud {
   }
 
   setLayout(layout: Layout): void {
-    // Card portraits depend on the layout mode only; don't re-animate them on every resize.
-    if (this.layoutInfo?.mode !== layout.mode) this.cardAge = -1;
+    // Card portraits depend on the layout mode and HUD zoom only; don't re-animate them on every resize.
+    if (this.layoutInfo?.mode !== layout.mode || this.layoutInfo.hud !== layout.hud) this.cardAge = -1;
     this.layoutInfo = layout;
     this.root.classList.toggle('mobile', layout.mode === 'mobile');
     this.root.classList.toggle('desktop', layout.mode === 'desktop');
     setStyle(this.root, '--bottom', `${layout.insets.bottom}px`);
+    // Zoomed HUD parts (zoom --hs, set on the stage) lay themselves out in unzoomed px.
+    setStyle(this.root, '--bottom-z', `${layout.insets.bottom / layout.hud}px`);
     setStyle(this.root, '--side', `${layout.insets.left}px`);
     setStyle(this.root, '--ui', String(Math.max(0.72, Math.min(1.25, layout.ui))));
     // Lane tabs sit just behind the player's gates.
@@ -302,9 +304,15 @@ export class Hud {
       const g = layout.lanes[i];
       const s = artScaleOf(layout, g);
       const tab = this.laneTabs[i];
-      tab.style.left = `${g.x0 - 58 * s}px`;
-      tab.style.top = `${g.y - 22 * s}px`;
+      // Tabs share the HUD zoom, which also scales their left/top.
+      tab.style.left = `${(g.x0 - 58 * s) / layout.hud}px`;
+      tab.style.top = `${(g.y - 22 * s) / layout.hud}px`;
     }
+  }
+
+  /** CSS zoom of the desktop HUD on large screens (1 elsewhere). */
+  get zoom(): number {
+    return this.layoutInfo?.hud ?? 1;
   }
 
   /** Stage coordinates of the gold icon (target for flying coins). */
@@ -550,14 +558,15 @@ export class Hud {
       this.hideTooltip();
       this.game.view.targeting = d.power ? 'power' : 'summon';
       this.ghost.innerHTML = '';
-      if (d.unitId) this.ghost.appendChild(portrait(d.unitId, 64));
+      if (d.unitId) this.ghost.appendChild(portrait(d.unitId, 64, 0, 0.4, false, this.zoom));
       else this.ghost.innerHTML = this.el.powerIcon.innerHTML;
       this.ghost.classList.remove('hidden');
       this.hint(d.power ? 'Drop on a lane to unleash' : 'Drop on a lane to summon');
     }
     if (d.active) {
       const [gx, gy] = this.toStage(e.clientX, e.clientY);
-      this.ghost.style.transform = `translate(${gx - 32}px, ${gy - 56}px)`;
+      const z = this.zoom;
+      this.ghost.style.transform = `translate(${gx - 32 * z}px, ${gy - 56 * z}px) scale(${z})`;
       this.game.view.hoverLane = this.laneAtPoint(e.clientX, e.clientY);
     }
   }
@@ -631,8 +640,11 @@ export class Hud {
     const rh = r.bottom - r.top;
     const W = this.layoutInfo?.width ?? window.innerWidth;
     const H = this.layoutInfo?.height ?? window.innerHeight;
-    const tw = tt.offsetWidth;
-    const th = tt.offsetHeight;
+    // The tooltip shares the HUD zoom: its size is zoomed, and so are its left/top.
+    const z = this.zoom;
+    const tr = z !== 1 ? tt.getBoundingClientRect() : null;
+    const tw = tr ? tr.width : tt.offsetWidth;
+    const th = tr ? tr.height : tt.offsetHeight;
     let x: number;
     let y: number;
     if (this.layoutInfo?.mode === 'mobile') {
@@ -640,10 +652,10 @@ export class Hud {
       y = Math.max(8, Math.min(H - th - 8, r.top + rh / 2 - th / 2));
     } else {
       x = Math.max(8, Math.min(W - tw - 8, r.left + rw / 2 - tw / 2));
-      y = r.top - th - 10;
+      y = r.top - th - 10 * z;
     }
-    tt.style.left = `${x}px`;
-    tt.style.top = `${y}px`;
+    tt.style.left = `${x / z}px`;
+    tt.style.top = `${y / z}px`;
   }
 
   hideTooltip(): void {
@@ -911,7 +923,7 @@ export class Hud {
       const el = h(
         'button',
         { class: `card cls-${def.cls}`, style: `--cls:${CLASS_COLOR[def.cls]}` },
-        h('div', { class: 'portrait' }, portrait(def.id, size)),
+        h('div', { class: 'portrait' }, portrait(def.id, size, 0, 0.4, false, this.zoom)),
         h('div', { class: 'clsico', html: CLASS_ICON[def.cls] }),
         h('div', { class: 'name', text: def.name }),
         cost,
@@ -980,7 +992,7 @@ export class Hud {
     const el = h(
       'button',
       { class: 'qchip', title: `${UNITS[unitId].name} → ${LANE_NAMES[lane]} lane (click to cancel)` },
-      portrait(unitId, 30),
+      portrait(unitId, 30, 0, 0.4, false, this.zoom),
       h('span', { class: 'ql', text: LANE_NAMES[lane][0] }),
       prog,
     );

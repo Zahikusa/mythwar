@@ -112,6 +112,7 @@ export class Coach {
   private settings: Settings;
   private stage: HTMLElement;
   toStage: (x: number, y: number) => [number, number] = (x, y) => [x, y];
+  private zoomValue = 1;
   /** Player creatures killed close to the enemy gate this battle. */
   diedAtEnemyGate = 0;
 
@@ -123,6 +124,13 @@ export class Coach {
     onTap(close, () => this.finish());
     this.el = h('div', { class: 'coach' }, h('div', { class: 'cicon', text: '?' }), this.text, close);
     stage.appendChild(this.el);
+  }
+
+  /** CSS zoom matching the large-screen desktop HUD. */
+  set zoom(z: number) {
+    this.zoomValue = z;
+    this.el.style.zoom = z === 1 ? '' : String(z);
+    this.position();
   }
 
   attach(game: Game | null): void {
@@ -198,8 +206,11 @@ export class Coach {
     const bottom = Math.max(ay, by);
     const W = this.stage.clientWidth;
     const H = this.stage.clientHeight;
-    const w = this.el.offsetWidth;
-    const hh = this.el.offsetHeight;
+    // Under a zoom, measure the bubble's visual size; its left/top get zoomed too.
+    const z = this.zoomValue;
+    const zr = z !== 1 ? this.el.getBoundingClientRect() : null;
+    const w = zr ? zr.width : this.el.offsetWidth;
+    const hh = zr ? zr.height : this.el.offsetHeight;
     let x: number;
     let y: number;
     if (mobile) {
@@ -212,9 +223,9 @@ export class Coach {
       x = Math.max(10, Math.min(W - w - 10, (left + right) / 2 - w / 2));
       y = top - hh - 14;
       this.el.dataset.arrow = 'down';
-      this.el.style.setProperty('--ax', `${Math.max(16, Math.min(w - 16, (left + right) / 2 - x))}px`);
+      this.el.style.setProperty('--ax', `${Math.max(16, Math.min(w - 16, (left + right) / 2 - x)) / z}px`);
     }
-    this.el.style.left = `${x}px`;
-    this.el.style.top = `${y}px`;
+    this.el.style.left = `${x / z}px`;
+    this.el.style.top = `${y / z}px`;
   }
 }

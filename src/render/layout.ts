@@ -34,6 +34,8 @@ export interface Layout {
   lanes: LaneGeom[];
   /** Overall UI scale factor (1 at a 1600x900 desktop). */
   ui: number;
+  /** Zoom for the desktop HUD on large screens (1 up to 1920x1080, mobile always 1). */
+  hud: number;
   /** HUD insets reserved by DOM panels, in CSS px. */
   insets: { top: number; bottom: number; left: number; right: number };
 }
@@ -51,8 +53,9 @@ export function detectMode(width: number, height: number): LayoutMode {
 
 export function computeLayout(width: number, height: number, mode: LayoutMode): Layout {
   let insets: Layout['insets'];
+  const hud = hudZoom(width, height, mode);
   if (mode === 'desktop') {
-    const bottom = Math.round(Math.min(150, Math.max(112, height * 0.15)));
+    const bottom = Math.round(Math.min(150, Math.max(112, height * 0.15)) * hud);
     insets = { top: 0, bottom, left: 0, right: 0 };
   } else {
     const side = Math.round(Math.min(116, Math.max(78, width * 0.105)));
@@ -90,8 +93,20 @@ export function computeLayout(width: number, height: number, mode: LayoutMode): 
     horizon,
     lanes,
     ui: Math.min(width / 1600, height / 900),
+    hud,
     insets,
   };
+}
+
+/**
+ * The desktop HUD is laid out in CSS px for screens up to 1920x1080; larger screens (1440p, 4K at
+ * low DPR) zoom it so cards and buttons keep their proportion. Quantized so small window resizes
+ * don't rebuild the cards.
+ */
+export function hudZoom(width: number, height: number, mode: LayoutMode): number {
+  if (mode !== 'desktop') return 1;
+  const z = Math.min(width / 1920, height / 1080);
+  return Math.round(Math.max(1, Math.min(1.6, z)) * 20) / 20;
 }
 
 /**

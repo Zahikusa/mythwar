@@ -130,6 +130,44 @@ async function rotatedMenusFlow(page: Page): Promise<void> {
   check('slow frame rate switches to battery saver', q.low === true && q.quality === 'low', JSON.stringify(q));
 }
 
+/** 2560x1440 desktop: the HUD is zoomed; hit areas, tooltips and the bottom inset must still line up. */
+async function largeDesktopFlow(page: Page): Promise<void> {
+  console.log('== large desktop (QHD) ==');
+  await page.setViewport({ width: 2560, height: 1440, deviceScaleFactor: 1 });
+  await page.goto(`${base}/?play=novice&seed=4`, { waitUntil: 'load' });
+  await sleep(900);
+  const info = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    const box = (sel: string) => {
+      const r = document.querySelector(sel)!.getBoundingClientRect();
+      return { l: r.left, t: r.top, r: r.right, b: r.bottom, h: r.height };
+    };
+    return { zoom: app.renderer.layout.hud, inset: app.renderer.layout.insets.bottom, card: box('.card'), topbar: box('.topbar'), sys: box('.sys') };
+  });
+  check('HUD zooms on large screens', info.zoom > 1.2 && info.card.h > 130, JSON.stringify({ zoom: info.zoom, cardH: info.card.h }));
+  check('zoomed cards sit inside the bottom inset', info.card.t >= 1440 - info.inset && info.card.b <= 1440, JSON.stringify({ inset: info.inset, card: info.card }));
+  check('top bar stays clear of the system buttons', info.topbar.r <= info.sys.l + 1, JSON.stringify({ topbar: info.topbar.r, sys: info.sys.l }));
+  const card = await center(page, '.card');
+  await page.mouse.move(card.x, card.y);
+  await sleep(250);
+  const tip = await page.evaluate(() => {
+    const r = document.querySelector('.tooltip')!.getBoundingClientRect();
+    const c = document.querySelector('.card')!.getBoundingClientRect();
+    return { l: r.left, t: r.top, r: r.right, b: r.bottom, cardTop: c.top, hidden: document.querySelector('.tooltip')!.classList.contains('hidden') };
+  });
+  check('card tooltip sits above the card, on screen', !tip.hidden && tip.b <= tip.cardTop && tip.t >= 0 && tip.l >= 0 && tip.r <= 2560, JSON.stringify(tip));
+  const tab = await center(page, '.lanetab:nth-child(1)');
+  const lane0 = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    const g = app.renderer.layout.lanes[0];
+    return { x: g.x0, y: g.y };
+  });
+  await page.mouse.click(tab.x, tab.y);
+  await sleep(100);
+  const s = await state(page);
+  check('zoomed lane tab sits by its gate and selects the lane', s.lane === 0 && Math.abs(tab.y - lane0.y) < 80 && tab.x < lane0.x, JSON.stringify({ tab, lane0, lane: s.lane }));
+}
+
 async function run(page: Page, label: string, viewport: { width: number; height: number; mobile: boolean }): Promise<void> {
   console.log(`\n== ${label} ==`);
   await page.setViewport({ width: viewport.width, height: viewport.height, isMobile: viewport.mobile, hasTouch: viewport.mobile, deviceScaleFactor: 1 });
@@ -416,6 +454,13 @@ async function main(): Promise<void> {
     page2.on('pageerror', (e) => errors.push(`rotated menus: ${String(e)}`));
     await rotatedMenusFlow(page2);
     await page2.close();
+    const page3 = await browser.newPage();
+    page3.on('pageerror', (e) => errors.push(`large desktop: ${String(e)}`));
+    page3.on('console', (m) => {
+      if (m.type() === 'error') errors.push(`large desktop: ${m.text()}`);
+    });
+    await largeDesktopFlow(page3);
+    await page3.close();
   } finally {
     await browser.close();
     server.close();

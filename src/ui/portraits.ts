@@ -1,13 +1,23 @@
 import { artFor } from '../render/creatures/index.ts';
 import { setLineWidth } from '../render/draw.ts';
+import { hudZoom } from '../render/layout.ts';
 import { TEAM_COLORS } from '../render/theme.ts';
 import type { Team } from '../sim/types.ts';
 
 const cache = new Map<string, HTMLCanvasElement>();
 
-/** Renders a creature into a square canvas (CSS size `size`, crisp on high-DPI screens). */
-export function portrait(defId: string, size: number, team: Team = 0, t = 0.4, faceLeft = false): HTMLCanvasElement {
-  const dpr = Math.min(3, window.devicePixelRatio || 1);
+/** CSS zoom the HUD/menus get on large desktop screens (see hudZoom), estimated from the window. */
+function screenZoom(): number {
+  const coarse = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
+  return coarse ? 1 : hudZoom(window.innerWidth, window.innerHeight, 'desktop');
+}
+
+/**
+ * Renders a creature into a square canvas (CSS size `size`, crisp on high-DPI screens).
+ * `zoom` is the CSS zoom the canvas will be shown under (the large-screen desktop HUD/menus).
+ */
+export function portrait(defId: string, size: number, team: Team = 0, t = 0.4, faceLeft = false, zoom = screenZoom()): HTMLCanvasElement {
+  const dpr = Math.min(3, (window.devicePixelRatio || 1) * zoom);
   const key = `${defId}:${size}:${team}:${dpr}:${t}:${faceLeft}`;
   const hit = cache.get(key);
   if (hit) {

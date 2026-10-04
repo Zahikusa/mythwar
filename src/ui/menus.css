@@ -32,6 +32,11 @@
   overflow-y: auto;
 }
 
+/* Large desktop screens: menus keep their proportion (--hs from the layout, 1 elsewhere). */
+#stage:not(.mobile) .screen {
+  zoom: var(--hs, 1);
+}
+
 .screen.active {
   opacity: 1;
   visibility: visible;
