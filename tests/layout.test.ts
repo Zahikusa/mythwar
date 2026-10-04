@@ -23,6 +23,15 @@ describe('layout', () => {
     expect(qhd.field.h).toBe(1440 - qhd.insets.bottom);
   });
 
+  it('narrow desktop windows reserve a second bottom row; wide ones and phones do not', () => {
+    const wide = computeLayout(1024, 768, 'desktop');
+    const narrow = computeLayout(683, 768, 'desktop');
+    expect(wide.row2).toBe(0);
+    expect(narrow.row2).toBeGreaterThan(80);
+    expect(narrow.insets.bottom).toBe(wide.insets.bottom + narrow.row2);
+    expect(computeLayout(844, 390, 'mobile').row2).toBe(0);
+  });
+
   it('never produces a degenerate field, even for a sliver of a window', () => {
     for (const [w, h, mode] of [
       [120, 300, 'mobile'],

@@ -339,6 +339,29 @@ async function largeDesktopFlow(page: Page): Promise<void> {
     });
     check('coach teaches saving up for the tithe', !r.early && /Save up to Ascend/.test(r.text ?? ''), JSON.stringify(r));
   }
+  // Narrow desktop windows (half a laptop screen) stack the bottom bar in two rows; with the four
+  // final-age cards nothing may overlap (a card under the power button would cast the power).
+  for (const [w, h] of [[683, 768], [900, 600], [560, 700]]) {
+    await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
+    await sleep(300);
+    const r = await page.evaluate(() => {
+      const app = (window as unknown as { __mythwar: any }).__mythwar;
+      app.game.world.players[0].age = 4;
+      return new Promise<{ overlaps: string[]; cards: number; bottomOk: boolean }>((done) =>
+        setTimeout(() => {
+          const boxes = (sel: string) => [...document.querySelectorAll<HTMLElement>(sel)].filter((e) => e.offsetParent).map((e) => ({ sel, r: e.getBoundingClientRect() }));
+          const hit = (a: DOMRect, b: DOMRect) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+          const groups = [boxes('.hud .card'), boxes('.hud .act'), boxes('.hud .res'), boxes('.hud .topbar .side, .hud .topbar .mid'), boxes('.hud .sysbtn')];
+          const overlaps: string[] = [];
+          for (let i = 0; i < groups.length; i++) for (let j = i + 1; j < groups.length; j++) for (const a of groups[i]) for (const b of groups[j]) if (hit(a.r, b.r)) overlaps.push(`${a.sel} × ${b.sel}`);
+          const inset = app.renderer.layout.insets.bottom;
+          const bottomOk = groups[0].every((c) => c.r.top >= innerHeight - inset - 1 && c.r.bottom <= innerHeight);
+          done({ overlaps: [...new Set(overlaps)], cards: groups[0].length, bottomOk });
+        }, 400),
+      );
+    });
+    check(`narrow desktop ${w}x${h}: HUD parts don't overlap`, r.cards === 4 && r.overlaps.length === 0 && r.bottomOk, JSON.stringify(r));
+  }
   // A window squeezed to a sliver (degenerate layout) must not kill the render loop.
   for (const [w, h] of [[120, 300], [1, 1]]) {
     await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });

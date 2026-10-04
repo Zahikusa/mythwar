@@ -38,7 +38,13 @@ export interface Layout {
   hud: number;
   /** HUD insets reserved by DOM panels, in CSS px. */
   insets: { top: number; bottom: number; left: number; right: number };
+  /** Narrow desktop windows: height of the extra bottom row (gold/XP + actions under the cards). */
+  row2: number;
 }
+
+/** Desktop windows narrower than this stack the bottom bar in two rows. */
+export const TWO_ROW_BELOW = 1000;
+const ROW2_HEIGHT = 96;
 
 const DEPTHS = [0, 0.5, 1];
 const LANE_Y = [0.45, 0.655, 0.875];
@@ -53,9 +59,13 @@ export function detectMode(width: number, height: number): LayoutMode {
 
 export function computeLayout(width: number, height: number, mode: LayoutMode): Layout {
   let insets: Layout['insets'];
+  let row2 = 0;
   const hud = hudZoom(width, height, mode);
   if (mode === 'desktop') {
-    const bottom = Math.round(Math.min(150, Math.max(112, height * 0.15)) * hud);
+    // Too narrow for cards and actions side by side (e.g. half a laptop screen): cards on top,
+    // gold/XP and the action buttons in a row below them.
+    if (width < TWO_ROW_BELOW) row2 = ROW2_HEIGHT * hud;
+    const bottom = Math.round(Math.min(150, Math.max(112, height * 0.15)) * hud + row2);
     insets = { top: 0, bottom, left: 0, right: 0 };
   } else {
     const side = Math.round(Math.min(116, Math.max(78, width * 0.105)));
@@ -96,6 +106,7 @@ export function computeLayout(width: number, height: number, mode: LayoutMode): 
     ui: Math.min(width / 1600, height / 900),
     hud,
     insets,
+    row2,
   };
 }
 

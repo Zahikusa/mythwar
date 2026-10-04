@@ -317,6 +317,8 @@ export class Hud {
     setStyle(this.root, '--bottom', `${layout.insets.bottom}px`);
     // Zoomed HUD parts (zoom --hs, set on the stage) lay themselves out in unzoomed px.
     setStyle(this.root, '--bottom-z', `${layout.insets.bottom / layout.hud}px`);
+    this.root.classList.toggle('two-row', layout.row2 > 0);
+    setStyle(this.root, '--row2', `${layout.row2 / layout.hud}px`);
     setStyle(this.root, '--side', `${layout.insets.left}px`);
     // Phones: queue chips start just past the near lane's gate (tapping the gate opens turrets).
     setStyle(this.root, '--qx', `${Math.round(layout.lanes[LANE_COUNT - 1].x0 + 6)}px`);

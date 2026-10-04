@@ -514,10 +514,15 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     also sample attack poses.
 
 Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
-189. [ ] Narrow desktop windows (≥ 520 px both ways but < ~960 px wide, e.g. 900×600 or a half
+189. [x] Narrow desktop windows (≥ 520 px both ways but < ~960 px wide, e.g. 900×600 or a half
     1366 laptop screen): the card row and action buttons overlap — the power button covers the
     Phoenix/Dragon cards (clicks cast the power), XP text cut off, enemy age badge under mute.
     `layout.ts:47-52` mode switch; `hud.css` compact rules only go down to 1180 px.
+    Fix: desktop windows < 1000 px wide stack the bottom bar in two rows (cards on top, gold/XP
+    and actions below; `layout.row2` = 96 px more bottom inset, `.hud.two-row` + `--row2`);
+    below 720 px the system buttons move under the top bar and HP bars may shrink to 96 px.
+    (Zooming the HUD down instead would have needed ~0.65 at 683 px → 6–7 px card text.)
+    Smoke: 683×768, 900×600, 560×700 with four cards — no HUD part overlaps another.
 190. [x] Results → "Change foe" → "Back" (`menus.ts:206` always `show('title')`): undimmed title over
     the dead battlefield, desktop HUD still visible, state stays `over`, battle music plays, Esc
     dead. Now the difficulty screen remembers where it was opened from (`diffBack`); Back and Esc

@@ -1747,6 +1747,46 @@ svg {
   }
 }
 
+/* Narrow desktop windows (< 1000 px, e.g. half a laptop screen): two rows — creature cards on
+   top, gold/XP and the action buttons below them. The layout reserves --row2 at the bottom. */
+.hud.desktop.two-row .cards {
+  bottom: calc(var(--row2) + 4px);
+}
+
+.hud.desktop.two-row .card {
+  height: calc(var(--bottom) - var(--row2) - 16px);
+}
+
+.hud.desktop.two-row .res {
+  bottom: calc(var(--row2) * 0.5 - 31px);
+}
+
+.hud.desktop.two-row .acts {
+  bottom: 8px;
+  height: calc(var(--row2) - 14px);
+}
+
+.hud.desktop.two-row .act.power .picon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 3px;
+}
+
+/* The top bar gives up some HP-bar width before it runs under the system buttons. */
+.hud.desktop.two-row .hpcol {
+  min-width: 96px;
+}
+
+@container stage (max-width: 720px) {
+  .hud.desktop .topbar {
+    right: 14px;
+  }
+
+  .hud.desktop .sys {
+    top: 66px;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Mobile layout                                                       */
 /* ------------------------------------------------------------------ */
