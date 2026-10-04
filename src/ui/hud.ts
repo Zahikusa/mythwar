@@ -663,7 +663,15 @@ export class Hud {
         const age = AGES[e.age];
         if (e.team === me) this.banner(age.subtitle, `You ascend to ${age.name}`, 'gold');
         else this.toast(`The enemy ascends to ${age.name}!`, 'bad');
-      } else if (e.type === 'shrine' && e.owner !== -1) {
+      } else if (e.type === 'shrine') {
+        const pip = this.el.shrines.children[e.lane] as HTMLElement | undefined;
+        if (pip) {
+          pip.classList.remove('flip');
+          void pip.offsetWidth;
+          pip.classList.add('flip');
+        }
+      }
+      if (e.type === 'shrine' && e.owner !== -1) {
         this.toast(e.owner === me ? `${LANE_NAMES[e.lane]} shrine captured` : `${LANE_NAMES[e.lane]} shrine lost`, e.owner === me ? 'good' : 'bad');
       } else if (e.type === 'power' && e.team !== me) {
         this.toast(`Enemy casts ${POWERS[e.kind].name}!`, 'bad');

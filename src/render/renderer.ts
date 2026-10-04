@@ -40,6 +40,8 @@ interface UnitVis {
   lastHp: number;
   healAcc: number;
   lastSlash: number;
+  /** 1 → 0 after a rebirth: the creature glows white-hot and re-forms. */
+  reborn: number;
 }
 
 interface Ghost {
@@ -311,6 +313,10 @@ export class Renderer {
           const g = L.lanes[e.lane];
           const x = laneX(g, e.x);
           const y = g.y - 40 * this.bodyScale(g);
+          // A cocoon of flame flares around the bird before it bursts back to life.
+          const v = this.vis.get(e.unitId);
+          if (v) v.reborn = 1;
+          this.fx.timedFx({ kind: 'flashAt', x, y, dur: 0.8, layer: e.lane, size: 70 * this.bodyScale(g), rgb: [255, 170, 60] });
           this.fx.burst(x, y, { count: 40, color: '#ffb347', rgb: [255, 160, 60], speed: 160, life: 1, size: 3, shape: 'glow', layer: e.lane, gravity: -80 });
           this.fx.timedFx({ kind: 'shockwave', x, y: g.y, dur: 0.7, layer: e.lane, size: 50 * this.bodyScale(g), color: '#ffcf70', rgb: [255, 190, 90] });
           break;
@@ -930,7 +936,7 @@ export class Renderer {
       let v = this.vis.get(u.id);
       if (!v) {
         const seed = ((u.id * 2654435761) >>> 0) / 4294967296;
-        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn: 0, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1 };
+        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn: 0, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1, reborn: 0 };
         this.vis.set(u.id, v);
       }
     }
@@ -1035,6 +1041,10 @@ export class Renderer {
       }
     }
     if (v.flash > 0) drawGlow(ctx, p.x, bodyY, art.height * 0.6 * p.s, [255, 255, 255], v.flash * 0.55);
+    if (v.reborn > 0) {
+      v.reborn = Math.max(0, v.reborn - dt * 1.2);
+      drawGlow(ctx, p.x, bodyY, art.height * (0.8 + (1 - v.reborn) * 0.6) * p.s, [255, 190, 80], v.reborn);
+    }
     if (u.slowTimer > 0 && u.freezeTimer <= 0) {
       for (let i = 0; i < 2; i++) {
         const a = this.time * 3 + i * Math.PI;

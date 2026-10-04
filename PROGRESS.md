@@ -284,11 +284,10 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 112. [x] Results: "Copy result" copies a one-line summary (verdict, foe, time, age, kills).
 113. [x] Creature-specific death flourishes: leaves (Treant), ice shards (Jötunn), feathers
     (Valkyrie, Griffin), foxfire (Kitsune), marble + light (Titan), embers (Phoenix, Dragon)...
-114. [ ] Phoenix rebirth: the creature visibly keeps its pose; add a short "egg of flame" ->
-    burst sequence (0.6 s) for clarity.
+114. [x] Phoenix rebirth: a flame flare plus a fading white-hot glow on the bird (`reborn`).
 115. [ ] Valkyrie spear projectile and Gorgon gaze could leave a brief impact decal on the ground
     (scorch/stone) for 1 s to sell weight.
-116. [ ] Shrine capture: also flash the HUD shrine pip when ownership changes.
+116. [x] HUD shrine pips pulse when a shrine changes hands.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

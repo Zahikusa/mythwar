@@ -364,6 +364,17 @@ svg {
   transform: scale(1.15);
 }
 
+.shrines i.flip {
+  animation: pipflip 0.6s ease;
+}
+
+@keyframes pipflip {
+  40% {
+    transform: scale(1.7);
+    filter: drop-shadow(0 0 6px #fff);
+  }
+}
+
 .shrines i.contested {
   animation: blink 0.5s steps(2) infinite;
 }
