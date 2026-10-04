@@ -187,6 +187,33 @@ async function tutorialHandoffFlow(page: Page): Promise<void> {
   await page.evaluate(() => localStorage.clear());
 }
 
+/** Small landscape phones: each menu's main button is on screen without scrolling. */
+async function phoneMenusFit(page: Page): Promise<void> {
+  console.log('== phone menus fit ==');
+  for (const [w, h] of [[844, 390], [640, 360]]) {
+    await page.setViewport({ width: w, height: h, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    await page.goto(`${base}/?screen=settings`, { waitUntil: 'load' });
+    await sleep(900);
+    const visible = (sel: string) =>
+      page.evaluate((sel) => {
+        const r = document.querySelector(sel)!.getBoundingClientRect();
+        return { top: Math.round(r.top), bottom: Math.round(r.bottom), fits: r.top >= 0 && r.bottom <= innerHeight };
+      }, sel);
+    const done = await visible('.screen.settings .mbtn.primary');
+    check(`${w}x${h}: Settings' Done button is on screen`, done.fits, JSON.stringify(done));
+    await page.goto(`${base}/?play=adept&seed=4`, { waitUntil: 'load' });
+    await sleep(1000);
+    await page.evaluate(() => {
+      const w = (window as unknown as { __mythwar: any }).__mythwar.game.world;
+      w.players[1].baseHp = 1;
+      w.damageBase(1, 10, 0, 0);
+    });
+    await sleep(3600);
+    const rematch = await visible('.screen.over .mbtn.primary');
+    check(`${w}x${h}: Results' Rematch button is on screen`, rematch.fits, JSON.stringify(rematch));
+  }
+}
+
 async function rotatedMenusFlow(page: Page): Promise<void> {
   console.log('== rotated portrait menus ==');
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
@@ -739,6 +766,10 @@ async function main(): Promise<void> {
     page2.on('pageerror', (e) => errors.push(`rotated menus: ${String(e)}`));
     await rotatedMenusFlow(page2);
     await page2.close();
+    const page6 = await browser.newPage();
+    page6.on('pageerror', (e) => errors.push(`phone menus: ${String(e)}`));
+    await phoneMenusFit(page6);
+    await page6.close();
     const page5 = await browser.newPage();
     page5.on('pageerror', (e) => errors.push(`service worker: ${String(e)}`));
     await serviceWorkerFlow(page5);

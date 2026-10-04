@@ -529,10 +529,16 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     both use `menus.goBack()`. The smoke check for it also found that a screen fading out
     (0.35 s, still `visibility: visible`, later in the DOM) caught taps meant for the screen
     fading in: inactive screens now have `pointer-events: none`.
-191. [ ] Settings toggles unreachable by keyboard / screen reader: `.srow.check input {display:none}`
+191. [x] Settings toggles unreachable by keyboard / screen reader: `.srow.check input {display:none}`
     (`menus.css:601`); the `input:focus-visible + .sw` focus ring never applies.
-192. [ ] Phone menus: Settings is 483 px tall → Done / Reset records / Show tips below the fold at
+192. [x] Phone menus: Settings is 483 px tall → Done / Reset records / Show tips below the fold at
     844×390 and 640×360; Results 422 px at 640×360 hides Rematch / Main menu. No scroll hint.
+    Fix (short stages): Settings in two columns (sliders | toggles, `grid-auto-flow: row dense`)
+    — fits 640×360 entirely; every screen's button row is `position: sticky` at the bottom
+    with a fade, so content scrolls under buttons that stay in reach. #191: the toggles'
+    checkboxes are now visually hidden instead of `display:none` (Tab reaches all four, Space
+    toggles, the focus ring shows). Smoke: Done / Rematch on screen at 844×390 and 640×360.
+    New screenshot scenario `mobile-settings`.
 193. [ ] Unscoped `.goldrow .ico {18px}` (`hud.css:1820`) shrinks the desktop gold coin (30 px rule);
     duplicate unscoped `.goldrow.pulse .goldnum` + `@keyframes goldpulse` (`hud.css:1808-1818`).
 194. [ ] `.keyspanel` centred with `translate:-50% 0` but the `panelin` keyframes animate `translate`
