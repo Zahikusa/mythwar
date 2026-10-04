@@ -218,6 +218,8 @@ See DESIGN.md for the game design.
     field).
 84. [x] Backspace/Delete cancels the most recent summon (refund); on the controls card;
     smoke-checked.
+85. [x] Touch: press and hold on a creature shows the same name/class/HP label as desktop
+    hover (`view.inspect`); smoke-checked on phone viewports.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,

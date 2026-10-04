@@ -213,6 +213,28 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     check('tapping a queue chip cancels that summon', after.q === before.q - 1 && after.chips === after.q, JSON.stringify(after));
   }
 
+  // Touch: press and hold on a creature shows its label (view.inspect), release hides it.
+  if (viewport.mobile) {
+    const pt = await page.evaluate(() => {
+      const app = (window as unknown as { __mythwar: any }).__mythwar;
+      const w = app.game.world;
+      const u = w.spawnUnit(1, 1, (window as unknown as { __mythwarData: any }).__mythwarData.UNITS.treant, 600);
+      u.def = { ...u.def, speed: 0 };
+      const p = app.renderer.unitScreen(u, 1);
+      const sx = p.x;
+      const sy = p.y - 20;
+      return app.rotated ? { x: window.innerWidth - sy, y: sx } : { x: sx, y: sy };
+    });
+    const cdp = await page.createCDPSession();
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: pt.x, y: pt.y }] });
+    await sleep(550);
+    const held = await page.evaluate(() => !!(window as unknown as { __mythwar: any }).__mythwar.game.view.inspect);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await sleep(80);
+    const released = await page.evaluate(() => !(window as unknown as { __mythwar: any }).__mythwar.game.view.inspect);
+    check('press-and-hold inspects a creature; release dismisses', held && released, JSON.stringify({ held, released }));
+  }
+
   // Turret panel: open and build
   await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].gold = 1000));
   const tb = await center(page, '.turretbtn');

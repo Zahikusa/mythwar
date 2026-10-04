@@ -22,6 +22,8 @@ export interface ViewState {
   paused: boolean;
   /** Mouse position in stage coordinates (desktop hover labels), or null. */
   mouse?: { x: number; y: number } | null;
+  /** Press-and-hold point on touch screens (shows the creature label there). */
+  inspect?: { x: number; y: number } | null;
 }
 
 interface UnitVis {
@@ -521,7 +523,8 @@ export class Renderer {
     }
 
     this.hover = null;
-    this.mouseRef = L.mode === 'desktop' && view.targeting === 'none' ? (view.mouse ?? null) : null;
+    // Desktop: hover. Touch: press-and-hold sets view.inspect.
+    this.mouseRef = view.targeting !== 'none' ? null : (view.inspect ?? (L.mode === 'desktop' ? (view.mouse ?? null) : null));
 
     // Lanes far → near
     for (let lane = 0; lane < L.lanes.length; lane++) {

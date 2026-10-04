@@ -12,6 +12,7 @@ export class Input {
   /** Maps client coordinates into the stage (handles the rotated portrait mode). */
   toStage: (x: number, y: number) => [number, number] = (x, y) => [x, y];
   onPause: () => void = () => {};
+  private holdTimer = 0;
 
   constructor(canvas: HTMLCanvasElement, renderer: Renderer, hud: Hud) {
     this.renderer = renderer;
@@ -19,6 +20,22 @@ export class Input {
     hud.laneAtPoint = (x, y) => this.laneAtClient(x, y);
     canvas.addEventListener('pointermove', (e) => this.onMove(e));
     canvas.addEventListener('pointerdown', (e) => this.onDown(e));
+    // Touch: press and hold on a creature to inspect it; release / move away to dismiss.
+    canvas.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' || !this.game) return;
+      clearTimeout(this.holdTimer);
+      const start = this.toStage(e.clientX, e.clientY);
+      this.holdTimer = window.setTimeout(() => {
+        if (this.game) this.game.view.inspect = { x: start[0], y: start[1] - 18 };
+      }, 380);
+    });
+    const endHold = () => {
+      clearTimeout(this.holdTimer);
+      if (this.game) this.game.view.inspect = null;
+    };
+    canvas.addEventListener('pointerup', endHold);
+    canvas.addEventListener('pointercancel', endHold);
+    canvas.addEventListener('pointerleave', endHold);
     canvas.addEventListener('pointerleave', () => {
       if (!this.game) return;
       this.game.view.mouse = null;
