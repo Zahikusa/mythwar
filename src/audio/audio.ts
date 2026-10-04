@@ -154,6 +154,9 @@ export class Audio {
     const t = ctx.currentTime + (o.delay ?? 0);
     const src = ctx.createBufferSource();
     src.buffer = this.noise;
+    // The buffer is 1 s; long sweeps (Fimbulwinter 2.4 s, Ragnarök 2.5 s) loop it rather than
+    // stopping dead halfway (looped white noise has no audible seam).
+    src.loop = true;
     src.playbackRate.value = 0.8 + Math.random() * 0.4;
     const f = ctx.createBiquadFilter();
     f.type = o.type ?? 'bandpass';

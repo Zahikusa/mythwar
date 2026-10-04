@@ -33,6 +33,7 @@ export class Menus {
   /** An autosaved battle exists (a new one from the title abandons it — the note says so). */
   private hasSave = false;
   private saveNote: HTMLElement | null = null;
+  private settingsOpened: (() => void) | null = null;
   private screens: Partial<Record<Screen, HTMLElement>> = {};
   private howtoPage = 0;
   private howtoPages: HTMLElement[] = [];
@@ -122,6 +123,7 @@ export class Menus {
     if (screen === 'difficulty' && this.screen !== 'difficulty' && this.screen !== 'howto' && this.screen !== 'settings') {
       this.diffBack = this.screen === 'over' ? 'over' : 'title';
     }
+    if (screen === 'settings' && this.screen !== 'settings') this.settingsOpened?.();
     this.screen = screen;
     for (const [k, el] of Object.entries(this.screens)) el!.classList.toggle('active', k === screen);
     this.root.classList.toggle('open', screen !== 'none');
@@ -284,7 +286,7 @@ export class Menus {
         title: 'Powers, turrets & blessings',
         body: [
           powersArt(),
-          p('Each age grants a <b>god power</b>. Press it (or <b>Space</b>) and choose a lane to unleash it. <b>Turrets</b> guard one lane each from your gates; <b>Blessings</b> permanently strengthen your army.'),
+          p('Each age grants a <b>god power</b>. Press it, then choose a lane to unleash it (on a keyboard, <b>Space</b> casts it on the selected lane). <b>Turrets</b> guard one lane each from your gates; <b>Blessings</b> permanently strengthen your army.'),
           p('At 18:00 — or 3 minutes after both sides reach the Celestial age — <b>Ragnarök</b> comes: the citadels’ wards fall silent and every blow against them grows deadlier, minute by minute.'),
         ],
       },
@@ -375,6 +377,12 @@ export class Menus {
       resetTips.querySelector('span')!.textContent = 'Tips will show again';
       for (const f of this.syncers) f();
     });
+    // Each visit starts fresh: no half-armed "erase records" left over from last time.
+    this.settingsOpened = () => {
+      resetRecords.dataset.armed = '';
+      resetRecords.querySelector('span')!.textContent = 'Reset records';
+      resetTips.querySelector('span')!.textContent = 'Show tips again';
+    };
     return h(
       'div',
       { class: 'screen settings' },

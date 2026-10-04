@@ -783,8 +783,8 @@ export class Hud {
     setText(E.income, `+${w.incomeOf(g.playerTeam).toFixed(1)}/s`);
     if (me.age < MAX_AGE) {
       const next = AGES[me.age + 1];
-      const prev = AGES[me.age].xpRequired;
-      const k = Math.min(1, (me.xp - prev) / (next.xpRequired - prev));
+      // Total XP against the next age's requirement — what the text says and the Ascend fill shows.
+      const k = Math.min(1, me.xp / next.xpRequired);
       setStyle(E.xpfill, 'width', `${(Math.max(0, k) * 100).toFixed(1)}%`);
       // XP alone isn't enough: ascending also takes the gold tithe.
       const xpReady = me.xp >= next.xpRequired;

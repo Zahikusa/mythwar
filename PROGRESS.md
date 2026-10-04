@@ -553,13 +553,17 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
 196. [ ] Endless CSS animations: `readyglow`/`dangerpulse` animate box-shadow (main-thread repaint)
     even under the pause menu; title `floaty` canvases animate during battles (screen only
     visibility:hidden); `.xpfill`/`.ascfill` width transitions restarted every frame.
-197. [ ] Settings "Reset records" stays armed between visits (`menus.ts:344-356`): one stray tap, Done,
+197. [x] Settings "Reset records" stays armed between visits (`menus.ts:344-356`): one stray tap, Done,
     next visit a single tap wipes all W/L records. "Records cleared" label also sticks.
+    (Both reset buttons start fresh each time Settings opens: `settingsOpened` in `show()`.)
 198. [ ] HUD banner timer counts down while paused (`app.ts:462` → `hud.ts:918`); `Hud.attach` doesn't
     reset `bannerTimer`, so after a quick restart `bannerShowing` suppresses coach tips ≤ 2.8 s.
-199. [ ] Text vs mechanics: how-to page 5 says "Press it (or Space) and choose a lane" but Space casts
+199. [x] Text vs mechanics: how-to page 5 says "Press it (or Space) and choose a lane" but Space casts
     straight away on the selected lane. XP bar shows progress within the age, the Ascend fill
     shows total XP → right after reaching Olympus they read 0% vs 29%.
+    (How-to: "Press it, then choose a lane … (on a keyboard, Space casts it on the selected
+    lane)". The XP bar fill is now total XP / next requirement, matching its "3000 / 8000"
+    text — which it contradicted too — and the Ascend fill. Still fits the 667×375 how-to.)
 200. [ ] Accessibility names: blessing buy buttons named only by price, queue chips by one letter,
     lane tabs "▶", mute button has no `aria-pressed`; menus lack dialog roles; hidden how-to
     pages are only opacity 0; `.res` tooltips dead (`pointer-events:none`).
@@ -583,8 +587,9 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     theme switch keeps the old ambient particles; fireflies only wobble (`renderer.ts:163,889`).
 206. [ ] On ascend the old theme's aurora/stars and ambient particles vanish instantly while the old
     backdrop cross-fades for 1.6 s (`renderer.ts:830-855,174`).
-207. [ ] Noise buffer is 1 s, random offset ≤ 0.5 s, rate 0.8–1.2, no loop → long noise sounds
+207. [x] Noise buffer is 1 s, random offset ≤ 0.5 s, rate 0.8–1.2, no loop → long noise sounds
     (Fimbulwinter 2.4 s, Spirit Dragon 2 s, Ragnarök 2.5 s) cut off early (`audio.ts:84,155`).
+    (`src.loop = true`; unverified by ear — no speakers here, see #75.)
 208. [ ] Kitsune bounce shots start at the struck target's un-fanned x and the original shooter's
     muzzle height → visible jump between hit and next bolt (`world.ts:967`, `renderer.ts:1330`).
 209. [ ] Screen shake pre-fills exposed edges with `ground[1]`, also at the sky edge → light band
