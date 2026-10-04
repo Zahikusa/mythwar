@@ -11,7 +11,7 @@ export function runGallery(root: HTMLElement): void {
   const units = AGE_UNITS.flat();
   const scale = Number(new URLSearchParams(location.search).get('scale') ?? 2);
   const cellW = 120 * scale;
-  const cellH = 90 * scale;
+  const cellH = 120 * scale;
   const cols = 3;
   const resize = () => {
     canvas.width = cols * cellW * 2;
@@ -33,7 +33,7 @@ export function runGallery(root: HTMLElement): void {
       const row = Math.floor(i / 2);
       for (let k = 0; k < cols; k++) {
         const x = (col + k) * cellW + cellW / 2;
-        const y = row * cellH + cellH * 0.8;
+        const y = row * cellH + cellH * 0.86;
         ctx.fillStyle = 'rgba(0,0,0,0.2)';
         ctx.beginPath();
         ctx.ellipse(x, y, def.radius * scale, def.radius * scale * 0.3, 0, 0, Math.PI * 2);

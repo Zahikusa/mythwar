@@ -113,7 +113,7 @@ const SCENARIOS: Scenario[] = [
     script: `(() => { const w = window.__mythwar.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0); })()`,
     after: 3600,
   },
-  { name: 'gallery', query: 'gallery&scale=2', w: 1440, h: 1600, wait: 1200 },
+  { name: 'gallery', query: 'gallery&scale=2', w: 1440, h: 2000, wait: 1200 },
   { name: 'mobile-play-start', query: 'play=novice&seed=4', w: 844, h: 390, mobile: true, dpr: 2, wait: 2500 },
   { name: 'play-start', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 3000 },
 ];
