@@ -412,7 +412,7 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 165. [x] Mobile toast moved below the gold pill (top 84 px).
 166. [x] Phones hide the HUD while a menu (pause, results) is open (`.under-menu`, toggled with
     `inert`): no verdict over the clock, no pause buttons over the side columns.
-167. [ ] How-to page 3: the Mystic→Guardian arrowhead covers the last letter of "Guardian".
+167. [x] How-to counter triangle: arrowheads no longer touch the "Guardian" label / Mystic orb.
 168. [x] Coach tips now live inside the HUD layer (z 15): above lane tabs, below card tooltips.
 169. [x] Difficulty chip rows line up across cards (`margin-top: auto`).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,

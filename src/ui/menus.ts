@@ -517,7 +517,7 @@ function triangleArt(): HTMLElement {
     node('guardian', 'Guardian'),
     node('hunter', 'Hunter'),
     node('mystic', 'Mystic'),
-    h('div', { class: 'tri-arrows', html: '<svg viewBox="0 0 200 120"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#ffe7a6"/></marker></defs><path d="M70 28 L 132 28" stroke="#ffe7a6" stroke-width="3" marker-end="url(#ah)" fill="none"/><path d="M150 46 L 112 98" stroke="#ffe7a6" stroke-width="3" marker-end="url(#ah)" fill="none"/><path d="M88 98 L 52 46" stroke="#ffe7a6" stroke-width="3" marker-end="url(#ah)" fill="none"/></svg>' }),
+    h('div', { class: 'tri-arrows', html: '<svg viewBox="0 0 200 120"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#ffe7a6"/></marker></defs><path d="M70 28 L 132 28" stroke="#ffe7a6" stroke-width="3" marker-end="url(#ah)" fill="none"/><path d="M150 46 L 119 89" stroke="#ffe7a6" stroke-width="3" marker-end="url(#ah)" fill="none"/><path d="M88 98 L 60 58" stroke="#ffe7a6" stroke-width="3" marker-end="url(#ah)" fill="none"/></svg>' }),
   );
 }
 
