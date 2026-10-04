@@ -52,7 +52,7 @@ export function renderBackground(layout: Layout, theme: Theme, dpr: number, them
   ctx.arc(sx, sy - layout.field.h * 0.07, layout.field.h * (theme.id === 'asgard' ? 0.035 : 0.05), 0, Math.PI * 2);
   ctx.fill();
 
-  if (theme.aurora) drawAurora(ctx, W, hz, rng);
+  // (The aurora is drawn live by the renderer so it can shimmer — see renderAurora.)
   if (theme.id === 'celestial') drawNebula(ctx, W, hz, rng);
 
   // Mountains (far → near)
@@ -157,6 +157,17 @@ function drawSnowcaps(ctx: CanvasRenderingContext2D, pts: [number, number][], am
   ctx.restore();
 }
 
+/** Pre-rendered aurora ribbons (transparent canvas) that the renderer sways and fades. */
+export function renderAurora(layout: Layout, dpr: number): HTMLCanvasElement {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(layout.width * dpr));
+  c.height = Math.max(1, Math.round(layout.horizon * dpr));
+  const ctx = c.getContext('2d')!;
+  ctx.scale(dpr, dpr);
+  drawAurora(ctx, layout.width, layout.horizon, new Rng(77));
+  return c;
+}
+
 function drawAurora(ctx: CanvasRenderingContext2D, W: number, hz: number, rng: Rng): void {
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
@@ -169,7 +180,8 @@ function drawAurora(ctx: CanvasRenderingContext2D, W: number, hz: number, rng: R
       const h = hz * (0.12 + 0.08 * Math.sin(i * 0.11 + b));
       const gr = ctx.createLinearGradient(0, y, 0, y + h);
       gr.addColorStop(0, `rgba(${col[0]},${col[1]},${col[2]},0)`);
-      gr.addColorStop(0.7, `rgba(${col[0]},${col[1]},${col[2]},0.05)`);
+      gr.addColorStop(0.55, `rgba(${col[0]},${col[1]},${col[2]},0.07)`);
+      gr.addColorStop(0.8, `rgba(${col[0]},${col[1]},${col[2]},0.16)`);
       gr.addColorStop(1, `rgba(${col[0]},${col[1]},${col[2]},0)`);
       ctx.fillStyle = gr;
       ctx.fillRect(x, y, W / 70 + 1, h);

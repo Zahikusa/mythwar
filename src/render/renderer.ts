@@ -2,7 +2,7 @@ import { LANE_LENGTH, SHRINE_RADIUS, SHRINE_X, TICK } from '../sim/data.ts';
 import { POWER_TIMING, spiritDragonHead } from '../sim/powers.ts';
 import type { Projectile, SimEvent, Team, Unit } from '../sim/types.ts';
 import type { World } from '../sim/world.ts';
-import { renderBackground, renderVignette } from './background.ts';
+import { renderAurora, renderBackground, renderVignette } from './background.ts';
 import { drawCitadelGate, drawCitadelKeep, drawTurret } from './citadel.ts';
 import { artFor } from './creatures/index.ts';
 import type { CreatureArt, Pose } from './creatures/types.ts';
@@ -80,6 +80,8 @@ export class Renderer {
   private bgCache = new Map<number, HTMLCanvasElement>();
   private keepCache = new Map<string, { canvas: HTMLCanvasElement; x: number; w: number }>();
   private gradCache = new Map<string, CanvasGradient>();
+  private aurora: HTMLCanvasElement | null = null;
+  private twinkles: { x: number; y: number; p: number; s: number }[] = [];
   private vignette: HTMLCanvasElement | null = null;
   private theme = 0;
   private prevTheme = -1;
@@ -121,6 +123,8 @@ export class Renderer {
     this.bgCache.clear();
     this.keepCache.clear();
     this.gradCache.clear();
+    this.aurora = null;
+    this.twinkles = [];
     this.vignette = renderVignette(width, height, this.dpr);
     this.fx.maxParticles = mode === 'mobile' || this.quality === 'low' ? 600 : 1400;
     this.ambient = [];
@@ -488,7 +492,10 @@ export class Renderer {
       ctx.drawImage(this.background(this.theme), -4, -4, L.width + 8, L.height + 8);
       ctx.globalAlpha = 1;
     }
-    if (!this.skip.has('ambient')) this.drawAmbient(ctx, dt);
+    if (!this.skip.has('ambient')) {
+      this.drawSky(ctx);
+      this.drawAmbient(ctx, dt);
+    }
 
     const simTime = world.time - (1 - alpha) * TICK;
 
@@ -560,6 +567,37 @@ export class Renderer {
     if (view.paused) {
       ctx.fillStyle = 'rgba(10, 6, 24, 0.35)';
       ctx.fillRect(0, 0, L.width, L.height);
+    }
+  }
+
+  /** Live sky details: a shimmering aurora (Asgard) and twinkling stars on night themes. */
+  private drawSky(ctx: CanvasRenderingContext2D): void {
+    const L = this.layout;
+    const theme = THEMES[this.theme];
+    const vis = this.prevTheme >= 0 && this.themeFade < 1 ? this.themeFade : 1;
+    if (theme.aurora) {
+      this.aurora ??= renderAurora(L, Math.min(this.dpr, 1.5));
+      const sway = Math.sin(this.time * 0.15) * L.width * 0.03;
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.globalAlpha = vis * (0.55 + 0.35 * Math.sin(this.time * 0.4));
+      ctx.drawImage(this.aurora, sway, 0, L.width, L.horizon);
+      ctx.globalAlpha = vis * (0.3 + 0.25 * Math.sin(this.time * 0.27 + 2));
+      ctx.drawImage(this.aurora, -sway * 1.6 + L.width * 0.05, L.horizon * 0.06, L.width, L.horizon * 0.94);
+      ctx.restore();
+    }
+    if (theme.stars > 0.3) {
+      if (this.twinkles.length === 0) {
+        for (let i = 0; i < 18; i++) this.twinkles.push({ x: Math.random() * L.width, y: Math.pow(Math.random(), 1.5) * L.horizon * 0.75, p: Math.random() * 10, s: 0.6 + Math.random() * 0.9 });
+      }
+      for (const st of this.twinkles) {
+        const a = Math.max(0, Math.sin(this.time * (1.2 + st.s) + st.p)) ** 3 * theme.stars * vis;
+        if (a < 0.02) continue;
+        drawGlow(ctx, st.x, st.y, 5 * st.s, [255, 255, 255], a * 0.8);
+        ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+        ctx.fillRect(st.x - 0.6, st.y - 2.5 * st.s, 1.2, 5 * st.s);
+        ctx.fillRect(st.x - 2.5 * st.s, st.y - 0.6, 5 * st.s, 1.2);
+      }
     }
   }
 
