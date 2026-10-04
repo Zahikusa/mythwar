@@ -82,6 +82,8 @@ export class Fx {
   flash = 0;
   /** Coins that reached the gold counter (the HUD pulses when this grows). */
   coinsArrived = 0;
+  /** Coins flying to the gold counter right now (counted in update). */
+  coinsInFlight = 0;
   flashColor = '255,255,255';
 
   clear(): void {
@@ -186,10 +188,22 @@ export class Fx {
       t.y += t.vy * dt;
       t.vy *= Math.exp(-2.5 * dt);
     }
-    this.texts = this.texts.filter((t) => t.life > 0);
-    for (const f of this.timed) f.t += dt;
-    for (const f of this.timed) if (f.kind === 'coin' && f.t >= f.dur) this.coinsArrived++;
-    this.timed = this.timed.filter((f) => f.t < f.dur);
+    // Compact in place (no new arrays every frame).
+    let n = 0;
+    for (const t of this.texts) if (t.life > 0) this.texts[n++] = t;
+    this.texts.length = n;
+    n = 0;
+    this.coinsInFlight = 0;
+    for (const f of this.timed) {
+      f.t += dt;
+      if (f.t >= f.dur) {
+        if (f.kind === 'coin') this.coinsArrived++;
+        continue;
+      }
+      if (f.kind === 'coin') this.coinsInFlight++;
+      this.timed[n++] = f;
+    }
+    this.timed.length = n;
     this.flash = Math.max(0, this.flash - dt * 2.5);
   }
 

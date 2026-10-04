@@ -417,9 +417,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 169. [x] Difficulty chip rows line up across cards (`margin-top: auto`).
 170. [x] `scripts/shoot.ts --size WxH` re-shoots any scenario at another viewport (file gets a
     -WxH suffix); checked 1920×1080 desktop and 740×360 phone.
-171. [ ] Render perf nits (renderer review): `fx.update` re-filters texts/timed into new arrays every
-    frame, `unitScreen` runs twice per unit per frame, the coin cap counts with `.filter` per
-    enemy death, each gate builds its portal gradient every frame. Small; batch into one pass.
+171. [x] Render perf nits: `fx.update` compacts texts/timed in place, the coin cap uses a counter
+    (`coinsInFlight`), `unitScreen` runs once per creature per frame (shadow pass result reused).
+    (Per-gate portal gradients left as is: 6 per frame.)
 172. [ ] Calibration drift: after the fairness fixes (#125–127) the counter-following bot's wins vs
     Adept dropped 19% → ~11% (n=90). If testers find Adept too hard, ease `AI_PROFILES.adept`
     (think time / incomeMult) a notch.

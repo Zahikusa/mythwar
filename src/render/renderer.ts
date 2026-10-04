@@ -125,6 +125,7 @@ export class Renderer {
   private hover: { unit: Unit; x: number; top: number; d: number } | null = null;
   private mouseRef: { x: number; y: number } | null = null;
   private sortBuf: Unit[] = [];
+  private screenBuf: ReturnType<Renderer['unitScreen']>[] = [];
   private ageFlash: [number, number] = [0, 0];
   /** Citadel collapse progress per team (-1 = standing). */
   private collapse: [number, number] = [-1, -1];
@@ -432,7 +433,8 @@ export class Renderer {
             this.fx.gold(x, by - art.height * 0.5 * s, e.gold, '#ffd76a', 15, 70 * this.bodyScale(g));
             // A coin flies to the gold counter (capped so big fights don't flood the screen).
             const target = this.coinTarget;
-            if (target && this.fx.timed.filter((f) => f.kind === 'coin').length < 8) {
+            if (target && this.fx.coinsInFlight < 8) {
+              this.fx.coinsInFlight++;
               this.fx.timedFx({ kind: 'coin', x, y: by, x2: target[0], y2: target[1], dur: 0.75 + Math.random() * 0.2, layer: 3, size: Math.max(0.8, L.ui) });
             }
           }
@@ -1098,9 +1100,12 @@ export class Renderer {
       sorted.push(u);
     }
     sorted.sort((a, b) => a.renderKey - b.renderKey);
-    // Shadows
+    // Shadows (screen positions are kept for the creature pass below)
+    const screens = this.screenBuf;
+    screens.length = 0;
     for (const u of sorted) {
       const p = this.unitScreen(u, alpha);
+      screens.push(p);
       const r = u.def.radius * this.bodyScale(g) * (u.flying ? 0.8 : 1.05);
       ellipse(ctx, p.x, p.y + 1, r, r * 0.3, u.flying ? 'rgba(0,0,0,0.14)' : 'rgba(0,0,0,0.25)');
       const tc = TEAM_COLORS[u.team];
@@ -1112,15 +1117,14 @@ export class Renderer {
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
-    for (const u of sorted) this.drawUnit(ctx, u, alpha, simTime, dt, g);
+    for (let i = 0; i < sorted.length; i++) this.drawUnit(ctx, sorted[i], screens[i], alpha, simTime, dt, g);
     // Ghosts
     for (const gh of this.ghosts) if (gh.lane === lane) this.drawGhost(ctx, gh, dt);
     if (lane === this.layout.lanes.length - 1) this.ghosts = this.ghosts.filter((gh) => gh.t < DEATH_TIME);
   }
 
-  private drawUnit(ctx: CanvasRenderingContext2D, u: Unit, alpha: number, simTime: number, dt: number, g: LaneGeom): void {
+  private drawUnit(ctx: CanvasRenderingContext2D, u: Unit, p: ReturnType<Renderer['unitScreen']>, alpha: number, simTime: number, dt: number, g: LaneGeom): void {
     const v = this.vis.get(u.id)!;
-    const p = this.unitScreen(u, alpha);
     const art = p.art;
     v.hx = p.x;
     v.hy = p.y - (-art.body[1] + art.fly) * p.s;
