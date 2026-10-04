@@ -166,8 +166,10 @@ export class World {
   }
 
   /** Rebuilds a world from `serialize()` output. Throws on unknown data. */
-  static deserialize(snap: WorldSnapshot): World {
-    if (!snap || snap.v !== 1) throw new Error('Unsupported save');
+  static deserialize(source: WorldSnapshot): World {
+    if (!source || source.v !== 1) throw new Error('Unsupported save');
+    // Work on a copy: the world must not share (or patch) the caller's snapshot objects.
+    const snap = structuredClone(source);
     const w = new World();
     w.time = snap.time;
     w.tick = snap.tick;
@@ -397,7 +399,7 @@ export class World {
         p.baseMaxHp = newMax;
         p.baseHp = Math.min(p.baseMaxHp, p.baseHp + gained);
         p.powerCooldown = Math.min(p.powerCooldown, 8);
-        this.emit({ type: 'ageUp', team: cmd.team, age: p.age });
+        this.emit({ type: 'ageUp', team: cmd.team, age: p.age, t: this.time });
         return { ok: true };
       }
       case 'buildTurret': {

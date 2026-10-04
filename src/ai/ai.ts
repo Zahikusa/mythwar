@@ -254,7 +254,7 @@ export class AiController {
       if (!affordable) {
         // Weaker AIs fall back to whatever they can afford; stronger ones wait for the right unit.
         if (this.rng.chance(1 - p.counterSkill)) {
-          const cheap = AGE_UNITS[me.age].filter((u) => u.cost <= me.gold - reserve && w.trainBlocker(this.team, u.id) === null);
+          const cheap = AGE_UNITS[me.age].filter((u) => u.cost <= me.gold - (underSiege ? 0 : reserve) && w.trainBlocker(this.team, u.id) === null);
           if (cheap.length === 0) break;
           const alt = this.rng.pick(cheap);
           if (!w.apply({ type: 'train', team: this.team, unitId: alt.id, lane }).ok) break;

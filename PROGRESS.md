@@ -333,10 +333,12 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 135. [ ] A11y: icon-only panel close buttons / how-to dots have no accessible name; cards and
     the power button can't be activated with Enter.
 136. [x] `continueSaved` goes through `pause()`, so the pause summary shows (smoke-checked).
-137. [ ] `src/game.ts fastForward` discards events (a gameOver during ff never ends the game).
-138. [ ] Results-chart age-up times read `world.time` after the frame (up to ~0.5 s late).
-139. [ ] `World.deserialize` aliases/mutates the snapshot (structuredClone it).
-140. [ ] `src/ai/ai.ts` fallback purchase keeps the ascend reserve even under siege.
+137. [x] `src/game.ts fastForward` discarded events: a game over during ff never ended the game
+    (a title backdrop could sit on a finished battle). Now ff records ascensions, chart samples
+    and `over`, and passes only the gameOver on to listeners (unit test).
+138. [x] `ageUp` events carry their sim time (results-chart ticks were up to ~0.5 s late).
+139. [x] `World.deserialize` works on a structuredClone of the snapshot (test).
+140. [x] `src/ai/ai.ts`: the fallback purchase no longer keeps the ascend reserve under siege.
 141. [ ] Missing sim tests: unit traits (cleave, slam, sweep, lifesteal, charge, enrage, bounce,
     slow), side symmetry, simultaneous citadel deaths, power effects (briar root, dragon hits).
 142. [x] A window narrower than ~156 px gave a negative field width → `ctx.ellipse` threw →

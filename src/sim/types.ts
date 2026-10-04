@@ -143,7 +143,7 @@ export type SimEvent =
   | { type: 'impact'; team: Team; lane: number; x: number; kind: ProjectileKind; splash: number }
   | { type: 'turretFire'; team: Team; lane: number }
   | { type: 'turretBuilt'; team: Team; lane: number; turretId: string | null }
-  | { type: 'ageUp'; team: Team; age: number }
+  | { type: 'ageUp'; team: Team; age: number; t: number }
   | { type: 'blessing'; team: Team; blessing: BlessingId; rank: number }
   | { type: 'power'; team: Team; lane: number; kind: PowerKind; instanceId: number }
   | { type: 'strike'; team: Team; lane: number; x: number; kind: PowerKind; radius: number }

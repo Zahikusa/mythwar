@@ -52,3 +52,37 @@ describe('save games', () => {
     expect(() => World.deserialize({ v: 2 } as never)).toThrow();
   });
 });
+
+describe('fast-forward', () => {
+  it('keeps ascensions, chart history and the game over', async () => {
+    const { Game } = await import('../src/game.ts');
+    const g = new Game({ difficulty: 'mythic', seed: 5, demo: true });
+    const seen: string[] = [];
+    g.onEvents((ev) => seen.push(...ev.map((e) => e.type)));
+    g.fastForward(60 * 60);
+    expect(g.world.winner).not.toBeNull();
+    expect(g.over).toBe(true);
+    expect(seen).toEqual(['gameOver']);
+    expect(g.ageUps.length).toBeGreaterThan(0);
+    for (const a of g.ageUps) expect(a.t).toBeLessThanOrEqual(g.world.time);
+    expect(g.history.length).toBeGreaterThan(10);
+  });
+});
+
+describe('snapshots', () => {
+  it('deserializing leaves the snapshot untouched and unshared', () => {
+    const w = new World({ seed: 9 });
+    w.players[0].gold = 1e4;
+    w.apply({ type: 'train', team: 0, unitId: 'treant', lane: 0 });
+    const snap = w.serialize();
+    const before = JSON.stringify(snap);
+    const a = World.deserialize(snap);
+    const b = World.deserialize(snap);
+    a.players[0].queue.length = 0;
+    a.shrines[0].capture = 0.5;
+    a.step();
+    expect(JSON.stringify(snap)).toBe(before);
+    expect(b.players[0].queue.length).toBe(1);
+    expect(b.shrines[0].capture).not.toBe(0.5);
+  });
+});

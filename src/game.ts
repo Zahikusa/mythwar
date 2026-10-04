@@ -120,14 +120,19 @@ export class Game {
     }
     const events = this.world.drainEvents();
     if (events.length) {
-      for (const e of events) {
-        if (e.type === 'gameOver') this.over = true;
-        else if (e.type === 'ageUp') this.ageUps.push({ t: this.world.time, team: e.team, age: e.age });
-      }
+      this.record(events);
       for (const l of this.listeners) l(events);
     }
     this.view.paused = this.paused;
     return this.acc / TICK;
+  }
+
+  /** Bookkeeping every event batch needs, whether or not anyone watches it. */
+  private record(events: SimEvent[]): void {
+    for (const e of events) {
+      if (e.type === 'gameOver') this.over = true;
+      else if (e.type === 'ageUp') this.ageUps.push({ t: e.t, team: e.team, age: e.age });
+    }
   }
 
   private sample(): void {
@@ -136,15 +141,26 @@ export class Game {
     this.history.push({ t: this.world.time, army });
   }
 
-  /** Fast-forwards the simulation (used by tests / attract mode). */
+  /**
+   * Fast-forwards the simulation (attract mode, debug `ff=`). Effects and sounds of the skipped
+   * stretch are dropped, but the chart history, ascensions and a game over are kept.
+   */
   fastForward(seconds: number): void {
     const n = Math.round(seconds / TICK);
+    let end: SimEvent | undefined;
     for (let i = 0; i < n && this.world.winner === null; i++) {
       this.ai.update(TICK);
       this.demoAi?.update(TICK);
       this.world.step();
+      if (this.world.time >= this.nextSample) {
+        this.sample();
+        this.nextSample = this.world.time + SAMPLE_EVERY;
+      }
+      const events = this.world.drainEvents();
+      this.record(events);
+      end ??= events.find((e) => e.type === 'gameOver');
     }
-    this.world.drainEvents();
+    if (end) for (const l of this.listeners) l([end]);
   }
 
   render(renderer: Renderer, alpha: number, dt: number): void {
