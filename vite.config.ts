@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 
@@ -14,5 +15,9 @@ export default defineConfig({
   },
   server: {
     host: true,
+  },
+  test: {
+    // Only the project's own tests (not scratch copies under .tmp/).
+    include: ['tests/**/*.test.ts'],
   },
 });
