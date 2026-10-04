@@ -36,7 +36,7 @@ export interface FloatText {
 
 /** Bespoke timed effects drawn with custom code. */
 export interface TimedFx {
-  kind: 'lightning' | 'ring' | 'meteor' | 'vines' | 'ice' | 'beam' | 'flashAt' | 'slash' | 'shockwave' | 'coin';
+  kind: 'lightning' | 'ring' | 'meteor' | 'vines' | 'ice' | 'beam' | 'flashAt' | 'slash' | 'shockwave' | 'coin' | 'pillar';
   x: number;
   y: number;
   x2: number;
@@ -359,6 +359,9 @@ export class Fx {
         case 'coin':
           drawCoin(ctx, f, k);
           break;
+        case 'pillar':
+          drawPillar(ctx, f, k);
+          break;
       }
     }
   }
@@ -479,6 +482,26 @@ function drawIce(ctx: CanvasRenderingContext2D, f: TimedFx, k: number): void {
   ctx.closePath();
   ctx.fill();
   ctx.globalAlpha = 1;
+}
+
+/** A column of light from the ground (x, y) up off the top of the screen. */
+function drawPillar(ctx: CanvasRenderingContext2D, f: TimedFx, k: number): void {
+  const grow = k < 0.15 ? k / 0.15 : 1;
+  const fade = k > 0.55 ? 1 - (k - 0.55) / 0.45 : 1;
+  const w = f.size * (0.25 + 0.45 * grow) * (1 - k * 0.4);
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  const g = ctx.createLinearGradient(f.x - w, 0, f.x + w, 0);
+  const c = f.rgb.join(',');
+  g.addColorStop(0, `rgba(${c},0)`);
+  g.addColorStop(0.35, `rgba(${c},${0.16 * fade})`);
+  g.addColorStop(0.5, `rgba(255,255,255,${0.42 * fade})`);
+  g.addColorStop(0.65, `rgba(${c},${0.16 * fade})`);
+  g.addColorStop(1, `rgba(${c},0)`);
+  ctx.fillStyle = g;
+  ctx.fillRect(f.x - w, -20, w * 2, f.y + 20);
+  ctx.restore();
+  drawGlow(ctx, f.x, f.y, f.size * 1.2, f.rgb, fade * 0.6);
 }
 
 /** A gold coin arcing from a slain foe to the gold counter (x2, y2). */

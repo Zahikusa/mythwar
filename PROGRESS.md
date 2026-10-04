@@ -208,6 +208,7 @@ See DESIGN.md for the game design.
     the Jötunn's club becomes a jagged ice cluster.
 80. [x] Living skies: Asgard's aurora is drawn live (two swaying, breathing layers from a cached
     ribbon canvas) and night themes get a few twinkling stars.
+81. [x] Ascension raises a pillar of light (with rising motes) over the ascending keep.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,

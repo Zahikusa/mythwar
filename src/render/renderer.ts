@@ -319,8 +319,15 @@ export class Renderer {
           const tc = TEAM_COLORS[e.team];
           this.fx.timedFx({ kind: 'shockwave', x, y: g.y, dur: 1.2, layer: 3, size: 300 * this.bodyScale(g), color: '#fff3c4', rgb: tc.rgb });
           this.fx.burst(x, g.y - 80 * this.bodyScale(g), { count: 70, color: '#fff3c4', rgb: [255, 230, 160], speed: 260, life: 1.6, size: 3.2, shape: 'glow', layer: 3, gravity: 40, drag: 1.4 });
+          // A pillar of divine light rises over the keep.
+          const far = L.lanes[0];
+          const keepX = e.team === 0 ? L.field.x + (far.x0 - L.field.x) * 0.44 : L.field.x + L.field.w - (far.x0 - L.field.x) * 0.44;
+          this.fx.timedFx({ kind: 'pillar', x: keepX, y: far.y, dur: 2.2, layer: 3, size: Math.max(40, (far.x0 - L.field.x) * 0.5), rgb: [255, 236, 180] });
+          for (let i = 0; i < 24; i++) {
+            this.fx.add({ x: keepX + (Math.random() - 0.5) * 40, y: far.y - Math.random() * 60, vy: -120 - Math.random() * 160, life: 1.4 + Math.random(), size: 2.2, color: '#fff6d8', rgb: [255, 240, 200], shape: 'glow', layer: 3 });
+          }
           if (e.team === view.playerTeam) {
-            this.fx.flash = 0.8;
+            this.fx.flash = 0.6;
             this.fx.flashColor = '255,244,214';
             this.setTheme(e.age);
           }
