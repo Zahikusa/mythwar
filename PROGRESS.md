@@ -95,8 +95,9 @@ See DESIGN.md for the game design.
 - Difficulty calibration vs scripted naive players (`node scripts/bots.ts 10`,
   `node scripts/calib.ts counter adept 90`): a bot that follows the Counter! badge beats Novice
   ~83%, Adept ~11%, Master 0/30 (run #2 numbers, n=90; run #1 build measured 89% / 19% with the
-  same n). Bots don't use turrets/blessings/shrines/powers, so real players should do better.
-  Default difficulty: Novice. (See #172.)
+  same n). The `smart` bot (counters + powers + turrets + blessings + saves to ascend) wins vs
+  Novice 100%, Adept 72%, Master 23%, Mythic 8% — the intended ladder. Default difficulty:
+  Novice. (See #172.)
 
 - Coach tips (`src/ui/coach.ts`), lane danger pulses, "Counter!" card badge.
 - PWA: manifest (landscape, fullscreen), offline service worker; phones go fullscreen and
@@ -440,10 +441,15 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 171. [x] Render perf nits: `fx.update` compacts texts/timed in place, the coin cap uses a counter
     (`coinsInFlight`), `unitScreen` runs once per creature per frame (shadow pass result reused).
     (Per-gate portal gradients left as is: 6 per frame.)
-172. [ ] Calibration drift: after the fairness fixes (#125–127) the counter-following bot's wins vs
+172. [x] Calibration drift: after the fairness fixes (#125–127) the counter-following bot's wins vs
     Adept dropped 19% → ~11% (n=90). Tried Adept variants (think 1.6–1.9 s, income 85–90%): bot
     wins 9–16/90 with no clear trend, i.e. noise at this n — kept unchanged. If human testers find
     Adept too hard, ease `AI_PROFILES.adept` (think time / incomeMult) a notch.
+    Resolved with better evidence: a new `smart` bot (`scripts/bots.ts`: counters, casts powers,
+    mounts turrets where foes come closest, buys blessings with spare gold, and saves the tithe
+    once it has the XP) wins vs Novice 90/90, Adept 65/90 (72%), Master 14/60 (23%), Mythic 5/60
+    (8%). The naive bots lose to Adept mainly because they never save to ascend. A sensible
+    ladder; no retune.
 173. [x] Coach tips say "Click" instead of "Tap" on desktop; the drag ghost scales from its corner
     so it stays under the pointer on zoomed HUDs (smoke-checked at QHD).
 174. [x] Manifest icons were "any maskable" although the icon has transparent rounded corners and

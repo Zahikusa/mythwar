@@ -1,5 +1,5 @@
 /** Naive scripted players used to calibrate AI difficulty against human-like play. */
-import { AGES, AGE_UNITS, LANE_COUNT, TICK, counterOf } from '../src/sim/data.ts';
+import { AGES, AGE_TURRETS, AGE_UNITS, BLESSING_ORDER, LANE_COUNT, TICK, blessingCost, counterOf } from '../src/sim/data.ts';
 import type { UnitClass } from '../src/sim/data.ts';
 import { Rng } from '../src/sim/rng.ts';
 import type { Team } from '../src/sim/types.ts';
@@ -8,7 +8,12 @@ import { AI_PROFILES, AiController } from '../src/ai/ai.ts';
 import type { Difficulty } from '../src/ai/ai.ts';
 import { World as WorldClass } from '../src/sim/world.ts';
 
-export type BotKind = 'spam' | 'focus' | 'reactive' | 'counter';
+/**
+ * spam: random creatures, random lanes · focus: everything down the middle · reactive: defends the
+ * most threatened lane · counter: reactive + follows the Counter! badge · smart: counter + mounts
+ * turrets on threatened lanes and buys blessings with spare gold (closest to a real player).
+ */
+export type BotKind = 'spam' | 'focus' | 'reactive' | 'counter' | 'smart';
 
 export class Bot {
   private rng: Rng;
@@ -45,10 +50,16 @@ export class Bot {
       w.apply({ type: 'power', team: this.team, lane });
     }
     const roster = AGE_UNITS[me.age].filter((u) => u.cls !== 'legend');
+    // The smart bot saves the tithe once it has the XP, unless foes are close to its gates.
+    if (this.kind === 'smart' && me.age < AGES.length - 1 && me.xp >= AGES[me.age + 1].xpRequired) {
+      let near = false;
+      for (let l = 0; l < LANE_COUNT; l++) for (const e of w.enemiesInLane(this.team, l)) if ((this.team === 0 ? e.x : 1000 - e.x) < 350) near = true;
+      if (!near) return;
+    }
     for (let i = 0; i < 2; i++) {
       let def = this.rng.pick(roster);
       let lane = this.kind === 'focus' ? 1 : this.rng.int(LANE_COUNT);
-      if (this.kind === 'reactive' || this.kind === 'counter') {
+      if (this.kind === 'reactive' || this.kind === 'counter' || this.kind === 'smart') {
         // Sends to the lane where enemies are closest to home.
         let bestD = Infinity;
         for (let l = 0; l < LANE_COUNT; l++) {
@@ -61,7 +72,7 @@ export class Bot {
           }
         }
       }
-      if (this.kind === 'counter') {
+      if (this.kind === 'counter' || this.kind === 'smart') {
         // Like a player following the "Counter!" badge for the lane they are defending.
         const weight: Record<string, number> = { guardian: 0, hunter: 0, mystic: 0, legend: 0 };
         for (const e of w.enemiesInLane(this.team, lane)) weight[e.def.cls] += e.def.cost;
@@ -71,6 +82,35 @@ export class Bot {
         def = roster.find((u) => u.cls === want) ?? def;
       }
       w.apply({ type: 'train', team: this.team, unitId: def.id, lane });
+    }
+    if (this.kind === 'smart') this.invest();
+  }
+
+  /** Turrets where foes come closest (when missing or outdated), blessings when gold piles up. */
+  private invest(): void {
+    const w = this.world;
+    const me = w.players[this.team];
+    let lane = -1;
+    let bestD = Infinity;
+    for (let l = 0; l < LANE_COUNT; l++) {
+      const cur = me.turrets[l].def;
+      if (cur && cur.age >= me.age) continue;
+      for (const e of w.enemiesInLane(this.team, l)) {
+        const d = this.team === 0 ? e.x : 1000 - e.x;
+        if (d < bestD) {
+          bestD = d;
+          lane = l;
+        }
+      }
+    }
+    const [bolt, blast] = AGE_TURRETS[me.age];
+    if (lane >= 0 && bestD < 600) {
+      const def = w.enemiesInLane(this.team, lane).length >= 3 ? blast : bolt;
+      if (me.gold >= def.cost + 60) w.apply({ type: 'buildTurret', team: this.team, lane, turretId: def.id });
+    }
+    for (const id of BLESSING_ORDER) {
+      const cost = blessingCost(me.blessings[id], me.age);
+      if (me.gold > cost + 400) w.apply({ type: 'bless', team: this.team, blessing: id });
     }
   }
 }
@@ -90,7 +130,7 @@ export function botMatch(bot: BotKind, ai: Difficulty, seed: number): { winner: 
 
 if ((process.argv[1] ?? '').endsWith('bots.ts')) {
   const n = Number(process.argv[2] ?? 10);
-  for (const bot of ['spam', 'focus', 'reactive', 'counter'] as BotKind[]) {
+  for (const bot of ['spam', 'focus', 'reactive', 'counter', 'smart'] as BotKind[]) {
     const row: string[] = [];
     for (const ai of ['novice', 'adept', 'master', 'mythic'] as Difficulty[]) {
       let botWins = 0;
