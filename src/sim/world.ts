@@ -376,10 +376,11 @@ export class World {
         const item = p.queue[cmd.index];
         if (!item) return { ok: false, reason: 'Nothing to cancel' };
         const def = UNITS[item.unitId];
+        const wasTraining = cmd.index === this.trainingIndex(cmd.team);
         p.queue.splice(cmd.index, 1);
         p.gold += def.cost;
         p.stats.goldSpent -= def.cost;
-        if (cmd.index === 0) p.trainProgress = 0;
+        if (wasTraining) p.trainProgress = 0;
         return { ok: true };
       }
       case 'ageUp': {
@@ -487,17 +488,39 @@ export class World {
     p.xp += PASSIVE_XP * dt;
     if (p.powerCooldown > 0) p.powerCooldown = Math.max(0, p.powerCooldown - dt);
 
-    if (p.queue.length > 0) {
-      const item = p.queue[0];
+    // Trained creatures waiting for room at a jammed gate step out as soon as it clears.
+    for (let i = 0; i < p.queue.length; i++) {
+      const item = p.queue[i];
+      if (!item.ready) continue;
       const def = UNITS[item.unitId];
-      p.trainProgress = Math.min(def.trainTime, p.trainProgress + dt);
-      if (p.trainProgress >= def.trainTime && this.canSpawn(p.team, item.lane, def)) {
+      if (this.canSpawn(p.team, item.lane, def)) {
         this.spawnUnit(p.team, item.lane, def);
-        p.queue.shift();
-        p.trainProgress = 0;
-        if (p.queue.length > 0) this.emit({ type: 'trainStart', team: p.team });
+        p.queue.splice(i, 1);
+        i--;
       }
     }
+    // Training works on the first creature that isn't ready yet.
+    const idx = p.queue.findIndex((q) => !q.ready);
+    if (idx >= 0) {
+      const item = p.queue[idx];
+      const def = UNITS[item.unitId];
+      p.trainProgress = Math.min(def.trainTime, p.trainProgress + dt);
+      if (p.trainProgress >= def.trainTime) {
+        p.trainProgress = 0;
+        if (this.canSpawn(p.team, item.lane, def)) {
+          this.spawnUnit(p.team, item.lane, def);
+          p.queue.splice(idx, 1);
+        } else {
+          item.ready = true; // don't hold up summons bound for other lanes
+        }
+        if (p.queue.some((q) => !q.ready)) this.emit({ type: 'trainStart', team: p.team });
+      }
+    }
+  }
+
+  /** Index of the queue item currently in training (-1 when everything left is ready/empty). */
+  trainingIndex(team: Team): number {
+    return this.players[team].queue.findIndex((q) => !q.ready);
   }
 
   spawnX(team: Team, def: UnitDef): number {

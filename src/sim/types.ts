@@ -66,6 +66,8 @@ export interface Projectile {
 export interface QueueItem {
   unitId: string;
   lane: number;
+  /** Fully trained, waiting for room at its lane's gate (training moves on to the next item). */
+  ready?: boolean;
 }
 
 export interface TurretSlot {

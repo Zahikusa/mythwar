@@ -75,6 +75,24 @@ describe('training and movement', () => {
     expect(r.ok).toBe(false);
   });
 
+  it('a jammed gate does not hold up summons for other lanes', () => {
+    const w = new World();
+    rich(w);
+    // Our own creature stands in the top-lane gateway (rooted in place).
+    const blocker = w.spawnUnit(0, 0, UNITS.treant, UNITS.treant.radius + 2);
+    blocker.def = { ...blocker.def, speed: 0 };
+    w.apply({ type: 'train', team: 0, unitId: 'redcap', lane: 0 });
+    w.apply({ type: 'train', team: 0, unitId: 'redcap', lane: 2 });
+    run(w, UNITS.redcap.trainTime * 2 + 0.2);
+    expect(w.lanes[2].some((u) => u.team === 0)).toBe(true);
+    expect(w.players[0].queue).toHaveLength(1);
+    expect(w.players[0].queue[0].ready).toBe(true);
+    // Once the gate clears, the waiting creature steps out.
+    blocker.alive = false;
+    run(w, 0.1);
+    expect(w.players[0].queue).toHaveLength(0);
+  });
+
   it('cancel refunds', () => {
     const w = new World();
     const g0 = w.players[0].gold;

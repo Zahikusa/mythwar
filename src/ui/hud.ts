@@ -876,10 +876,15 @@ export class Hud {
       for (const slot of [...this.el.queue.querySelectorAll('.qslot')]) slot.remove();
       for (let n = q.length; n < QUEUE_MAX; n++) this.el.queue.appendChild(h('div', { class: 'qslot' }));
     }
+    const training = g.world.trainingIndex(g.playerTeam);
     for (let n = 0; n < chips.length; n++) {
-      const prog = n === 0 ? Math.min(1, me.trainProgress / UNITS[q[0].unitId].trainTime) : 0;
+      const ready = !!q[n]?.ready;
+      const prog = ready ? 1 : n === training ? Math.min(1, me.trainProgress / UNITS[q[n].unitId].trainTime) : 0;
       setStyle(chips[n].prog, 'width', `${(prog * 100).toFixed(1)}%`);
-      toggle(chips[n].el, 'waiting', n === 0 && prog >= 1);
+      // Gold border = trained, waiting for room at a jammed gate.
+      toggle(chips[n].el, 'waiting', ready);
+      const title = ready ? `${UNITS[q[n].unitId].name}: ready — waiting for room at the ${LANE_NAMES[q[n].lane].toLowerCase()} gate (tap to cancel)` : `${UNITS[q[n].unitId].name} → ${LANE_NAMES[q[n].lane]} lane (tap to cancel)`;
+      if (chips[n].el.title !== title) chips[n].el.title = title;
     }
   }
 
