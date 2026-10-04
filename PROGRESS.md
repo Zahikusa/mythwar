@@ -404,8 +404,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     menu screens use `justify-content: safe center` (overflow scrolls instead of leaving the
     top); `mobile-diff-se` (667×375) scenario fits.
 161. [x] Turret/blessing panel headers show your gold (phones: the panel covers the gold pill).
-162. [ ] Mobile queue chips (bottom-left) overlap the bottom-lane gate: tapping the gate for a
-    turret can cancel a summon instead.
+162. [x] Mobile queue chips start just past the near lane's gate (`--qx` from the layout), so
+    tapping the gate for turrets can't hit a chip.
 163. [x] Mobile text ≥ 10 px (difficulty chip labels in sentence case to fit, XP text, action
     names, Counter! badge).
 164. [x] Mobile pause/speed buttons 36 px tall (action column moved down), panel close 36 px.

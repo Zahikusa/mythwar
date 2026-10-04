@@ -309,6 +309,8 @@ export class Hud {
     // Zoomed HUD parts (zoom --hs, set on the stage) lay themselves out in unzoomed px.
     setStyle(this.root, '--bottom-z', `${layout.insets.bottom / layout.hud}px`);
     setStyle(this.root, '--side', `${layout.insets.left}px`);
+    // Phones: queue chips start just past the near lane's gate (tapping the gate opens turrets).
+    setStyle(this.root, '--qx', `${Math.round(layout.lanes[LANE_COUNT - 1].x0 + 6)}px`);
     setStyle(this.root, '--ui', String(Math.max(0.72, Math.min(1.25, layout.ui))));
     // Lane tabs sit just behind the player's gates.
     for (let i = 0; i < LANE_COUNT; i++) {

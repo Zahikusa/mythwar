@@ -1920,7 +1920,7 @@ svg {
 }
 
 .hud.mobile .queue {
-  left: calc(var(--side) + 6px);
+  left: var(--qx, calc(var(--side) + 6px));
   bottom: 4px;
   transform: none;
   gap: 4px;
