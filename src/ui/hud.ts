@@ -865,8 +865,11 @@ export class Hud {
     // Ascend
     if (me.age < MAX_AGE) {
       const next = AGES[me.age + 1];
+      // The fill tracks XP; once the XP is there it tracks the gold for the tithe (gold tint), so
+      // saving up visibly fills the button.
       const xpK = Math.min(1, me.xp / next.xpRequired);
-      setStyle(E.ascFill, 'height', `${(xpK * 100).toFixed(1)}%`);
+      const fillK = xpK >= 1 ? Math.min(1, Math.max(0, me.gold) / next.ascendCost) : xpK;
+      setStyle(E.ascFill, 'height', `${(fillK * 100).toFixed(1)}%`);
       const why = w.ageUpBlocker(g.playerTeam);
       // With the XP in hand, say exactly how much gold is still missing.
       const short = Math.ceil(next.ascendCost - me.gold);
