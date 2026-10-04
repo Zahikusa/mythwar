@@ -8,6 +8,16 @@ Celestial realm — and topple the enemy citadel.
 Everything is procedural: all creatures, citadels and effects are drawn in code (Canvas 2D)
 and all sound and music is synthesized with WebAudio. No asset files.
 
+![Title screen over a live AI battle](docs/title.jpg)
+
+| Jade Empire battle | Starfall in the Celestial age |
+|---|---|
+| ![Battle](docs/battle-jade.jpg) | ![Starfall](docs/starfall.jpg) |
+
+| Phone (landscape thumb layout) | All 16 creatures (idle / walk / attack) |
+|---|---|
+| ![Mobile](docs/mobile.jpg) | ![Creatures](docs/creatures.jpg) |
+
 ## Run it
 
 ```bash
