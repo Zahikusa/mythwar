@@ -177,8 +177,7 @@ See DESIGN.md for the game design.
 58. [x] `?play=` auto-starts on phones requested fullscreen without a gesture (console
     warning); `immersive()` now checks `navigator.userActivation`.
 59. [x] Phone panels are near-opaque so the gold pill no longer bleeds through.
-60. [ ] Results screen on phones hides the champion portrait (compact layout); consider a
-    small inline portrait next to the verdict instead.
+60. [x] Phone results show a small champion portrait beside the verdict (was hidden).
 61. [ ] `src/sim/data.ts`: Elder Dragon beats equal gold of any class by 59–86% value
     (scripts/classwar battle); fine as a one-at-a-time capstone, but re-check if players
     report it dominating late Ragnarök games.

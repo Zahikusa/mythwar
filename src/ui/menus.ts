@@ -351,8 +351,12 @@ export class Menus {
       }
     }
     el.append(
-      h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: won ? 'The enemy citadel has fallen.' : 'Your citadel lies in ruins.' })),
-      h('div', { class: 'vportrait' }, portrait(champion.id, 96, me, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
+      h(
+        'div',
+        { class: 'vhead' },
+        h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: won ? 'The enemy citadel has fallen.' : 'Your citadel lies in ruins.' })),
+        h('div', { class: 'vportrait' }, portrait(champion.id, 96, me, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
+      ),
       h('div', { class: 'vtime', text: `Battle length ${fmtTime(world.time)}` }),
       h('div', { class: 'vstats' }, table, history.length >= 3 ? armyChart(history, me, AI_PROFILES[difficulty].name, ageUps) : null),
       h(

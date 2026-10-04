@@ -563,6 +563,13 @@
   filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.6));
 }
 
+.vhead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
 .vportrait {
   display: flex;
   flex-direction: column;
@@ -850,8 +857,20 @@
     font-size: 48px;
   }
 
-  .vportrait {
-    display: none;
+  .vhead {
+    flex-direction: row;
+    gap: 14px;
+  }
+
+  .vportrait canvas {
+    width: 56px !important;
+    height: 56px !important;
+  }
+
+  .vcap {
+    font-size: 10px;
+    max-width: 120px;
+    text-align: center;
   }
 
   .vstats {
