@@ -82,7 +82,8 @@ export class App {
       },
     });
     this.input = new Input(this.canvas, this.renderer, this.hud);
-    this.coach = new Coach(this.stage, this.settings);
+    // Coach tips live in the HUD layer: above lane tabs, below card tooltips.
+    this.coach = new Coach(this.stage, this.settings, this.hud.root);
     this.input.onPause = () => this.escape();
     this.menus = new Menus(this.stage, this.settings, {
       play: (d) => this.play(d),
@@ -436,7 +437,10 @@ export class App {
     }
     // HUD buttons behind a menu can't be focused or keyed (a focused Pause button + Enter...).
     const inert = this.menus.current !== 'none';
-    if (this.hud.root.inert !== inert) this.hud.root.inert = inert;
+    if (this.hud.root.inert !== inert) {
+      this.hud.root.inert = inert;
+      this.hud.root.classList.toggle('under-menu', inert);
+    }
     const g = this.game;
     if (g) {
       // The title backdrop restarts when its battle ends.

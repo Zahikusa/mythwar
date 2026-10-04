@@ -334,6 +334,8 @@
   grid-template-columns: 1fr 1fr 1fr;
   gap: 4px;
   width: 100%;
+  /* Same height on every card, whatever the blurb length. */
+  margin-top: auto;
 }
 
 .dchips span {
@@ -875,6 +877,8 @@
   .screen.pause,
   .screen.difficulty {
     justify-content: center;
+    /* If it doesn't fit, overflow downwards (scrollable) rather than off the top. */
+    justify-content: safe center;
   }
 
   .screen h2 {
@@ -940,7 +944,10 @@
   }
 
   .dchips b {
-    font-size: 8px;
+    font-size: 10px;
+    letter-spacing: 0;
+    /* Sentence case is narrower than capitals: keeps 10 px labels inside small cards. */
+    text-transform: none;
   }
 
   .hbook {
@@ -1020,7 +1027,8 @@
   }
 }
 
-@container stage (max-width: 720px) {
+/* Narrow but tall stages only: a 2×2 grid would not fit a short landscape phone (667×375). */
+@container stage (max-width: 720px) and (min-height: 521px) {
   .diffs {
     grid-template-columns: repeat(2, minmax(140px, 1fr));
   }

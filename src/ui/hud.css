@@ -463,6 +463,18 @@ svg {
   display: none;
 }
 
+/* Phones: a menu (pause, results) takes the whole small screen; the HUD would only clash with it. */
+.hud.mobile.under-menu {
+  visibility: hidden;
+}
+
+/* Thumb-sized close buttons on phones. */
+.hud.mobile .pclose {
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+}
+
 .panel.keyspanel {
   right: auto;
   left: 50%;
@@ -1807,7 +1819,7 @@ svg {
 }
 
 .hud.mobile .xptext {
-  font-size: 9px;
+  font-size: 10px;
   line-height: 12px;
 }
 
@@ -1820,7 +1832,7 @@ svg {
 
 .hud.mobile .sysbtn {
   width: calc(50% - 3px);
-  height: 30px;
+  height: 36px;
   border-radius: 9px;
 }
 
@@ -1858,7 +1870,7 @@ svg {
   bottom: 22px;
   transform: translate(-50%, 0) scale(0.6);
   border-radius: 6px;
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .hud.mobile .card.advised .advice {
@@ -1905,7 +1917,7 @@ svg {
 
 .hud.mobile .acts {
   right: 4px;
-  top: 40px;
+  top: 46px;
   bottom: 4px;
   height: auto;
   width: calc(var(--side) - 8px);
@@ -1934,7 +1946,7 @@ svg {
 }
 
 .hud.mobile .act .aname {
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .hud.mobile .act .aico {
@@ -1986,7 +1998,7 @@ svg {
 }
 
 .hud.mobile .toast {
-  top: 76px;
+  top: 84px;
   font-size: 12px;
 }
 

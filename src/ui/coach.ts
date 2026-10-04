@@ -129,14 +129,14 @@ export class Coach {
   /** Player creatures killed close to the enemy gate this battle. */
   diedAtEnemyGate = 0;
 
-  constructor(stage: HTMLElement, settings: Settings) {
+  constructor(stage: HTMLElement, settings: Settings, parent: HTMLElement = stage) {
     this.stage = stage;
     this.settings = settings;
     this.text = h('div', { class: 'ctext' });
     const close = h('button', { class: 'cclose', text: 'Got it' });
     onTap(close, () => this.finish());
     this.el = h('div', { class: 'coach' }, h('div', { class: 'cicon', text: '?' }), this.text, close);
-    stage.appendChild(this.el);
+    parent.appendChild(this.el);
   }
 
   /** CSS zoom matching the large-screen desktop HUD. */

@@ -397,6 +397,23 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     comes and that counters take 25% less in return; controls card lists gate-click, ?/H,
     Backspace/Del; turret DPS includes Bastion (+N%); "top / middle / bottom"; queue chips say
     click or tap per device. Screenshot scenarios `mobile-howto-4/5` (667×375 fits).
+159. [ ] Rotated portrait ignores safe-area insets (`app.ts resize`): in standalone/PWA mode the
+    status bar / Dynamic Island covers the card column, the home bar the action column.
+160. [x] Difficulty screen on small phones: the 2×2 grid now only applies to tall stages, compact
+    menu screens use `justify-content: safe center` (overflow scrolls instead of leaving the
+    top); `mobile-diff-se` (667×375) scenario fits.
+161. [ ] Mobile turret/blessing panels cover the gold pill: you can't see your gold while spending.
+162. [ ] Mobile queue chips (bottom-left) overlap the bottom-lane gate: tapping the gate for a
+    turret can cancel a summon instead.
+163. [x] Mobile text ≥ 10 px (difficulty chip labels in sentence case to fit, XP text, action
+    names, Counter! badge).
+164. [x] Mobile pause/speed buttons 36 px tall (action column moved down), panel close 36 px.
+165. [x] Mobile toast moved below the gold pill (top 84 px).
+166. [x] Phones hide the HUD while a menu (pause, results) is open (`.under-menu`, toggled with
+    `inert`): no verdict over the clock, no pause buttons over the side columns.
+167. [ ] How-to page 3: the Mystic→Guardian arrowhead covers the last letter of "Guardian".
+168. [x] Coach tips now live inside the HUD layer (z 15): above lane tabs, below card tooltips.
+169. [x] Difficulty chip rows line up across cards (`margin-top: auto`).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
