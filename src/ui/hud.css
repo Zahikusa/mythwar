@@ -931,6 +931,27 @@ svg {
   margin-bottom: 4px;
 }
 
+.act .akey {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--muted);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+.act.small .akey {
+  top: 2px;
+  left: 5px;
+}
+
+.hud.mobile .act .akey,
+.act.turretbtn.outdated .akey {
+  display: none;
+}
+
 .act.power {
   width: 98px;
   height: 100%;

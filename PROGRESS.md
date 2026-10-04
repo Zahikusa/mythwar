@@ -292,6 +292,12 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     their ice block.
 118. [ ] Lane paths could show faint footprint/wear along the middle over time (cosmetic).
 119. [x] Title backdrop has a slow cinematic camera drift (off when shake/reduced motion is off).
+120. [x] Desktop action buttons show their keys (Space / U / T / B) like the cards' 1–4.
+121. [x] Phones vibrate briefly when a god power is cast.
+122. [ ] The enemy's queued/ready creatures are invisible; consider showing a small "incoming"
+    marker at enemy gates 1 s before a creature emerges (portal flare) to reward attention.
+123. [ ] On very large desktop screens (2560×1440+) the HUD stays at fixed pixel sizes; scale
+    the bottom bar and cards with `--ui` for better proportion.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

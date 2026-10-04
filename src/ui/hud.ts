@@ -153,17 +153,17 @@ export class Hud {
     E.powerCd = h('div', { class: 'pcd' });
     E.powerTime = h('div', { class: 'ptime' });
     E.powerName = h('div', { class: 'aname' });
-    E.power = h('button', { class: 'act power', title: 'God power (Space)' }, E.powerIcon, E.powerCd, E.powerTime, E.powerName);
+    E.power = h('button', { class: 'act power', title: 'God power (Space)' }, E.powerIcon, E.powerCd, E.powerTime, E.powerName, h('span', { class: 'akey', text: 'Space' }));
     E.power.addEventListener('pointerdown', (e) => this.startDrag(e as PointerEvent, null, true));
 
     E.ascFill = h('div', { class: 'ascfill' });
     E.ascSub = h('div', { class: 'asub' });
-    E.ascend = h('button', { class: 'act ascend', title: 'Ascend to the next age (U)' }, E.ascFill, h('i', { class: 'aico', html: ICONS.ascend }), h('div', { class: 'aname', text: 'Ascend' }), E.ascSub);
+    E.ascend = h('button', { class: 'act ascend', title: 'Ascend to the next age (U)' }, E.ascFill, h('i', { class: 'aico', html: ICONS.ascend }), h('div', { class: 'aname', text: 'Ascend' }), E.ascSub, h('span', { class: 'akey', text: 'U' }));
     onTap(E.ascend, () => this.tryAscend());
 
-    E.turretBtn = h('button', { class: 'act small turretbtn', title: 'Turrets (T)' }, h('i', { class: 'aico', html: ICONS.tower }), h('div', { class: 'aname', text: 'Turrets' }));
+    E.turretBtn = h('button', { class: 'act small turretbtn', title: 'Turrets (T)' }, h('i', { class: 'aico', html: ICONS.tower }), h('div', { class: 'aname', text: 'Turrets' }), h('span', { class: 'akey', text: 'T' }));
     onTap(E.turretBtn, () => this.togglePanel('turret'));
-    E.blessBtn = h('button', { class: 'act small blessbtn', title: 'Blessings (B)' }, h('i', { class: 'aico', html: ICONS.bless }), h('div', { class: 'aname', text: 'Blessings' }));
+    E.blessBtn = h('button', { class: 'act small blessbtn', title: 'Blessings (B)' }, h('i', { class: 'aico', html: ICONS.bless }), h('div', { class: 'aname', text: 'Blessings' }), h('span', { class: 'akey', text: 'B' }));
     onTap(E.blessBtn, () => this.togglePanel('bless'));
     const acts = h('div', { class: 'acts' }, E.power, E.ascend, h('div', { class: 'actpair' }, E.turretBtn, E.blessBtn));
 

@@ -67,6 +67,7 @@ export class App {
       sound: (k) => {
         this.audio.ui(k);
         if (k === 'summon') this.buzz(8);
+        else if (k === 'power') this.buzz([20, 30, 40]);
         else if (k === 'error') this.buzz([6, 40, 6]);
       },
       toggleMute: () => {
