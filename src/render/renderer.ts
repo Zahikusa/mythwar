@@ -77,6 +77,8 @@ export class Renderer {
   dpr = 1;
   quality: 'high' | 'low' = 'high';
   shakeEnabled = true;
+  /** Slow camera drift (title screen backdrop). */
+  cinematic = false;
   /** Debug/profiling: names of render passes to skip (see scripts/perf2.mjs). */
   readonly skip = new Set<string>();
   /** Stage position of the HUD gold counter (coins fly there), or null when hidden. */
@@ -572,6 +574,13 @@ export class Renderer {
     const shx = sh > 0 ? (Math.random() - 0.5) * sh : 0;
     const shy = sh > 0 ? (Math.random() - 0.5) * sh : 0;
     ctx.translate(shx, shy);
+    if (this.cinematic) {
+      // Title screen: a slow, gentle camera drift (slight zoom hides the edges).
+      const z = 1.025;
+      ctx.translate(L.width / 2 + Math.sin(this.time * 0.11) * 10, L.height / 2 + Math.sin(this.time * 0.083) * 4);
+      ctx.scale(z, z);
+      ctx.translate(-L.width / 2, -L.height / 2);
+    }
 
     // Backdrop (cross-fading between ages)
     if (!this.skip.has('bg')) {

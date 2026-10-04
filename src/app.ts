@@ -406,6 +406,7 @@ export class App {
       // The title backdrop restarts when its battle ends.
       if (this.state === 'title' && g.over) this.toTitleBackdrop();
       this.renderer.coinTarget = this.state === 'playing' ? this.coinTarget : null;
+      this.renderer.cinematic = this.state === 'title' && this.settings.shake;
       const alpha = g.advance(dt);
       if (this.state === 'playing' && !g.paused && g.world.time - this.lastSave >= 5) this.persist();
       this.audio.intensity = this.battleIntensity(g);

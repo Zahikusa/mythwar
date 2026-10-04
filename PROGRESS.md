@@ -291,7 +291,7 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 117. [x] Frozen creatures are drawn frost-tinted (ctx.filter; ignored where unsupported) inside
     their ice block.
 118. [ ] Lane paths could show faint footprint/wear along the middle over time (cosmetic).
-119. [ ] Title: subtle parallax drift of the backdrop camera to make the menu feel alive.
+119. [x] Title backdrop has a slow cinematic camera drift (off when shake/reduced motion is off).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
