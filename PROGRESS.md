@@ -257,8 +257,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     counters cached instead of `querySelector` per frame.
 98. [x] Gold popups from kills close together (space/time) merge into one growing "+N"
     (e.g. a god power killing six creatures shows "+114").
-99. [ ] Mobile ascend button sub-label is 8 px; consider dropping the gold cost there in favour
-    of a larger "need Ng" line.
+99. [x] Phone Ascend sub-label: 10 px bold, compact ("150g" / "need 97g"); the age name stays
+    in the tooltip/banner.
 100. [x] Enemy god-power icon beside the enemy age name: dim while recharging (tooltip with
     seconds left), glowing when ready — skilled players can bait or brace for it.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
@@ -266,6 +266,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 92. [x] Card tooltips also show on keyboard focus (focus-visible).
 93. [x] Backdrop drawn 1:1 (no resampling); during shake the exposed margin is pre-filled.
     (No measurable change in headless software raster; avoids resampling on real GPUs.)
+101. [ ] Settings → "Reset records" button (difficulty W/L) for players who want a fresh start.
+102. [ ] Title: show the player's best result per difficulty on the title too (e.g. a small
+    laurel icon once Mythic is beaten).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

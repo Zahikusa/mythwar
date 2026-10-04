@@ -797,7 +797,10 @@ export class Hud {
       const why = w.ageUpBlocker(g.playerTeam);
       // With the XP in hand, say exactly how much gold is still missing.
       const short = Math.ceil(next.ascendCost - me.gold);
-      setText(E.ascSub, me.xp >= next.xpRequired && short > 0 ? `${next.name} · need ${fmt(short)}g` : `${next.name} · ${fmt(next.ascendCost)}g`);
+      const compact = this.layoutInfo?.mode === 'mobile';
+      const needLine = compact ? `need ${fmt(short)}g` : `${next.name} · need ${fmt(short)}g`;
+      const costLine = compact ? `${fmt(next.ascendCost)}g` : `${next.name} · ${fmt(next.ascendCost)}g`;
+      setText(E.ascSub, me.xp >= next.xpRequired && short > 0 ? needLine : costLine);
       toggle(E.ascend, 'ready', !why);
       toggle(E.ascend, 'xpready', me.xp >= next.xpRequired && !!why);
       const title = `Ascend to ${next.name} (U): needs ${fmt(next.xpRequired)} XP and ${fmt(next.ascendCost)} gold. New creatures, turrets, god power and a stronger citadel.`;
