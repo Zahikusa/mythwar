@@ -374,6 +374,9 @@ export class App {
   /** Short vibration on phones (tied to the screen-shake setting). */
   private buzz(pattern: number | number[]): void {
     if (this.mode !== 'mobile' || !this.settings.shake) return;
+    // Vibration (like audio) needs the user to have touched the page at least once.
+    const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+    if (ua && !ua.hasBeenActive) return;
     try {
       navigator.vibrate?.(pattern);
     } catch {

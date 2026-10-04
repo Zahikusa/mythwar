@@ -175,6 +175,9 @@ export class Audio {
   // -------------------------------------------------------------------------
 
   ui(kind: string): void {
+    // Browsers only allow audio after a tap/click/key; before that, stay silent (no warnings).
+    const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+    if (ua && !ua.hasBeenActive && !this.ctx) return;
     this.ensure();
     if (!this.ctx) return;
     const saved = this.ambience;

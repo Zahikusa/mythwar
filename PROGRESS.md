@@ -494,6 +494,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     tithe; never cast the god power; no turrets; enemy held the shrines; else the Counter! badge)
     or, after a win, "Ready for more? Try <next difficulty>". Unit-tested (`tests/tips.test.ts`);
     fits the 844×390 phone results screen.
+186. [x] UI sounds and vibration wait for the first user activation (`navigator.userActivation`):
+    before any tap, a game event (e.g. a fast-forwarded defeat) created the AudioContext and
+    called `vibrate`, logging Chrome autoplay warnings / a "blocked vibrate" console error.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
