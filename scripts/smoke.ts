@@ -76,7 +76,7 @@ async function laneScreen(page: Page, lane: number, frac = 0.4): Promise<{ x: nu
 async function resumeFlow(page: Page): Promise<void> {
   console.log('== autosave / continue ==');
   await page.setViewport({ width: 1600, height: 900, deviceScaleFactor: 1 });
-  await page.goto(`${base}/?play=adept&seed=13`, { waitUntil: 'load' });
+  await page.goto(`${base}/?play=adept&seed=13&ff=25`, { waitUntil: 'load' });
   await sleep(1500);
   const saved = await page.evaluate(() => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;
@@ -102,6 +102,14 @@ async function resumeFlow(page: Page): Promise<void> {
   check('continue restores the battle, paused', st.state === 'playing' && st.paused && st.menu === 'pause' && Math.abs(st.time - saved.time) < 0.25 && Math.abs(st.gold - saved.gold) < 2 && st.queue === 1, JSON.stringify({ saved, st }));
   const summary = await page.evaluate(() => document.querySelector('.psummary')?.textContent ?? '');
   check('the continued battle shows its pause summary', summary.includes('foes slain'), summary);
+  // Creatures already on the field are drawn in full while paused (not mid fade-in at alpha 0).
+  const shown = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    const w = app.game.world;
+    const old = w.units.filter((u: any) => u.alive && w.time - u.bornAt > 0.5);
+    return { creatures: old.length, faded: old.filter((u: any) => (app.renderer.vis.get(u.id)?.spawn ?? 0) < 1).length };
+  });
+  check('a continued battle shows its creatures while paused', shown.creatures > 0 && shown.faded === 0, JSON.stringify(shown));
   // Leaving the battle abandons the save.
   await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.toTitle());
   await sleep(300);

@@ -548,9 +548,12 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
 200. [ ] Accessibility names: blessing buy buttons named only by price, queue chips by one letter,
     lane tabs "▶", mute button has no `aria-pressed`; menus lack dialog roles; hidden how-to
     pages are only opacity 0; `.res` tooltips dead (`pointer-events:none`).
-201. [ ] Continued saved battle shows no creatures while paused: renderer fade-in (`v.spawn`) only
+201. [x] Continued saved battle shows no creatures while paused: renderer fade-in (`v.spawn`) only
     advances with frame time (0 while paused) and `reset()` clears it, so on Continue every
     creature is alpha 0 until Resume, then all pop in at once (`renderer.ts:1092,1138,1160`).
+    Now a creature's fade-in starts from its age in sim time (`simTime - bornAt`), so creatures
+    already on the field are drawn in full (also fixes the pop-in on the fast-forwarded title
+    battle). Smoke check: a continued battle (fast-forwarded 25 s) shows its 7 creatures.
 202. [ ] Turrets float in mid-air while the losing citadel collapses (`renderer.ts:786` draws them at
     the original gate top; gates sink by collapse²·60 px in `citadel.ts:351`).
 203. [ ] Power visuals use real time but sim timings: at 2× speed meteors land (impact/shake fire)
