@@ -145,6 +145,9 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   await sleep(100);
   s = await state(page);
   check('clicking a lane selects it', s.lane === 0, `lane=${s.lane}`);
+  await sleep(150);
+  const audioOk = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.audio.ready === true);
+  check('audio starts after the first interaction', audioOk);
 
   // Tap a card → summons into the selected lane
   const g0 = s.gold;
