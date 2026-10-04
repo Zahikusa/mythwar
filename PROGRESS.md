@@ -434,6 +434,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     art outside the maskable safe zone (Android launchers crop to circles). `scripts/icons.mjs`
     now also renders full-bleed `icon-maskable-192/512.png` (art scaled into the safe zone);
     the rounded icons are "any".
+175. [x] Creature hover / press-and-hold labels add the counter rule in class colour: enemies
+    "Beaten by Guardians", yours "Strong vs Hunters", the dragon "No class counters it".
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

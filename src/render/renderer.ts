@@ -1,4 +1,4 @@
-import { LANE_LENGTH, SHRINE_RADIUS, SHRINE_X, TICK, UNITS } from '../sim/data.ts';
+import { COUNTERS, LANE_LENGTH, SHRINE_RADIUS, SHRINE_X, TICK, UNITS, counterOf } from '../sim/data.ts';
 import type { UnitDef } from '../sim/data.ts';
 import { POWER_TIMING, spiritDragonHead } from '../sim/powers.ts';
 import type { Projectile, SimEvent, Team, Unit } from '../sim/types.ts';
@@ -78,6 +78,7 @@ interface ProjVis {
 const DEATH_TIME = 0.9;
 /** Seconds of warning before a creature steps out of its gate. */
 const EMERGE_WARN = 1.2;
+const CLASS_PLURAL: Record<string, string> = { guardian: 'Guardians', hunter: 'Hunters', mystic: 'Mystics', legend: 'Legends' };
 const CLASS_COLORS: Record<string, string> = { guardian: '#f2b84b', hunter: '#7ed957', mystic: '#b48cff', legend: '#ff8a3d' };
 const SPAWN_TIME = 0.35;
 
@@ -1267,9 +1268,13 @@ export class Renderer {
     const mine = u.team === view.playerTeam;
     const name = u.def.name;
     const hp = `${Math.ceil(u.hp)} / ${Math.ceil(u.maxHp)}`;
+    // The counter rule, right where you look: what beats this foe / what yours is good against.
+    const cls = u.def.cls;
+    const rel = cls === 'legend' ? null : mine ? COUNTERS[cls] : counterOf(cls);
+    const hint = rel ? `${mine ? 'Strong vs' : 'Beaten by'} ${CLASS_PLURAL[rel]}` : 'No class counters it';
     ctx.font = '700 12px "Segoe UI", system-ui, sans-serif';
-    const w = Math.max(ctx.measureText(name).width, ctx.measureText(hp).width + 14) + 22;
-    const h = 34;
+    const w = Math.max(ctx.measureText(name).width, ctx.measureText(hp).width + 14, ctx.measureText(hint).width) + 22;
+    const h = 48;
     const bx = Math.round(x - w / 2);
     const by = Math.round(y - h);
     ctx.fillStyle = 'rgba(16, 10, 30, 0.88)';
@@ -1290,6 +1295,8 @@ export class Renderer {
     ctx.font = '600 11px "Segoe UI", system-ui, sans-serif';
     ctx.fillStyle = '#c9bde8';
     ctx.fillText(hp, bx + 19, by + 25);
+    ctx.fillStyle = rel ? CLASS_COLORS[rel] : '#c9bde8';
+    ctx.fillText(hint, bx + 19, by + 39);
   }
 
   private drawGhost(ctx: CanvasRenderingContext2D, gh: Ghost, dt: number): void {
