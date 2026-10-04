@@ -371,8 +371,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 150. [x] `citadel.ts`: the keep's dynamic-part early return now restores the collapse save.
 151. [x] Title camera zoom is sized to the drift (`max(1.025, 1 + 24/W, 1 + 10/H)`), so no dark
     strip shows at the edges on narrow screens.
-152. [ ] Powers are drawn after all lanes: a far-lane spirit dragon paints over near-lane
-    creatures. (Fimbul veil height now uses the capped art scale.)
+152. [x] Power visuals (spirit dragon, Fimbul veil) are drawn with their own lane, so nearer
+    lanes' creatures stay in front. (Fimbul veil height uses the capped art scale.)
 153. [x] Jötunn breath multiplies the current alpha (fades with spawn/death ghosts).
 154. [x] A `(resolution: Ndppx)` media query re-runs the layout when the window moves to a
     screen with another pixel density.

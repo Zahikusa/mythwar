@@ -787,6 +787,7 @@ export class Renderer {
       }
       this.drawProjectiles(ctx, world, lane, alpha);
       this.fx.drawParticles(ctx, lane);
+      this.drawPowers(ctx, world, lane);
     }
 
     // Forget visuals of projectiles that no longer exist.
@@ -795,7 +796,6 @@ export class Renderer {
       for (const pr of world.projectiles) live.add(pr.id);
       for (const id of this.projVis.keys()) if (!live.has(id)) this.projVis.delete(id);
     }
-    this.drawPowers(ctx, world);
     this.fx.drawTimed(ctx, 3);
     this.fx.drawParticles(ctx, 3);
     this.fx.drawTexts(ctx, Math.max(0.8, L.ui));
@@ -1356,9 +1356,10 @@ export class Renderer {
     return 24 * s;
   }
 
-  private drawPowers(ctx: CanvasRenderingContext2D, world: World): void {
+  /** Power visuals in one lane (drawn with that lane, so nearer lanes stay in front). */
+  private drawPowers(ctx: CanvasRenderingContext2D, world: World, lane: number): void {
     for (const inst of world.powers) {
-      if (inst.kind !== 'spiritdragon') continue;
+      if (inst.kind !== 'spiritdragon' || inst.lane !== lane) continue;
       const g = this.layout.lanes[inst.lane];
       const s = this.artScale(g);
       const head = spiritDragonHead(inst.team, inst.t);
@@ -1410,7 +1411,7 @@ export class Renderer {
       if (Math.random() < this.frameDt * 36) this.fx.burst(hx, hy, { count: 1, color: '#9fffe0', rgb: [140, 255, 220], speed: 30, life: 0.8, size: 2.5, shape: 'glow', layer: inst.lane });
     }
     for (const inst of world.powers) {
-      if (inst.kind !== 'fimbul') continue;
+      if (inst.kind !== 'fimbul' || inst.lane !== lane) continue;
       const g = this.layout.lanes[inst.lane];
       const k = inst.t / POWER_TIMING.fimbul.duration;
       const a = Math.sin(Math.min(1, k) * Math.PI) * 0.4;
