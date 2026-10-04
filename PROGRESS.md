@@ -184,8 +184,10 @@ See DESIGN.md for the game design.
     badges, shrine pips and Ragnarök label now accept hover.
 63. [x] Results show kills per lane ("… top / mid / bottom"); `TeamStats.killsByLane`, older
     saves are back-filled on load.
-64. [ ] AI ignores Ragnarök: it could buy Bastion before it starts and shift to all-out
-    pressure once citadel damage ramps (Master/Mythic).
+64. [x] During Ragnarök, Master/Mythic AIs push the enemy's weakest-defended lane when calm.
+    (Tried Bastion-buying before/while Ragnarök too: it only lengthened mirror games, so not
+    kept.) Mirror length 19.8 → 21.0 min over 30 games (within noise); ladder unchanged
+    (master>adept 21-9, mythic>master 15-5).
 65. [ ] Music switches scale abruptly at the next bar after ascending; add a short swell/
     transition.
 66. [ ] Creatures have no victory pose (only the generic hop).

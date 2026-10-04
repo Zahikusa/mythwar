@@ -275,8 +275,11 @@ export class AiController {
     if (!this.rng.chance(p.laneSkill)) return this.rng.int(LANE_COUNT);
     const sorted = [...lanes].sort((a, b) => b.need - a.need);
     if (sorted[0].need > unitCost * 0.5 || danger > 0) return sorted[0].lane;
-    // Calm: push the chosen lane, occasionally switching.
-    if (this.rng.chance(0.2)) this.pushLane = this.rng.int(LANE_COUNT);
+    // Calm: push the chosen lane, occasionally switching. During Ragnarök, skilled AIs pile
+    // into the weakest-defended lane, since anything that reaches the citadel hits hard.
+    if (this.world.ragnarokStarted && p.laneSkill >= 0.9) {
+      this.pushLane = [...lanes].sort((a, b) => a.enemyValue - b.enemyValue)[0].lane;
+    } else if (this.rng.chance(0.2)) this.pushLane = this.rng.int(LANE_COUNT);
     return this.pushLane;
   }
 
