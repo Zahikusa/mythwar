@@ -82,13 +82,14 @@ npm run sim -- 20 master adept   # headless AI-vs-AI balance runs
 node scripts/trace.ts 1003       # timeline of one headless match
 node scripts/bots.ts 10          # AI difficulty vs scripted naive players
 npm run smoke                    # end-to-end browser test (needs local Chrome)
-npm run shoot -- desktop         # screenshots into screenshots/
+npm run shoot -- desktop         # screenshots into screenshots/ (--list, --size 2560x1440)
 node scripts/soak.ts 60 16       # long fast battles in Chrome: errors + fps
 npm run verify                   # typecheck + unit tests + build + smoke (use before commits)
 node scripts/playthrough.mjs 90  # casual scripted play through the real UI, screenshots/play/
 node scripts/perf2.mjs 1600 900  # per-frame render cost (supports skipping render passes)
 node scripts/classwar.ts         # equal-gold army battles per class and age
-node scripts/icons.mjs           # re-render PNG app icons from public/icon.svg
+node scripts/calib.ts counter adept 90  # a scripted "follow the Counter! badge" bot vs an AI
+node scripts/icons.mjs           # re-render PNG app icons (incl. maskable) from public/icon.svg
 ```
 
 Battles autosave; "Continue" on the title screen resumes them.
