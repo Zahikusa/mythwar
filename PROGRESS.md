@@ -204,6 +204,8 @@ See DESIGN.md for the game design.
 77. [x] Held shrines shed occasional golden glints (shrines = income).
 78. [x] Automatic battery-saver fallback: 4 consecutive seconds under 40 fps mid-battle switch
     to low quality once (DPR 1, fewer particles) with a toast; smoke-checked.
+79. [x] Art: Titan gains a starry cosmic cape and gold pauldrons, Fenrir a shaggy neck ruff,
+    the Jötunn's club becomes a jagged ice cluster.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,

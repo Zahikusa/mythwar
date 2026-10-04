@@ -1,4 +1,4 @@
-import { OUTLINE, circle, cluster, drawGlow, ellipse, glowDot, limb, limb2, line, oval, poly, blob, swing } from '../draw.ts';
+import { OUTLINE, circle, cluster, dots, drawGlow, ellipse, glowDot, limb, limb2, line, oval, poly, blob, swing } from '../draw.ts';
 import { gait } from './fae.ts';
 import type { CreatureArt } from './types.ts';
 
@@ -35,6 +35,11 @@ export const titan: CreatureArt = {
     // Back leg
     limb2(ctx, -7, -30 + bob, -10 + b0 * 0.4, -15, -7 + b0, -3 + bl, 11, 10, MARBLE_D);
     oval(ctx, -6 + b0, -3 + bl, 7.5, 3.2, GOLD_D);
+    // Cosmic cape streaming behind the shoulders (starfield fabric)
+    const capeWave = Math.sin(p.t * 2.2 + p.seed * 4) * 3 + (p.moving ? Math.sin(p.walk) * 2 : 0);
+    blob(ctx, [-12, -70 + bob, -20, -60 + bob, -26 - capeWave, -36 + bob, -24 - capeWave * 1.4, -14, -12, -18, -6, -50 + bob], '#2b1e5c');
+    dots(ctx, [-18, -54 + bob, 0.9, -22 - capeWave, -40 + bob, 0.7, -15, -30, 0.8, -21 - capeWave, -22, 0.6, -13, -44 + bob, 0.6], '#fff4c4');
+    line(ctx, -12, -69 + bob, -6, -50 + bob, 1.4, p.tc.main);
     // Back arm (also slams)
     const bang = -0.9 - raise * 1.6 + strike * 1.5;
     const bsx = -12;
@@ -67,6 +72,11 @@ export const titan: CreatureArt = {
     ctx.moveTo(15, -38);
     ctx.lineTo(12, -44);
     ctx.stroke();
+    // Golden pauldrons
+    blob(ctx, [-18, -64, -16, -72, -8, -75, -4, -68, -10, -62], GOLD);
+    blob(ctx, [10, -66, 14, -74, 21, -72, 22, -64, 16, -60], GOLD);
+    line(ctx, -15, -69, -7, -71, 1, GOLD_D);
+    line(ctx, 13, -70, 20, -68, 1, GOLD_D);
     // Head with radiant helm
     const hx = 8;
     const hy = -80;

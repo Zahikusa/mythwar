@@ -92,10 +92,12 @@ export const jotunn: CreatureArt = {
     ctx.translate(ex, ey);
     ctx.rotate(ang + Math.PI / 2 + 0.2);
     limb(ctx, 0, 4, 0, -12, 3.4, '#6e5a48');
-    blob(ctx, [-6, -12, -8, -24, -3, -33, 4, -32, 8, -22, 6, -12], CRYSTAL);
-    poly(ctx, [-3, -14, -1, -30, 2, -16], '#ffffff', false);
-    poly(ctx, [-8, -22, -12, -26, -7, -18], CRYSTAL);
-    poly(ctx, [7, -24, 11, -27, 8, -19], CRYSTAL);
+    // Jagged cluster of glacier ice
+    poly(ctx, [-5, -12, -9, -22, -6, -30, -2, -26, 0, -37, 3, -27, 7, -31, 9, -21, 5, -12], CRYSTAL);
+    poly(ctx, [-9, -20, -15, -25, -8, -16], CRYSTAL);
+    poly(ctx, [8, -22, 14, -28, 9, -15], CRYSTAL);
+    poly(ctx, [-2, -14, -1, -30, 1, -18], '#ffffff', false);
+    poly(ctx, [4, -16, 6, -26, 6, -16], 'rgba(255,255,255,0.6)', false);
     ctx.restore();
     circle(ctx, ex, ey, 4.6, ICE_SKIN);
     if (strike > 0.6) drawGlow(ctx, ex + 14, ey + 8, 18, [200, 240, 255], (strike - 0.6) * 1.5);
@@ -141,6 +143,9 @@ export const fenrir: CreatureArt = {
     // Dark back ridge fur
     blob(ctx, [-18, -30, -8, -36, 4, -36, 10, -33, 0, -32, -10, -31], WOLF_D, false);
     ellipse(ctx, -4, -20, 9, 3, WOLF_L);
+    // Shaggy neck ruff
+    poly(ctx, [4, -34, 7, -39, 9, -34, 12, -38, 13, -32, 14, -26, 10, -22, 6, -27], WOLF_D);
+    poly(ctx, [6, -30, 9, -33, 11, -29, 12, -25, 8, -24], WOLF);
     // Broken chain collar
     ctx.strokeStyle = '#9aa4ae';
     ctx.lineWidth = 1.6;
