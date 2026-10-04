@@ -205,6 +205,17 @@ describe('combat', () => {
     expect(w.players[0].baseMaxHp - w.players[0].baseHp).toBeLessThan(UNITS.redcap.damage * 3);
   });
 
+  it('replacing a turret refunds half of the old one', () => {
+    const w = new World();
+    rich(w, 0, 1000);
+    w.apply({ type: 'buildTurret', team: 0, lane: 2, turretId: 'thornspitter' });
+    const g = w.players[0].gold;
+    expect(w.apply({ type: 'buildTurret', team: 0, lane: 2, turretId: 'sporepod' }).ok).toBe(true);
+    expect(w.players[0].gold).toBe(g + Math.floor(110 * 0.5) - 150);
+    expect(w.players[0].turrets[2].def?.id).toBe('sporepod');
+    expect(w.apply({ type: 'buildTurret', team: 0, lane: 2, turretId: 'sporepod' }).ok).toBe(false);
+  });
+
   it('selling a turret refunds half', () => {
     const w = new World();
     rich(w, 0, 1000);
