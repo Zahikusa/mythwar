@@ -176,6 +176,12 @@ See DESIGN.md for the game design.
     side by side so the phone panel fits without scrolling.
 58. [x] `?play=` auto-starts on phones requested fullscreen without a gesture (console
     warning); `immersive()` now checks `navigator.userActivation`.
+59. [x] Phone panels are near-opaque so the gold pill no longer bleeds through.
+60. [ ] Results screen on phones hides the champion portrait (compact layout); consider a
+    small inline portrait next to the verdict instead.
+61. [ ] `src/sim/data.ts`: Elder Dragon beats equal gold of any class by 59–86% value
+    (scripts/classwar battle); fine as a one-at-a-time capstone, but re-check if players
+    report it dominating late Ragnarök games.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed

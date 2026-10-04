@@ -1779,6 +1779,7 @@ svg {
 }
 
 .hud.mobile .panel {
+  background: rgba(21, 14, 38, 0.96);
   left: 50%;
   right: auto;
   top: 50%;
