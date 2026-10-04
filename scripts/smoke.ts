@@ -345,6 +345,21 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   s = await state(page);
   check('resume continues the battle', !s.paused && s.menu === 'none');
 
+  // Resize mid-battle (window resize / phone rotation): layout follows, input still maps.
+  {
+    const before = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.renderer.layout.width);
+    await page.setViewport({ width: viewport.height, height: viewport.width, isMobile: viewport.mobile, hasTouch: viewport.mobile, deviceScaleFactor: 1 });
+    await sleep(400);
+    await page.setViewport({ width: viewport.width, height: viewport.height, isMobile: viewport.mobile, hasTouch: viewport.mobile, deviceScaleFactor: 1 });
+    await sleep(400);
+    const l1 = await laneScreen(page, 1);
+    if (viewport.mobile) await page.touchscreen.tap(l1.x, l1.y);
+    else await page.mouse.click(l1.x, l1.y);
+    await sleep(100);
+    const after = await page.evaluate(() => ({ w: (window as unknown as { __mythwar: any }).__mythwar.renderer.layout.width, lane: (window as unknown as { __mythwar: any }).__mythwar.game.view.selectedLane }));
+    check('resizing mid-battle keeps layout and input working', after.w === before && after.lane === 1, JSON.stringify({ before, after }));
+  }
+
   // Win the game → results screen
   await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[1].baseHp = 1));
   await page.evaluate(() => {
