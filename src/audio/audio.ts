@@ -48,8 +48,8 @@ export class Audio {
       this.ensure();
       if (this.ctx && this.ctx.state === 'suspended') void this.ctx.resume();
     };
-    window.addEventListener('pointerdown', unlock, { capture: true });
-    window.addEventListener('keydown', unlock, { capture: true });
+    // iOS Safari only unlocks audio inside touchend/click handlers, so listen to all of them.
+    for (const type of ['pointerdown', 'touchend', 'click', 'keydown']) window.addEventListener(type, unlock, { capture: true });
   }
 
   get ready(): boolean {
