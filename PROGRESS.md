@@ -361,14 +361,18 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 147. [x] Timed effects draw in two passes: ground (rings, scorches) under the creatures, slashes /
     flashes / beams over them.
 148. [x] Killing blows show their spark and slash (from where the target was last drawn).
-149. [ ] `keepCache`/`gateCache` keep every age's layers until a resize; `prevTheme` never reset.
-150. [ ] `citadel.ts`: latent save/restore imbalance (`if (!D) return` inside the collapse save).
-151. [ ] Title camera drift (±10 px) can expose a dark strip at the edges below ~800 px width.
+149. [x] Keep/gate layer caches keep only the current age per side/gate (were growing to ~10
+    full-height canvases); the previous backdrop is released when the cross-fade ends.
+150. [x] `citadel.ts`: the keep's dynamic-part early return now restores the collapse save.
+151. [x] Title camera zoom is sized to the drift (`max(1.025, 1 + 24/W, 1 + 10/H)`), so no dark
+    strip shows at the edges on narrow screens.
 152. [ ] Powers are drawn after all lanes: a far-lane spirit dragon paints over near-lane
     creatures. (Fimbul veil height now uses the capped art scale.)
-153. [ ] `asgard.ts:73` Jötunn breath sets globalAlpha absolutely (ignores ghost/spawn fade).
-154. [ ] Moving the window to a monitor with another DPR doesn't re-size the canvas.
-155. [ ] Particles/ghosts/texts keep stale screen positions after a mid-battle resize.
+153. [x] Jötunn breath multiplies the current alpha (fades with spawn/death ghosts).
+154. [x] A `(resolution: Ndppx)` media query re-runs the layout when the window moves to a
+    screen with another pixel density.
+155. [x] A real layout change (size/mode) clears screen-space effects and ghosts instead of
+    leaving them at stale positions.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

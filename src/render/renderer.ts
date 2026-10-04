@@ -137,7 +137,13 @@ export class Renderer {
     this.canvas.height = Math.round(height * this.dpr);
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
+    const old = this.layout;
     this.layout = computeLayout(width, height, mode);
+    if (old && (old.width !== width || old.height !== height || old.mode !== mode)) {
+      // Effects live in screen space: after a real layout change they'd hang in stale spots.
+      this.fx.clear();
+      this.ghosts = [];
+    }
     this.bgCache.clear();
     this.keepCache.clear();
     this.gradCache.clear();
@@ -200,6 +206,9 @@ export class Renderer {
       cx.setTransform(this.dpr, 0, 0, this.dpr, -b.x * this.dpr, -b.y * this.dpr);
       drawCitadelGate(cx, this.layout, team, lane, age, gate.x, gate.y, gate.s, 0, 0, 0, 'static');
       c = { canvas, ...b };
+      // Only the current age's layer per gate is worth keeping.
+      const prefix = `g${team}:${lane}:`;
+      for (const k of this.gateCache.keys()) if (k.startsWith(prefix)) this.gateCache.delete(k);
       this.gateCache.set(key, c);
     }
     return c;
@@ -221,6 +230,8 @@ export class Renderer {
       cx.setTransform(this.dpr, 0, 0, this.dpr, -x * this.dpr, 0);
       drawCitadelKeep(cx, L, team, age, 1, 0, 0, 0, 0, 'static');
       c = { canvas, x, w };
+      // A full-height layer per side: keep only the current age's.
+      for (const k of this.keepCache.keys()) if (k.startsWith(`${team}:`)) this.keepCache.delete(k);
       this.keepCache.set(key, c);
     }
     return c;
@@ -599,6 +610,11 @@ export class Renderer {
     this.frameDt = dt;
     this.fx.update(dt);
     this.themeFade = Math.min(1, this.themeFade + dt / 1.6);
+    if (this.themeFade >= 1 && this.prevTheme >= 0) {
+      // Cross-fade done: let the old full-screen backdrop go.
+      this.bgCache.delete(this.prevTheme);
+      this.prevTheme = -1;
+    }
     this.shake = Math.max(0, this.shake - dt * 18);
     for (let i = 0; i < 2; i++) {
       this.baseFlash[i] = Math.max(0, this.baseFlash[i] - dt * 4);
@@ -620,7 +636,8 @@ export class Renderer {
     ctx.translate(shx, shy);
     if (this.cinematic) {
       // Title screen: a slow, gentle camera drift (slight zoom hides the edges).
-      const z = 1.025;
+      // Zoom just enough that the drift (±10 px across, ±4 px up/down) never bares an edge.
+      const z = Math.max(1.025, 1 + 24 / L.width, 1 + 10 / L.height);
       ctx.translate(L.width / 2 + Math.sin(this.time * 0.11) * 10, L.height / 2 + Math.sin(this.time * 0.083) * 4);
       ctx.scale(z, z);
       ctx.translate(-L.width / 2, -L.height / 2);

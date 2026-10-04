@@ -100,6 +100,19 @@ export class App {
       sound: (k) => this.audio.ui(k),
     });
     window.addEventListener('resize', () => this.resize());
+    // Moving the window to a screen with another pixel density doesn't fire 'resize'.
+    const watchDpr = () => {
+      if (typeof matchMedia === 'undefined') return;
+      matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener(
+        'change',
+        () => {
+          this.resize();
+          watchDpr();
+        },
+        { once: true },
+      );
+    };
+    watchDpr();
     // Escape on the title screens (no battle input attached) steps back through the menus.
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.state === 'title') this.escape();

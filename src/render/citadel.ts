@@ -279,7 +279,10 @@ export function drawCitadelKeep(
     // Banner pole
     line(ctx, poleX, poleTop + 22 * s, poleX, poleTop, Math.max(1.2, 1.8 * s), '#3a2c22');
     }
-    if (!D) return;
+    if (!D) {
+      if (collapse > 0) ctx.restore();
+      return;
+    }
     for (const [wx, wy, ww, wh, fl] of windows) windowLight(ctx, wx, wy, ww, wh, team, t, fl);
     ctx.fillStyle = tc.main;
     ctx.beginPath();

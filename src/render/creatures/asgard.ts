@@ -70,9 +70,10 @@ export const jotunn: CreatureArt = {
     line(ctx, hx + 1, hy - 4, hx + 7, hy - 3.5, 1.6, '#567a96');
     // Frosty breath
     const br = (p.t * 0.8 + p.seed) % 1;
-    ctx.globalAlpha = (1 - br) * 0.5;
+    const a0 = ctx.globalAlpha; // respects spawn / death fades
+    ctx.globalAlpha = a0 * (1 - br) * 0.5;
     circle(ctx, hx + 10 + br * 10, hy + 2 - br * 3, 1.5 + br * 3, '#ffffff');
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = a0;
     ctx.restore();
 
     // Front leg
