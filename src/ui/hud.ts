@@ -786,13 +786,13 @@ export class Hud {
       const next = AGES[me.age + 1];
       // Total XP against the next age's requirement — what the text says and the Ascend fill shows.
       const k = Math.min(1, me.xp / next.xpRequired);
-      setStyle(E.xpfill, 'width', `${(Math.max(0, k) * 100).toFixed(1)}%`);
+      setStyle(E.xpfill, 'transform', `scaleX(${Math.max(0, k).toFixed(3)})`);
       // XP alone isn't enough: ascending also takes the gold tithe.
       const xpReady = me.xp >= next.xpRequired;
       setText(E.xptext, xpReady ? (me.gold >= next.ascendCost ? 'Ready to ascend' : 'XP ready') : `${fmt(me.xp)} / ${fmt(next.xpRequired)}`);
       toggle(E.xpfill, 'full', me.xp >= next.xpRequired);
     } else {
-      setStyle(E.xpfill, 'width', '100%');
+      setStyle(E.xpfill, 'transform', 'scaleX(1)');
       setText(E.xptext, `${fmt(me.xp)} — final age`);
     }
 
@@ -874,7 +874,7 @@ export class Hud {
       // saving up visibly fills the button.
       const xpK = Math.min(1, me.xp / next.xpRequired);
       const fillK = xpK >= 1 ? Math.min(1, Math.max(0, me.gold) / next.ascendCost) : xpK;
-      setStyle(E.ascFill, 'height', `${(fillK * 100).toFixed(1)}%`);
+      setStyle(E.ascFill, 'transform', `scaleY(${fillK.toFixed(3)})`);
       const why = w.ageUpBlocker(g.playerTeam);
       // With the XP in hand, say exactly how much gold is still missing.
       const short = Math.ceil(next.ascendCost - me.gold);
@@ -893,7 +893,7 @@ export class Hud {
       const title = `Ascend to ${next.name} (U): needs ${fmt(next.xpRequired)} XP and ${fmt(next.ascendCost)} gold. New creatures, turrets, god power and a stronger citadel.`;
       if (E.ascend.title !== title) E.ascend.title = title;
     } else {
-      setStyle(E.ascFill, 'height', '100%');
+      setStyle(E.ascFill, 'transform', 'scaleY(1)');
       setText(E.ascSub, 'Final age');
       toggle(E.ascend, 'ready', false);
       toggle(E.ascend, 'xpready', false);

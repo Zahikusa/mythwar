@@ -204,6 +204,11 @@
   filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.6));
 }
 
+/* Screens out of sight (only visibility: hidden) keep still, e.g. the title during battles. */
+.screen:not(.active) * {
+  animation-play-state: paused !important;
+}
+
 @keyframes floaty {
   to {
     transform: translateY(-8px);

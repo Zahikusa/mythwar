@@ -550,9 +550,14 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     30 px again; keys panel centred with auto margins — measured centre stays at 800 px during
     the open animation; buy hovers skip `.poor`; sysbtn/qchip ✕/pclose/trow/buy/mbtn/diff hovers
     only under `@media (hover: hover)`.)
-196. [ ] Endless CSS animations: `readyglow`/`dangerpulse` animate box-shadow (main-thread repaint)
+196. [x] Endless CSS animations: `readyglow`/`dangerpulse` animate box-shadow (main-thread repaint)
     even under the pause menu; title `floaty` canvases animate during battles (screen only
     visibility:hidden); `.xpfill`/`.ascfill` width transitions restarted every frame.
+    (All HUD animations pause under a menu (`.hud.under-menu`), inactive screens' too; the
+    fills scale with `transform` (compositor only). `document.getAnimations()` in Chrome:
+    4 running in battle (the intended glows), 0 under the pause menu; title floaty never runs
+    during a battle. The ready glows still animate box-shadow while visible — small buttons,
+    left as is.)
 197. [x] Settings "Reset records" stays armed between visits (`menus.ts:344-356`): one stray tap, Done,
     next visit a single tap wipes all W/L records. "Records cleared" label also sticks.
     (Both reset buttons start fresh each time Settings opens: `settingsOpened` in `show()`.)
