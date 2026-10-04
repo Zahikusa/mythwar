@@ -440,6 +440,13 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     seeds play out differently after sim/AI changes — that's how power-fimbul went stale).
 177. [x] `renderer.ts drawFrozen`: the frost sprite is keyed/rendered at the creature's full scale,
     so a creature frozen mid-spawn isn't re-rendered every frame while it grows.
+178. [x] Review of run #2's own diff (fresh-eyes agent): (a) `world.ts` the reach check used
+    `range + RESOLVE_SLACK`, so when a pack's shared target died mid-tick a pack-mate started a
+    swing at the next foe up to 14 units away — now the live distance must be within range
+    (scenario test; symmetry/army numbers unchanged); (b) holding Enter on a focused card or the
+    power button re-fired on every key repeat (smoke-checked, negative-tested); (c) the service
+    worker pruned every unreferenced asset — now only older hashes of bundles the page names
+    (lazy chunks survive; smoke-checked); (d) `Game.fromSave` checks `DIFFICULTIES.includes`.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

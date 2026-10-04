@@ -119,6 +119,8 @@ async function serviceWorkerFlow(page: Page): Promise<void> {
   await page.evaluate(async () => {
     const c = await caches.open('mythwar-v3');
     await c.put(new Request('./assets/index-OLDBUILD.js'), new Response('// old'));
+    // …and a lazily loaded chunk the page doesn't name (must survive).
+    await c.put(new Request('./assets/lazy-ABCDEFGH.js'), new Response('// lazy'));
   });
   await page.reload({ waitUntil: 'load' });
   await sleep(800);
@@ -126,6 +128,7 @@ async function serviceWorkerFlow(page: Page): Promise<void> {
   const current = await page.evaluate(() => [...document.querySelectorAll('script[src], link[rel=stylesheet]')].map((e) => new URL((e as HTMLScriptElement).src || (e as HTMLLinkElement).href).pathname));
   check('service worker drops bundles of older builds', !keys.some((k) => k.includes('OLDBUILD')), JSON.stringify(keys));
   check('service worker caches the current bundles', current.every((c) => keys.includes(c)), JSON.stringify({ current, keys }));
+  check('service worker keeps lazily loaded chunks', keys.some((k) => k.includes('lazy-ABCDEFGH')), JSON.stringify(keys));
 }
 
 /** Esc out of the first-run how-to must not leave its "then start a battle" hand-off behind. */
@@ -389,10 +392,14 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     while (tabs++ < 40 && !(await page.evaluate(() => document.activeElement?.classList.contains('card')))) await page.keyboard.press('Tab');
     await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].trainProgress = 0));
     const q1 = (await state(page)).queue;
-    await page.keyboard.press('Enter');
+    // Held down: key repeats must not summon again.
+    await page.keyboard.down('Enter');
+    await page.keyboard.down('Enter');
+    await page.keyboard.down('Enter');
+    await page.keyboard.up('Enter');
     await sleep(80);
     const q2 = (await state(page)).queue;
-    check('Tab to a card + Enter summons it', q2 === Math.min(5, q1 + 1) && tabs < 40, `tabs=${tabs} queue ${q1} → ${q2}`);
+    check('Tab to a card + Enter summons it once (even held)', q2 === Math.min(5, q1 + 1) && tabs < 40, `tabs=${tabs} queue ${q1} → ${q2}`);
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   }
 

@@ -1,4 +1,4 @@
-import { AI_PROFILES, AiController } from './ai/ai.ts';
+import { AI_PROFILES, AiController, DIFFICULTIES } from './ai/ai.ts';
 import type { Difficulty } from './ai/ai.ts';
 import { TICK } from './sim/data.ts';
 import type { Command, CommandResult, SimEvent, Team } from './sim/types.ts';
@@ -81,7 +81,7 @@ export class Game {
   static fromSave(save: GameSave): Game {
     if (!save || save.v !== 1) throw new Error('Unsupported save');
     if (save.world.winner !== null) throw new Error('Battle already decided');
-    if (!(save.difficulty in AI_PROFILES)) throw new Error('Unknown difficulty');
+    if (!DIFFICULTIES.includes(save.difficulty)) throw new Error('Unknown difficulty');
     const game = new Game({ difficulty: save.difficulty }, World.deserialize(save.world));
     game.ai.restore(save.ai);
     game.history.push(...save.history);

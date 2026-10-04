@@ -141,3 +141,46 @@ describe('god powers', () => {
     expect(hitsOn(log, units[0].id, 'power').length).toBeGreaterThan(5);
   });
 });
+
+describe('reach', () => {
+  it('melee creatures only start a swing at a foe within reach', async () => {
+    const { AI_PROFILES, AiController } = await import('../src/ai/ai.ts');
+    const w = new World({ seed: 77 });
+    const ais = [new AiController(w, 0, AI_PROFILES.master, 1), new AiController(w, 1, AI_PROFILES.master, 2)];
+    let checked = 0;
+    for (let i = 0; i < Math.round(240 / TICK) && w.winner === null; i++) {
+      for (const a of ais) a.update(TICK);
+      w.step();
+      for (const e of w.drainEvents()) {
+        if (e.type !== 'attack' || e.ranged) continue;
+        const u = w.unitById.get(e.unitId);
+        const t = u && u.pendingTarget >= 0 ? w.unitById.get(u.pendingTarget) : undefined;
+        if (!u || !t) continue; // (base attacks, or the target fell later in the same tick)
+        expect(w.edgeDist(u, t), `${u.def.id} → ${t.def.id}`).toBeLessThanOrEqual(u.def.range + 1e-6);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(100);
+  });
+});
+
+describe('reach after a shared target falls', () => {
+  it("a pack-mate doesn't start swinging at the next foe a step away", () => {
+    const w = new World();
+    const a = w.spawnUnit(0, 0, UNITS.redcap, 401);
+    const b = w.spawnUnit(0, 0, UNITS.redcap, 400);
+    const x = dummy(w, 1, a.x + a.def.radius + UNITS.treant.radius + 2);
+    x.hp = 0.5;
+    const y = dummy(w, 1, x.x + 12);
+    for (const u of [x, y]) u.freezeTimer = 99;
+    // a's blow lands this tick (killing x); b is just ready to swing.
+    a.windupTimer = 1e-6;
+    a.pendingTarget = x.id;
+    a.attackTimer = 1;
+    b.attackTimer = TICK * 0.5;
+    w.step();
+    expect(x.alive).toBe(false);
+    expect(w.edgeDist(b, y)).toBeGreaterThan(b.def.range);
+    expect(b.attackStart).not.toBe(w.time); // it steps in instead of swinging at thin air
+  });
+});

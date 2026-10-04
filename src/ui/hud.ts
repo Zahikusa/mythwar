@@ -26,6 +26,11 @@ import { CLASS_COLOR, CLASS_ICON, CLASS_NAME, ICONS, POWER_ICONS } from './icons
 import { portrait } from './portraits.ts';
 
 export const LANE_NAMES = ['Top', 'Middle', 'Bottom'];
+
+/** Holding Enter on a focused button would click it again on every key repeat. */
+const noRepeat = (e: KeyboardEvent): void => {
+  if (e.repeat && e.key === 'Enter') e.preventDefault();
+};
 const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
 
 export interface HudCallbacks {
@@ -159,6 +164,7 @@ export class Hud {
     E.power.addEventListener('click', (e) => {
       if (e.detail === 0) this.beginPowerTargeting();
     });
+    E.power.addEventListener('keydown', noRepeat);
 
     E.ascFill = h('div', { class: 'ascfill' });
     E.ascSub = h('div', { class: 'asub' });
@@ -970,6 +976,7 @@ export class Hud {
       el.addEventListener('click', (e) => {
         if (e.detail === 0) this.tryTrain(def.id); // Enter on a keyboard-focused card
       });
+      el.addEventListener('keydown', noRepeat);
       el.addEventListener('pointerenter', (e) => {
         if ((e as PointerEvent).pointerType === 'mouse') this.showTooltip(def, el);
       });

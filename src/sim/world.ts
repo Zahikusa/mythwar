@@ -676,8 +676,9 @@ export class World {
     }
 
     const { target, dist } = this.findTarget(u, list);
-    // In reach since the start of the tick (and the foe hasn't just died or slipped away).
-    if (startDist <= def.range && dist <= def.range + RESOLVE_SLACK) {
+    // In reach since the start of the tick, and still in reach now (if the foe just died, the
+    // next one must be in reach too — no swinging at a foe a step away).
+    if (startDist <= def.range && dist <= def.range) {
       u.moving = false;
       u.movedFor = 0;
       if (u.attackTimer <= 0) {

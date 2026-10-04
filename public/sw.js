@@ -9,15 +9,25 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-/** Stores a fresh copy of the page and drops bundles of earlier builds it no longer references. */
+/** "index-C8zgltL0.js" → "index.js": a bundle's name without its content hash. */
+const stem = (file) => file.replace(/-[A-Za-z0-9_-]{8}(\.[a-z0-9]+)$/, '$1');
+
+/**
+ * Stores a fresh copy of the page and drops older builds of the bundles it references (same
+ * name, other hash). Chunks the page loads lazily (not named in it) are left alone.
+ */
 async function storePage(res) {
   const c = await caches.open(CACHE);
   const html = await res.clone().text();
   await c.put('./', res);
+  const current = new Set([...html.matchAll(/assets\/([^"'?#\s]+)/g)].map((m) => m[1]));
+  const stems = new Set([...current].map(stem));
   for (const key of await c.keys()) {
     const path = new URL(key.url).pathname;
     const i = path.lastIndexOf('/assets/');
-    if (i >= 0 && !html.includes(path.slice(i + 1))) await c.delete(key);
+    if (i < 0) continue;
+    const file = path.slice(i + 8);
+    if (!current.has(file) && stems.has(stem(file))) await c.delete(key);
   }
 }
 
