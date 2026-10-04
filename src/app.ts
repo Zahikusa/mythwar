@@ -274,7 +274,16 @@ export class App {
     this.difficulty = difficulty;
     this.settings.difficulty = difficulty;
     saveSettings(this.settings);
+    // A new battle from the title abandons the autosaved one: like leaving it from the pause
+    // menu, that counts as a defeat once it had properly started (the difficulty screen says so).
+    // (Restart from the pause menu has already recorded its forfeit.)
+    const saved = this.state === 'title' ? loadBattle() : null;
+    const savedTime = saved?.world?.time;
+    if (saved && typeof savedTime === 'number' && savedTime >= 60 && DIFFICULTIES.includes(saved.difficulty)) {
+      recordResult(this.settings, saved.difficulty, false, savedTime);
+    }
     clearBattle();
+    this.menus.setContinue(null);
     const game = this.startGame(difficulty, seed, false);
     game.speed = this.settings.speed === 2 ? 2 : 1;
     this.enterBattle(game);

@@ -332,6 +332,14 @@
   min-height: 54px;
 }
 
+/* "A new battle replaces your saved one" (only while an autosave exists). */
+.dnote {
+  font-size: 12px;
+  color: #ffd27a;
+  text-align: center;
+  max-width: 520px;
+}
+
 .dchips {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;

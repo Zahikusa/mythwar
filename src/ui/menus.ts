@@ -30,6 +30,9 @@ export class Menus {
   private back: Screen = 'title';
   /** Where the difficulty screen returns to: the title, or the results it was opened from. */
   private diffBack: Screen = 'title';
+  /** An autosaved battle exists (a new one from the title abandons it — the note says so). */
+  private hasSave = false;
+  private saveNote: HTMLElement | null = null;
   private screens: Partial<Record<Screen, HTMLElement>> = {};
   private howtoPage = 0;
   private howtoPages: HTMLElement[] = [];
@@ -86,6 +89,7 @@ export class Menus {
 
   /** Shows "Continue battle" on the title screen when an autosave exists. */
   setContinue(label: string | null): void {
+    this.hasSave = !!label;
     if (!this.continueBtn || !this.playBtn) return;
     this.continueBtn.classList.toggle('hidden', !label);
     this.continueBtn.querySelector('span')!.textContent = label ? `Continue \u2014 ${label}` : 'Continue battle';
@@ -126,7 +130,10 @@ export class Menus {
       this.setHowtoPage(0);
       this.skipBtn?.classList.toggle('hidden', !this.afterHowto);
     }
-    if (screen === 'difficulty') this.refreshDifficulty();
+    if (screen === 'difficulty') {
+      this.refreshDifficulty();
+      this.saveNote?.classList.toggle('hidden', !(this.hasSave && this.diffBack === 'title'));
+    }
     if (screen === 'title') this.refreshLaurels();
     if (screen === 'settings') for (const f of this.syncers) f();
   }
@@ -210,7 +217,8 @@ export class Menus {
     });
     const begin = this.button('Begin Battle', 'primary big', () => this.begin(this.selected), ICONS.swords);
     const back = this.button('Back', 'ghost', () => this.goBack());
-    return h('div', { class: 'screen difficulty' }, h('h2', { text: 'Choose your foe' }), grid, h('div', { class: 'mrow' }, back, begin));
+    this.saveNote = h('div', { class: 'dnote hidden', text: 'A new battle replaces your saved one (after its first minute, that counts as a defeat).' });
+    return h('div', { class: 'screen difficulty' }, h('h2', { text: 'Choose your foe' }), grid, this.saveNote, h('div', { class: 'mrow' }, back, begin));
   }
 
   /** Start a battle — first-timers see the five-page how-to first (skippable). */

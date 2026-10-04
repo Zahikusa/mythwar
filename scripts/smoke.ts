@@ -115,6 +115,29 @@ async function resumeFlow(page: Page): Promise<void> {
   await sleep(300);
   const gone = await page.evaluate(() => document.querySelector('.mbtn.continue')!.classList.contains('hidden'));
   check('leaving a battle discards its autosave', gone);
+  // A new battle from the title replaces the autosave: the difficulty screen warns, and a battle
+  // past its first minute is counted as a defeat (as leaving it from the pause menu would be).
+  {
+    const app = () => (window as unknown as { __mythwar: any }).__mythwar;
+    await page.goto(`${base}/?play=adept&seed=13&ff=70`, { waitUntil: 'load' });
+    await sleep(600);
+    await page.evaluate(`(${app})().persist()`);
+    await page.goto(`${base}/`, { waitUntil: 'load' });
+    await sleep(900);
+    const before = await page.evaluate(`(() => { const a = (${app})(); a.settings.tutorialSeen = true; return a.settings.records.adept?.losses ?? 0; })()`);
+    const nb = await centerText(page, '.screen.title', 'New battle');
+    await page.mouse.click(nb.x, nb.y);
+    await sleep(500);
+    const note = await page.evaluate(() => !document.querySelector('.dnote')!.classList.contains('hidden'));
+    const bb = await centerText(page, '.screen.difficulty', 'Begin Battle');
+    await page.mouse.click(bb.x, bb.y);
+    await sleep(500);
+    const after = (await page.evaluate(`(() => { const a = (${app})(); return { losses: a.settings.records.adept?.losses ?? 0, state: a.state }; })()`)) as { losses: number; state: string };
+    check('a new battle from the title warns about and forfeits the autosave', note && after.losses === (before as number) + 1 && after.state === 'playing', JSON.stringify({ note, before, after }));
+    // Leave it (discarding its autosave) so navigating away doesn't save it again.
+    await page.evaluate(`(${app})().toTitle()`);
+    await sleep(200);
+  }
   // Corrupted storage (older build / hand-edited) must not stop the game from loading.
   await page.evaluate(() => {
     localStorage.setItem('mythwar.battle.v1', JSON.stringify({ v: 1, difficulty: 'godlike', world: { players: [{ age: 42 }], time: 'soon' } }));

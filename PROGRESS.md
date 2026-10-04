@@ -630,9 +630,13 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     must). Mythic re-tuned with `blessMargin` 0. Final ladder (smart bot, n=300): Novice 100%,
     Adept 67%, Master 25%, Mythic 5%; AI vs AI: Adept>Novice 37–3, Master>Adept 34–6,
     Mythic>Master 36–4. Counter bot: Novice 88%, Adept 8.5%, Master 4%. Unit test for the floor.
-218. [ ] Title "New battle" while an autosave exists silently deletes it (`app.ts play()` →
+218. [x] Title "New battle" while an autosave exists silently deletes it (`app.ts play()` →
     `clearBattle()`) without counting the defeat the pause menu promises for leaving after 1 min;
     a stray tap under "Continue" destroys a 10-minute battle with no confirmation.
+    (It takes two taps — New battle opens the difficulty screen, then Begin Battle.) Now the
+    difficulty screen (opened from the title with a save) says "A new battle replaces your saved
+    one (after its first minute, that counts as a defeat)", and `play()` from the title records
+    that forfeit (restart from the pause menu already does; no double count). Smoke-checked.
 219. [ ] Enter after clicking a difficulty card doesn't begin the battle (the card is a focused button,
     so `pressPrimary()` is skipped and the keyboard click just re-selects it).
 220. [ ] Touch press-and-hold inspect is not cancelled when the finger moves (`input.ts:27-41`): a swipe
