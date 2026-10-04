@@ -266,9 +266,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 92. [x] Card tooltips also show on keyboard focus (focus-visible).
 93. [x] Backdrop drawn 1:1 (no resampling); during shake the exposed margin is pre-filled.
     (No measurable change in headless software raster; avoids resampling on real GPUs.)
-101. [ ] Settings → "Reset records" button (difficulty W/L) for players who want a fresh start.
-102. [ ] Title: show the player's best result per difficulty on the title too (e.g. a small
-    laurel icon once Mythic is beaten).
+101. [x] Settings → "Reset records" (two-tap confirm).
+102. [x] Title shows a crown "laurel" per difficulty the player has beaten (tooltip: wins and
+    fastest victory).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

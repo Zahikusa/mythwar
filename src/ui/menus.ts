@@ -35,6 +35,7 @@ export class Menus {
   private selected: Difficulty;
   private syncers: (() => void)[] = [];
   private continueBtn: HTMLButtonElement | null = null;
+  private laurels: HTMLElement | null = null;
   private skipBtn: HTMLButtonElement | null = null;
   /** Set when the how-to is shown before a player's first battle. */
   private afterHowto: (() => void) | null = null;
@@ -58,6 +59,18 @@ export class Menus {
 
   get current(): Screen {
     return this.screen;
+  }
+
+  /** One laurel per difficulty the player has beaten (shown on the title screen). */
+  refreshLaurels(): void {
+    const el = this.laurels;
+    if (!el) return;
+    el.innerHTML = '';
+    for (const d of DIFFICULTIES) {
+      const r = this.settings.records[d];
+      if (!r || !r.wins) continue;
+      el.appendChild(h('span', { class: `laurel l-${d}`, title: `${AI_PROFILES[d].name} defeated ${r.wins}×${r.best ? ` · fastest ${fmtTime(r.best)}` : ''}` }, h('i', { html: ICONS.crown }), AI_PROFILES[d].name));
+    }
   }
 
   /** Shows "Continue battle" on the title screen when an autosave exists. */
@@ -96,6 +109,7 @@ export class Menus {
       this.skipBtn?.classList.toggle('hidden', !this.afterHowto);
     }
     if (screen === 'difficulty') this.refreshDifficulty();
+    if (screen === 'title') this.refreshLaurels();
     if (screen === 'settings') for (const f of this.syncers) f();
   }
 
@@ -138,7 +152,8 @@ export class Menus {
       creatures.appendChild(c);
     });
     const foot = h('div', { class: 'title-foot', text: 'A tribute to Age of War — reimagined with gods and monsters.' });
-    return h('div', { class: 'screen title' }, logo, creatures, buttons, foot);
+    this.laurels = h('div', { class: 'laurels' });
+    return h('div', { class: 'screen title' }, logo, creatures, this.laurels, buttons, foot);
   }
 
   // -------------------------------------------------------------------------
@@ -314,6 +329,19 @@ export class Menus {
       return h('label', { class: 'srow check' }, h('span', { text: label }), input, h('i', { class: 'sw' }));
     };
     const back = this.button('Done', 'primary', () => this.show(this.back));
+    const resetRecords = this.button('Reset records', 'ghost', () => {
+      if (resetRecords.dataset.armed !== '1') {
+        // Two-step to avoid accidents.
+        resetRecords.dataset.armed = '1';
+        resetRecords.querySelector('span')!.textContent = 'Tap again to erase W/L';
+        return;
+      }
+      s.records = {};
+      this.cb.settingsChanged(s);
+      resetRecords.dataset.armed = '';
+      resetRecords.querySelector('span')!.textContent = 'Records cleared';
+      this.refreshLaurels();
+    });
     const resetTips = this.button('Show tips again', 'ghost', () => {
       s.hintsSeen = [];
       s.hints = true;
@@ -342,7 +370,7 @@ export class Menus {
           h('span', { text: 'A tribute to the Flash classic Age of War. Every creature, citadel and effect is drawn in code and every sound is synthesized live — no image or audio files.' }),
         ),
       ),
-      h('div', { class: 'mrow' }, resetTips, back),
+      h('div', { class: 'mrow' }, resetRecords, resetTips, back),
     );
   }
 

@@ -187,6 +187,50 @@
   }
 }
 
+.laurels {
+  display: flex;
+  gap: 8px;
+  min-height: 0;
+}
+
+.laurels:empty {
+  display: none;
+}
+
+.laurel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px 3px 6px;
+  border-radius: 12px;
+  background: rgba(10, 6, 20, 0.6);
+  border: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 700;
+  color: #e4dcff;
+}
+
+.laurel i {
+  width: 14px;
+  height: 14px;
+}
+
+.l-novice i {
+  color: #7ee08a;
+}
+
+.l-adept i {
+  color: #ffd76a;
+}
+
+.l-master i {
+  color: #ff9a5a;
+}
+
+.l-mythic i {
+  color: #ff7a8a;
+}
+
 .title-foot {
   position: absolute;
   bottom: 14px;
