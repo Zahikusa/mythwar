@@ -194,6 +194,11 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     await sleep(50);
     s = await state(page);
     check('number key summons', s.queue === Math.min(5, q0 + 1), `queue=${s.queue}`);
+    const goldBefore = s.gold;
+    await page.keyboard.press('Backspace');
+    await sleep(50);
+    s = await state(page);
+    check('Backspace cancels the last summon with a refund', s.queue === Math.min(5, q0 + 1) - 1 && s.gold > goldBefore, `queue=${s.queue}`);
   }
 
   // Queue chips mirror the queue; tapping one cancels it (refund).

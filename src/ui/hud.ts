@@ -215,6 +215,7 @@ export class Hud {
       ['W / S  ·  ↑ / ↓  ·  Q A Z', 'Select a lane (or click it)'],
       ['Drag a card', 'Summon straight into any lane'],
       ['Space', 'God power on the selected lane'],
+      ['Backspace', 'Cancel the last summon (refund)'],
       ['U', 'Ascend to the next age'],
       ['T  ·  B', 'Turrets  ·  Blessings'],
       ['F', 'Toggle 2× speed'],
@@ -405,6 +406,11 @@ export class Hud {
     const r = g.command({ type: 'sellTurret', team: g.playerTeam, lane });
     if (r.ok) this.cb.sound('sell');
     else this.fail(r.reason, this.turretRows[lane]);
+  }
+
+  /** Feedback after a summon was cancelled from the keyboard. */
+  onCancelled(): void {
+    this.cb.sound('cancel');
   }
 
   toggleSpeed(): void {

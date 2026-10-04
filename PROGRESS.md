@@ -216,6 +216,8 @@ See DESIGN.md for the game design.
     soon as there's room — summons for other lanes are no longer held up. Ready chips get a
     gold border + "waiting for room" tooltip. Unit-tested; save format compatible (optional
     field).
+84. [x] Backspace/Delete cancels the most recent summon (refund); on the controls card;
+    smoke-checked.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
