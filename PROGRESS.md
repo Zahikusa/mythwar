@@ -288,8 +288,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 115. [x] Heavy impacts (splash shots, Zeus bolts, Starfall meteors) leave a fading scorch decal
     under the creatures.
 116. [x] HUD shrine pips pulse when a shrine changes hands.
-117. [ ] Fimbulwinter: frozen creatures could get frost-white tint on the creature itself (now
-    only a translucent ice block overlay).
+117. [x] Frozen creatures are drawn frost-tinted (ctx.filter; ignored where unsupported) inside
+    their ice block.
 118. [ ] Lane paths could show faint footprint/wear along the middle over time (cosmetic).
 119. [ ] Title: subtle parallax drift of the backdrop camera to make the menu feel alive.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,

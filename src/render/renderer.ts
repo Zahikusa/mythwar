@@ -1028,7 +1028,11 @@ export class Renderer {
         ctx.stroke();
       }
     }
+    // Frozen solid: drain the colour toward frost (browsers without ctx.filter just skip it).
+    const frozen = u.freezeTimer > 0;
+    if (frozen) ctx.filter = 'grayscale(0.7) brightness(1.35) hue-rotate(160deg) saturate(0.6)';
     art.draw(ctx, pose);
+    if (frozen) ctx.filter = 'none';
     ctx.restore();
     ctx.globalAlpha = 1;
 
