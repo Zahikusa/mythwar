@@ -44,6 +44,8 @@ const SCENARIOS: Scenario[] = [
   { name: 'menu-settings', query: 'screen=settings', w: 1600, h: 900, wait: 2000 },
   { name: 'mobile-title', query: '', w: 844, h: 390, mobile: true, dpr: 3, wait: 2500 },
   { name: 'mobile-diff', query: 'screen=difficulty', w: 844, h: 390, mobile: true, dpr: 3, wait: 2000 },
+  { name: 'mobile-howto', query: 'screen=howto', w: 844, h: 390, mobile: true, dpr: 2, wait: 2000, script: `(() => { const b = document.querySelector('.hnext'); b.click(); b.click(); })()`, after: 500 },
+  { name: 'mobile-pause', query: 'play=novice&seed=4', w: 844, h: 390, mobile: true, dpr: 2, wait: 1500, script: `window.__mythwar.pause()`, after: 500 },
   { name: 'mobile-port-title', query: '', w: 390, h: 844, mobile: true, dpr: 2, wait: 2500 },
   { name: 'mobile-port-diff', query: 'screen=difficulty', w: 390, h: 844, mobile: true, dpr: 2, wait: 2000 },
   { name: 'power-briar', query: 'demo&ff=60&seed=3', w: 1600, h: 900, script: cast(0, 1), after: 700 },

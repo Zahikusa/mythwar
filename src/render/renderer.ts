@@ -96,6 +96,7 @@ export class Renderer {
   private shrinePulse = [0, 0, 0];
   private gateChips = [-1, -1, -1, -1, -1, -1];
   private laneAlert = [0, 0, 0];
+  private shrineGlint = [0, 0, 0];
   private winner: Team | null = null;
   private embers: { x: number; y: number; vx: number; vy: number; life: number }[] = [];
   private hover: { unit: Unit; x: number; top: number; d: number } | null = null;
@@ -712,6 +713,11 @@ export class Renderer {
     const capCol = s.capture < 0 ? TEAM_COLORS[0] : TEAM_COLORS[1];
     const pulse = this.shrinePulse[g.index];
     const bob = Math.sin(this.time * 2 + g.index) * 2 * sc;
+    // A held shrine sheds a golden glint now and then: it is paying its owner.
+    if (owner !== -1 && this.time - this.shrineGlint[g.index] > 1.6) {
+      this.shrineGlint[g.index] = this.time + Math.random() * 0.8;
+      this.fx.add({ x: x + (Math.random() - 0.5) * 8 * sc, y: y - 44 * sc, vy: -26, life: 1.1, size: 2.4, color: '#ffd76a', rgb: [255, 215, 106], shape: 'glow', layer: g.index });
+    }
     // Capture radius hint
     const rx = (SHRINE_RADIUS / LANE_LENGTH) * (g.x1 - g.x0);
     ctx.save();
