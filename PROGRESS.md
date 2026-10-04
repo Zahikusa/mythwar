@@ -201,6 +201,8 @@ See DESIGN.md for the game design.
 74. [x] iOS Safari pinch/rotate gestures and double-tap zoom are blocked (`gesture*` and quick
     second `touchend` preventDefault in main.ts; inputs exempt). Not verifiable on a real iPhone
     here — buttons use pointer events so the click suppression doesn't affect them.
+76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
+    `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
