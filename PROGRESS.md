@@ -428,6 +428,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     Adept dropped 19% → ~11% (n=90). Tried Adept variants (think 1.6–1.9 s, income 85–90%): bot
     wins 9–16/90 with no clear trend, i.e. noise at this n — kept unchanged. If human testers find
     Adept too hard, ease `AI_PROFILES.adept` (think time / incomeMult) a notch.
+173. [x] Coach tips say "Click" instead of "Tap" on desktop; the drag ghost scales from its corner
+    so it stays under the pointer on zoomed HUDs (smoke-checked at QHD).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

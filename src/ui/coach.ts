@@ -191,7 +191,9 @@ export class Coach {
       if (tip.when(g, t, this)) {
         this.current = tip;
         this.shownAt = t;
-        this.text.textContent = tip.text;
+        // Tips are written for touch; mouse players click.
+        const touch = this.stage.classList.contains('mobile');
+        this.text.textContent = touch ? tip.text : tip.text.replace(/\bTap\b/g, 'Click').replace(/\btap\b/g, 'click');
         this.el.classList.add('show');
         this.position();
         break;
