@@ -56,6 +56,15 @@ Legend (age 5): Elder Dragon.
 Turrets per age: a **Bolt** turret (single target, long range) and a **Blast**
 turret (splash). Turrets can be sold for 50%.
 
+## Systems added during balancing (see PROGRESS.md decisions log)
+- **Gate wards:** every gate has a free, weak built-in ward (scales with age) — gives the
+  defender an edge so one lost skirmish doesn't snowball into a 3-minute loss.
+- **Blessings:** permanent upgrades bought with gold — Might (+10% damage), Vitality (+10%
+  health for new creatures), Bastion (+15% citadel health, +7.5% ward/turret damage); five ranks
+  each, prices scale with rank and age. A late-game gold sink.
+- **Ragnarök:** at 18:00, or 3 minutes after both sides reach the final age, the wards fall
+  silent and damage to citadels ramps +100% per minute — long stalemates end.
+
 ## Controls
 - **Desktop:** click a lane (or W/S, ↑/↓, Q/A/Z) to select it; click a creature card
   (or 1–4) to summon into it; drag a card onto any lane; Space casts the god power on
@@ -68,5 +77,6 @@ turret (splash). Turrets can be sold for 50%.
 ## AI
 Same command API as the player. Four difficulties: Novice, Adept, Master, Mythic.
 Evaluates per-lane threat, picks counters, contests shrines, saves to ascend,
-builds turrets, aims god powers. Difficulty scales reaction time, decision
-quality and (Mythic only) a small income bonus.
+builds turrets, buys blessings, aims god powers, and piles into the weakest lane during
+Ragnarök. Difficulty scales reaction time, decision quality and income (Novice 70%,
+Adept 90%, Master 100%, Mythic 120%).
