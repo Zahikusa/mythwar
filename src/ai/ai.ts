@@ -223,6 +223,10 @@ export class AiController {
 
     // 2. Ascend.
     let reserve = 0;
+    // Under siege, gold normally goes straight into defenders — but not while the foe is an age
+    // ahead and we could ascend: their creatures out-tier ours, so spending on more of ours is a
+    // death spiral, and ascending also reinforces the citadel.
+    let saveThroughSiege = false;
     if (me.age < AGES.length - 1) {
       const next = AGES[me.age + 1];
       const xpReady = me.xp >= next.xpRequired;
@@ -231,15 +235,17 @@ export class AiController {
         if (me.gold >= next.ascendCost && this.rng.chance(p.ascendSkill)) {
           if (w.apply({ type: 'ageUp', team: this.team }).ok) return;
         }
+        saveThroughSiege = w.players[this.team === 0 ? 1 : 0].age > me.age;
         // Save up for the tithe (less strictly while the citadel is in trouble).
-        reserve = next.ascendCost * p.ascendSkill * (underSiege ? 0.5 : 1);
+        reserve = next.ascendCost * p.ascendSkill * (underSiege && !saveThroughSiege ? 0.5 : 1);
       } else if (me.xp >= next.xpRequired * 0.8 && !underSiege) {
         reserve = next.ascendCost * 0.5 * p.ascendSkill;
       }
     }
+    const keep = underSiege && !saveThroughSiege ? 0 : reserve;
 
     // 3. Turrets.
-    if (w.time >= p.turretDelay && this.rng.chance(p.turretSkill)) this.considerTurret(lanes, reserve);
+    if (w.time >= p.turretDelay && this.rng.chance(p.turretSkill)) this.considerTurret(lanes, reserve, saveThroughSiege);
 
     // 4. Blessings with clearly spare gold.
     if (this.rng.chance(p.blessSkill)) this.considerBlessing(reserve, unitCost, underSiege);
@@ -250,11 +256,11 @@ export class AiController {
       const lane = this.pickLane(lanes, danger, unitCost);
       const def = this.pickUnit(lanes[lane]);
       if (!def) break;
-      const affordable = me.gold - def.cost >= (underSiege ? 0 : reserve);
+      const affordable = me.gold - def.cost >= keep;
       if (!affordable) {
         // Weaker AIs fall back to whatever they can afford; stronger ones wait for the right unit.
         if (this.rng.chance(1 - p.counterSkill)) {
-          const cheap = AGE_UNITS[me.age].filter((u) => u.cost <= me.gold - (underSiege ? 0 : reserve) && w.trainBlocker(this.team, u.id) === null);
+          const cheap = AGE_UNITS[me.age].filter((u) => u.cost <= me.gold - keep && w.trainBlocker(this.team, u.id) === null);
           if (cheap.length === 0) break;
           const alt = this.rng.pick(cheap);
           if (!w.apply({ type: 'train', team: this.team, unitId: alt.id, lane }).ok) break;
@@ -341,7 +347,7 @@ export class AiController {
     w.apply({ type: 'power', team: this.team, lane });
   }
 
-  private considerTurret(lanes: LaneInfo[], reserve: number): void {
+  private considerTurret(lanes: LaneInfo[], reserve: number, saving: boolean): void {
     const w = this.world;
     const me = w.players[this.team];
     const [bolt, blast] = AGE_TURRETS[me.age];
@@ -358,7 +364,8 @@ export class AiController {
     const spare = me.gold - reserve - def.cost;
     // Only build when there is clearly spare gold, or the lane is under real pressure.
     const pressured = target.enemyFront < 0.35 && target.enemyValue > target.myValue;
-    if (spare < AGE_UNITS[me.age][0].cost * 2 && !(pressured && me.gold >= def.cost)) return;
+    // (Not while saving to ascend out of an age deficit: an outdated turret won't hold them.)
+    if (spare < AGE_UNITS[me.age][0].cost * 2 && !(pressured && !saving && me.gold >= def.cost)) return;
     w.apply({ type: 'buildTurret', team: this.team, lane: target.lane, turretId: def.id });
   }
 }
