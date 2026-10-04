@@ -296,6 +296,28 @@ async function largeDesktopFlow(page: Page): Promise<void> {
     await page.mouse.up();
     check('zoomed drag ghost sits over the pointer', Math.abs(gr.cx - to.x) < 3 && gr.top < to.y && gr.bottom > to.y - 10 && gr.w > 70, JSON.stringify(gr));
   }
+  // Coach: with the XP for the next age but never the gold, a tip teaches saving up (after 40 s).
+  {
+    const r = await page.evaluate(async () => {
+      const app = (window as unknown as { __mythwar: any }).__mythwar;
+      const hints = app.settings.hintsSeen.slice();
+      app.settings.hintsSeen = ['summon', 'lanes', 'counters', 'packs', 'jammed', 'wards', 'power', 'shrine', 'ascend', 'turret', 'portals', 'bless'];
+      const g = app.game;
+      app.coach.attach(g);
+      const me = g.world.players[0];
+      me.xp = 900;
+      me.gold = 20;
+      app.coach.update();
+      const early = document.querySelector('.coach')!.classList.contains('show');
+      g.world.time += 45;
+      app.coach.update();
+      const text = document.querySelector('.coach')!.classList.contains('show') ? document.querySelector('.coach .ctext')!.textContent : '';
+      app.settings.hintsSeen = hints;
+      app.coach.attach(g);
+      return { early, text };
+    });
+    check('coach teaches saving up for the tithe', !r.early && /Save up to Ascend/.test(r.text ?? ''), JSON.stringify(r));
+  }
   // A window squeezed to a sliver (degenerate layout) must not kill the render loop.
   for (const [w, h] of [[120, 300], [1, 1]]) {
     await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });

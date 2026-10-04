@@ -87,6 +87,17 @@ const TIPS: Tip[] = [
     done: (g, t, s) => g.world.players[g.playerTeam].age > 0 || t - s > 14,
   },
   {
+    // Never saving for the tithe is the classic way to fall an age behind (and lose).
+    id: 'save',
+    text: 'Save up to Ascend: hold your summons for a moment until you can pay the tithe — a new age outclasses a handful of extra creatures.',
+    anchor: '.act.ascend',
+    when: (g, t, c) => {
+      const p = g.world.players[g.playerTeam];
+      return !!c && c.xpReadySince >= 0 && t - c.xpReadySince > 40 && p.age < MAX_AGE && p.gold < AGES[p.age + 1].ascendCost;
+    },
+    done: (g, t, s) => g.world.players[g.playerTeam].gold >= AGES[Math.min(MAX_AGE, g.world.players[g.playerTeam].age + 1)].ascendCost || t - s > 12,
+  },
+  {
     id: 'turret',
     text: 'Spare gold? Mount a turret on a gate to guard that lane.',
     anchor: '.turretbtn',
@@ -128,6 +139,9 @@ export class Coach {
   private zoomValue = 1;
   /** Player creatures killed close to the enemy gate this battle. */
   diedAtEnemyGate = 0;
+  /** Sim time since which the player has had the XP for the next age (-1: not yet). */
+  xpReadySince = -1;
+  private xpReadyAge = -1;
 
   constructor(stage: HTMLElement, settings: Settings, parent: HTMLElement = stage) {
     this.stage = stage;
@@ -149,6 +163,8 @@ export class Coach {
   attach(game: Game | null): void {
     this.game = game;
     this.diedAtEnemyGate = 0;
+    this.xpReadySince = -1;
+    this.xpReadyAge = -1;
     this.current = null;
     this.el.classList.remove('show');
   }
@@ -177,6 +193,13 @@ export class Coach {
       return;
     }
     const t = g.world.time;
+    const me = g.world.players[g.playerTeam];
+    const ready = me.age < MAX_AGE && me.xp >= AGES[me.age + 1].xpRequired;
+    if (!ready) this.xpReadySince = -1;
+    else if (this.xpReadySince < 0 || me.age !== this.xpReadyAge) {
+      this.xpReadySince = t;
+      this.xpReadyAge = me.age;
+    }
     if (this.current) {
       const done = this.current.done ? this.current.done(g, t, this.shownAt) : t - this.shownAt > 8;
       if (done) this.finish();

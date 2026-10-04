@@ -475,6 +475,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 180. [x] Desktop cursor shows what's clickable: pointer over lanes, pointer + "Your gate — click to
     mount or swap its turret" tooltip over your gates (gate clicks were undiscoverable).
     Smoke-checked. HUD zoom cap raised 1.6 → 2 (4K at DPR 1 keeps 1080p proportions).
+181. [x] New coach tip "save": when the player has had the XP for the next age for 40 s but never the
+    tithe, it suggests holding summons to ascend (the bots show never saving is the main way
+    to lose to Adept). Smoke-checked.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
