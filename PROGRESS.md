@@ -470,6 +470,12 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     pop in; cancel uses the chip's live index. Smoke checks for chips + cancel added.
 
 ## Decisions log
+- Side symmetry (run #2): units decide "in reach" from start-of-tick distances and slain units
+  still land a swing finishing in the same tick, so update order never decides a fight (all
+  mirror duels draw). Master mirrors after the fixes: team 0 won 160 of 300 (53%, ~1 SE) — no
+  meaningful side bias left. (Movement order still lets team 0 cover the last sub-step when two
+  units meet; it only shifts where they meet by < 1 tick of walking.)
+- Splash shares don't stack (largest applies); Jötunn cleave raised to full force to compensate.
 - Formation rules (packs/sweep/hang-back) instead of raw stat tuning: stats alone cannot fix
   ranged focus-fire dominance without breaking the 1v1 triangle.
 - Added **gate wards** (free built-in weak turret per lane, scales with age): without them, the
