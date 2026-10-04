@@ -36,7 +36,8 @@ installed as an app on phones ("Add to Home Screen"), which also locks landscape
 - **Summon:** pick a lane (click/tap it or the ▶ marker at your gate), then tap a creature card.
   Or drag a card straight onto a lane.
 - **Counter:** Guardians (shield) beat Hunters (fang), Hunters beat Mystics (orb), Mystics beat
-  Guardians. The card marked **Counter!** answers what's in your selected lane.
+  Guardians. Hunters strike as packs, Guardians' sweeping blows break packs, and Mystics hang
+  back behind the front line. The card marked **Counter!** answers what's in your selected lane.
 - **Economy:** gold trickles in and comes from kills. Hold the **Ley Shrine** in a lane's centre for
   extra income.
 - **Ascend:** kills give XP; with enough XP and a gold tithe you advance to the next age (new
@@ -56,6 +57,7 @@ installed as an app on phones ("Add to Home Screen"), which also locks landscape
 | T / B | Turret / blessing panel |
 | F | Toggle 2× speed |
 | Esc / P | Pause |
+| ? / H | Controls card |
 
 On phones the creature cards sit under your left thumb and actions under your right; a
 long-press on a card shows its details. Held upright, the game rotates into landscape.
@@ -77,6 +79,8 @@ npm run smoke                    # end-to-end browser test (needs local Chrome)
 npm run shoot -- desktop         # screenshots into screenshots/
 node scripts/soak.ts 60 16       # long fast battles in Chrome: errors + fps
 ```
+
+Battles autosave; "Continue" on the title screen resumes them.
 
 Debug URLs: `?demo&ff=300&seed=5` (AI vs AI, fast-forwarded), `?play=adept`, `?screen=howto`,
 `?gallery` (every creature's idle / walk / attack animation), `?mode=mobile`.
