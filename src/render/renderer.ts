@@ -95,6 +95,9 @@ export class Renderer {
   readonly skip = new Set<string>();
   /** Stage position of the HUD gold counter (coins fly there), or null when hidden. */
   coinTarget: [number, number] | null = null;
+  /** Game speed (2 = fast-forward): effects timed by the sim (meteor fall, root, freeze) run
+   *  this much faster in real time, so they stay in step with what they show. */
+  speed = 1;
   private bgCache = new Map<number, HTMLCanvasElement>();
   private keepCache = new Map<string, { canvas: HTMLCanvasElement; x: number; w: number }>();
   private gradCache = new Map<string, CanvasGradient>();
@@ -526,7 +529,7 @@ export class Renderer {
           const g = L.lanes[e.lane];
           const x = laneX(g, e.x);
           const fromX = x + (e.team === 0 ? -1 : 1) * L.field.h * 0.35;
-          this.fx.timedFx({ kind: 'meteor', x, y: g.y - 6 * this.bodyScale(g), x2: fromX, y2: -40, dur: e.fall, layer: 3, size: 9 * this.bodyScale(g) + 4, rgb: [255, 200, 120], color: '#ffd38a' });
+          this.fx.timedFx({ kind: 'meteor', x, y: g.y - 6 * this.bodyScale(g), x2: fromX, y2: -40, dur: e.fall / this.speed, layer: 3, size: 9 * this.bodyScale(g) + 4, rgb: [255, 200, 120], color: '#ffd38a' });
           break;
         }
         case 'gameOver':
@@ -653,7 +656,7 @@ export class Renderer {
     const s = this.bodyScale(g);
     switch (kind) {
       case 'briar':
-        this.fx.timedFx({ kind: 'vines', x, y: g.y + 2, dur: POWER_TIMING.briar.root + 0.2, layer: lane, size: Math.max(14, radius * 2.2) * s * 1.1 });
+        this.fx.timedFx({ kind: 'vines', x, y: g.y + 2, dur: POWER_TIMING.briar.root / this.speed + 0.2, layer: lane, size: Math.max(14, radius * 2.2) * s * 1.1 });
         this.fx.burst(x, g.y - 6 * s, { count: 8, color: '#4e8f3a', speed: 120, life: 0.7, size: 2.5, shape: 'leaf', layer: lane, gravity: 260 });
         break;
       case 'zeus':
@@ -664,7 +667,7 @@ export class Renderer {
         this.shake = Math.max(this.shake, 4);
         break;
       case 'fimbul':
-        this.fx.timedFx({ kind: 'ice', x, y: g.y + 2, dur: POWER_TIMING.fimbul.freeze, layer: lane, size: Math.max(12, radius * 1.6) * s * 1.15 });
+        this.fx.timedFx({ kind: 'ice', x, y: g.y + 2, dur: POWER_TIMING.fimbul.freeze / this.speed, layer: lane, size: Math.max(12, radius * 1.6) * s * 1.15 });
         this.fx.burst(x, g.y - 10 * s, { count: 10, color: '#d8f3ff', speed: 140, life: 0.6, size: 2.5, shape: 'shard', layer: lane, gravity: 200 });
         break;
       case 'spiritdragon':

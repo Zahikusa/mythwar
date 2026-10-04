@@ -567,8 +567,10 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     battle). Smoke check: a continued battle (fast-forwarded 25 s) shows its 7 creatures.
 202. [x] Turrets float in mid-air while the losing citadel collapses (`renderer.ts:786` draws them at
     the original gate top; gates sink by collapse²·60 px in `citadel.ts:351`).
-203. [ ] Power visuals use real time but sim timings: at 2× speed meteors land (impact/shake fire)
+203. [x] Power visuals use real time but sim timings: at 2× speed meteors land (impact/shake fire)
     at ~24% of their fall; vines/ice outlast the root/freeze 2× (`renderer.ts:529,655,666`).
+    Now `renderer.speed` (set from the game each frame) divides those sim-timed durations.
+    Measured in Chrome: at the first Starfall impact the meteor is 98% (1×) / 99.9% (2×) down.
 204. [x] Enemy citadel collapse explosions use `[near.x1, right]` instead of the mirrored
     `[far.x1, right]` (`renderer.ts:610`): its far/middle gates never explode.
     (#202 + #204: turrets get the gate's clip and drop; the `gameover-collapse` screenshot
