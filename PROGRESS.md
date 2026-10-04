@@ -68,7 +68,8 @@ See DESIGN.md for the game design.
   headless software-rendered fps 44–85 at 16× speed).
 
 ## Improvement backlog
-(verification mode: complete ≥2 per run, verify, commit, add new findings)
+(verification mode: complete ≥2 per run, verify with `npm run verify`, commit, add findings.
+Screenshot scenarios: `node scripts/shoot.ts --list`.)
 1. [x] `src/audio/audio.ts schedule()`: after the tab was backgrounded, `nextBar` lagged far behind
    `currentTime`, so the loop scheduled every missed bar at once (audio burst). Now clamped.
 2. [x] `src/input.ts onKey`: focused HUD buttons + Space. Turned out Chrome already suppresses
@@ -125,10 +126,10 @@ See DESIGN.md for the game design.
 30. [x] Healing had no feedback: regrowth/lifesteal now emit rising green sparkles (every 5%
     of max HP healed).
 31. [x] DESIGN.md controls were out of date (Space casts directly; Q/A/Z, B, F keys).
-32. [ ] Performance: `node scripts/perf.mjs` stress (127 creatures) costs ~42 ms/frame with
-    headless software raster vs ~0.6 ms for a typical field; real battles stay ≤ ~25 creatures
-    (~7 ms). If real phones struggle, cache creature animation frames as sprites (LRU by
-    def/team/scale/frame) — needs on-device profiling first.
+32. [ ] (deferred until real-device profiling) Creature sprite caching. Software-raster cost is
+    ~8 ms/frame for an empty field and ~+0.2 ms per creature; real battles stay ≤ ~25
+    creatures. Quantized sprite frames would cost smoothness and ~10–40 MB; the automatic
+    battery-saver fallback (#78) covers slow devices for now.
 33. [x] Desktop controls card: "?" button in the top bar and ?/H/F1 keys.
 34. [x] Title backdrop battles use adept or master AIs and start at random moments (0:40–7:00),
     with the matching age backdrop.
