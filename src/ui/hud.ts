@@ -121,7 +121,7 @@ export class Hud {
     E.shrines = h('div', { class: 'shrines', title: 'Ley Shrines: capture them for extra gold' });
     for (let i = 0; i < LANE_COUNT; i++) E.shrines.appendChild(h('i', { html: ICONS.shrine }));
     E.rag = h('div', { class: 'ragnarok' });
-    E.speed = h('button', { class: 'sysbtn speed', title: 'Game speed (F)', html: ICONS.fast + '<span>1×</span>' });
+    E.speed = h('button', { class: 'sysbtn speed', title: 'Game speed (F)', 'aria-label': 'Game speed', html: ICONS.fast + '<span>1×</span>' });
     E.pause = h('button', { class: 'sysbtn', title: 'Pause (Esc)', html: ICONS.pause });
     onTap(E.speed, () => this.toggleSpeed());
     onTap(E.pause, () => this.cb.pause());
@@ -132,7 +132,7 @@ export class Hud {
       h('div', { class: 'mid' }, E.clock, E.shrines, E.rag),
       h('div', { class: 'side right' }, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpRd, E.hpR, E.hpRn), h('div', { class: 'agerow' }, E.blessR, E.foePow, E.ageRn)), E.ageR),
     );
-    E.keysBtn = h('button', { class: 'sysbtn keysbtn', title: 'Controls (?)', text: '?' });
+    E.keysBtn = h('button', { class: 'sysbtn keysbtn', title: 'Controls (?)', 'aria-label': 'Controls', text: '?' });
     onTap(E.keysBtn, () => this.togglePanel('keys'));
     E.muteBtn = h('button', { class: 'sysbtn mutebtn', title: 'Mute (M)', html: ICONS.sound });
     onTap(E.muteBtn, () => this.toggleMute());
@@ -183,7 +183,7 @@ export class Hud {
     for (let i = 0; i < LANE_COUNT; i++) {
       const tab = h(
         'button',
-        { class: 'lanetab', title: `${LANE_NAMES[i]} lane` },
+        { class: 'lanetab', title: `${LANE_NAMES[i]} lane`, 'aria-label': `Select the ${LANE_NAMES[i].toLowerCase()} lane` },
         h('span', { class: 'arrow', text: '▶' }),
         h('span', { class: 'qn' }),
         h('span', { class: 'lbar', title: 'Lane strength: yours vs. the enemy' }, h('i')),
@@ -287,6 +287,7 @@ export class Hud {
     this.syncMute();
     setText(this.el.speed.querySelector('span')!, `${game.speed}×`);
     toggle(this.el.speed, 'on', game.speed > 1);
+    this.el.speed.setAttribute('aria-pressed', String(game.speed > 1));
     toggle(this.el.ascend, 'maxed', false);
     this.cardAge = -1;
     this.hpShown = [1, 1];
@@ -475,6 +476,8 @@ export class Hud {
     const muted = this.cb.isMuted();
     this.el.muteBtn.innerHTML = muted ? ICONS.mute : ICONS.sound;
     toggle(this.el.muteBtn, 'on', muted);
+    this.el.muteBtn.setAttribute('aria-pressed', String(muted));
+    this.el.muteBtn.title = muted ? 'Unmute (M)' : 'Mute (M)';
   }
 
   /** Feedback after a summon was cancelled from the keyboard. */
@@ -488,6 +491,7 @@ export class Hud {
     this.cb.speedChanged(this.game.speed);
     setText(this.el.speed.querySelector('span')!, `${this.game.speed}×`);
     toggle(this.el.speed, 'on', this.game.speed > 1);
+    this.el.speed.setAttribute('aria-pressed', String(this.game.speed > 1));
   }
 
   togglePanel(which: 'none' | 'turret' | 'bless' | 'keys'): void {
@@ -1053,7 +1057,11 @@ export class Hud {
     const prog = h('div', { class: 'qprog' });
     const el = h(
       'button',
-      { class: 'qchip', title: `${UNITS[unitId].name} → ${LANE_NAMES[lane]} lane (click to cancel)` },
+      {
+        class: 'qchip',
+        title: `${UNITS[unitId].name} → ${LANE_NAMES[lane]} lane (click to cancel)`,
+        'aria-label': `Cancel ${UNITS[unitId].name} for the ${LANE_NAMES[lane].toLowerCase()} lane (refund)`,
+      },
       portrait(unitId, 30, 0, 0.4, false, this.zoom),
       h('span', { class: 'ql', text: LANE_NAMES[lane][0] }),
       prog,
@@ -1136,6 +1144,7 @@ export class Hud {
         ref.buy.disabled = cost < 0;
         if (cost < 0) ref.buy.textContent = 'Max';
         else ref.buy.innerHTML = `${ICONS.gold}<span>${fmt(cost)}</span>`;
+        ref.buy.setAttribute('aria-label', cost < 0 ? `${BLESSINGS[id].name}: highest rank` : `Buy ${BLESSINGS[id].name} rank ${ROMAN[rank]} for ${fmt(cost)} gold`);
       }
       toggle(ref.buy, 'poor', cost >= 0 && me.gold < cost);
     }

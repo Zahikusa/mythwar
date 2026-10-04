@@ -569,9 +569,15 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     (How-to: "Press it, then choose a lane … (on a keyboard, Space casts it on the selected
     lane)". The XP bar fill is now total XP / next requirement, matching its "3000 / 8000"
     text — which it contradicted too — and the Ascend fill. Still fits the 667×375 how-to.)
-200. [ ] Accessibility names: blessing buy buttons named only by price, queue chips by one letter,
+200. [x] Accessibility names: blessing buy buttons named only by price, queue chips by one letter,
     lane tabs "▶", mute button has no `aria-pressed`; menus lack dialog roles; hidden how-to
     pages are only opacity 0; `.res` tooltips dead (`pointer-events:none`).
+    (aria-labels: "Select the top lane", "Cancel Treant Warden for the top lane (refund)",
+    "Buy Might rank I for 528 gold", "Controls", "Game speed"; mute and speed have
+    `aria-pressed`, mute's title flips to "Unmute (M)"; screens are labelled dialogs (title: a
+    region); hidden how-to pages are `inert`; desktop gold/XP rows take hover again. Checked
+    with Chrome's accessibility tree. Not done: moving focus into menus — a focused button on
+    a screen that then hides could catch Space in battle.)
 201. [x] Continued saved battle shows no creatures while paused: renderer fade-in (`v.spawn`) only
     advances with frame time (0 while paused) and `reset()` clears it, so on Continue every
     creature is alpha 0 until Resume, then all pop in at once (`renderer.ts:1092,1138,1160`).

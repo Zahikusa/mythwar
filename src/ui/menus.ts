@@ -60,7 +60,12 @@ export class Menus {
     this.screens.settings = this.buildSettings();
     this.screens.pause = this.buildPause();
     this.screens.over = h('div', { class: 'screen over' });
-    for (const el of Object.values(this.screens)) this.root.appendChild(el!);
+    const labels: Partial<Record<Screen, string>> = { title: 'Main menu', difficulty: 'Choose your foe', howto: 'How to play', settings: 'Settings', pause: 'Paused', over: 'Battle results' };
+    for (const [k, el] of Object.entries(this.screens)) {
+      el!.setAttribute('role', k === 'title' ? 'region' : 'dialog');
+      el!.setAttribute('aria-label', labels[k as Screen] ?? k);
+      this.root.appendChild(el!);
+    }
     this.show('none');
   }
 
@@ -327,7 +332,11 @@ export class Menus {
 
   private setHowtoPage(i: number): void {
     this.howtoPage = i;
-    this.howtoPages.forEach((p, k) => p.classList.toggle('active', k === i));
+    this.howtoPages.forEach((p, k) => {
+      p.classList.toggle('active', k === i);
+      // Hidden pages are only faded out: keep screen readers and Tab on the visible one.
+      p.inert = k !== i;
+    });
     this.howtoDots?.querySelectorAll('.hdot').forEach((d, k) => d.classList.toggle('on', k === i));
     const next = this.screens.howto?.querySelector('.hnext span');
     if (next) next.textContent = i === this.howtoPages.length - 1 ? (this.afterHowto ? 'To battle!' : 'Got it') : 'Next';

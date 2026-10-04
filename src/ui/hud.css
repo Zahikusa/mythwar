@@ -554,6 +554,11 @@ svg {
   gap: 8px;
 }
 
+/* The gold and XP rows explain themselves on hover (the block itself lets clicks through). */
+.hud.desktop .res :is(.goldrow, .xprow) {
+  pointer-events: auto;
+}
+
 .goldrow.pulse .ico,
 .goldrow.pulse .goldnum {
   animation: goldpulse 0.35s ease;
