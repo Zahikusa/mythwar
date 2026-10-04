@@ -24,18 +24,26 @@ export class Input {
     canvas.addEventListener('pointermove', (e) => this.onMove(e));
     canvas.addEventListener('pointerdown', (e) => this.onDown(e));
     // Touch: press and hold on a creature to inspect it; release / move away to dismiss.
+    let holdFrom: { id: number; x: number; y: number } | null = null;
     canvas.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'mouse' || !this.game) return;
       clearTimeout(this.holdTimer);
+      holdFrom = { id: e.pointerId, x: e.clientX, y: e.clientY };
       const start = this.toStage(e.clientX, e.clientY);
       this.holdTimer = window.setTimeout(() => {
         if (this.game) this.game.view.inspect = { x: start[0], y: start[1] - 18 };
       }, 380);
     });
     const endHold = () => {
+      holdFrom = null;
       clearTimeout(this.holdTimer);
       if (this.game) this.game.view.inspect = null;
     };
+    // A finger that moves off is swiping, not holding (touch keeps the pointer captured, so
+    // pointerleave only comes on release).
+    canvas.addEventListener('pointermove', (e) => {
+      if (holdFrom && e.pointerId === holdFrom.id && Math.hypot(e.clientX - holdFrom.x, e.clientY - holdFrom.y) > 14) endHold();
+    });
     canvas.addEventListener('pointerup', endHold);
     canvas.addEventListener('pointercancel', endHold);
     canvas.addEventListener('pointerleave', endHold);

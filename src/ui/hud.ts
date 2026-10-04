@@ -298,6 +298,7 @@ export class Hud {
     this.toastQueue = [];
     this.toastTimer = 0;
     this.el.banner.classList.remove('show');
+    this.bannerTimer = 0;
     this.hint('');
   }
 
@@ -916,9 +917,10 @@ export class Hud {
     const outdated = me.turrets.some((t) => t.def && t.def.age < me.age);
     toggle(E.turretBtn, 'outdated', outdated);
 
-    // Timers
+    // Timers (frozen while paused, so a message isn't used up behind the pause menu)
+    const tdt = g.paused ? 0 : dt;
     if (this.toastTimer > 0) {
-      this.toastTimer -= dt;
+      this.toastTimer -= tdt;
       if (this.toastTimer <= 0) {
         const next = this.toastQueue.shift();
         if (next) this.showToast(next.text, next.kind);
@@ -926,7 +928,7 @@ export class Hud {
       }
     }
     if (this.bannerTimer > 0) {
-      this.bannerTimer -= dt;
+      this.bannerTimer -= tdt;
       if (this.bannerTimer <= 0) E.banner.classList.remove('show');
     }
   }

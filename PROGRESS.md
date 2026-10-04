@@ -556,7 +556,7 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
 197. [x] Settings "Reset records" stays armed between visits (`menus.ts:344-356`): one stray tap, Done,
     next visit a single tap wipes all W/L records. "Records cleared" label also sticks.
     (Both reset buttons start fresh each time Settings opens: `settingsOpened` in `show()`.)
-198. [ ] HUD banner timer counts down while paused (`app.ts:462` → `hud.ts:918`); `Hud.attach` doesn't
+198. [x] HUD banner timer counts down while paused (`app.ts:462` → `hud.ts:918`); `Hud.attach` doesn't
     reset `bannerTimer`, so after a quick restart `bannerShowing` suppresses coach tips ≤ 2.8 s.
 199. [x] Text vs mechanics: how-to page 5 says "Press it (or Space) and choose a lane" but Space casts
     straight away on the selected lane. XP bar shows progress within the age, the Ascend fill
@@ -648,10 +648,13 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     difficulty screen (opened from the title with a save) says "A new battle replaces your saved
     one (after its first minute, that counts as a defeat)", and `play()` from the title records
     that forfeit (restart from the pause menu already does; no double count). Smoke-checked.
-219. [ ] Enter after clicking a difficulty card doesn't begin the battle (the card is a focused button,
+219. [x] Enter after clicking a difficulty card doesn't begin the battle (the card is a focused button,
     so `pressPrimary()` is skipped and the keyboard click just re-selects it).
-220. [ ] Touch press-and-hold inspect is not cancelled when the finger moves (`input.ts:27-41`): a swipe
+220. [x] Touch press-and-hold inspect is not cancelled when the finger moves (`input.ts:27-41`): a swipe
     pops an inspect label at the start point that stays until release.
+    (#198: toast/banner timers freeze while paused, `attach` resets the banner timer. #219: a
+    keyboard click on the already-chosen card begins the battle — checked in Chrome: click
+    Master, Enter → battle vs Master. #220: moving > 14 px cancels the hold.)
 222. [ ] Rare stalemates past Ragnarök: ~1% of Adept-vs-Adept AI mirrors are still running at 45 min
     (armies grind in midfield, nothing reaches a gate, so the citadel-damage ramp never bites;
     same rate before run #3's sim changes). None in 1,200 bot-vs-AI games (max 34 min), so it

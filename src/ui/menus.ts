@@ -208,7 +208,13 @@ export class Menus {
         h('span', { title: 'Its gold over time and from shrines, compared with yours (gold from kills is the same)' }, h('b', { text: 'Income' }), `${Math.round(p.incomeMult * 100)}%`),
       );
       const card = h('button', { class: `diff d-${d}` }, h('div', { class: 'dname', text: p.name }), skulls, h('div', { class: 'dblurb', text: p.blurb }), chips, rec);
-      onTap(card, () => {
+      onTap(card, (e) => {
+        // Enter / Space on the card already chosen (a keyboard click: onTap only passes clicks
+        // without a pointer) begins the battle, as a double-click does.
+        if (e.type === 'click' && this.selected === d) {
+          this.begin(d);
+          return;
+        }
         this.selected = d;
         this.cb.sound('select');
         this.refreshDifficulty();
