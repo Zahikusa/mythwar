@@ -443,9 +443,12 @@ svg {
   height: 20px;
 }
 
-.sysbtn:hover {
-  background: var(--panel-2);
-  transform: translateY(-1px);
+/* Hover looks only where there is a real hover (on touch screens they stick after a tap). */
+@media (hover: hover) {
+  .sysbtn:hover {
+    background: var(--panel-2);
+    transform: translateY(-1px);
+  }
 }
 
 .sysbtn.keysbtn {
@@ -475,10 +478,12 @@ svg {
   padding: 8px;
 }
 
+/* Centred with auto margins: `translate` belongs to the panelin animation (a translate here
+   made the panel slide in sideways from the right). */
 .panel.keyspanel {
-  right: auto;
-  left: 50%;
-  translate: -50% 0;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
   width: 470px;
 }
 
@@ -898,14 +903,16 @@ svg {
   border-color: var(--gold);
 }
 
-.qchip:hover::after {
-  content: '\2715';
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: rgba(120, 20, 40, 0.6);
-  font-weight: 800;
+@media (hover: hover) {
+  .qchip:hover::after {
+    content: '\2715';
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(120, 20, 40, 0.6);
+    font-weight: 800;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -1290,9 +1297,11 @@ svg {
   color: var(--muted);
 }
 
-.pclose:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+@media (hover: hover) {
+  .pclose:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
 }
 
 .pdesc {
@@ -1314,8 +1323,10 @@ svg {
   border: 1px solid transparent;
 }
 
-.trow:hover {
-  border-color: rgba(63, 184, 255, 0.4);
+@media (hover: hover) {
+  .trow:hover {
+    border-color: rgba(63, 184, 255, 0.4);
+  }
 }
 
 .trow.flash {
@@ -1372,11 +1383,14 @@ svg {
   transition: transform 0.12s, filter 0.2s;
 }
 
-.tbuy:hover,
-.tsell:hover,
-.buy:hover:not(:disabled) {
-  transform: translateY(-1px);
-  filter: brightness(1.2);
+/* (Not for unaffordable ones: brightening them made them look buyable.) */
+@media (hover: hover) {
+  .tbuy:hover:not(.poor),
+  .tsell:hover,
+  .buy:hover:not(:disabled):not(.poor) {
+    transform: translateY(-1px);
+    filter: brightness(1.2);
+  }
 }
 
 .tbuy .tc,
@@ -1845,19 +1859,7 @@ svg {
   background: rgba(10, 6, 20, 0.55);
 }
 
-.hud.mobile .goldrow.pulse .ico,
-.goldrow.pulse .goldnum {
-  animation: goldpulse 0.35s ease;
-}
-
-@keyframes goldpulse {
-  40% {
-    transform: scale(1.18);
-    filter: brightness(1.4);
-  }
-}
-
-.goldrow .ico {
+.hud.mobile .goldrow .ico {
   width: 18px;
   height: 18px;
 }

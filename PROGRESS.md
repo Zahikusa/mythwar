@@ -539,13 +539,17 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     checkboxes are now visually hidden instead of `display:none` (Tab reaches all four, Space
     toggles, the focus ring shows). Smoke: Done / Rematch on screen at 844×390 and 640×360.
     New screenshot scenario `mobile-settings`.
-193. [ ] Unscoped `.goldrow .ico {18px}` (`hud.css:1820`) shrinks the desktop gold coin (30 px rule);
+193. [x] Unscoped `.goldrow .ico {18px}` (`hud.css:1820`) shrinks the desktop gold coin (30 px rule);
     duplicate unscoped `.goldrow.pulse .goldnum` + `@keyframes goldpulse` (`hud.css:1808-1818`).
-194. [ ] `.keyspanel` centred with `translate:-50% 0` but the `panelin` keyframes animate `translate`
+194. [x] `.keyspanel` centred with `translate:-50% 0` but the `panelin` keyframes animate `translate`
     → the Controls panel slides ~250 px sideways on open; in mobile mode on a short desktop
     window it sits a full width off.
-195. [ ] `.buy:hover:not(:disabled)` beats `.buy.poor` → hovering/tapping an unaffordable blessing
+195. [x] `.buy:hover:not(:disabled)` beats `.buy.poor` → hovering/tapping an unaffordable blessing
     makes it look affordable. Several `:hover` rules not in `@media (hover:hover)` (sticky on touch).
+    (#193–#195: mobile coin size scoped, duplicate pulse rule/keyframes removed — desktop coin
+    30 px again; keys panel centred with auto margins — measured centre stays at 800 px during
+    the open animation; buy hovers skip `.poor`; sysbtn/qchip ✕/pclose/trow/buy/mbtn/diff hovers
+    only under `@media (hover: hover)`.)
 196. [ ] Endless CSS animations: `readyglow`/`dangerpulse` animate box-shadow (main-thread repaint)
     even under the pause menu; title `floaty` canvases animate during battles (screen only
     visibility:hidden); `.xpfill`/`.ascfill` width transitions restarted every frame.
