@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { artScaleOf, computeLayout, hudZoom, laneAt } from '../src/render/layout.ts';
 
 describe('layout', () => {
-  it('zooms the desktop HUD only above 1920x1080, in 0.05 steps, capped at 1.6', () => {
+  it('zooms the desktop HUD only above 1920x1080, in 0.05 steps, capped at 2', () => {
     expect(hudZoom(1600, 900, 'desktop')).toBe(1);
     expect(hudZoom(1920, 1080, 'desktop')).toBe(1);
     expect(hudZoom(2560, 1440, 'desktop')).toBe(1.35);
     expect(hudZoom(2560, 1080, 'desktop')).toBe(1); // ultrawide: height decides
-    expect(hudZoom(3840, 2160, 'desktop')).toBe(1.6);
+    expect(hudZoom(3840, 2160, 'desktop')).toBe(2);
+    expect(hudZoom(5120, 2880, 'desktop')).toBe(2);
     expect(hudZoom(2560, 1440, 'mobile')).toBe(1);
     for (const w of [1930, 2100, 2333, 2600]) {
       const z = hudZoom(w, 2000, 'desktop');

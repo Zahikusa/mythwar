@@ -319,7 +319,7 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     lane is readable. One-time coach tip "portals" explains it the first time an enemy portal
     flares after 0:50. (DESIGN.md updated.)
 123. [x] Large desktop screens (above 1920×1080) zoom the HUD and menu screens (CSS `zoom`,
-    `hudZoom()` in layout.ts, 1–1.6 in 0.05 steps; bottom inset scales with it). JS-positioned
+    `hudZoom()` in layout.ts, 1–2 in 0.05 steps; bottom inset scales with it). JS-positioned
     parts (tooltip, coach tip, lane tabs, drag ghost) divide their left/top by the zoom and
     measure with getBoundingClientRect (Chrome: zoomed) instead of offsetWidth (unzoomed).
     Portraits render at DPR × zoom so they stay crisp. Smoke flow "large desktop (QHD)";

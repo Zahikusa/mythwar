@@ -34,7 +34,7 @@ export interface Layout {
   lanes: LaneGeom[];
   /** Overall UI scale factor (1 at a 1600x900 desktop). */
   ui: number;
-  /** Zoom for the desktop HUD on large screens (1 up to 1920x1080, mobile always 1). */
+  /** Zoom for the desktop HUD on large screens (1 up to 1920x1080, at most 2; mobile always 1). */
   hud: number;
   /** HUD insets reserved by DOM panels, in CSS px. */
   insets: { top: number; bottom: number; left: number; right: number };
@@ -107,7 +107,7 @@ export function computeLayout(width: number, height: number, mode: LayoutMode): 
 export function hudZoom(width: number, height: number, mode: LayoutMode): number {
   if (mode !== 'desktop') return 1;
   const z = Math.min(width / 1920, height / 1080);
-  return Math.round(Math.max(1, Math.min(1.6, z)) * 20) / 20;
+  return Math.round(Math.max(1, Math.min(2, z)) * 20) / 20;
 }
 
 /**
