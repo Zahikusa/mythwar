@@ -466,6 +466,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 179. [x] Checked, no change needed: an autosave written by the run-1 build (7 min in, 17 creatures,
     a projectile in flight) restores in this build and plays on to a result — the run-2 sim
     changes kept the save format compatible. Smoke: Rematch restores a live HUD everywhere.
+180. [x] Desktop cursor shows what's clickable: pointer over lanes, pointer + "Your gate — click to
+    mount or swap its turret" tooltip over your gates (gate clicks were undiscoverable).
+    Smoke-checked. HUD zoom cap raised 1.6 → 2 (4K at DPR 1 keeps 1080p proportions).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

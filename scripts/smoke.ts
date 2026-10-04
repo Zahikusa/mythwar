@@ -260,6 +260,24 @@ async function largeDesktopFlow(page: Page): Promise<void> {
   await sleep(100);
   const s = await state(page);
   check('zoomed lane tab sits by its gate and selects the lane', s.lane === 0 && Math.abs(tab.y - lane0.y) < 80 && tab.x < lane0.x, JSON.stringify({ tab, lane0, lane: s.lane }));
+  // The cursor shows what's clickable: lanes, and your gates (with a tooltip).
+  {
+    const pts = await page.evaluate(() => {
+      const L = (window as unknown as { __mythwar: any }).__mythwar.renderer.layout;
+      const g = L.lanes[1];
+      return { lane: { x: (g.x0 + g.x1) / 2, y: g.y - 10 }, gate: { x: g.x0 - 15, y: g.y - 20 }, sky: { x: L.width / 2, y: 80 } };
+    });
+    const cur: Record<string, string[]> = {};
+    for (const [k, pt] of Object.entries(pts)) {
+      await page.mouse.move(pt.x, pt.y);
+      await sleep(50);
+      cur[k] = await page.evaluate(() => {
+        const c = document.querySelector('canvas')!;
+        return [c.style.cursor, c.title];
+      });
+    }
+    check('cursor marks lanes and gates as clickable', cur.lane[0] === 'pointer' && cur.gate[0] === 'pointer' && cur.gate[1].includes('turret') && cur.sky[0] === '', JSON.stringify(cur));
+  }
   // Dragging a card: the (zoomed) ghost follows the pointer.
   {
     const c = await center(page, '.card');

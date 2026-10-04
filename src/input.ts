@@ -13,8 +13,11 @@ export class Input {
   toStage: (x: number, y: number) => [number, number] = (x, y) => [x, y];
   onPause: () => void = () => {};
   private holdTimer = 0;
+  private readonly canvas: HTMLCanvasElement;
+  private cursorState = '';
 
   constructor(canvas: HTMLCanvasElement, renderer: Renderer, hud: Hud) {
+    this.canvas = canvas;
     this.renderer = renderer;
     this.hud = hud;
     hud.laneAtPoint = (x, y) => this.laneAtClient(x, y);
@@ -50,6 +53,9 @@ export class Input {
 
   attach(game: Game | null): void {
     this.game = game;
+    this.cursorState = '';
+    this.canvas.style.cursor = '';
+    this.canvas.title = '';
   }
 
   laneAtClient(cx: number, cy: number): number {
@@ -72,6 +78,14 @@ export class Input {
     if (e.pointerType === 'mouse') {
       const [x, y] = this.toStage(e.clientX, e.clientY);
       g.view.mouse = { x, y };
+      // Show what's clickable: lanes select, your gates open their turret slot.
+      const lane = g.options.demo ? -1 : this.laneAtClient(e.clientX, e.clientY);
+      const state = lane < 0 ? '' : this.onGate(e.clientX, e.clientY, lane) ? 'gate' : 'lane';
+      if (state !== this.cursorState) {
+        this.cursorState = state;
+        this.canvas.style.cursor = state ? 'pointer' : '';
+        this.canvas.title = state === 'gate' ? 'Your gate — click to mount or swap its turret' : '';
+      }
     }
     if (g.view.targeting === 'summon') return;
     if (e.pointerType === 'mouse' || g.view.targeting === 'power') g.view.hoverLane = this.laneAtClient(e.clientX, e.clientY);
