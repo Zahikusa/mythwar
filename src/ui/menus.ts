@@ -36,6 +36,7 @@ export class Menus {
   private syncers: (() => void)[] = [];
   private continueBtn: HTMLButtonElement | null = null;
   private laurels: HTMLElement | null = null;
+  private pauseSummary: HTMLElement | null = null;
   private skipBtn: HTMLButtonElement | null = null;
   /** Set when the how-to is shown before a player's first battle. */
   private afterHowto: (() => void) | null = null;
@@ -59,6 +60,14 @@ export class Menus {
 
   get current(): Screen {
     return this.screen;
+  }
+
+  /** One-line battle summary shown on the pause screen. */
+  setPauseSummary(world: World, me: Team, difficulty: Difficulty): void {
+    if (!this.pauseSummary) return;
+    const P = world.players[me];
+    const E = world.players[me === 0 ? 1 : 0];
+    this.pauseSummary.textContent = `vs ${AI_PROFILES[difficulty].name} · ${fmtTime(world.time)} · ${AGES[P.age].name} vs ${AGES[E.age].name} · ${P.stats.kills} foes slain`;
   }
 
   /** One laurel per difficulty the player has beaten (shown on the title screen). */
@@ -379,10 +388,12 @@ export class Menus {
   // -------------------------------------------------------------------------
 
   private buildPause(): HTMLElement {
+    this.pauseSummary = h('div', { class: 'psummary' });
     return h(
       'div',
       { class: 'screen pause' },
       h('h2', { text: 'Paused' }),
+      this.pauseSummary,
       h(
         'div',
         { class: 'mbuttons' },

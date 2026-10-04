@@ -12,6 +12,8 @@ export interface Settings {
   music: number;
   sfx: number;
   muted: boolean;
+  /** Preferred battle speed (1 or 2). */
+  speed: number;
   shake: boolean;
   hints: boolean;
   lowQuality: boolean;
@@ -29,6 +31,7 @@ const DEFAULTS: Settings = {
   music: 0.5,
   sfx: 0.8,
   muted: false,
+  speed: 1,
   shake: true,
   hints: true,
   lowQuality: false,

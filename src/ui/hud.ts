@@ -34,6 +34,8 @@ export interface HudCallbacks {
   /** Toggle mute; returns true when now muted. */
   toggleMute(): boolean;
   isMuted(): boolean;
+  /** Remember the player's preferred speed. */
+  speedChanged(speed: number): void;
 }
 
 interface QueueChip {
@@ -435,6 +437,7 @@ export class Hud {
   toggleSpeed(): void {
     if (!this.game) return;
     this.game.speed = this.game.speed === 1 ? 2 : 1;
+    this.cb.speedChanged(this.game.speed);
     setText(this.el.speed.querySelector('span')!, `${this.game.speed}×`);
     toggle(this.el.speed, 'on', this.game.speed > 1);
   }

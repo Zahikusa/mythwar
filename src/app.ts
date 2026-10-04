@@ -75,6 +75,10 @@ export class App {
         return this.settings.muted;
       },
       isMuted: () => this.settings.muted,
+      speedChanged: (speed) => {
+        this.settings.speed = speed;
+        saveSettings(this.settings);
+      },
     });
     this.input = new Input(this.canvas, this.renderer, this.hud);
     this.coach = new Coach(this.stage, this.settings);
@@ -249,6 +253,7 @@ export class App {
     saveSettings(this.settings);
     clearBattle();
     const game = this.startGame(difficulty, seed, false);
+    game.speed = this.settings.speed === 2 ? 2 : 1;
     this.enterBattle(game);
     this.menus.show('none');
   }
@@ -360,6 +365,7 @@ export class App {
   pause(): void {
     if (this.state !== 'playing' || !this.game || this.game.over) return;
     this.game.paused = true;
+    this.menus.setPauseSummary(this.game.world, this.game.playerTeam, this.difficulty);
     this.hud.cancelTargeting();
     this.hud.hideTooltip();
     if (this.hud.panelOpen) this.hud.togglePanel('none');

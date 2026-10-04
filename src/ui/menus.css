@@ -58,6 +58,13 @@
   min-width: 260px;
 }
 
+.psummary {
+  font-size: 14px;
+  color: #d9ccf5;
+  margin-top: -8px;
+  text-shadow: 0 1px 3px #000;
+}
+
 .mnote {
   font-size: 12px;
   color: var(--muted);
