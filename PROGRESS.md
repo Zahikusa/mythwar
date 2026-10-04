@@ -2,7 +2,7 @@
 
 Status: complete, in verification mode (since run #1, 2026-10-04 ~01:15; run #2 03:33–07:30:
 sim fairness fixes, large-screen HUD zoom, portal flares, frozen-sprite perf, mobile/text polish,
-see backlog #122–#185)
+see backlog #122–#187)
 
 See DESIGN.md for the game design.
 
@@ -12,7 +12,8 @@ See DESIGN.md for the game design.
   stacks; Jötunn cleave buffed to compensate. AI no longer death-spirals when an age behind.
 - **New for players:** gate portals flare ~1 s before a creature steps out (read the enemy's next
   lane); creature labels say what beats them; gold shown in turret/blessing panels; the Ascend
-  button fills with tithe gold and a coach tip teaches saving up; the cursor marks clickable
+  button fills with tithe gold (and chimes when ascending is possible) and a coach tip teaches
+  saving up; the cursor marks clickable
   lanes/gates; the results screen gives one concrete tip from the lost battle (or suggests the
   next difficulty after a win).
 - **Difficulty evidence:** a new scripted "smart" player (counters, powers, turrets, blessings,
