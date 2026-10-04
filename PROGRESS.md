@@ -438,9 +438,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     "Beaten by Guardians", yours "Strong vs Hunters", the dragon "No class counters it".
 176. [x] `scripts/shoot.ts` warns when a demo scenario captured an already-decided battle (demo
     seeds play out differently after sim/AI changes — that's how power-fimbul went stale).
-177. [ ] `renderer.ts drawFrozen`: a creature frozen while its spawn animation is still scaling it
-    re-renders its frost sprite every frame until the spawn finishes (sprite keyed by exact sc);
-    key by the final scale and scale the blit instead.
+177. [x] `renderer.ts drawFrozen`: the frost sprite is keyed/rendered at the creature's full scale,
+    so a creature frozen mid-spawn isn't re-rendered every frame while it grows.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

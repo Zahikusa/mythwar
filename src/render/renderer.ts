@@ -1181,7 +1181,9 @@ export class Renderer {
         ctx.stroke();
       }
     }
-    if (u.freezeTimer > 0) this.drawFrozen(ctx, v, u.def.id, art, pose, sc);
+    // (The sprite is made at the full scale, so a creature frozen mid-spawn isn't re-rendered
+    // every frame while it grows; the blit is in art units and follows the current scale.)
+    if (u.freezeTimer > 0) this.drawFrozen(ctx, v, u.def.id, art, pose, p.s);
     else {
       v.frozen = null;
       art.draw(ctx, pose);
