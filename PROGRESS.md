@@ -230,10 +230,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     `settings.muted`; moving the master slider unmutes. Smoke-checked.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
-92. [ ] Card tooltips only appear on mouse hover/long-press; keyboard users tabbing through
-    cards get none — show the tooltip on focus-visible.
-93. [ ] Renderer draws the full-screen backdrop with a 4 px overscan (scaled blit) every frame
-    only to hide edges during screen shake; draw 1:1 and fill the margin instead.
+92. [x] Card tooltips also show on keyboard focus (focus-visible).
+93. [x] Backdrop drawn 1:1 (no resampling); during shake the exposed margin is pre-filled.
+    (No measurable change in headless software raster; avoids resampling on real GPUs.)
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

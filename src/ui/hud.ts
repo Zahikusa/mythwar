@@ -869,6 +869,11 @@ export class Hud {
         if ((e as PointerEvent).pointerType === 'mouse') this.showTooltip(def, el);
       });
       el.addEventListener('pointerleave', () => this.hideTooltip());
+      // Keyboard users tabbing through the cards get the same details.
+      el.addEventListener('focus', () => {
+        if (el.matches(':focus-visible')) this.showTooltip(def, el);
+      });
+      el.addEventListener('blur', () => this.hideTooltip());
       el.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         this.showTooltip(def, el);

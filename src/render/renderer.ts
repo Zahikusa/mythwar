@@ -515,11 +515,16 @@ export class Renderer {
 
     // Backdrop (cross-fading between ages)
     if (!this.skip.has('bg')) {
+      // 1:1 blits (no resampling); during screen shake the few exposed edge pixels are pre-filled.
+      if (sh > 0) {
+        ctx.fillStyle = THEMES[this.theme].ground[1];
+        ctx.fillRect(-sh, -sh, L.width + sh * 2, L.height + sh * 2);
+      }
       if (this.prevTheme >= 0 && this.themeFade < 1) {
-        ctx.drawImage(this.background(this.prevTheme), -4, -4, L.width + 8, L.height + 8);
+        ctx.drawImage(this.background(this.prevTheme), 0, 0, L.width, L.height);
         ctx.globalAlpha = this.themeFade;
       }
-      ctx.drawImage(this.background(this.theme), -4, -4, L.width + 8, L.height + 8);
+      ctx.drawImage(this.background(this.theme), 0, 0, L.width, L.height);
       ctx.globalAlpha = 1;
     }
     if (!this.skip.has('ambient')) {
