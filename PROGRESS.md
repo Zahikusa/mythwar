@@ -351,10 +351,12 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 144. [ ] `renderer.ts` frozen creatures use `ctx.filter` for every fill (Fimbulwinter on a crowded
     lane); cache the static frozen pose as a sprite.
 145. [ ] `draw.ts drawGlow` builds a key string per call (`rgb.join(',')`) — up to 1400/frame.
-146. [ ] Hunter pack spread is draw-only: death ghosts, bursts, gold text and projectile impacts
-    use the unspread x, so dying hunters jump sideways (~12–15 px).
-147. [ ] Melee slash effects are drawn before (under) the creatures.
-148. [ ] Killing blows show no hit spark/slash (unit already removed from `unitById`).
+146. [x] Hunter pack fan-out was draw-only: death ghosts/bursts/gold and projectile flights and
+    impacts used the unfanned x (dying hunters jumped ~12–15 px). `fanOf()` is now applied to
+    deaths, and shots carry their target's fan (impact events carry the projectile id).
+147. [x] Timed effects draw in two passes: ground (rings, scorches) under the creatures, slashes /
+    flashes / beams over them.
+148. [x] Killing blows show their spark and slash (from where the target was last drawn).
 149. [ ] `keepCache`/`gateCache` keep every age's layers until a resize; `prevTheme` never reset.
 150. [ ] `citadel.ts`: latent save/restore imbalance (`if (!D) return` inside the collapse save).
 151. [ ] Title camera drift (±10 px) can expose a dark strip at the edges below ~800 px width.

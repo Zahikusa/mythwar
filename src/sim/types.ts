@@ -140,7 +140,7 @@ export type SimEvent =
   | { type: 'death'; unitId: number; team: Team; lane: number; x: number; defId: string; flying: boolean; gold: number }
   | { type: 'rebirth'; unitId: number; team: Team; lane: number; x: number }
   | { type: 'projectile'; projId: number; team: Team; lane: number; kind: ProjectileKind; fromTurret: boolean }
-  | { type: 'impact'; team: Team; lane: number; x: number; kind: ProjectileKind; splash: number }
+  | { type: 'impact'; id: number; team: Team; lane: number; x: number; kind: ProjectileKind; splash: number }
   | { type: 'turretFire'; team: Team; lane: number }
   | { type: 'turretBuilt'; team: Team; lane: number; turretId: string | null }
   | { type: 'ageUp'; team: Team; age: number; t: number }

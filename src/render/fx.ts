@@ -70,6 +70,9 @@ export interface BurstOpts {
   jitter?: number;
 }
 
+/** Timed effects drawn over the creatures rather than on the ground beneath them. */
+const OVER_KINDS = new Set<string>(['slash', 'flashAt', 'beam']);
+
 export class Fx {
   particles: Particle[] = [];
   texts: FloatText[] = [];
@@ -293,9 +296,14 @@ export class Fx {
     ctx.globalAlpha = 1;
   }
 
-  drawTimed(ctx: CanvasRenderingContext2D, layer: number): void {
+  /**
+   * Draws a layer's timed effects. `pass`: 'ground' effects (rings, scorches...) go under the
+   * creatures, 'over' effects (slashes, flashes, beams) on top of them.
+   */
+  drawTimed(ctx: CanvasRenderingContext2D, layer: number, pass: 'ground' | 'over' | 'all' = 'all'): void {
     for (const f of this.timed) {
       if (f.layer !== layer) continue;
+      if (pass !== 'all' && OVER_KINDS.has(f.kind) !== (pass === 'over')) continue;
       const k = f.t / f.dur;
       switch (f.kind) {
         case 'ring': {

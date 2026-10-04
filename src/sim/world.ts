@@ -930,7 +930,7 @@ export class World {
     pr.done = true;
     const source = pr.fromTurret ? 'turret' : 'projectile';
     const attacker = pr.fromTurret ? null : (this.unitById.get(pr.sourceId) ?? null);
-    this.emit({ type: 'impact', team: pr.team, lane: pr.lane, x: pr.tx, kind: pr.kind, splash: pr.splash });
+    this.emit({ type: 'impact', id: pr.id, team: pr.team, lane: pr.lane, x: pr.tx, kind: pr.kind, splash: pr.splash });
     if (pr.targetId === BASE_TARGET) {
       this.damageBase(other(pr.team), pr.damage, pr.lane, pr.team);
       return;

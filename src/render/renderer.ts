@@ -1,4 +1,5 @@
-import { LANE_LENGTH, SHRINE_RADIUS, SHRINE_X, TICK } from '../sim/data.ts';
+import { LANE_LENGTH, SHRINE_RADIUS, SHRINE_X, TICK, UNITS } from '../sim/data.ts';
+import type { UnitDef } from '../sim/data.ts';
 import { POWER_TIMING, spiritDragonHead } from '../sim/powers.ts';
 import type { Projectile, SimEvent, Team, Unit } from '../sim/types.ts';
 import type { World } from '../sim/world.ts';
@@ -42,6 +43,10 @@ interface UnitVis {
   lastSlash: number;
   /** 1 → 0 after a rebirth: the creature glows white-hot and re-forms. */
   reborn: number;
+  /** Where the body was last drawn (screen), for effects of the blow that kills it. */
+  hx: number;
+  hy: number;
+  radius: number;
 }
 
 interface Ghost {
@@ -58,6 +63,8 @@ interface Ghost {
 }
 
 interface ProjVis {
+  /** The target's pack fan-out (lane units), so the shot flies at the hunter actually drawn. */
+  fan: number;
   h0: number;
   h1: number;
   lastSx: number;
@@ -230,15 +237,18 @@ export class Renderer {
     return this.artScale(g) / (this.layout.mode === 'mobile' ? 1.4 : 1.25);
   }
 
+  /** Hunters crowd into packs at the same spot; each is drawn fanned out a little (lane units). */
+  private fanOf(def: UnitDef, seed: number | undefined): number {
+    return seed !== undefined && def.cls === 'hunter' ? (seed - 0.5) * def.radius * 1.4 : 0;
+  }
+
   unitScreen(u: Unit, alpha: number): { x: number; y: number; s: number; art: CreatureArt } {
     const g = this.layout.lanes[u.lane];
     const xi = u.px + (u.x - u.px) * alpha;
     const v = this.vis.get(u.id);
     const art = artFor(u.def.id);
-    // Hunters crowd into packs at the same spot; fan them out a little so the pack reads.
-    const fan = v && u.def.cls === 'hunter' ? (v.seed - 0.5) * u.def.radius * 1.4 : 0;
     return {
-      x: laneX(g, xi + fan),
+      x: laneX(g, xi + this.fanOf(u.def, v?.seed)),
       y: g.y + (v ? v.yJit : 0) * g.band,
       s: this.artScale(g) * art.scale,
       art,
@@ -271,20 +281,29 @@ export class Renderer {
           const v = this.vis.get(e.targetId);
           if (v) v.flash = 1;
           const u = world.unitById.get(e.targetId);
+          // A killing blow's target is already gone from the world: use where it was last drawn.
+          let px = NaN;
+          let by = NaN;
           if (u) {
             const p = this.unitScreen(u, 1);
-            const by = p.y - (p.art.body[1] * -1 + p.art.fly) * p.s;
+            px = p.x;
+            by = p.y - (p.art.body[1] * -1 + p.art.fly) * p.s;
+          } else if (v) {
+            px = v.hx;
+            by = v.hy;
+          }
+          if (!Number.isNaN(px)) {
             if (e.mult > 1) {
-              this.fx.burst(p.x, by, { count: 6, color: '#ffe27a', speed: 120, life: 0.35, size: 2.2, shape: 'spark', layer: e.lane, drag: 4 });
+              this.fx.burst(px, by, { count: 6, color: '#ffe27a', speed: 120, life: 0.35, size: 2.2, shape: 'spark', layer: e.lane, drag: 4 });
             } else if (e.source === 'unit') {
-              this.fx.burst(p.x, by, { count: 3, color: '#ffffff', speed: 70, life: 0.25, size: 1.8, shape: 'spark', layer: e.lane, drag: 4 });
+              this.fx.burst(px, by, { count: 3, color: '#ffffff', speed: 70, life: 0.25, size: 1.8, shape: 'spark', layer: e.lane, drag: 4 });
             }
             // Melee blows ('unit' source) cut a slash across the target (one per target at a time).
             if (e.source === 'unit' && v && this.time - v.lastSlash > 0.2) {
               v.lastSlash = this.time;
-              const dir = u.team === 0 ? -1 : 1; // the blow comes from the other side
-              const r = (12 + u.def.radius * 0.6) * this.bodyScale(L.lanes[e.lane]);
-              this.fx.timedFx({ kind: 'slash', x: p.x - dir * r * 0.2, y: by, x2: p.x - dir * r * 0.2 + dir, y2: by, dur: 0.22, layer: e.lane, size: r, color: e.mult > 1 ? '#ffe27a' : 'rgba(255,255,255,0.9)' });
+              const dir = e.team === 0 ? -1 : 1; // the blow comes from the other side
+              const r = (12 + v.radius * 0.6) * this.bodyScale(L.lanes[e.lane]);
+              this.fx.timedFx({ kind: 'slash', x: px - dir * r * 0.2, y: by, x2: px - dir * r * 0.2 + dir, y2: by, dur: 0.22, layer: e.lane, size: r, color: e.mult > 1 ? '#ffe27a' : 'rgba(255,255,255,0.9)' });
             }
           }
           break;
@@ -294,7 +313,7 @@ export class Renderer {
           const v = this.vis.get(e.unitId);
           const art = artFor(e.defId);
           const s = this.artScale(g) * art.scale;
-          const x = laneX(g, e.x);
+          const x = laneX(g, e.x + this.fanOf(UNITS[e.defId], v?.seed));
           const y = g.y + (v ? v.yJit : 0) * g.band;
           this.ghosts.push({ defId: e.defId, team: e.team, lane: e.lane, x, y, s, flying: e.flying, t: 0, walk: v ? v.walk : 0, seed: v ? v.seed : 0 });
           const tc = TEAM_COLORS[e.team];
@@ -327,7 +346,7 @@ export class Renderer {
         }
         case 'impact': {
           const g = L.lanes[e.lane];
-          projectileImpact(this.fx, e.kind, laneX(g, e.x), g.y, this.bodyScale(g), e.lane, e.splash, e.team);
+          projectileImpact(this.fx, e.kind, laneX(g, e.x + (this.projVis.get(e.id)?.fan ?? 0)), g.y, this.bodyScale(g), e.lane, e.splash, e.team);
           if (e.splash > 0) this.shake = Math.max(this.shake, 2);
           break;
         }
@@ -643,8 +662,9 @@ export class Renderer {
           drawCitadelGate(ctx, L, team, lane, p.age, gate.x, gate.y, gate.s, this.baseFlash[team], this.time, 0, 'dynamic');
         }
       }
-      this.fx.drawTimed(ctx, lane);
+      this.fx.drawTimed(ctx, lane, 'ground');
       this.drawUnits(ctx, world, lane, alpha, simTime, dt);
+      this.fx.drawTimed(ctx, lane, 'over');
       for (const team of [0, 1] as Team[]) {
         const slot = world.players[team].turrets[lane];
         if (slot.def) {
@@ -951,7 +971,7 @@ export class Renderer {
       let v = this.vis.get(u.id);
       if (!v) {
         const seed = ((u.id * 2654435761) >>> 0) / 4294967296;
-        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn: 0, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1, reborn: 0 };
+        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn: 0, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1, reborn: 0, hx: NaN, hy: NaN, radius: u.def.radius };
         this.vis.set(u.id, v);
       }
     }
@@ -989,6 +1009,8 @@ export class Renderer {
     const v = this.vis.get(u.id)!;
     const p = this.unitScreen(u, alpha);
     const art = p.art;
+    v.hx = p.x;
+    v.hy = p.y - (-art.body[1] + art.fly) * p.s;
     const xi = u.px + (u.x - u.px) * alpha;
     v.walk += Math.abs(xi - v.lastX) * 0.24;
     v.lastX = xi;
@@ -1177,20 +1199,21 @@ export class Renderer {
       if (pr.lane !== lane || pr.done) continue;
       let pv = this.projVis.get(pr.id);
       if (!pv) {
-        pv = { h0: this.launchHeight(world, pr, g), h1: 0, lastSx: NaN, lastSy: NaN, angle: 0, trail: 0 };
+        pv = { fan: 0, h0: this.launchHeight(world, pr, g), h1: 0, lastSx: NaN, lastSy: NaN, angle: 0, trail: 0 };
         this.projVis.set(pr.id, pv);
       }
       const target = pr.targetId >= 0 ? world.unitById.get(pr.targetId) : undefined;
       if (target && target.alive) {
         const art = artFor(target.def.id);
         pv.h1 = (-art.body[1] + art.fly) * this.artScale(g) * art.scale;
+        pv.fan = this.fanOf(target.def, this.vis.get(target.id)?.seed);
       } else if (pr.targetId < 0) {
         pv.h1 = 40 * this.artScale(g);
       }
       const xi = pr.px + (pr.x - pr.px) * alpha;
       const span = pr.tx - pr.x0;
       const t = Math.abs(span) < 1e-3 ? 1 : Math.max(0, Math.min(1, (xi - pr.x0) / span));
-      const sx = laneX(g, xi);
+      const sx = laneX(g, xi + pv.fan * t);
       const sy = g.y - (pv.h0 + (pv.h1 - pv.h0) * t) - pr.arc * this.artScale(g) * 4 * t * (1 - t);
       if (!Number.isNaN(pv.lastSx)) {
         const dx = sx - pv.lastSx;
