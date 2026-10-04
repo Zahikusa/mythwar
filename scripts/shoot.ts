@@ -33,6 +33,7 @@ const SCENARIOS: Scenario[] = [
   { name: 'desktop-jade', query: 'demo&ff=560&seed=11', w: 1600, h: 900 },
   { name: 'desktop-ultrawide', query: 'demo&ff=300&seed=5', w: 2560, h: 1080 },
   { name: 'desktop-laptop', query: 'demo&ff=200&seed=5', w: 1366, h: 768 },
+  { name: 'desktop-qhd', query: 'demo&ff=300&seed=5', w: 2560, h: 1440 },
   { name: 'desktop-short', query: 'demo&ff=300&seed=5', w: 1920, h: 600 },
   { name: 'desktop-small', query: 'demo&ff=300&seed=5', w: 1024, h: 640 },
   { name: 'desktop-small-late', query: 'demo&ff=900&seed=5', w: 1024, h: 640 },
