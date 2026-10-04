@@ -463,6 +463,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     power button re-fired on every key repeat (smoke-checked, negative-tested); (c) the service
     worker pruned every unreferenced asset — now only older hashes of bundles the page names
     (lazy chunks survive; smoke-checked); (d) `Game.fromSave` checks `DIFFICULTIES.includes`.
+179. [x] Checked, no change needed: an autosave written by the run-1 build (7 min in, 17 creatures,
+    a projectile in flight) restores in this build and plays on to a result — the run-2 sim
+    changes kept the save format compatible. Smoke: Rematch restores a live HUD everywhere.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
