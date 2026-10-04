@@ -238,4 +238,10 @@ See DESIGN.md for the game design.
   portrait layout — side-view creatures don't work on vertical lanes.
 
 ## Open questions for the human
-(none)
+- No real phone/speakers were available overnight. Everything mobile was verified in Chrome
+  device emulation (touch, rotation, layouts) and audio only for "no errors". Worth a quick
+  check on a real Android/iOS phone: frame rate in late-game battles, audio loudness/mix,
+  vibration, fullscreen + landscape lock (Android), pinch-zoom blocking (iOS).
+- Difficulty: Novice is the default for a first game; Adept is tuned to be a fair fight for a
+  player who uses counters + turrets. If it feels too easy/hard, `AI_PROFILES` in
+  `src/ai/ai.ts` (think time, counterSkill, incomeMult) are the knobs.
