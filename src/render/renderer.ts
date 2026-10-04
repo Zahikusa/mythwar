@@ -295,6 +295,7 @@ export class Renderer {
           const by = y - (art.height * 0.5 + art.fly) * s;
           this.fx.burst(x, by, { count: 12, color: tc.light, rgb: tc.rgb, speed: 50, life: 1.1, size: 2.4, shape: 'glow', layer: e.lane, gravity: -60, drag: 1.5, jitter: 14 * s });
           this.fx.burst(x, y - 4, { count: 8, color: 'rgba(60,45,40,0.6)', speed: 40, life: 0.8, size: 4 * s + 2, shape: 'smoke', layer: e.lane, gravity: -10 });
+          this.deathFlourish(e.defId, x, by, e.lane, s);
           if (e.team !== view.playerTeam) {
             this.fx.gold(x, by - art.height * 0.5 * s, e.gold, '#ffd76a', 15, 70 * this.bodyScale(g));
             // A coin flies to the gold counter (capped so big fights don't flood the screen).
@@ -399,6 +400,57 @@ export class Renderer {
         default:
           break;
       }
+    }
+  }
+
+  /** Creature-specific debris when something dies (leaves, shards, feathers, embers...). */
+  private deathFlourish(defId: string, x: number, y: number, lane: number, s: number): void {
+    const B = (color: string, shape: 'leaf' | 'shard' | 'petal' | 'glow' | 'dot', count: number, gravity: number, rgb?: [number, number, number]) =>
+      this.fx.burst(x, y, { count, color, rgb, speed: 110, life: 1.1, size: 3 * Math.max(0.7, s), shape, layer: lane, gravity, drag: 1.6, jitter: 10 * s });
+    switch (defId) {
+      case 'treant':
+        B('#4f9442', 'leaf', 12, 120);
+        B('#7c5836', 'shard', 5, 300);
+        break;
+      case 'pixie':
+        B('#ffd6f0', 'glow', 14, -40, [255, 190, 240]);
+        break;
+      case 'redcap':
+        B('#cc2b3d', 'petal', 4, 200);
+        break;
+      case 'minotaur':
+      case 'centaur':
+        B('#c8913a', 'shard', 6, 320);
+        break;
+      case 'gorgon':
+        B('#5aa060', 'leaf', 8, 150);
+        break;
+      case 'jotunn':
+        B('#cdeeff', 'shard', 14, 280);
+        break;
+      case 'fenrir':
+      case 'byakko':
+        B('#c9cfd8', 'dot', 10, 80);
+        break;
+      case 'valkyrie':
+      case 'griffin':
+        B('#f6f1e6', 'petal', 12, 60);
+        break;
+      case 'oni':
+        B('#ff6a3a', 'glow', 10, -30, [255, 110, 60]);
+        break;
+      case 'kitsune':
+        B('#bfe0ff', 'glow', 12, -60, [140, 200, 255]);
+        break;
+      case 'titan':
+        B('#ece5d8', 'shard', 12, 300);
+        B('#ffe7a0', 'glow', 8, -40, [255, 230, 160]);
+        break;
+      case 'phoenix':
+      case 'dragon':
+        B('#ffb347', 'glow', 18, -70, [255, 150, 50]);
+        B('#3a3438', 'dot', 8, -20);
+        break;
     }
   }
 
