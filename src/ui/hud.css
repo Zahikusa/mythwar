@@ -113,7 +113,7 @@ svg {
   position: absolute;
   top: 10px;
   left: 14px;
-  right: 162px;
+  right: 214px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: start;
@@ -363,7 +363,8 @@ svg {
   border-color: var(--gold);
 }
 
-.hud.mobile .sysbtn.keysbtn {
+.hud.mobile .sysbtn.keysbtn,
+.hud.mobile .sysbtn.mutebtn {
   display: none;
 }
 

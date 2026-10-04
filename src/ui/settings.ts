@@ -11,6 +11,7 @@ export interface Settings {
   master: number;
   music: number;
   sfx: number;
+  muted: boolean;
   shake: boolean;
   hints: boolean;
   lowQuality: boolean;
@@ -27,6 +28,7 @@ const DEFAULTS: Settings = {
   master: 0.8,
   music: 0.5,
   sfx: 0.8,
+  muted: false,
   shake: true,
   hints: true,
   lowQuality: false,

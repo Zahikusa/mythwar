@@ -197,6 +197,13 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     await sleep(50);
     s = await state(page);
     check('number key summons', s.queue === Math.min(5, q0 + 1), `queue=${s.queue}`);
+    await page.keyboard.press('m');
+    await sleep(50);
+    const muted = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.settings.muted);
+    await page.keyboard.press('m');
+    await sleep(50);
+    const unmuted = await page.evaluate(() => !(window as unknown as { __mythwar: any }).__mythwar.settings.muted);
+    check('M toggles mute', muted && unmuted);
     const goldBefore = s.gold;
     await page.keyboard.press('Backspace');
     await sleep(50);

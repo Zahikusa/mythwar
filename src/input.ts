@@ -150,6 +150,8 @@ export class Input {
       this.hud.togglePanel('bless');
     } else if (k === 'f') {
       this.hud.toggleSpeed();
+    } else if (k === 'm') {
+      this.hud.toggleMute();
     } else if (k === 'backspace' || k === 'delete') {
       // Undo the most recent summon (full refund).
       const last = me.queue.length - 1;

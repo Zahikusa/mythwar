@@ -295,6 +295,7 @@ export class Menus {
       const val = h('span', { class: 'sval', text: `${Math.round(s[key] * 100)}%` });
       input.addEventListener('input', () => {
         s[key] = Number(input.value) / 100;
+        if (key === 'master') s.muted = false;
         val.textContent = `${input.value}%`;
         this.cb.settingsChanged(s);
       });

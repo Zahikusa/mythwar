@@ -32,6 +32,9 @@ const ROMAN = ['I', 'II', 'III', 'IV', 'V'];
 export interface HudCallbacks {
   pause(): void;
   sound(kind: string): void;
+  /** Toggle mute; returns true when now muted. */
+  toggleMute(): boolean;
+  isMuted(): boolean;
 }
 
 interface QueueChip {
@@ -121,7 +124,9 @@ export class Hud {
     );
     E.keysBtn = h('button', { class: 'sysbtn keysbtn', title: 'Controls (?)', text: '?' });
     onTap(E.keysBtn, () => this.togglePanel('keys'));
-    const sys = h('div', { class: 'sys' }, E.keysBtn, E.speed, E.pause);
+    E.muteBtn = h('button', { class: 'sysbtn mutebtn', title: 'Mute (M)', html: ICONS.sound });
+    onTap(E.muteBtn, () => this.toggleMute());
+    const sys = h('div', { class: 'sys' }, E.muteBtn, E.keysBtn, E.speed, E.pause);
 
     // Resources
     E.gold = h('span', { class: 'goldnum' });
@@ -219,6 +224,7 @@ export class Hud {
       ['U', 'Ascend to the next age'],
       ['T  ·  B', 'Turrets  ·  Blessings'],
       ['F', 'Toggle 2× speed'],
+      ['M', 'Mute / unmute'],
       ['Esc / P', 'Pause'],
       ['Right-click', 'Cancel power targeting'],
     ];
@@ -254,6 +260,7 @@ export class Hud {
 
   attach(game: Game): void {
     this.game = game;
+    this.syncMute();
     setText(this.el.speed.querySelector('span')!, `${game.speed}×`);
     toggle(this.el.speed, 'on', game.speed > 1);
     toggle(this.el.ascend, 'maxed', false);
@@ -406,6 +413,18 @@ export class Hud {
     const r = g.command({ type: 'sellTurret', team: g.playerTeam, lane });
     if (r.ok) this.cb.sound('sell');
     else this.fail(r.reason, this.turretRows[lane]);
+  }
+
+  toggleMute(): void {
+    const muted = this.cb.toggleMute();
+    this.syncMute();
+    this.toast(muted ? 'Sound off (M)' : 'Sound on', 'info', true);
+  }
+
+  syncMute(): void {
+    const muted = this.cb.isMuted();
+    this.el.muteBtn.innerHTML = muted ? ICONS.mute : ICONS.sound;
+    toggle(this.el.muteBtn, 'on', muted);
   }
 
   /** Feedback after a summon was cancelled from the keyboard. */

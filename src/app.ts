@@ -69,6 +69,12 @@ export class App {
         if (k === 'summon') this.buzz(8);
         else if (k === 'error') this.buzz([6, 40, 6]);
       },
+      toggleMute: () => {
+        this.settings.muted = !this.settings.muted;
+        this.applySettings(this.settings);
+        return this.settings.muted;
+      },
+      isMuted: () => this.settings.muted,
     });
     this.input = new Input(this.canvas, this.renderer, this.hud);
     this.coach = new Coach(this.stage, this.settings);
@@ -174,7 +180,7 @@ export class App {
 
   applySettings(s: Settings): void {
     saveSettings(s);
-    this.audio.setVolumes(s.master, s.music, s.sfx);
+    this.audio.setVolumes(s.muted ? 0 : s.master, s.music, s.sfx);
     this.renderer.shakeEnabled = s.shake;
     const q = s.lowQuality ? 'low' : 'high';
     if (this.renderer.quality !== q && this.width > 0) this.resize();

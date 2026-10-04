@@ -226,8 +226,14 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 87. [x] One-time coach tip explains gold-bordered "waiting at a jammed gate" queue chips.
 90. [x] Coach tip "wards": after 3 of the player's creatures die near the enemy gate, explain
     gate wards/turrets and suggest pushing in groups or using the god power.
+91. [x] Quick mute: M key and a speaker button (desktop top bar); persisted as
+    `settings.muted`; moving the master slider unmutes. Smoke-checked.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
+92. [ ] Card tooltips only appear on mouse hover/long-press; keyboard users tabbing through
+    cards get none — show the tooltip on focus-visible.
+93. [ ] Renderer draws the full-screen backdrop with a 4 px overscan (scaled blit) every frame
+    only to hide edges during screen shake; draw 1:1 and fill the margin instead.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
