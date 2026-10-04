@@ -1,6 +1,7 @@
 /**
  * Screenshot harness: serves dist/ and captures scenarios with the local Chrome.
- *   npm run build && node scripts/shoot.ts [filter] [--query "a=1&b=2"] [--wait ms]
+ *   npm run build && node scripts/shoot.ts [filter] [--query "a=1&b=2"] [--wait ms] [--size 667x375]
+ *   (--size overrides the viewport of the selected scenarios; the file name gets a -WxH suffix)
  *   node scripts/shoot.ts --list      (scenario names; the filter matches substrings)
  * Output: screenshots/<name>.png
  */
@@ -150,6 +151,9 @@ async function main(): Promise<void> {
   const wIdx = args.indexOf('--wait');
   const extraQuery = qIdx >= 0 ? args[qIdx + 1] : '';
   const extraWait = wIdx >= 0 ? Number(args[wIdx + 1]) : 0;
+  const sIdx = args.indexOf('--size');
+  const size = sIdx >= 0 ? /^(\d+)x(\d+)$/.exec(args[sIdx + 1] ?? '') : null;
+  if (sIdx >= 0 && !size) throw new Error('--size expects WIDTHxHEIGHT, e.g. 667x375');
   const root = resolve('dist');
   const server = createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://x');
@@ -177,7 +181,10 @@ async function main(): Promise<void> {
         if (m.type() === 'error' || m.type() === 'warn') errors.push(`${m.type()}: ${m.text()}`);
       });
       page.on('pageerror', (e) => errors.push(`pageerror: ${String(e)}`));
-      await page.setViewport({ width: sc.w, height: sc.h, deviceScaleFactor: sc.dpr ?? 1, isMobile: !!sc.mobile, hasTouch: !!sc.mobile });
+      const w = size ? Number(size[1]) : sc.w;
+      const hgt = size ? Number(size[2]) : sc.h;
+      const name = size ? `${sc.name}-${w}x${hgt}` : sc.name;
+      await page.setViewport({ width: w, height: hgt, deviceScaleFactor: sc.dpr ?? 1, isMobile: !!sc.mobile, hasTouch: !!sc.mobile });
       const q = [sc.query, extraQuery].filter(Boolean).join('&');
       const t0 = Date.now();
       await page.goto(`http://127.0.0.1:${port}/?${q}`, { waitUntil: 'load' });
@@ -187,8 +194,8 @@ async function main(): Promise<void> {
         await new Promise((r) => setTimeout(r, sc.after ?? 0));
       }
       const fps = await page.evaluate(() => (window as unknown as { __fps?: number }).__fps ?? -1);
-      await page.screenshot({ path: `screenshots/${sc.name}.png` });
-      console.log(`${sc.name}: ${Date.now() - t0}ms fps=${fps}${errors.length ? '\n  ' + errors.join('\n  ') : ''}`);
+      await page.screenshot({ path: `screenshots/${name}.png` });
+      console.log(`${name}: ${Date.now() - t0}ms fps=${fps}${errors.length ? '\n  ' + errors.join('\n  ') : ''}`);
       await page.close();
     }
   } finally {

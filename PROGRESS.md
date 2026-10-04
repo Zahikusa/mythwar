@@ -415,6 +415,14 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 167. [x] How-to counter triangle: arrowheads no longer touch the "Guardian" label / Mystic orb.
 168. [x] Coach tips now live inside the HUD layer (z 15): above lane tabs, below card tooltips.
 169. [x] Difficulty chip rows line up across cards (`margin-top: auto`).
+170. [x] `scripts/shoot.ts --size WxH` re-shoots any scenario at another viewport (file gets a
+    -WxH suffix); checked 1920×1080 desktop and 740×360 phone.
+171. [ ] Render perf nits (renderer review): `fx.update` re-filters texts/timed into new arrays every
+    frame, `unitScreen` runs twice per unit per frame, the coin cap counts with `.filter` per
+    enemy death, each gate builds its portal gradient every frame. Small; batch into one pass.
+172. [ ] Calibration drift: after the fairness fixes (#125–127) the counter-following bot's wins vs
+    Adept dropped 19% → ~11% (n=90). If testers find Adept too hard, ease `AI_PROFILES.adept`
+    (think time / incomeMult) a notch.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
