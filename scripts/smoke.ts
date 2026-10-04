@@ -624,6 +624,8 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   check('destroying the citadel ends the game with results', s.over && s.menu === 'over', `over=${s.over} menu=${s.menu}`);
   const verdict = await page.evaluate(() => document.querySelector('.verdict .vt')?.textContent);
   check('results show Victory', verdict === 'Victory', String(verdict));
+  const tip = await page.evaluate(() => document.querySelector('.screen.over .vtip')?.textContent ?? '');
+  check('results suggest the next difficulty after a win', /Try Master/.test(tip), tip);
   // Rematch: a fresh battle with the HUD back (phones hide it under menus).
   const rm = await center(page, '.screen.over .mbtn.primary');
   if (viewport.mobile) await page.touchscreen.tap(rm.x, rm.y);

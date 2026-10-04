@@ -22,7 +22,7 @@ See DESIGN.md for the game design.
   areas when upright, ≥ 10 px text, bigger buttons, HUD hidden under menus, queue clear of gate).
 - **Robustness:** corrupt saves/settings, tiny windows, tutorial hand-off, drags surviving pause,
   focused buttons behind menus, hidden-tab audio, service-worker cache growth — all fixed and
-  smoke-tested (`npm run verify`: 78 unit tests + 104 browser checks).
+  smoke-tested (`npm run verify`: 78 unit tests + 107 browser checks).
 - **Perf:** frozen creatures 145 → 13 ms/frame for 30 frozen (headless software raster).
 - **Try:** `npm run dev`, play Adept; on a phone check the items under "Open questions".
 
