@@ -156,8 +156,8 @@ See DESIGN.md for the game design.
     canvas; only window glow, banner, flashes and smoke draw live (`drawCitadelKeep(...,
     'static' | 'dynamic')`). Software-raster frame cost on an empty field ~10.5 → ~7.9 ms
     (`node scripts/perf2.mjs`, which also supports skipping passes via `renderer.skip`).
-47. [ ] Lane highlight / shrine / fimbul overlays allocate canvas gradients every frame; cache
-    per layout.
+47. [x] Lane-highlight gradients cached per lane/colour (pulse via globalAlpha). Shrine glows
+    already use cached sprites; the Fimbulwinter band only exists during the power.
 49. [x] Melee blows draw a slash arc across the target (yellow on counter hits); creatures
     also recoil slightly when struck.
 50. [x] Lane-strength bar refs cached.
@@ -191,6 +191,8 @@ See DESIGN.md for the game design.
 65. [x] On ascension the score restarts at the new age's first chord ~1.4 s later (after the
     fanfare) instead of switching scale mid-progression.
 66. [ ] Creatures have no victory pose (only the generic hop).
+67. [ ] `src/render/citadel.ts drawCitadelGate`: gates (6 per frame) still draw gradients and
+    brickwork live; could share the keep-layer caching approach (~0.4 ms software).
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed

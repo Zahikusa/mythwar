@@ -79,6 +79,7 @@ export class Renderer {
   coinTarget: [number, number] | null = null;
   private bgCache = new Map<number, HTMLCanvasElement>();
   private keepCache = new Map<string, { canvas: HTMLCanvasElement; x: number; w: number }>();
+  private gradCache = new Map<string, CanvasGradient>();
   private vignette: HTMLCanvasElement | null = null;
   private theme = 0;
   private prevTheme = -1;
@@ -118,6 +119,7 @@ export class Renderer {
     this.layout = computeLayout(width, height, mode);
     this.bgCache.clear();
     this.keepCache.clear();
+    this.gradCache.clear();
     this.vignette = renderVignette(width, height, this.dpr);
     this.fx.maxParticles = mode === 'mobile' || this.quality === 'low' ? 600 : 1400;
     this.ambient = [];
@@ -661,14 +663,22 @@ export class Renderer {
     const h = g.band * 1.05;
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
-    const grad = ctx.createLinearGradient(0, y0, 0, y0 + h);
-    grad.addColorStop(0, `rgba(${col.join(',')},0)`);
-    grad.addColorStop(0.5, `rgba(${col.join(',')},${a})`);
-    grad.addColorStop(1, `rgba(${col.join(',')},0)`);
+    // Gradients are cached per lane and colour; the pulse is applied through globalAlpha.
+    const key = `${g.index}:${col.join(',')}`;
+    let grad = this.gradCache.get(key);
+    if (!grad) {
+      grad = ctx.createLinearGradient(0, y0, 0, y0 + h);
+      grad.addColorStop(0, `rgba(${col.join(',')},0)`);
+      grad.addColorStop(0.5, `rgba(${col.join(',')},1)`);
+      grad.addColorStop(1, `rgba(${col.join(',')},0)`);
+      this.gradCache.set(key, grad);
+    }
+    ctx.globalAlpha = a;
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.roundRect(x0, y0, x1 - x0, h, h / 2);
     ctx.fill();
+    ctx.globalAlpha = 1;
     // Chevrons flowing toward the enemy
     if (selected && view.targeting === 'none') {
       const dir = view.playerTeam === 0 ? 1 : -1;
