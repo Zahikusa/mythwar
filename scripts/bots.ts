@@ -11,7 +11,8 @@ import { World as WorldClass } from '../src/sim/world.ts';
 /**
  * spam: random creatures, random lanes · focus: everything down the middle · reactive: defends the
  * most threatened lane · counter: reactive + follows the Counter! badge · smart: counter + mounts
- * turrets on threatened lanes and buys blessings with spare gold (closest to a real player).
+ * turrets on threatened lanes, buys blessings with spare gold, saves to ascend, and when calm
+ * retakes shrines / pushes the emptiest lane (closest to a real player).
  */
 export type BotKind = 'spam' | 'focus' | 'reactive' | 'counter' | 'smart';
 
@@ -68,6 +69,22 @@ export class Bot {
             if (d < bestD) {
               bestD = d;
               lane = l;
+            }
+          }
+        }
+        // Smart: with no foe past midfield, take a shrine the enemy holds, else push the lane
+        // where it has the fewest creatures.
+        if (this.kind === 'smart' && bestD > 500) {
+          const lost = w.shrines.filter((sh) => sh.owner === (this.team === 0 ? 1 : 0)).map((sh) => sh.lane);
+          if (lost.length > 0) lane = lost[0];
+          else {
+            let fewest = Infinity;
+            for (let l = 0; l < LANE_COUNT; l++) {
+              const n = w.enemiesInLane(this.team, l).length;
+              if (n < fewest) {
+                fewest = n;
+                lane = l;
+              }
             }
           }
         }

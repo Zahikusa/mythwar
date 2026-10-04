@@ -484,8 +484,11 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     to lose to Adept). Smoke-checked.
 182. [x] Ascend button fill: tracks XP, then (once the XP is there) the gold for the tithe in a gold
     tint — saving up visibly fills the button.
-183. [ ] Smart calibration bot could also contest shrines and push the weakest lane, to calibrate
-    Master/Mythic against fuller play (it currently ignores shrines entirely).
+183. [x] Smart calibration bot also retakes enemy-held shrines and pushes the emptiest lane when no foe
+    is past midfield: Novice 60/60, Adept 61/90 (68%), Master 13/60 (22%), Mythic 8/60 (13%).
+184. [ ] Mythic headroom: a scripted bot beats Mythic 8–13% of the time; for a "god of war" level a
+    strong human may find it beatable. Knob if needed: `AI_PROFILES.mythic.incomeMult` 1.2 → 1.3
+    (and update the difficulty blurb/README, which quote +20%).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus
