@@ -4,6 +4,25 @@ Status: complete, in verification mode (since run #1, 2026-10-04 ~01:15)
 
 See DESIGN.md for the game design.
 
+## Requirements check (TASK.md)
+- **Age of War concept** — two citadels, summon units for gold, kill for gold + XP, evolve through
+  ages (5), turrets per age, a special power per age, destroy the enemy base. ✔
+- **3 lanes, both players send units on any lane** — lane select by tap/click/keys, drag cards
+  onto lanes; each lane has its own fights, gate, turret slot and shrine; shared citadel HP. ✔
+- **Mythological creatures** — 16 creatures across Fae Wilds, Olympus, Asgard, Jade Empire,
+  Celestial (+ Elder Dragon), each with its own trait. ✔
+- **Visually appealing, smooth, clean** — procedural vector art, per-age themed backdrops with
+  cross-fades, interpolated 60 Hz sim, walk/attack/death/spawn animations, particles, god-power
+  set pieces, citadel collapse. Screenshots in docs/. ✔
+- **Depth but simple to pick up, intuitive** — counter triangle + formation rules, shrines,
+  turrets, blessings, god powers, ages, Ragnarök; first-battle how-to, contextual coach tips,
+  Counter! badge, lane danger/strength indicators, tooltips/hover/press-and-hold labels. ✔
+- **AI with sensible difficulty levels** — Novice / Adept / Master / Mythic, calibrated with
+  headless sims and scripted naive players. ✔
+- **Separately optimized for desktop and mobile** — desktop bottom bar + hotkeys + hover;
+  phones get thumb columns, big touch targets, drag/long-press, rotated portrait, fullscreen +
+  landscape lock, haptics, PWA install, battery-saver fallback. ✔
+
 ## Tech decisions
 - Vite + TypeScript (no framework, no game engine). Canvas 2D battlefield, DOM/CSS HUD overlay.
 - Pure deterministic simulation (`src/sim`) with fixed 60 Hz step and seeded RNG, fully
