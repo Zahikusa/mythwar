@@ -113,7 +113,8 @@ export class Renderer {
   private projVis = new Map<number, ProjVis>();
   private artBounds = new Map<string, { l: number; r: number; t: number; b: number }>();
   readonly fx = new Fx();
-  private ambient: { x: number; y: number; vx: number; vy: number; p: number; s: number }[] = [];
+  /** Ambient particles (fireflies, snow, petals…); `th` = the theme they belong to. */
+  private ambient: { x: number; y: number; p: number; s: number; th: number }[] = [];
   private time = 0;
   /** Seconds since the previous rendered frame (0 while paused). */
   private frameDt = 0;
@@ -169,12 +170,14 @@ export class Renderer {
       this.theme = index;
       this.prevTheme = -1;
       this.themeFade = 1;
+      // (Old particles would keep their old theme's spread: fireflies stuck in the sky.)
+      this.ambient = [];
       return;
     }
+    // Cross-fade: the old age's particles fade out as the new age's fade in (drawAmbient).
     this.prevTheme = this.theme;
     this.theme = index;
     this.themeFade = 0;
-    this.ambient = [];
   }
 
   reset(): void {
@@ -840,9 +843,15 @@ export class Renderer {
 
   /** Live sky details: a shimmering aurora (Asgard) and twinkling stars on night themes. */
   private drawSky(ctx: CanvasRenderingContext2D): void {
+    // During an age change the old sky's aurora and stars fade out with its backdrop.
+    const fading = this.prevTheme >= 0 && this.themeFade < 1;
+    if (fading) this.drawSkyOf(ctx, this.prevTheme, 1 - this.themeFade);
+    this.drawSkyOf(ctx, this.theme, fading ? this.themeFade : 1);
+  }
+
+  private drawSkyOf(ctx: CanvasRenderingContext2D, themeIndex: number, vis: number): void {
     const L = this.layout;
-    const theme = THEMES[this.theme];
-    const vis = this.prevTheme >= 0 && this.themeFade < 1 ? this.themeFade : 1;
+    const theme = THEMES[themeIndex];
     if (theme.aurora) {
       this.aurora ??= renderAurora(L, Math.min(this.dpr, 1.5));
       const sway = Math.sin(this.time * 0.15) * L.width * 0.03;
@@ -889,21 +898,28 @@ export class Renderer {
 
   private drawAmbient(ctx: CanvasRenderingContext2D, dt: number): void {
     const L = this.layout;
-    const theme = THEMES[this.theme];
+    const fading = this.prevTheme >= 0 && this.themeFade < 1;
     const want = (L.mode === 'mobile' ? 22 : 45) * (this.quality === 'low' ? 0.5 : 1);
-    while (this.ambient.length < want) {
+    let current = 0;
+    for (const a of this.ambient) if (a.th === this.theme) current++;
+    for (; current < want; current++) {
+      const falls = THEMES[this.theme].ambient === 'snow' || THEMES[this.theme].ambient === 'petals';
       this.ambient.push({
         x: Math.random() * L.width,
-        y: L.horizon + Math.random() * (L.height - L.horizon),
-        vx: 0,
-        vy: 0,
+        y: falls ? Math.random() * L.height : L.horizon + Math.random() * (L.height - L.horizon),
         p: Math.random() * 100,
         s: 0.6 + Math.random() * 0.8,
+        th: this.theme,
       });
-      if (theme.ambient === 'snow' || theme.ambient === 'petals') this.ambient[this.ambient.length - 1].y = Math.random() * L.height;
     }
     const t = this.time;
     for (const a of this.ambient) {
+      // During an age change the old age's particles fade out while the new age's fade in.
+      const old = a.th !== this.theme;
+      const alpha = old ? (fading ? 1 - this.themeFade : 0) : fading ? this.themeFade : 1;
+      if (alpha <= 0) continue;
+      ctx.globalAlpha = alpha;
+      const theme = THEMES[a.th];
       a.p += dt;
       switch (theme.ambient) {
         case 'fireflies':
@@ -941,6 +957,8 @@ export class Renderer {
         a.y = theme.ambient === 'snow' || theme.ambient === 'petals' ? -10 : L.horizon + Math.random() * (L.height - L.horizon);
       }
     }
+    ctx.globalAlpha = 1;
+    if (!fading && current < this.ambient.length) this.ambient = this.ambient.filter((a) => a.th === this.theme);
   }
 
   private drawLaneHighlight(ctx: CanvasRenderingContext2D, g: LaneGeom, view: ViewState): void {

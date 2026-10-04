@@ -583,10 +583,14 @@ Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
     `[far.x1, right]` (`renderer.ts:610`): its far/middle gates never explode.
     (#202 + #204: turrets get the gate's clip and drop; the `gameover-collapse` screenshot
     scenario now mounts enemy turrets to show it.)
-205. [ ] Fireflies stuck in the sky after starting a game from an Asgard/Jade title backdrop: instant
+205. [x] Fireflies stuck in the sky after starting a game from an Asgard/Jade title backdrop: instant
     theme switch keeps the old ambient particles; fireflies only wobble (`renderer.ts:163,889`).
-206. [ ] On ascend the old theme's aurora/stars and ambient particles vanish instantly while the old
+206. [x] On ascend the old theme's aurora/stars and ambient particles vanish instantly while the old
     backdrop cross-fades for 1.6 s (`renderer.ts:830-855,174`).
+    (#205 + #206: ambient particles carry their theme; an instant switch clears them, a
+    cross-fade fades the old set out and the new in, then drops the old; the old sky's
+    aurora/stars fade with (1 − fade). Checked in Chrome: Asgard → Fae instantly: 0 fireflies
+    above the horizon; during Fae → Olympus both sets (45 + 45), after it only Olympus.)
 207. [x] Noise buffer is 1 s, random offset ≤ 0.5 s, rate 0.8–1.2, no loop → long noise sounds
     (Fimbulwinter 2.4 s, Spirit Dragon 2 s, Ragnarök 2.5 s) cut off early (`audio.ts:84,155`).
     (`src.loop = true`; unverified by ear — no speakers here, see #75.)
