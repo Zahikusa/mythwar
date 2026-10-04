@@ -80,7 +80,7 @@ contest shrines, save up to ascend, build turrets, buy blessings and aim god pow
 npm test                         # unit tests (simulation + AI)
 npm run sim -- 20 master adept   # headless AI-vs-AI balance runs
 node scripts/trace.ts 1003       # timeline of one headless match
-node scripts/bots.ts 10          # AI difficulty vs scripted naive players
+node scripts/bots.ts 10          # AI difficulty vs scripted players (naive → "smart")
 npm run smoke                    # end-to-end browser test (needs local Chrome)
 npm run shoot -- desktop         # screenshots into screenshots/ (--list, --size 2560x1440)
 node scripts/soak.ts 60 16       # long fast battles in Chrome: errors + fps
