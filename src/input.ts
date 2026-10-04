@@ -112,6 +112,8 @@ export class Input {
   private onKey(e: KeyboardEvent): void {
     const g = this.game;
     if (!g) return;
+    // Leave browser shortcuts alone (Ctrl+F find, Ctrl+P print, Alt+Tab...).
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.repeat && !['ArrowUp', 'ArrowDown'].includes(e.key)) return;
     const k = e.key.toLowerCase();
     if (k === 'escape' || k === 'p') {

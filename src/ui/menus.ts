@@ -106,6 +106,9 @@ export class Menus {
   }
 
   show(screen: Screen): void {
+    // The first-run "how-to, then battle" hand-off only lasts while the how-to is showing
+    // (Esc / Back out of it must not leave a pending battle start behind).
+    if (this.screen === 'howto' && screen !== 'howto') this.afterHowto = null;
     if (screen === 'howto' || screen === 'settings') {
       if (this.screen !== 'howto' && this.screen !== 'settings') this.back = this.screen === 'none' ? 'title' : this.screen;
     }
@@ -274,8 +277,8 @@ export class Menus {
     ];
     this.howtoPages = pages.map((pg, i) => h('div', { class: `hpage${i === 0 ? ' active' : ''}` }, h('h3', { text: pg.title }), ...pg.body));
     const dots = h('div', { class: 'hdots' });
-    pages.forEach((_, i) => {
-      const d = h('button', { class: 'hdot' });
+    pages.forEach((pg, i) => {
+      const d = h('button', { class: 'hdot', 'aria-label': `Page ${i + 1}: ${pg.title}` });
       onTap(d, () => this.setHowtoPage(i));
       dots.appendChild(d);
     });

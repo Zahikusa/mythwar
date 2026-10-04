@@ -61,11 +61,12 @@ export function computeLayout(width: number, height: number, mode: LayoutMode): 
     const side = Math.round(Math.min(116, Math.max(78, width * 0.105)));
     insets = { top: 0, bottom: 0, left: side, right: side };
   }
+  // Never degenerate (a sliver of a window would give negative radii, which canvas rejects).
   const field: Rect = {
     x: insets.left,
     y: insets.top,
-    w: width - insets.left - insets.right,
-    h: height - insets.top - insets.bottom,
+    w: Math.max(1, width - insets.left - insets.right),
+    h: Math.max(1, height - insets.top - insets.bottom),
   };
   const horizon = field.y + field.h * 0.25;
   // Citadels take a slice of the field on each side.

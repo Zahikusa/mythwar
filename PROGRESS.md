@@ -302,8 +302,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     measure with getBoundingClientRect (Chrome: zoomed) instead of offsetWidth (unzoomed).
     Portraits render at DPR × zoom so they stay crisp. Smoke flow "large desktop (QHD)";
     screenshot `menu-diff-qhd`. The results-chart hover now also works on rotated phones.
-124. [ ] `src/ui/menus.ts goBack()`: Esc out of the first-run how-to never clears `afterHowto`;
-    later Pause → How to Play → Skip/"To battle!" starts a new battle, discarding the live one.
+124. [x] `src/ui/menus.ts`: Esc out of the first-run how-to never cleared `afterHowto`; later
+    Pause → How to Play → Skip/"To battle!" started a new battle, discarding the live one.
+    `show()` now drops the hand-off whenever the how-to closes. Smoke flow "tutorial hand-off".
 125. [x] `src/sim/world.ts` unit update order: team 0 always moved first, so team 1 (the AI)
     started attacking one tick earlier when two melee units met — won 9/16 mirror duels vs 4.
     Now both sides decide "foe in reach" (and enrage) from start-of-tick positions, and a unit
@@ -316,25 +317,49 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     keep the Jötunn's edge vs packs, cleave now strikes the second foe at full force (army
     G-v-H age 3: +0.09, ×2 budget +0.13). Ladder after #125–127: master>adept 16-4,
     adept>novice 20-0, mythic>master 14-2, master mirror 9-7 (avg 21 min). Tests added.
-128. [ ] `src/ui/hud.ts` drags survive Esc / pause / leaving: releasing still summons while
-    paused; ghost can stay visible into the next battle.
-129. [ ] Enter/Space activate a focused HUD button behind a menu (e.g. click Pause, press
-    Enter → pause toggles instead of Resume); HUD should be `inert` while a menu is open.
-130. [ ] `src/app.ts toTitle`: a malformed autosave (v=1, wrong shape) throws before the
-    game loop starts — the game never loads; settings values aren't validated either.
-131. [ ] Music keeps playing in a hidden tab (game pauses, AudioContext doesn't suspend).
-132. [ ] `app.ts lastBuzz` not reset between battles (no base-hit vibration after a rematch).
+128. [x] `src/ui/hud.ts`: drags survived Esc / pause / leaving (releasing still summoned while
+    paused; the ghost could linger into the next battle). `cancelDrag()` from
+    cancelTargeting/attach/detach; drops while paused/over are ignored. Smoke-checked.
+129. [x] Enter/Space activated a focused HUD button behind a menu (click Pause, press Enter →
+    stayed paused). The HUD is `inert` while any menu is open; Enter ignores key repeat.
+    Smoke-checked.
+130. [x] `src/app.ts`: a malformed autosave threw while labelling "Continue" → the game never
+    loaded. Label is validated (bad saves are dropped), `Game.fromSave` checks the difficulty,
+    settings are sanitized field by field. Smoke check plants corrupt storage.
+131. [x] The AudioContext is suspended while the page is hidden (resumed when visible).
+132. [x] `lastBuzz` reset when a battle starts.
 133. [ ] Card tooltip and drag ghost render under the coach bubble (`.hud` isolation).
-134. [ ] Shortcuts ignore modifiers: Ctrl+F toggles speed, Ctrl+P pauses, Ctrl+1–4 summon.
+134. [x] Battle shortcuts ignore Ctrl/Alt/Meta combos (Ctrl+F, Ctrl+P, Ctrl+1–4 are the browser's).
 135. [ ] A11y: icon-only panel close buttons / how-to dots have no accessible name; cards and
     the power button can't be activated with Enter.
-136. [ ] `continueSaved` shows the pause menu without the pause summary line.
+136. [x] `continueSaved` goes through `pause()`, so the pause summary shows (smoke-checked).
 137. [ ] `src/game.ts fastForward` discards events (a gameOver during ff never ends the game).
 138. [ ] Results-chart age-up times read `world.time` after the frame (up to ~0.5 s late).
 139. [ ] `World.deserialize` aliases/mutates the snapshot (structuredClone it).
 140. [ ] `src/ai/ai.ts` fallback purchase keeps the ascend reserve even under siege.
 141. [ ] Missing sim tests: unit traits (cleave, slam, sweep, lifesteal, charge, enrage, bounce,
     slow), side symmetry, simultaneous citadel deaths, power effects (briar root, dragon hits).
+142. [x] A window narrower than ~156 px gave a negative field width → `ctx.ellipse` threw →
+    the rAF loop died for good. Field size is clamped ≥ 1 and the next frame is scheduled
+    before rendering. Smoke check squeezes the window to 120×300 and 1×1.
+143. [ ] Paused game: screen shake never decays (dt = 0 → new random offset every frame), and
+    projectiles/spirit dragon keep emitting particles per frame (also per-frame, not per-second
+    emission: 144 Hz screens get 2.4× the particles).
+144. [ ] `renderer.ts` frozen creatures use `ctx.filter` for every fill (Fimbulwinter on a crowded
+    lane); cache the static frozen pose as a sprite.
+145. [ ] `draw.ts drawGlow` builds a key string per call (`rgb.join(',')`) — up to 1400/frame.
+146. [ ] Hunter pack spread is draw-only: death ghosts, bursts, gold text and projectile impacts
+    use the unspread x, so dying hunters jump sideways (~12–15 px).
+147. [ ] Melee slash effects are drawn before (under) the creatures.
+148. [ ] Killing blows show no hit spark/slash (unit already removed from `unitById`).
+149. [ ] `keepCache`/`gateCache` keep every age's layers until a resize; `prevTheme` never reset.
+150. [ ] `citadel.ts`: latent save/restore imbalance (`if (!D) return` inside the collapse save).
+151. [ ] Title camera drift (±10 px) can expose a dark strip at the edges below ~800 px width.
+152. [ ] Powers are drawn after all lanes: a far-lane spirit dragon paints over near-lane
+    creatures; Fimbul veil uses `g.s` instead of the capped art scale.
+153. [ ] `asgard.ts:73` Jötunn breath sets globalAlpha absolutely (ignores ghost/spawn fade).
+154. [ ] Moving the window to a monitor with another DPR doesn't re-size the canvas.
+155. [ ] Particles/ghosts/texts keep stale screen positions after a mid-battle resize.
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

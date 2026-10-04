@@ -104,11 +104,12 @@ export class App {
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.state === 'title') this.escape();
       // Enter on a menu screen presses its main (gold) button, unless a button is focused.
-      if (e.key === 'Enter' && this.menus.current !== 'none' && !(document.activeElement instanceof HTMLButtonElement)) {
+      if (e.key === 'Enter' && !e.repeat && this.menus.current !== 'none' && !(document.activeElement instanceof HTMLButtonElement)) {
         if (this.menus.pressPrimary()) e.preventDefault();
       }
     });
     document.addEventListener('visibilitychange', () => {
+      this.audio.setHidden(document.hidden);
       if (!document.hidden) return;
       this.persist();
       if (this.state === 'playing' && this.game && !this.game.paused) this.pause();
@@ -267,6 +268,7 @@ export class App {
     this.state = 'playing';
     this.overTimer = -1;
     this.lastSave = game.world.time;
+    this.lastBuzz = -10;
     this.audio.ambience = 1;
     this.audio.startMusic(game.world.players[game.playerTeam].age);
     this.hud.attach(game);
@@ -292,8 +294,7 @@ export class App {
     this.difficulty = save.difficulty;
     this.hookGame(game, false);
     this.enterBattle(game);
-    game.paused = true;
-    this.menus.show('pause');
+    this.pause();
   }
 
   /** Autosave the battle in progress. */
@@ -315,9 +316,22 @@ export class App {
     this.startBackdrop();
     this.audio.ambience = 0.2;
     this.audio.startMusic(0);
-    const save = loadBattle();
-    this.menus.setContinue(save ? `${AGES[save.world.players[0].age].name} \u00b7 ${fmtTime(save.world.time)}` : null);
+    this.menus.setContinue(this.savedLabel());
     this.menus.show('title');
+  }
+
+  /** "Asgard \u00b7 7:42" for the autosave, or null. A save that doesn't make sense is dropped. */
+  private savedLabel(): string | null {
+    const save = loadBattle();
+    if (!save) return null;
+    try {
+      const age = AGES[save.world.players[0].age];
+      if (!age || !Number.isFinite(save.world.time) || !DIFFICULTIES.includes(save.difficulty)) throw new Error('Malformed save');
+      return `${age.name} \u00b7 ${fmtTime(save.world.time)}`;
+    } catch {
+      clearBattle();
+      return null;
+    }
   }
 
   /**
@@ -394,6 +408,8 @@ export class App {
   }
 
   private frame(now: number): void {
+    // Scheduled first, so one bad frame can't stop the loop for good.
+    requestAnimationFrame((t) => this.frame(t));
     const dt = Math.min(0.1, (now - this.last) / 1000);
     this.last = now;
     this.fpsAcc += dt;
@@ -405,6 +421,9 @@ export class App {
       this.fpsFrames = 0;
       this.watchPerformance(fps);
     }
+    // HUD buttons behind a menu can't be focused or keyed (a focused Pause button + Enter...).
+    const inert = this.menus.current !== 'none';
+    if (this.hud.root.inert !== inert) this.hud.root.inert = inert;
     const g = this.game;
     if (g) {
       // The title backdrop restarts when its battle ends.
@@ -430,7 +449,6 @@ export class App {
         }
       }
     }
-    requestAnimationFrame((t) => this.frame(t));
   }
 
   private battleIntensity(g: Game): number {

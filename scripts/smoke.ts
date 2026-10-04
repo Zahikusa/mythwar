@@ -87,11 +87,61 @@ async function resumeFlow(page: Page): Promise<void> {
   });
   // (pagehide saves again on navigation, so allow a few ticks of difference.)
   check('continue restores the battle, paused', st.state === 'playing' && st.paused && st.menu === 'pause' && Math.abs(st.time - saved.time) < 0.25 && Math.abs(st.gold - saved.gold) < 2 && st.queue === 1, JSON.stringify({ saved, st }));
+  const summary = await page.evaluate(() => document.querySelector('.psummary')?.textContent ?? '');
+  check('the continued battle shows its pause summary', summary.includes('foes slain'), summary);
   // Leaving the battle abandons the save.
   await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.toTitle());
   await sleep(300);
   const gone = await page.evaluate(() => document.querySelector('.mbtn.continue')!.classList.contains('hidden'));
   check('leaving a battle discards its autosave', gone);
+  // Corrupted storage (older build / hand-edited) must not stop the game from loading.
+  await page.evaluate(() => {
+    localStorage.setItem('mythwar.battle.v1', JSON.stringify({ v: 1, difficulty: 'godlike', world: { players: [{ age: 42 }], time: 'soon' } }));
+    localStorage.setItem('mythwar.settings.v1', JSON.stringify({ master: 'loud', difficulty: 'godlike', hintsSeen: 7, records: { novice: 3 }, speed: 9 }));
+  });
+  await page.goto(`${base}/`, { waitUntil: 'load' });
+  await sleep(900);
+  const boot = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    return { menu: app.menus.current, cont: !document.querySelector('.mbtn.continue')!.classList.contains('hidden'), master: app.settings.master, diff: app.settings.difficulty, saved: localStorage.getItem('mythwar.battle.v1') };
+  });
+  check('a malformed autosave / settings still boots to the title', boot.menu === 'title' && !boot.cont && boot.master === 0.8 && boot.diff === 'novice' && boot.saved === null, JSON.stringify(boot));
+  await page.evaluate(() => localStorage.clear());
+}
+
+/** Esc out of the first-run how-to must not leave its "then start a battle" hand-off behind. */
+async function tutorialHandoffFlow(page: Page): Promise<void> {
+  console.log('== first-run tutorial hand-off ==');
+  await page.setViewport({ width: 1600, height: 900, deviceScaleFactor: 1 });
+  await page.goto(`${base}/`, { waitUntil: 'load' });
+  await page.evaluate(() => localStorage.clear());
+  await page.goto(`${base}/`, { waitUntil: 'load' });
+  await sleep(1200);
+  const play = await center(page, '.screen.title .mbtn.primary:not(.hidden)');
+  await page.mouse.click(play.x, play.y);
+  await sleep(500);
+  const begin = await center(page, '.screen.difficulty .mbtn.primary');
+  await page.mouse.click(begin.x, begin.y);
+  await sleep(500);
+  await page.keyboard.press('Escape');
+  await sleep(400);
+  const menu = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current);
+  check('Esc leaves the first-run how-to', menu === 'difficulty', menu);
+  await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    app.play('novice');
+    app.pause();
+  });
+  await sleep(400);
+  const hb = await center(page, '.screen.pause .mbtn:nth-child(2)');
+  await page.mouse.click(hb.x, hb.y);
+  await sleep(400);
+  const r = await page.evaluate(() => ({
+    menu: (window as unknown as { __mythwar: any }).__mythwar.menus.current,
+    skipHidden: document.querySelector('.screen.howto .hskip')!.classList.contains('hidden'),
+  }));
+  check('how-to from the pause menu offers no "Skip to battle"', r.menu === 'howto' && r.skipHidden, JSON.stringify(r));
+  await page.evaluate(() => localStorage.clear());
 }
 
 async function rotatedMenusFlow(page: Page): Promise<void> {
@@ -166,6 +216,16 @@ async function largeDesktopFlow(page: Page): Promise<void> {
   await sleep(100);
   const s = await state(page);
   check('zoomed lane tab sits by its gate and selects the lane', s.lane === 0 && Math.abs(tab.y - lane0.y) < 80 && tab.x < lane0.x, JSON.stringify({ tab, lane0, lane: s.lane }));
+  // A window squeezed to a sliver (degenerate layout) must not kill the render loop.
+  for (const [w, h] of [[120, 300], [1, 1]]) {
+    await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
+    await sleep(300);
+  }
+  await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
+  const t0 = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.time);
+  await sleep(700);
+  const t1 = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.time);
+  check('the game survives a sliver-sized window', t1 - t0 > 0.4, `advanced ${(t1 - t0).toFixed(2)}s`);
 }
 
 async function run(page: Page, label: string, viewport: { width: number; height: number; mobile: boolean }): Promise<void> {
@@ -223,6 +283,22 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   await sleep(120);
   const lanes = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.map((q: any) => q.lane));
   check('dragging a card onto a lane summons there', lanes.includes(2), `queue lanes=${JSON.stringify(lanes)}`);
+  if (!viewport.mobile) {
+    // Esc mid-drag drops the drag: releasing over a lane afterwards summons nothing.
+    const q0 = (await state(page)).queue;
+    await page.mouse.move(c1.x, c1.y);
+    await page.mouse.down();
+    for (let i = 1; i <= 6; i++) {
+      await page.mouse.move(c1.x + ((l2.x - c1.x) * i) / 6, c1.y + ((l2.y - c1.y) * i) / 6);
+      await sleep(16);
+    }
+    await page.keyboard.press('Escape');
+    await page.mouse.up();
+    await sleep(120);
+    const after = await state(page);
+    const ghost = await page.evaluate(() => document.querySelector('.drag-ghost')!.classList.contains('hidden'));
+    check('Esc cancels a card drag', after.queue === q0 && ghost && !after.paused, JSON.stringify({ q0, q: after.queue, ghost, paused: after.paused }));
+  }
 
   // Keyboard (desktop only)
   if (!viewport.mobile) {
@@ -242,11 +318,13 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     await sleep(50);
     const unmuted = await page.evaluate(() => !(window as unknown as { __mythwar: any }).__mythwar.settings.muted);
     check('M toggles mute', muted && unmuted);
-    const goldBefore = s.gold;
+    // (Training keeps running: restart it so nothing steps out during the check.)
+    await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].trainProgress = 0));
+    const before = await state(page);
     await page.keyboard.press('Backspace');
     await sleep(50);
     s = await state(page);
-    check('Backspace cancels the last summon with a refund', s.queue === Math.min(5, q0 + 1) - 1 && s.gold > goldBefore, `queue=${s.queue}`);
+    check('Backspace cancels the last summon with a refund', s.queue === before.queue - 1 && s.gold > before.gold, `queue ${before.queue} → ${s.queue}`);
   }
 
   // Queue chips mirror the queue; tapping one cancels it (refund).
@@ -382,6 +460,16 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   await sleep(450);
   s = await state(page);
   check('resume continues the battle', !s.paused && s.menu === 'none');
+  if (!viewport.mobile) {
+    // The clicked Pause button keeps focus; Enter must press Resume, not the button behind the menu.
+    const pb = await center(page, '.sys .sysbtn:last-child');
+    await page.mouse.click(pb.x, pb.y);
+    await sleep(300);
+    await page.keyboard.press('Enter');
+    await sleep(400);
+    s = await state(page);
+    check('Enter on the pause menu resumes (HUD inert behind menus)', !s.paused && s.menu === 'none', `paused=${s.paused} menu=${s.menu}`);
+  }
 
   // Resize mid-battle (window resize / phone rotation): layout follows, input still maps.
   {
@@ -454,6 +542,10 @@ async function main(): Promise<void> {
     page2.on('pageerror', (e) => errors.push(`rotated menus: ${String(e)}`));
     await rotatedMenusFlow(page2);
     await page2.close();
+    const page4 = await browser.newPage();
+    page4.on('pageerror', (e) => errors.push(`tutorial: ${String(e)}`));
+    await tutorialHandoffFlow(page4);
+    await page4.close();
     const page3 = await browser.newPage();
     page3.on('pageerror', (e) => errors.push(`large desktop: ${String(e)}`));
     page3.on('console', (m) => {

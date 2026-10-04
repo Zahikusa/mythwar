@@ -265,6 +265,7 @@ export class Hud {
   // -------------------------------------------------------------------------
 
   attach(game: Game): void {
+    this.cancelDrag();
     this.game = game;
     this.syncMute();
     setText(this.el.speed.querySelector('span')!, `${game.speed}×`);
@@ -283,6 +284,7 @@ export class Hud {
   }
 
   detach(): void {
+    this.cancelDrag();
     this.game = null;
     this.root.classList.add('hidden');
     this.hideTooltip();
@@ -392,9 +394,20 @@ export class Hud {
   }
 
   cancelTargeting(): void {
+    this.cancelDrag();
     if (!this.game) return;
     this.game.view.targeting = 'none';
     this.hint('');
+  }
+
+  /** Drops a card/power drag in progress (Esc, pause, panels, leaving the battle). */
+  private cancelDrag(): void {
+    const d = this.drag;
+    if (!d) return;
+    clearTimeout(d.longPress);
+    this.drag = null;
+    this.ghost.classList.add('hidden');
+    if (d.active && this.game) this.game.view.hoverLane = -1;
   }
 
   tryAscend(): boolean {
@@ -576,9 +589,10 @@ export class Hud {
     if (!d || e.pointerId !== d.pointerId) return;
     clearTimeout(d.longPress);
     this.drag = null;
+    this.ghost.classList.add('hidden');
     if (!this.game) return;
+    if (this.game.paused || this.game.over) cancelled = true;
     if (d.active) {
-      this.ghost.classList.add('hidden');
       const lane = cancelled ? -1 : this.laneAtPoint(e.clientX, e.clientY);
       this.game.view.hoverLane = -1;
       this.game.view.targeting = 'none';

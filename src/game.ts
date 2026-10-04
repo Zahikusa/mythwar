@@ -81,6 +81,7 @@ export class Game {
   static fromSave(save: GameSave): Game {
     if (!save || save.v !== 1) throw new Error('Unsupported save');
     if (save.world.winner !== null) throw new Error('Battle already decided');
+    if (!(save.difficulty in AI_PROFILES)) throw new Error('Unknown difficulty');
     const game = new Game({ difficulty: save.difficulty }, World.deserialize(save.world));
     game.ai.restore(save.ai);
     game.history.push(...save.history);
