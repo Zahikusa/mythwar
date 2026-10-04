@@ -202,7 +202,9 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 60. [x] Phone results show a small champion portrait beside the verdict (was hidden).
 61. [ ] `src/sim/data.ts`: Elder Dragon beats equal gold of any class by 59–86% value
     (scripts/classwar battle); fine as a one-at-a-time capstone, but re-check if players
-    report it dominating late Ragnarök games.
+    report it dominating late Ragnarök games. Run #2 data: master AIs that may field dragons vs
+    ones that never do, 200 final-age games with sides swapped: dragon side won 106/200 (53%),
+    ~0.3 dragons per game — not dominant in AI play; a human hoarding for it is untested.
 62. [x] Age badges pulse when that side has the XP to ascend (enemy badge tooltip warns too).
     Also: the top bar had pointer-events:none, so badge/shrine tooltips never appeared — the
     badges, shrine pips and Ragnarök label now accept hover.
