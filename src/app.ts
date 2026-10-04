@@ -394,8 +394,7 @@ export class App {
   /** Escape / P: leave a sub-menu, otherwise toggle pause. */
   private escape(): void {
     const m = this.menus.current;
-    if (m === 'howto' || m === 'settings') this.menus.goBack();
-    else if (m === 'difficulty') this.menus.show(this.state === 'over' ? 'over' : 'title');
+    if (m === 'howto' || m === 'settings' || m === 'difficulty') this.menus.goBack();
     else if (this.state !== 'playing') return;
     else if (this.game?.paused) this.resume();
     else this.pause();

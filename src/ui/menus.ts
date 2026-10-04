@@ -28,6 +28,8 @@ export class Menus {
   private settings: Settings;
   private screen: Screen = 'none';
   private back: Screen = 'title';
+  /** Where the difficulty screen returns to: the title, or the results it was opened from. */
+  private diffBack: Screen = 'title';
   private screens: Partial<Record<Screen, HTMLElement>> = {};
   private howtoPage = 0;
   private howtoPages: HTMLElement[] = [];
@@ -100,9 +102,10 @@ export class Menus {
     return true;
   }
 
-  /** Return from how-to / settings to whichever screen opened them. */
+  /** Return from how-to / settings / difficulty to whichever screen opened them. */
   goBack(): void {
     if (this.screen === 'howto' || this.screen === 'settings') this.show(this.back);
+    else if (this.screen === 'difficulty') this.show(this.diffBack);
   }
 
   show(screen: Screen): void {
@@ -111,6 +114,9 @@ export class Menus {
     if (this.screen === 'howto' && screen !== 'howto') this.afterHowto = null;
     if (screen === 'howto' || screen === 'settings') {
       if (this.screen !== 'howto' && this.screen !== 'settings') this.back = this.screen === 'none' ? 'title' : this.screen;
+    }
+    if (screen === 'difficulty' && this.screen !== 'difficulty' && this.screen !== 'howto' && this.screen !== 'settings') {
+      this.diffBack = this.screen === 'over' ? 'over' : 'title';
     }
     this.screen = screen;
     for (const [k, el] of Object.entries(this.screens)) el!.classList.toggle('active', k === screen);
@@ -203,7 +209,7 @@ export class Menus {
       grid.appendChild(card);
     });
     const begin = this.button('Begin Battle', 'primary big', () => this.begin(this.selected), ICONS.swords);
-    const back = this.button('Back', 'ghost', () => this.show('title'));
+    const back = this.button('Back', 'ghost', () => this.goBack());
     return h('div', { class: 'screen difficulty' }, h('h2', { text: 'Choose your foe' }), grid, h('div', { class: 'mrow' }, back, begin));
   }
 

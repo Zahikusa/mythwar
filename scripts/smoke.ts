@@ -45,6 +45,19 @@ async function center(page: Page, selector: string): Promise<{ x: number; y: num
   return { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
 }
 
+/** Centre of the first button under `scope` whose text is `text`. */
+async function centerText(page: Page, scope: string, text: string): Promise<{ x: number; y: number }> {
+  return page.evaluate(
+    (scope, text) => {
+      const b = [...document.querySelectorAll<HTMLElement>(`${scope} button`)].find((el) => el.textContent?.trim() === text)!;
+      const r = b.getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    },
+    scope,
+    text,
+  );
+}
+
 async function laneScreen(page: Page, lane: number, frac = 0.4): Promise<{ x: number; y: number }> {
   return page.evaluate(
     (lane, frac) => {
@@ -626,6 +639,20 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   check('results show Victory', verdict === 'Victory', String(verdict));
   const tip = await page.evaluate(() => document.querySelector('.screen.over .vtip')?.textContent ?? '');
   check('results suggest the next difficulty after a win', /Try Master/.test(tip), tip);
+  // "Change foe", then Back: returns to the results (not a broken title over the battlefield).
+  {
+    const tapAt = async (p: { x: number; y: number }) => {
+      if (viewport.mobile) await page.touchscreen.tap(p.x, p.y);
+      else await page.mouse.click(p.x, p.y);
+      await sleep(250);
+    };
+    const menuState = () => page.evaluate(() => ({ menu: (window as unknown as { __mythwar: any }).__mythwar.menus.current, state: (window as unknown as { __mythwar: any }).__mythwar.state }));
+    await tapAt(await centerText(page, '.screen.over', 'Change foe'));
+    const opened = await menuState();
+    await tapAt(await centerText(page, '.screen.difficulty', 'Back'));
+    const back = await menuState();
+    check('results → Change foe → Back returns to the results', opened.menu === 'difficulty' && back.menu === 'over' && back.state === 'over', JSON.stringify({ opened, back }));
+  }
   // Rematch: a fresh battle with the HUD back (phones hide it under menus).
   const rm = await center(page, '.screen.over .mbtn.primary');
   if (viewport.mobile) await page.touchscreen.tap(rm.x, rm.y);

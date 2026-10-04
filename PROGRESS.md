@@ -512,6 +512,64 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     saves that lack ascension times (test); the "save" coach tip ends once you ascend; the
     cursor/gate hint is off during power targeting, pause and game over; frost-sprite bounds
     also sample attack poses.
+
+Run #3 fresh-eyes reviews (four parallel reviewers: sim, AI/app, UI, renderer):
+189. [ ] Narrow desktop windows (≥ 520 px both ways but < ~960 px wide, e.g. 900×600 or a half
+    1366 laptop screen): the card row and action buttons overlap — the power button covers the
+    Phoenix/Dragon cards (clicks cast the power), XP text cut off, enemy age badge under mute.
+    `layout.ts:47-52` mode switch; `hud.css` compact rules only go down to 1180 px.
+190. [x] Results → "Change foe" → "Back" (`menus.ts:206` always `show('title')`): undimmed title over
+    the dead battlefield, desktop HUD still visible, state stays `over`, battle music plays, Esc
+    dead. Now the difficulty screen remembers where it was opened from (`diffBack`); Back and Esc
+    both use `menus.goBack()`. The smoke check for it also found that a screen fading out
+    (0.35 s, still `visibility: visible`, later in the DOM) caught taps meant for the screen
+    fading in: inactive screens now have `pointer-events: none`.
+191. [ ] Settings toggles unreachable by keyboard / screen reader: `.srow.check input {display:none}`
+    (`menus.css:601`); the `input:focus-visible + .sw` focus ring never applies.
+192. [ ] Phone menus: Settings is 483 px tall → Done / Reset records / Show tips below the fold at
+    844×390 and 640×360; Results 422 px at 640×360 hides Rematch / Main menu. No scroll hint.
+193. [ ] Unscoped `.goldrow .ico {18px}` (`hud.css:1820`) shrinks the desktop gold coin (30 px rule);
+    duplicate unscoped `.goldrow.pulse .goldnum` + `@keyframes goldpulse` (`hud.css:1808-1818`).
+194. [ ] `.keyspanel` centred with `translate:-50% 0` but the `panelin` keyframes animate `translate`
+    → the Controls panel slides ~250 px sideways on open; in mobile mode on a short desktop
+    window it sits a full width off.
+195. [ ] `.buy:hover:not(:disabled)` beats `.buy.poor` → hovering/tapping an unaffordable blessing
+    makes it look affordable. Several `:hover` rules not in `@media (hover:hover)` (sticky on touch).
+196. [ ] Endless CSS animations: `readyglow`/`dangerpulse` animate box-shadow (main-thread repaint)
+    even under the pause menu; title `floaty` canvases animate during battles (screen only
+    visibility:hidden); `.xpfill`/`.ascfill` width transitions restarted every frame.
+197. [ ] Settings "Reset records" stays armed between visits (`menus.ts:344-356`): one stray tap, Done,
+    next visit a single tap wipes all W/L records. "Records cleared" label also sticks.
+198. [ ] HUD banner timer counts down while paused (`app.ts:462` → `hud.ts:918`); `Hud.attach` doesn't
+    reset `bannerTimer`, so after a quick restart `bannerShowing` suppresses coach tips ≤ 2.8 s.
+199. [ ] Text vs mechanics: how-to page 5 says "Press it (or Space) and choose a lane" but Space casts
+    straight away on the selected lane. XP bar shows progress within the age, the Ascend fill
+    shows total XP → right after reaching Olympus they read 0% vs 29%.
+200. [ ] Accessibility names: blessing buy buttons named only by price, queue chips by one letter,
+    lane tabs "▶", mute button has no `aria-pressed`; menus lack dialog roles; hidden how-to
+    pages are only opacity 0; `.res` tooltips dead (`pointer-events:none`).
+201. [ ] Continued saved battle shows no creatures while paused: renderer fade-in (`v.spawn`) only
+    advances with frame time (0 while paused) and `reset()` clears it, so on Continue every
+    creature is alpha 0 until Resume, then all pop in at once (`renderer.ts:1092,1138,1160`).
+202. [ ] Turrets float in mid-air while the losing citadel collapses (`renderer.ts:786` draws them at
+    the original gate top; gates sink by collapse²·60 px in `citadel.ts:351`).
+203. [ ] Power visuals use real time but sim timings: at 2× speed meteors land (impact/shake fire)
+    at ~24% of their fall; vines/ice outlast the root/freeze 2× (`renderer.ts:529,655,666`).
+204. [ ] Enemy citadel collapse explosions use `[near.x1, right]` instead of the mirrored
+    `[far.x1, right]` (`renderer.ts:610`): its far/middle gates never explode.
+205. [ ] Fireflies stuck in the sky after starting a game from an Asgard/Jade title backdrop: instant
+    theme switch keeps the old ambient particles; fireflies only wobble (`renderer.ts:163,889`).
+206. [ ] On ascend the old theme's aurora/stars and ambient particles vanish instantly while the old
+    backdrop cross-fades for 1.6 s (`renderer.ts:830-855,174`).
+207. [ ] Noise buffer is 1 s, random offset ≤ 0.5 s, rate 0.8–1.2, no loop → long noise sounds
+    (Fimbulwinter 2.4 s, Spirit Dragon 2 s, Ragnarök 2.5 s) cut off early (`audio.ts:84,155`).
+208. [ ] Kitsune bounce shots start at the struck target's un-fanned x and the original shooter's
+    muzzle height → visible jump between hit and next bolt (`world.ts:967`, `renderer.ts:1330`).
+209. [ ] Screen shake pre-fills exposed edges with `ground[1]`, also at the sky edge → light band
+    flickers atop dark skies (Asgard, Celestial) on game over / Ragnarök (`renderer.ts:729`).
+210. [ ] Per-frame allocations: gate-portal gradients + colour strings, `archPath`/`withSide`
+    closures, keep window arrays (`citadel.ts`), per-creature screen-pos/pose objects, comparator
+    per lane, `filter()` copies of ghosts/embers (`renderer.ts`).
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

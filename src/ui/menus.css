@@ -30,6 +30,8 @@
   transform: scale(0.98);
   transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0.35s;
   overflow-y: auto;
+  /* A screen fading out must not catch taps meant for the one fading in. */
+  pointer-events: none;
 }
 
 /* Large desktop screens: menus keep their proportion (--hs from the layout, 1 elsewhere). */
@@ -40,6 +42,7 @@
 .screen.active {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
   transform: none;
   transition: opacity 0.35s ease, transform 0.35s ease;
 }
