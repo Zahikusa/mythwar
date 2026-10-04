@@ -337,8 +337,8 @@ export class Renderer {
       const cx = c.getContext('2d', { willReadFrequently: true })!;
       cx.setTransform(k, 0, 0, k, -b.l * k, -b.t * k);
       setLineWidth(1);
-      // A few poses, so walk/idle swings are inside the box.
-      for (const t of [0, 0.7, 1.9]) art.draw(cx, { ...pose, t, walk: t * 3, attack: -1 });
+      // Many idle phases (wing flaps, swaying), so any frozen moment fits inside the box.
+      for (let i = 0; i < 10; i++) art.draw(cx, { ...pose, t: i * 0.37, walk: i * 0.9, attack: -1 });
       const data = cx.getImageData(0, 0, W, H).data;
       let x0 = W;
       let y0 = H;
