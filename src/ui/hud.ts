@@ -77,6 +77,7 @@ export class Hud {
   private blessRefs: Record<string, { pips: Element[]; buy: HTMLButtonElement; cost: number }> = {};
   private turretBuys: HTMLButtonElement[][] = [[], [], []];
   private hpShown: [number, number] = [1, 1];
+  private readyChimeAt = -100;
   private drag: { unitId: string | null; power: boolean; startX: number; startY: number; active: boolean; pointerId: number; longPress: number } | null = null;
   private ghost: HTMLDivElement;
   /** Set by the input layer: maps a client point to a lane index (or -1). */
@@ -289,6 +290,7 @@ export class Hud {
     toggle(this.el.ascend, 'maxed', false);
     this.cardAge = -1;
     this.hpShown = [1, 1];
+    this.readyChimeAt = -100;
     this.togglePanel('none');
     this.root.classList.remove('hidden');
     setText(this.el.toast, '');
@@ -877,6 +879,12 @@ export class Hud {
       const needLine = compact ? `need ${fmt(short)}g` : `${next.name} · need ${fmt(short)}g`;
       const costLine = compact ? `${fmt(next.ascendCost)}g` : `${next.name} · ${fmt(next.ascendCost)}g`;
       setText(E.ascSub, me.xp >= next.xpRequired && short > 0 ? needLine : costLine);
+      // Chime when ascending becomes possible (XP and gold both there) — not again within 20 s if
+      // the gold hovers around the tithe.
+      if (!why && !E.ascend.classList.contains('ready') && g.world.time > 1 && g.world.time - this.readyChimeAt > 20) {
+        this.readyChimeAt = g.world.time;
+        this.cb.sound('ready');
+      }
       toggle(E.ascend, 'ready', !why);
       toggle(E.ascend, 'xpready', me.xp >= next.xpRequired && !!why);
       const title = `Ascend to ${next.name} (U): needs ${fmt(next.xpRequired)} XP and ${fmt(next.ascendCost)} gold. New creatures, turrets, god power and a stronger citadel.`;

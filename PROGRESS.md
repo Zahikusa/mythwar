@@ -497,6 +497,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
 186. [x] UI sounds and vibration wait for the first user activation (`navigator.userActivation`):
     before any tap, a game event (e.g. a fast-forwarded defeat) created the AudioContext and
     called `vibrate`, logging Chrome autoplay warnings / a "blocked vibrate" console error.
+187. [x] A soft two-note chime when ascending becomes possible (XP and gold), at most every 20 s.
+    (Loudness unverified without speakers — see #75.)
 75. [ ] Real-device pass needed (no phone here): check performance, audio loudness, haptics,
     fullscreen/orientation lock on Android Chrome and iOS Safari.
 71. [x] `:focus-visible` gold focus rings for buttons, toggles and sliders (mouse/touch focus

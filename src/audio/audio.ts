@@ -199,6 +199,10 @@ export class Audio {
       case 'bless':
         [0, 4, 7, 12].forEach((n, i) => this.tone({ freq: midi(72 + n), dur: 0.5, vol: 0.09, delay: i * 0.06 }));
         break;
+      case 'ready':
+        // Ascension is within reach: a soft, bright two-note chime.
+        [0, 5].forEach((n, i) => this.tone({ freq: midi(84 + n), dur: 0.35, vol: 0.06, delay: i * 0.09 }));
+        break;
       case 'build':
         this.noiseBurst({ dur: 0.25, vol: 0.4, freq: 300, type: 'lowpass' });
         this.tone({ freq: 220, to: 330, dur: 0.2, vol: 0.12, type: 'triangle', delay: 0.05 });
