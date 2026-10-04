@@ -296,7 +296,7 @@ export class Renderer {
           this.fx.burst(x, by, { count: 12, color: tc.light, rgb: tc.rgb, speed: 50, life: 1.1, size: 2.4, shape: 'glow', layer: e.lane, gravity: -60, drag: 1.5, jitter: 14 * s });
           this.fx.burst(x, y - 4, { count: 8, color: 'rgba(60,45,40,0.6)', speed: 40, life: 0.8, size: 4 * s + 2, shape: 'smoke', layer: e.lane, gravity: -10 });
           if (e.team !== view.playerTeam) {
-            this.fx.text(x, by - art.height * 0.5 * s, `+${e.gold}`, '#ffd76a', 15);
+            this.fx.gold(x, by - art.height * 0.5 * s, e.gold, '#ffd76a', 15, 70 * this.bodyScale(g));
             // A coin flies to the gold counter (capped so big fights don't flood the screen).
             const target = this.coinTarget;
             if (target && this.fx.timed.filter((f) => f.kind === 'coin').length < 8) {

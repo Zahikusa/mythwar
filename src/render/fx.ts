@@ -32,6 +32,8 @@ export interface FloatText {
   life: number;
   max: number;
   vy: number;
+  /** Numeric amount for mergeable "+N" texts. */
+  amount?: number;
 }
 
 /** Bespoke timed effects drawn with custom code. */
@@ -138,6 +140,22 @@ export class Fx {
   text(x: number, y: number, text: string, color: string, size = 14): void {
     if (this.texts.length > 60) this.texts.shift();
     this.texts.push({ x, y, text, color, size, life: 1.1, max: 1.1, vy: -38 });
+  }
+
+  /** "+N" gold popup; kills close together merge into one growing number instead of a pile. */
+  gold(x: number, y: number, amount: number, color: string, size = 15, radius = 60): void {
+    for (const t of this.texts) {
+      if (t.amount === undefined || t.color !== color || t.life < t.max - 0.45) continue;
+      if (Math.abs(t.x - x) < radius && Math.abs(t.y - y) < radius) {
+        t.amount += amount;
+        t.text = `+${t.amount}`;
+        t.life = t.max; // re-pop
+        t.size = Math.min(size * 1.6, t.size + 1.5);
+        return;
+      }
+    }
+    this.text(x, y, `+${amount}`, color, size);
+    this.texts[this.texts.length - 1].amount = amount;
   }
 
   timedFx(f: Omit<TimedFx, 't' | 'seed' | 'x2' | 'y2' | 'size' | 'color' | 'rgb'> & Partial<TimedFx>): void {
