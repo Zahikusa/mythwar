@@ -217,6 +217,35 @@ svg {
   letter-spacing: 0.06em;
 }
 
+.agerow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.foepow {
+  width: 18px;
+  height: 18px;
+  margin-top: 4px;
+  opacity: 0.3;
+  filter: grayscale(1);
+  pointer-events: auto;
+  transition: opacity 0.3s, filter 0.3s;
+}
+
+.foepow.ready {
+  opacity: 1;
+  filter: drop-shadow(0 0 5px rgba(255, 79, 109, 0.9));
+  animation: twinkle 1.4s ease-in-out infinite;
+}
+
+.hud.mobile .foepow {
+  width: 13px;
+  height: 13px;
+  margin-top: 1px;
+}
+
 .agebadge {
   width: 40px;
   height: 40px;

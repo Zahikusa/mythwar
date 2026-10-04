@@ -106,6 +106,7 @@ export class Hud {
     E.hpRn = h('span', { class: 'hpnum' });
     E.ageR = h('div', { class: 'agebadge', title: 'Enemy age' });
     E.ageRn = h('div', { class: 'agename' });
+    E.foePow = h('i', { class: 'foepow', title: 'Enemy god power' });
     E.clock = h('div', { class: 'clock' });
     E.shrines = h('div', { class: 'shrines', title: 'Ley Shrines: hold them for extra gold' });
     for (let i = 0; i < LANE_COUNT; i++) E.shrines.appendChild(h('i', { html: ICONS.shrine }));
@@ -119,7 +120,7 @@ export class Hud {
       { class: 'topbar' },
       h('div', { class: 'side left' }, E.ageL, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpLd, E.hpL, E.hpLn), E.ageLn)),
       h('div', { class: 'mid' }, E.clock, E.shrines, E.rag),
-      h('div', { class: 'side right' }, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpRd, E.hpR, E.hpRn), E.ageRn), E.ageR),
+      h('div', { class: 'side right' }, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpRd, E.hpR, E.hpRn), h('div', { class: 'agerow' }, E.foePow, E.ageRn)), E.ageR),
     );
     E.keysBtn = h('button', { class: 'sysbtn keysbtn', title: 'Controls (?)', text: '?' });
     onTap(E.keysBtn, () => this.togglePanel('keys'));
@@ -763,6 +764,16 @@ export class Hud {
       toggle(tab, 'hover', g.view.hoverLane === i && g.view.targeting !== 'none');
       setText(this.laneBars[i].count, counts[i] ? String(counts[i]) : '');
     }
+
+    // Enemy god power: dim while recharging, glowing when ready (fair, visible information).
+    const foePower = POWERS[AGES[foe.age].power];
+    if (E.foePow.dataset.id !== foePower.id) {
+      E.foePow.innerHTML = POWER_ICONS[foePower.id];
+      E.foePow.dataset.id = foePower.id;
+    }
+    toggle(E.foePow, 'ready', foe.powerCooldown <= 0);
+    const foePowTitle = foe.powerCooldown <= 0 ? `Enemy ${foePower.name} is ready!` : `Enemy ${foePower.name}: ready in ${Math.ceil(foe.powerCooldown)}s`;
+    if (E.foePow.title !== foePowTitle) E.foePow.title = foePowTitle;
 
     // God power
     const power = POWERS[AGES[me.age].power];

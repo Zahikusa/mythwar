@@ -259,8 +259,8 @@ Screenshot scenarios: `node scripts/shoot.ts --list`.)
     (e.g. a god power killing six creatures shows "+114").
 99. [ ] Mobile ascend button sub-label is 8 px; consider dropping the gold cost there in favour
     of a larger "need Ng" line.
-100. [ ] The enemy's god power cooldown is invisible; a subtle "enemy power ready" glow on the
-    enemy age badge would let skilled players bait it.
+100. [x] Enemy god-power icon beside the enemy age name: dim while recharging (tooltip with
+    seconds left), glowing when ready — skilled players can bait or brace for it.
 76. [x] PNG icons (apple-touch-icon 180, manifest 192/512) rendered from icon.svg by
     `node scripts/icons.mjs`; iOS meta tags; service-worker cache bumped to v2.
 92. [x] Card tooltips also show on keyboard focus (focus-visible).
