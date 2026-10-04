@@ -1177,6 +1177,24 @@ svg {
   height: 13px;
 }
 
+.tbuy {
+  flex-wrap: wrap;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.tbtns {
+  flex-wrap: nowrap !important;
+}
+
+.tbuy .ts {
+  flex-basis: 100%;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: left;
+}
+
 .tbuy.blast {
   background: linear-gradient(180deg, #7a3a2a, #4a2018);
 }

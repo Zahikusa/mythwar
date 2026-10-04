@@ -170,10 +170,12 @@ See DESIGN.md for the game design.
 55. [ ] `src/render/background.ts`: foliage/pebbles are random per theme but identical on both
     halves' perspective; consider a subtle per-lane texture variation and soft grass tufts
     hugging the lane edges for extra depth.
-56. [ ] Accessibility: team identity relies on blue/red rings + facing; add an optional
-    colour-blind palette (e.g. blue/orange) in Settings.
-57. [ ] Turret panel lacks numbers comparison (range/damage) in-panel on mobile (only titles);
-    show a compact stat line under each buy button.
+56. [x] Checked, no change: the blue/red team pair passes the dataviz CVD check (worst
+    adjacent ΔE 18, protan) and teams also differ by facing direction and ground rings.
+57. [x] Turret buttons show "dmg/s · splash · slows · range" under the name; buttons stay
+    side by side so the phone panel fits without scrolling.
+58. [x] `?play=` auto-starts on phones requested fullscreen without a gesture (console
+    warning); `immersive()` now checks `navigator.userActivation`.
 48. [ ] Sim: `World.enemiesInLane`/`alliesInLane` allocate arrays and are called by powers and
     the AI each decision; fine now, but a per-tick lane index would scale better.
 19. [x] Balance investigation (`node scripts/classwar.ts`, equal-gold army battles): massed

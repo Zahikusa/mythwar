@@ -891,7 +891,15 @@ export class Hud {
         row.innerHTML = '';
         const mk = (id: string) => {
           const def = TURRETS[id];
-          const b = h('button', { class: `tbuy ${def.kind}`, title: `${def.blurb} Damage ${def.damage}${def.splash ? ' (splash)' : ''}, range ${def.range}.` }, h('span', { class: 'tn', text: def.name }), h('span', { class: 'tc' }, h('i', { html: ICONS.gold }), String(def.cost)));
+          const dps = def.damage / def.cooldown;
+          const stats = `${dps < 10 ? dps.toFixed(1) : Math.round(dps)} dmg/s${def.splash ? ' · splash' : ''}${def.slow ? ' · slows' : ''} · range ${def.range}`;
+          const b = h(
+            'button',
+            { class: `tbuy ${def.kind}`, title: `${def.blurb} ${stats}.` },
+            h('span', { class: 'tn', text: def.name }),
+            h('span', { class: 'tc' }, h('i', { html: ICONS.gold }), String(def.cost)),
+            h('span', { class: 'ts', text: stats }),
+          );
           b.dataset.id = id;
           onTap(b, () => this.tryTurret(lane, id));
           return b;

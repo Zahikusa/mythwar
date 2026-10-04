@@ -148,6 +148,9 @@ export class App {
   /** On phones, go fullscreen and lock landscape when a battle starts (needs a user gesture). */
   private immersive(): void {
     if (this.mode !== 'mobile' || !this.settings.fullscreen) return;
+    // Browsers only allow this during a user gesture (not e.g. for ?play= auto-starts).
+    const ua = (navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation;
+    if (ua && !ua.isActive) return;
     const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
     try {
       if (!document.fullscreenElement) {
