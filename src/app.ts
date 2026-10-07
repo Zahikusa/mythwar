@@ -135,7 +135,12 @@ export class App {
         },
         host: () => this.mp?.host(),
         join: (code) => this.mp?.join(code),
-        ready: (on) => this.mp?.ready(on),
+        ready: (on) => {
+          // Online battles start on a message from the server, not a tap: phones go
+          // fullscreen (a gesture is required) when the player says they're ready.
+          if (on) this.immersive();
+          this.mp?.ready(on);
+        },
         leaveRoom: () => this.leaveRoom(),
       },
     });
@@ -688,7 +693,9 @@ export class App {
       this.openMultiplayer();
       return;
     }
-    mp.ready(!room.seats[mp.seat]?.ready);
+    const ready = !room.seats[mp.seat]?.ready;
+    if (ready) this.immersive();
+    mp.ready(ready);
   }
 
   private syncRematch(): void {
