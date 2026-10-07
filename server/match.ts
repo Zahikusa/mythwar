@@ -137,8 +137,11 @@ export class Match {
       case 'countdown':
         if (now < this.startAt) return;
         this.state = 'running';
+        this.pauseState = null;
         this.runFromMs = this.startAt;
         this.runFromTick = 0;
+        // (Clears a pause from someone who was away during the countdown.)
+        this.host.broadcast({ type: 'resumed', tick: 0 });
         break;
       case 'resuming':
         this.checkForfeits(now);

@@ -13,6 +13,8 @@ const MAX_BUFFER = 500;
 /** Further behind than this (ticks), the replica catches up without effects. */
 const SILENT_CATCH_UP = 180;
 const SAMPLE_EVERY = 5;
+/** Our own orders not echoed back by the server within this many ms are forgotten. */
+const MINE_TIMEOUT = 4000;
 
 export interface NetGameInit {
   seat: Team;
@@ -58,8 +60,8 @@ export class NetGame extends Game {
   private confirmed = 0;
   private cmds = new Map<number, ScheduledCommand[]>();
   private hashes = new Map<number, number>();
-  /** Our commands sent but not yet applied, by sequence number. */
-  private mine = new Map<number, NetCommand>();
+  /** Our commands sent but not yet applied, by sequence number (with the time sent). */
+  private mine = new Map<number, { cmd: NetCommand; at: number }>();
   private seq = 0;
   private awaitingSnapshot = false;
   private samples: { at: number; off: number }[] = [];
@@ -105,12 +107,13 @@ export class NetGame extends Game {
     if (this.over) return { ok: false, reason: 'The battle is over' };
     if (!this.online) return { ok: false, reason: 'Reconnecting…' };
     if (this.netPause || this.awaitingSnapshot) return { ok: false, reason: 'The battle is paused' };
+    if (this.now() < this.countdownEnd) return { ok: false, reason: 'Get ready…' };
     const why = this.blocker(cmd);
     if (why) return { ok: false, reason: why };
     const { team: _team, ...net } = cmd;
     const seq = ++this.seq;
     if (!this.send({ type: 'cmd', seq, cmd: net as NetCommand })) return { ok: false, reason: 'Reconnecting…' };
-    this.mine.set(seq, net as NetCommand);
+    this.mine.set(seq, { cmd: net as NetCommand, at: this.now() });
     return { ok: true };
   }
 
@@ -313,7 +316,14 @@ export class NetGame extends Game {
     let ascending = false;
     let casting = false;
     const blessRanks: Record<string, number> = {};
-    for (const c of this.mine.values()) {
+    const now = this.now();
+    for (const [seq, m] of this.mine) {
+      // An order the server never scheduled (it arrived as the battle paused, say) is let go.
+      if (now - m.at > MINE_TIMEOUT) {
+        this.mine.delete(seq);
+        continue;
+      }
+      const c = m.cmd;
       if (c.type === 'train') {
         spend += UNITS[c.unitId]?.cost ?? 0;
         trains++;

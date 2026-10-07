@@ -223,6 +223,29 @@ describe('battle', () => {
     expect(a.world!.players[0].stats.summoned).toBe(0);
   });
 
+  it('someone away during the countdown: the start waits for them', () => {
+    const { lobby, run } = setup();
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    a.hello('A');
+    b.hello('B');
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    a.send({ type: 'ready', ready: true });
+    b.send({ type: 'ready', ready: true });
+    run(1000);
+    b.send({ type: 'away', away: true });
+    run(5000);
+    expect(a.world!.tick).toBe(0);
+    expect(a.last('paused')!.state).toMatchObject({ reason: 'away', seat: 1 });
+    b.send({ type: 'away', away: false });
+    expect(a.last('resuming')!.seconds).toBe(3);
+    run(3100);
+    expect(a.last('resumed')).toBeDefined();
+    run(1000);
+    expect(a.world!.tick).toBeGreaterThan(50);
+  });
+
   it('a player who stays away forfeits', () => {
     const { run, a, b } = battle({ awayGrace: 30 });
     run(2000);

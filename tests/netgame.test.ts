@@ -234,6 +234,25 @@ describe('NetGame over a simulated network', () => {
     expectInSync(ga, gb);
   });
 
+  it('away during the countdown: both start once they are back', () => {
+    const { b, ga, gb } = twoPlayers();
+    b.away(true);
+    net.run(3000);
+    expect(ga.paused).toBe(true);
+    expect(ga.world.tick).toBe(0);
+    // Orders during the countdown are refused locally (the server would drop them).
+    expect(ga.command({ type: 'train', team: 0, unitId: 'redcap', lane: 0 }).ok).toBe(false);
+    b.away(false);
+    net.run(4500);
+    expect(ga.paused).toBe(false);
+    expect(gb.paused).toBe(false);
+    expect(ga.world.tick).toBeGreaterThan(30);
+    expect(ga.command({ type: 'train', team: 0, unitId: 'redcap', lane: 0 }).ok).toBe(true);
+    net.run(500);
+    expect(ga.world.players[0].stats.summoned + ga.world.players[0].queue.length).toBe(1);
+    expectInSync(ga, gb);
+  });
+
   it('pause by one player, resume by the other', () => {
     const { a, b, ga, gb } = twoPlayers();
     net.run(3000);
