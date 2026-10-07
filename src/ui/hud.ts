@@ -289,6 +289,7 @@ export class Hud {
     this.game = game;
     toggle(this.el.speed, 'hidden', !!game.options.online);
     toggle(this.el.net, 'hidden', !game.options.online);
+    this.foeName = '';
     this.root.classList.toggle('online', !!game.options.online);
     this.syncMute();
     setText(this.el.speed.querySelector('span')!, `${game.speed}×`);
@@ -491,9 +492,13 @@ export class Hud {
     this.cb.sound('cancel');
   }
 
+  /** Online: the opponent's name (shown by their citadel's health bar). */
+  private foeName = '';
+
   /** Online status line: the opponent's name, round-trip time and link quality. */
   setNet(foe: string, rtt: number, online: boolean): void {
     const E = this.el;
+    this.foeName = foe;
     setText(E.net.querySelector('.nfoe')!, `vs ${foe}`);
     setText(E.net.querySelector('.nping')!, online ? (rtt ? `${Math.round(rtt)} ms` : '') : 'offline');
     const q = !online ? 'off' : rtt > 250 ? 'bad' : rtt > 120 ? 'ok' : 'good';
@@ -788,7 +793,8 @@ export class Hud {
     const foeTitle = canAscend(foe) ? `The enemy has the XP to ascend to ${AGES[foe.age + 1].name}!` : `Enemy age: ${AGES[foe.age].name}`;
     if (E.ageR.title !== foeTitle) E.ageR.title = foeTitle;
     setText(E.ageLn, AGES[me.age].name);
-    setText(E.ageRn, AGES[foe.age].name);
+    // Online, the right-hand side says who it is.
+    setText(E.ageRn, this.foeName ? `${this.foeName} · ${AGES[foe.age].name}` : AGES[foe.age].name);
     toggle(E.hpL.parentElement!, 'low', fracs[0] < 0.3);
     setText(E.clock, fmtTime(w.time));
     const pips = E.shrines.children;

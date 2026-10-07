@@ -604,8 +604,14 @@
   color: var(--bad);
 }
 
+/* (The opponent's name sits by their health bar; the badge is just the connection.) */
 .netinfo .nfoe {
-  max-width: 120px;
+  display: none;
+}
+
+.hud.online .agename {
+  min-width: 0;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
