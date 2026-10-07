@@ -34,34 +34,44 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   networks; add accounts/matchmaking later. Protocol is versioned.
 
 ## Milestones
-- [ ] MP1 Foundation: deps (`ws`, QR encoder), `src/net/protocol.ts`, world state hash,
-      determinism tests (replay, serialize→deserialize mid-game continues identically).
-- [ ] MP2 Server: rooms (codes, seats, reconnect tokens, open-games list), authoritative match
-      loop (turns, hashes, pause on disconnect/away, forfeit timeout, rematch, leave), static
-      file serving, Vite dev-server plugin so `npm run dev` also hosts. Integration tests with
-      Node WebSocket clients.
-- [ ] MP3 Client netcode: connection (reconnect with backoff, ping/RTT), `NetGame` (plays out
-      server turns with a jitter buffer, sends commands with instant local pre-validation,
-      verifies hashes, resyncs from snapshots).
-- [ ] MP4 Game/App integration: AI-less game, no 2× speed, pause semantics, HUD/Input/Coach
-      working with NetGame, results, no autosave for MP.
-- [ ] MP5 Mirrored view: the player on the right side (team 1) sees their citadel on the left
-      (renderer, input hit-testing, DOM overlays, own colour = blue).
-- [ ] MP6 Multiplayer UI: name, host / join by code / open games list, QR code + link, waiting
-      room, synced countdown, connection/ping indicator, opponent-away overlay, rematch.
-- [ ] MP7 Phone robustness: visibility (app switch / lock) → away + fast resume, wake lock,
-      fullscreen, iOS Safari quirks.
-- [ ] MP8 `npm run lan`: build + serve on all interfaces, print LAN URLs + terminal QR, Windows
-      firewall notes; README + docs/MULTIPLAYER.md.
-- [ ] MP9 End-to-end: two Chrome pages (desktop + phone emulation) host/join/play/reconnect/
-      finish; artificial latency/jitter/drop option on the server for testing.
-- [ ] MP10 Verification + polish.
+- [x] MP1 Foundation: deps (`ws`, `qrcode-generator`), `src/net/protocol.ts`, `src/sim/hash.ts`,
+      determinism tests (replay, snapshot mid-battle continues identically).
+- [x] MP2 Server (`server/`): lobby (codes, open-room list, seats, reconnect tokens), match loop
+      (turns, hashes, away/pause/resume countdown, forfeit timeout, rematch), validation, ws
+      transport (heartbeat, lag simulation), static server, Vite dev/preview plugin.
+- [x] MP3 Client netcode: `Connection` (backoff, pings, dead-link detection), `MpClient`
+      (session per tab), `NetGame` (jitter buffer with eased playback clock, hash checks,
+      snapshot resync, in-flight-aware order checks). Tests on a simulated network.
+- [x] MP4 App integration (AI-less Game, no 2x, shared pause, no autosave, results).
+- [x] MP5 Mirrored view for team 1 (canvas mirror, readable text, blue = you, input/HUD
+      unchanged because the lane layout is symmetric; stereo panning follows).
+- [x] MP6 Multiplayer UI (lobby, room + QR invite, countdown, overlays, ping badge, rematch).
+- [~] MP7 Phone robustness: away on visibilitychange/pagehide, reconnect nudge, wake lock
+      (only on https/localhost), reload rejoins. Still to check: rotated portrait phone in MP.
+- [ ] MP8 Docs: README + docs/MULTIPLAYER.md (setup, firewall, architecture, internet upgrade).
+- [x] MP9 End-to-end: `scripts/mpsmoke.ts` (desktop + phone profiles, all flows), in verify.
+- [ ] MP10 Verification + polish (bad-network run of mpsmoke, review all new code).
 
 ## Done
-(nothing yet)
+- Server: `server/main.ts` (LAN entry, prints addresses + terminal QR), `server/net.ts`
+  (ws attach), `server/lobby.ts`, `server/match.ts`, `server/validate.ts`, `server/static.ts`,
+  `server/lan.ts`, `server/qr.ts`. `npm run lan` = typecheck + build + serve on :8787.
+- Client: `src/net/{protocol,connection,client,netgame}.ts`; UI `src/ui/{mpmenus,netoverlay}.ts`,
+  `src/ui/mp.css`; App wiring in `src/app.ts` (section "Multiplayer").
+- Tests: `tests/determinism.test.ts`, `tests/server.test.ts` (fake clock + one real socket),
+  `tests/netgame.test.ts` (simulated network: latency, jitter, dead links, desync repair).
+  `node scripts/mpsmoke.ts [--shots] [--latency 60 --jitter 80]` (screenshots → screenshots/mp).
+- Jitter buffer on a simulated 20–140 ms Wi-Fi: 99% of frames advance exactly one tick.
 
 ## Decisions
 - Single-player stays exactly as it was (AI, 2× speed, autosave). Multiplayer is a separate mode.
+- Seats: the host is seat 0 (team 0). Everyone sees their own citadel on the left in blue.
+- Either player can pause and either can resume (3 s countdown). Pauses are unlimited (LAN
+  friends); an away player (app in background, link lost) pauses the battle for up to 90 s,
+  then forfeits. Leaving mid-battle forfeits. No W/L records for online games (yet).
+- Turns every 2 ticks (33 ms); hash every 60 ticks; commands apply on the server's next tick.
+- Session token lives in sessionStorage (per tab): two tabs = two players (easy local testing),
+  a reload of the same tab rejoins.
 
 ## Open questions for the human
 - Phone ↔ phone without any PC: needs one device to run the server. A browser cannot host; a

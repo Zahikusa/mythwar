@@ -231,8 +231,15 @@ export class Audio {
     this.ambience = saved;
   }
 
+  /** Stereo position of a lane position: the local player's citadel is on the left. */
   private panFor(x: number): number {
-    return ((x / LANE_LENGTH) * 2 - 1) * 0.7;
+    const p = ((x / LANE_LENGTH) * 2 - 1) * 0.7;
+    return this.playerTeam === 0 ? p : -p;
+  }
+
+  /** Stereo side of a team's citadel (`amount` = how far out). */
+  private sidePan(team: Team, amount: number): number {
+    return team === this.playerTeam ? -amount : amount;
   }
 
   onEvents(events: SimEvent[]): void {
@@ -248,7 +255,7 @@ export class Audio {
           break;
         case 'projectile':
           if (e.fromTurret) {
-            if (this.allow('turret', 0.12)) this.noiseBurst({ dur: 0.12, vol: 0.25, freq: 600, sweep: 200, q: 2, pan: e.team === 0 ? -0.7 : 0.7 });
+            if (this.allow('turret', 0.12)) this.noiseBurst({ dur: 0.12, vol: 0.25, freq: 600, sweep: 200, q: 2, pan: this.sidePan(e.team, 0.7) });
           } else if (this.allow('shoot', 0.09)) {
             const fire = e.kind === 'flame' || e.kind === 'dragonfire';
             if (fire) this.noiseBurst({ dur: 0.3, vol: 0.25, freq: 500, type: 'lowpass', sweep: 1500 });
@@ -271,12 +278,12 @@ export class Audio {
           }
           break;
         case 'spawn':
-          if (this.allow('spawn' + e.team, 0.2)) this.tone({ freq: 330, to: 660, dur: 0.18, vol: 0.06, type: 'triangle', pan: e.team === 0 ? -0.7 : 0.7 });
+          if (this.allow('spawn' + e.team, 0.2)) this.tone({ freq: 330, to: 660, dur: 0.18, vol: 0.06, type: 'triangle', pan: this.sidePan(e.team, 0.7) });
           break;
         case 'baseHit':
           if (this.allow('base' + e.team, 0.35)) {
-            this.tone({ freq: 70, to: 45, dur: 0.3, vol: e.team === this.playerTeam ? 0.3 : 0.16, pan: e.team === 0 ? -0.8 : 0.8 });
-            this.noiseBurst({ dur: 0.2, vol: 0.18, freq: 250, type: 'lowpass', pan: e.team === 0 ? -0.8 : 0.8 });
+            this.tone({ freq: 70, to: 45, dur: 0.3, vol: e.team === this.playerTeam ? 0.3 : 0.16, pan: this.sidePan(e.team, 0.8) });
+            this.noiseBurst({ dur: 0.2, vol: 0.18, freq: 250, type: 'lowpass', pan: this.sidePan(e.team, 0.8) });
           }
           break;
         case 'ageUp': {
