@@ -71,7 +71,7 @@ http.on('listening', () => {
     console.log(`  Other devices in this Wi-Fi:`);
     for (const u of urls) console.log(`    ${u}`);
     console.log('\n  Scan to open on a phone:\n');
-    console.log(terminalQr(urls[0]));
+    console.log(terminalQr(urls[0], !!process.stdout.isTTY));
   } else {
     console.log('  (No network address found — connect this computer to the Wi-Fi.)');
   }

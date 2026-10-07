@@ -1,7 +1,11 @@
 import qrcode from 'qrcode-generator';
 
-/** A QR code drawn with half-block characters (two modules per line), dark on light. */
-export function terminalQr(text: string): string {
+/**
+ * A QR code drawn with half-block characters (two modules per line). With `color` (a real
+ * terminal) it is painted black on white with ANSI colours, so it scans the same on dark and
+ * light terminal themes; without, light modules are printed as "ink" (right for dark themes).
+ */
+export function terminalQr(text: string, color = false): string {
   const qr = qrcode(0, 'M');
   qr.addData(text);
   qr.make();
@@ -10,14 +14,15 @@ export function terminalQr(text: string): string {
   const dark = (r: number, c: number) => r >= 0 && c >= 0 && r < n && c < n && qr.isDark(r, c);
   const lines: string[] = [];
   for (let r = -margin; r < n + margin; r += 2) {
-    let line = '    ';
+    let line = '';
     for (let c = -margin; c < n + margin; c++) {
       const top = dark(r, c);
       const bottom = dark(r + 1, c);
-      // Light modules are printed as "ink" so the code reads correctly on dark terminals.
-      line += top && bottom ? ' ' : top ? '▄' : bottom ? '▀' : '█';
+      if (color) line += top && bottom ? '█' : top ? '▀' : bottom ? '▄' : ' ';
+      else line += top && bottom ? ' ' : top ? '▄' : bottom ? '▀' : '█';
     }
-    lines.push(line);
+    // Black ink on a white background.
+    lines.push(color ? `    \x1b[30;107m${line}\x1b[0m` : `    ${line}`);
   }
   return lines.join('\n') + '\n';
 }
