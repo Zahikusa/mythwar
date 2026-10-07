@@ -24,7 +24,8 @@ const arg = (name: string): string | undefined => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : undefined;
 };
-const port = Number(arg('port') ?? process.env.PORT ?? 8787);
+const fixedPort = arg('port') ?? process.env.PORT;
+let port = Number(fixedPort ?? 8787);
 const root = resolve(arg('dir') ?? join(fileURLToPath(new URL('.', import.meta.url)), '..', 'dist'));
 const quiet = args.includes('--quiet');
 
@@ -50,12 +51,19 @@ const stamp = (line: string) => `  ${new Date().toTimeString().slice(0, 8)}  ${l
 const mp = attachMultiplayer(http, { latency, jitter, trustProxy: args.includes('--trust-proxy'), log: quiet ? undefined : (l) => console.log(stamp(l)) });
 
 http.on('error', (e: NodeJS.ErrnoException) => {
+  // The default port is busy (another copy running?): try the next few, unless one was asked for.
+  if (e.code === 'EADDRINUSE' && !fixedPort && port < 8797) {
+    port++;
+    http.listen(port, '0.0.0.0');
+    return;
+  }
   if (e.code === 'EADDRINUSE') console.error(`Port ${port} is already in use — try: node server/main.ts --port ${port + 1}`);
   else console.error(e);
   process.exit(1);
 });
 
-http.listen(port, '0.0.0.0', () => {
+http.listen(port, '0.0.0.0');
+http.on('listening', () => {
   const urls = lanAddresses().map((ip) => `${scheme}://${ip}:${port}/`);
   console.log('\n  Mythwar is running.\n');
   console.log(`  On this computer:   ${scheme}://localhost:${port}/`);

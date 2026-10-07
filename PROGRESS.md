@@ -162,6 +162,6 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
     other buttons.
 21. [ ] Online battles have no way to say anything: quick emotes ("Good luck!", "Well played!",
     "Oops!", "Wow!") relayed by the server and shown by the sender's citadel.
-22. [ ] `server/main.ts`: if port 8787 is taken it just exits; it could try the next ports.
+22. [x] `server/main.ts`: if port 8787 is taken it just exits; it could try the next ports.
 23. [ ] The room doesn't show either player's connection quality before the battle; show each
     seat's ping so players can spot a weak Wi-Fi spot before starting.
