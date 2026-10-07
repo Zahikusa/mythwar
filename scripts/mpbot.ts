@@ -13,7 +13,10 @@ import { AI_PROFILES, AiController, DIFFICULTIES } from '../src/ai/ai.ts';
 import type { Difficulty } from '../src/ai/ai.ts';
 import { MpClient } from '../src/net/client.ts';
 import type { NetGame } from '../src/net/netgame.ts';
-import type { World } from '../src/sim/world.ts';
+import type { ScheduledCommand } from '../src/net/protocol.ts';
+import { hashWorld } from '../src/sim/hash.ts';
+import type { Command } from '../src/sim/types.ts';
+import { World } from '../src/sim/world.ts';
 
 const args = process.argv.slice(2);
 const opt = (name: string) => {
@@ -25,6 +28,8 @@ const difficulty = (opt('difficulty') ?? 'adept') as Difficulty;
 if (!DIFFICULTIES.includes(difficulty)) throw new Error(`difficulty: ${DIFFICULTIES.join(' / ')}`);
 const minutes = Number(opt('minutes') ?? 0);
 const code = args.find((a) => /^[A-Za-z0-9]{4}$/.test(a));
+/** --debug: keep the command log and, on a desync, diff the replica against a clean replay. */
+const DEBUG = args.includes('--debug');
 
 /** One bot player: joins (or hosts), readies up, and lets the AI play its side. */
 function bot(name: string, join?: string, onRoom?: (code: string) => void): MpClient {
@@ -63,10 +68,57 @@ function bot(name: string, join?: string, onRoom?: (code: string) => void): MpCl
       g.onEvents((ev) => {
         for (const e of ev) if (e.type === 'gameOver') console.log(`[${name}] battle over at ${g.world.time.toFixed(0)} s: ${e.winner === g.seat ? 'won' : 'lost'} (desyncs ${g.desyncs}, resyncs ${g.resyncs})`);
       });
+      if (DEBUG) g.onDesync = () => diagnose(g);
       console.log(`[${name}] battle vs ${g.foeName}`);
     },
     error: (c, m) => console.log(`[${name}] error ${c}: ${m}`),
   });
+  let lastState = '';
+  mp.listen({
+    changed: () => {
+      if (mp.state !== lastState) console.log(`[${name}] ${new Date().toTimeString().slice(0, 8)} connection ${(lastState = mp.state)}`);
+    },
+  });
+  // Debug: everything needed to replay the battle from its start (or the last snapshot).
+  let base: World | null = null;
+  let cmds: ScheduledCommand[] = [];
+  if (DEBUG) {
+    const orig = mp.conn.onMessage;
+    mp.conn.onMessage = (m, at) => {
+      if (m.type === 'start') {
+        base = new World({ seed: m.seed });
+        cmds = [];
+      } else if (m.type === 'snapshot') {
+        base = World.deserialize(m.world);
+        cmds = [];
+      } else if (m.type === 'turn') cmds.push(...(m.cmds ?? []));
+      orig(m, at);
+    };
+  }
+  const diagnose = (g: NetGame) => {
+    if (!base) return;
+    const replay = World.deserialize(base.serialize());
+    const sorted = cmds.filter((c) => c.tick > replay.tick).sort((x, y) => x.tick - y.tick);
+    let i = 0;
+    while (replay.tick < g.world.tick) {
+      while (i < sorted.length && sorted[i].tick === replay.tick + 1) {
+        const c = sorted[i++];
+        replay.apply({ ...c.cmd, team: c.team } as Command);
+      }
+      replay.step();
+      replay.drainEvents();
+    }
+    console.log(`[${name}] clean replay hash ${hashWorld(replay).toString(16)} vs replica ${hashWorld(g.world).toString(16)} at tick ${g.world.tick}`);
+    const a = JSON.stringify(replay.serialize(), null, 1).split('\n');
+    const b = JSON.stringify(g.world.serialize(), null, 1).split('\n');
+    let shown = 0;
+    for (let k = 0; k < Math.max(a.length, b.length) && shown < 40; k++) {
+      if (a[k] !== b[k]) {
+        console.log(`  line ${k}: replay ${a[k]?.trim()} | replica ${b[k]?.trim()}`);
+        shown++;
+      }
+    }
+  };
   mp.start();
   let last = performance.now();
   setInterval(() => {
@@ -85,7 +137,7 @@ function bot(name: string, join?: string, onRoom?: (code: string) => void): MpCl
     if (!g || g.over) return;
     const p = g.world.players;
     console.log(
-      `[${name}] ${g.world.time.toFixed(0)} s · ages ${p[0].age}/${p[1].age} · citadels ${p[0].baseHp.toFixed(0)}/${p[1].baseHp.toFixed(0)} · summoned ${p[0].stats.summoned}/${p[1].stats.summoned} · rtt ${mp.conn.rtt.toFixed(1)} ms · desyncs ${g.desyncs}`,
+      `[${name}] ${g.world.time.toFixed(0)} s · ages ${p[0].age}/${p[1].age} · citadels ${p[0].baseHp.toFixed(0)}/${p[1].baseHp.toFixed(0)} · summoned ${p[0].stats.summoned}/${p[1].stats.summoned} · rtt ${mp.conn.rtt.toFixed(1)} ms · desyncs ${g.desyncs} · resyncs ${g.resyncs}`,
     );
   }, 30_000);
   return mp;
