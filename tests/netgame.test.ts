@@ -244,6 +244,35 @@ describe('NetGame over a simulated network', () => {
     expectInSync(ga, gb);
   });
 
+  it('leaving while offline sticks: the reconnect does not pull you back into the battle', () => {
+    const { a, b, ga, gb } = twoPlayers();
+    net.run(3000);
+    (b.conn as unknown as { ws: FakeSocket }).ws.kill();
+    net.run(50);
+    b.leave(); // the player quits from the menu while the Wi-Fi is down
+    expect(b.room).toBeNull();
+    net.run(5000); // reconnects, then tells the server
+    expect(b.state).toBe('online');
+    expect(b.room).toBeNull();
+    expect(b.game).toBe(gb);
+    expect(gb.over).toBe(true);
+    expect(ga.result).toEqual({ winner: 0, reason: 'forfeit' });
+    expect(a.room!.seats[1]).toBeNull();
+  });
+
+  it('a phone that missed the end of the battle sees the result when it reconnects', () => {
+    const { a, b, ga, gb } = twoPlayers();
+    net.run(3000);
+    (b.conn as unknown as { ws: FakeSocket }).ws.kill();
+    net.run(50);
+    a.leave();
+    net.run(5000);
+    expect(ga.over).toBe(true);
+    expect(gb.result).toEqual({ winner: 1, reason: 'forfeit' });
+    expect(gb.over).toBe(true);
+    expect(b.room!.phase).toBe('waiting');
+  });
+
   it('repairs a diverged replica from a snapshot', () => {
     const { ga, gb } = twoPlayers();
     net.run(3000);

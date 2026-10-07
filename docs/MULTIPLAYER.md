@@ -60,11 +60,14 @@ picks another port.
 | A player switches apps / locks the phone | The battle pauses for both ("… is away"). When they come back it resumes after a 3-2-1 countdown. After **90 s** away they forfeit. |
 | Wi-Fi drops for a moment | The client reconnects on its own (backoff 0.25–3 s), receives a snapshot of the battle and carries on. The other player sees the same away pause meanwhile. |
 | A player reloads the page | The tab remembers its session: it rejoins the room and the battle where it was. |
+| The battle ended while a phone was offline | On reconnect it is shown how the battle ended (final state and result). |
+| A player quits while offline | The quit is delivered when the connection returns; they are not pulled back in. |
+| The same game is opened in another tab | A duplicated tab starts its own session; if one session is taken over elsewhere, the old tab says so and stops reconnecting. |
 | A player presses Pause | The battle pauses for both; either player can resume. |
 | A player leaves the battle | They forfeit; the other player wins. The room stays open for a new opponent. |
 | After a battle | Both press **Rematch** to play again in the same room (wins are counted). |
 | The game server restarts | Clients notice their session is gone and return to the lobby. |
-| Old page against a newer server | The client is told to reload (protocol version check). |
+| Old page against a newer server | The client is told to reload: the protocol version **and** a fingerprint of the game rules (balance tables + a short scripted battle) must match. |
 
 Phones keep their screen on during a battle where the browser allows it (Screen Wake Lock
 needs `https` or `localhost`; on a plain `http://192.168…` address the system's auto-lock
@@ -116,7 +119,13 @@ node server/main.ts --latency 80 --jitter 60       # play by hand with simulated
 ```
 
 Two browser tabs on one computer are two separate players (the session lives per tab), which is
-the quickest way to try a battle alone.
+the quickest way to try a battle alone. Or let an AI join your room:
+
+```bash
+node scripts/mpbot.ts                 # hosts a room on localhost:8787 (join it from a phone)
+node scripts/mpbot.ts ABCD --difficulty master   # joins room ABCD
+node scripts/mpbot.ts --vs-bot --minutes 30      # two bots: a long soak test
+```
 
 ## Upgrading to online play over the internet
 

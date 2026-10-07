@@ -42,6 +42,7 @@ export function serveStatic(root: string): (req: IncomingMessage, res: ServerRes
       'Cache-Control': hashed ? 'public, max-age=31536000, immutable' : 'no-cache',
     });
     if (req.method === 'HEAD') res.end();
-    else createReadStream(file).pipe(res);
+    // (A file removed meanwhile — e.g. a rebuild — must not take the server down.)
+    else createReadStream(file).on('error', () => res.destroy()).pipe(res);
   };
 }

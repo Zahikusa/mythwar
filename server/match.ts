@@ -55,6 +55,8 @@ export class Match {
   private hash: [number, number] | undefined;
   private nextSample = 0;
   private paused = false;
+  /** Who pressed pause (shown as "Paused by …"). */
+  private pausedBy: Team = 0;
   /** Wall time each seat went away (null = present). */
   private awaySince: [number | null, number | null] = [null, null];
 
@@ -95,8 +97,9 @@ export class Match {
   requestPause(seat: Team, now: number): void {
     if (this.state !== 'running' && this.state !== 'resuming') return;
     this.paused = true;
+    this.pausedBy = seat;
     this.pauseState = null;
-    this.refreshPause(now, seat);
+    this.refreshPause(now);
   }
 
   /** Either player may resume a pause (after a short countdown). */
@@ -135,6 +138,8 @@ export class Match {
         this.checkForfeits(now);
         return;
       case 'countdown':
+        // Someone left during the countdown: their forfeit clock runs as in battle.
+        if (this.startAt === Infinity) this.checkForfeits(now);
         if (now < this.startAt) return;
         this.state = 'running';
         this.pauseState = null;
@@ -209,12 +214,12 @@ export class Match {
   }
 
   /** Recomputes paused / resuming after someone left, came back, paused or resumed. */
-  private refreshPause(now: number, pausedBy?: Team): void {
+  private refreshPause(now: number): void {
     if (this.state === 'over') return;
     const awaySeat = this.awaySince[0] !== null ? 0 : this.awaySince[1] !== null ? 1 : -1;
     if (awaySeat >= 0 || this.paused) {
       if (this.state === 'running') this.flush();
-      const seat = (awaySeat >= 0 ? awaySeat : (pausedBy ?? this.pauseState?.seat ?? 0)) as Team;
+      const seat = (awaySeat >= 0 ? awaySeat : this.pausedBy) as Team;
       const state: PauseState =
         awaySeat >= 0
           ? { reason: 'away', seat, forfeitIn: Math.max(0, Math.ceil((this.awaySince[seat]! + this.awayGrace * 1000 - now) / 1000)) }

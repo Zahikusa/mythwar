@@ -43,6 +43,8 @@ interface Session {
   watching: boolean;
   /** When the connection dropped (null while connected). */
   goneAt: number | null;
+  /** How the session's last battle ended (final snapshot + result), for a client that missed it. */
+  lastOver: { snapshot: ServerMsg; over: ServerMsg } | null;
 }
 
 interface Seat {
@@ -143,6 +145,7 @@ export class Lobby {
       return null;
     }
     let s = typeof msg.token === 'string' ? this.sessions.get(msg.token) : undefined;
+    const resumed = !!s;
     if (s) {
       // Same player again (reconnect, or a second tab taking over).
       if (s.conn && s.conn !== conn) {
@@ -161,19 +164,23 @@ export class Lobby {
         seat: null,
         watching: false,
         goneAt: null,
+        lastOver: null,
       };
       this.sessions.set(s.token, s);
     }
     const room = s.room;
-    this.send(s, { type: 'welcome', v: PROTOCOL_VERSION, token: s.token, room: room ? this.info(room) : null, seat: s.seat, lan: this.opts.lanUrls?.() ?? [] });
-    if (room && s.seat !== null) {
-      const m = room.match;
-      if (m && room.phase === 'playing') {
-        this.send(s, m.snapshotFor(s.seat));
-        m.setAway(s.seat, false, this.now());
-      }
-      this.broadcastRoom(room);
+    this.send(s, { type: 'welcome', v: PROTOCOL_VERSION, token: s.token, room: room ? this.info(room) : null, seat: s.seat, lan: this.opts.lanUrls?.() ?? [], resumed });
+    const m = room?.match;
+    if (room && s.seat !== null && m && room.phase === 'playing') {
+      this.send(s, m.snapshotFor(s.seat));
+      // (A tab reconnecting in the background is still away.)
+      m.setAway(s.seat, msg.away === true, this.now());
+    } else if (msg.battle && s.lastOver) {
+      // The battle ended while this client was gone: show it how.
+      this.send(s, s.lastOver.snapshot);
+      this.send(s, s.lastOver.over);
     }
+    if (room) this.broadcastRoom(room);
     this.log(`hello ${s.name}${room ? ` (back in ${room.code})` : ''}`);
     return s;
   }
@@ -274,6 +281,13 @@ export class Lobby {
       },
       ended: (winner, reason) => {
         room.phase = 'over';
+        const match = room.match;
+        if (match) {
+          for (const seat of [0, 1] as Team[]) {
+            const x = room.seats[seat];
+            if (x) x.session.lastOver = { snapshot: match.snapshotFor(seat), over: { type: 'over', winner, reason, tick: match.tick } };
+          }
+        }
         const w = room.seats[winner];
         if (w) w.wins++;
         this.log(`room ${room.code}: ${names[winner]} wins (${reason})`);
@@ -281,7 +295,11 @@ export class Lobby {
         this.broadcastRoom(room);
       },
     });
-    for (const seat of [0, 1] as Team[]) this.send(room.seats[seat]!.session, { type: 'start', seed, seat, names, countdown });
+    for (const seat of [0, 1] as Team[]) {
+      const s = room.seats[seat]!.session;
+      s.lastOver = null;
+      this.send(s, { type: 'start', seed, seat, names, countdown });
+    }
     this.broadcastRoom(room);
     this.roomsDirty = true;
     this.log(`room ${room.code}: ${names[0]} vs ${names[1]} (seed ${seed})`);

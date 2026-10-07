@@ -61,8 +61,8 @@ class FakeClient {
     this.handlers.message(JSON.stringify(m));
   }
 
-  hello(name: string, token?: string): void {
-    this.send({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint(), name, token });
+  hello(name: string, token?: string, extra: { battle?: boolean; away?: boolean } = {}): void {
+    this.send({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint(), name, token, ...extra });
   }
 
   disconnect(): void {
@@ -70,9 +70,9 @@ class FakeClient {
     this.handlers.close();
   }
 
-  reconnect(): void {
+  reconnect(extra: { battle?: boolean; away?: boolean } = {}): void {
     this.handlers = this.connect();
-    this.hello('again', this.token);
+    this.hello('again', this.token, extra);
   }
 
   last<T extends ServerMsg['type']>(type: T): Extract<ServerMsg, { type: T }> | undefined {
@@ -249,6 +249,58 @@ describe('battle', () => {
     expect(a.last('resumed')).toBeDefined();
     run(1000);
     expect(a.world!.tick).toBeGreaterThan(50);
+  });
+
+  it('leaving during the countdown still forfeits after the grace period', () => {
+    const { lobby, run } = setup({ awayGrace: 30 });
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    a.hello('A');
+    b.hello('B');
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    a.send({ type: 'ready', ready: true });
+    b.send({ type: 'ready', ready: true });
+    run(500);
+    b.disconnect();
+    run(31_000);
+    expect(a.last('over')).toMatchObject({ winner: 0, reason: 'timeout' });
+  });
+
+  it('a client that missed the end of its battle is told on reconnect', () => {
+    const { run, a, b } = battle();
+    run(3000);
+    b.disconnect();
+    run(100);
+    a.send({ type: 'leave' }); // a gives up while b is offline
+    run(100);
+    const before = b.inbox.length;
+    b.reconnect({ battle: true });
+    const got = b.inbox.slice(before).map((m) => m.type);
+    expect(got.slice(0, 3)).toEqual(['welcome', 'snapshot', 'over']);
+    expect(b.last('over')).toMatchObject({ winner: 1, reason: 'forfeit' });
+  });
+
+  it('a tab reconnecting in the background stays away', () => {
+    const { run, a, b } = battle();
+    run(2000);
+    b.send({ type: 'away', away: true });
+    b.disconnect();
+    run(100);
+    b.reconnect({ away: true });
+    run(5000);
+    expect(a.last('paused')!.state).toMatchObject({ reason: 'away', seat: 1 });
+    expect(a.last('resumed')?.tick ?? 0).toBe(0);
+  });
+
+  it('"Paused by" keeps naming who paused, even after someone was away meanwhile', () => {
+    const { run, a, b } = battle();
+    run(1000);
+    a.send({ type: 'pause' });
+    b.send({ type: 'away', away: true });
+    expect(a.last('paused')!.state).toMatchObject({ reason: 'away', seat: 1 });
+    b.send({ type: 'away', away: false });
+    expect(a.last('paused')!.state).toEqual({ reason: 'pause', seat: 0 });
   });
 
   it('a player who stays away forfeits', () => {

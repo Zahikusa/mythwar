@@ -730,12 +730,20 @@ export class App {
       if (cur === 'mp' && mp.room) this.menus.show('room');
       else if (cur === 'room' && !mp.room) this.menus.show('mp');
     }
-    if (mp.sessionLost && this.game instanceof NetGame && this.state !== 'title') {
-      // The server restarted: that battle is gone.
-      mp.sessionLost = false;
+    const lost = mp.sessionLost;
+    if (lost) {
+      mp.sessionLost = null;
+      const shown = this.game instanceof NetGame && this.state !== 'title';
+      // (An expired seat mid-battle first gets the battle's ending replayed: results follow.)
+      if (shown && (lost === 'restart' || this.state === 'over')) {
+        this.toTitle();
+        this.openMultiplayer();
+      }
+      this.menus.mp.flash(lost === 'restart' ? 'The game server restarted — that battle was lost.' : 'You were away too long and lost your seat in the room.');
+    }
+    if (mp.replaced && this.game instanceof NetGame && this.state !== 'title') {
       this.toTitle();
       this.openMultiplayer();
-      this.menus.mp.flash('The game server restarted — that battle was lost.');
     }
     if (mp.room) this.keepAwake(true);
     this.roomChimes(mp);

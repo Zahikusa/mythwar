@@ -161,6 +161,21 @@ async function main(): Promise<void> {
     check('invite QR and link', invite.qr && invite.link.includes(`?join=${code}`), invite.link);
     await shot(a, '2-room-waiting');
 
+    // A duplicated tab inherits A's session token (sessionStorage is copied): it must start
+    // its own session instead of taking A's seat away.
+    const token = await a.evaluate(() => sessionStorage.getItem('mythwar.mp.session'));
+    const dup = await browser.newPage();
+    watch(dup, 'dup');
+    await dup.setViewport({ width: 1000, height: 600, deviceScaleFactor: 1 });
+    await dup.evaluateOnNewDocument((t) => sessionStorage.setItem('mythwar.mp.session', t ?? ''), token);
+    await dup.goto(`${base}/?mp`, { waitUntil: 'load' });
+    await waitFor(dup, 'duplicate tab connected', () => document.querySelector('.mpstatus.ok') !== null);
+    await sleep(300);
+    const dupRoom = await dup.evaluate(() => (window as any).__mythwar.mp.room?.code ?? null);
+    const aStill = await a.evaluate(() => ({ online: (window as any).__mythwar.mp.state, room: (window as any).__mythwar.mp.room?.code }));
+    check('duplicated tab gets its own session', dupRoom === null && aStill.online === 'online' && aStill.room === code, JSON.stringify({ dupRoom, aStill }));
+    await dup.close();
+
     // B opens the invite link (what scanning the QR code does).
     await b.goto(`${base}/?join=${code}`, { waitUntil: 'load' });
     await waitFor(b, 'B joined the room', () => (window as any).__mythwar.menus.current === 'room');

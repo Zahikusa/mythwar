@@ -12,7 +12,7 @@ import type { Command, Team } from '../sim/types.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -107,6 +107,10 @@ export type ClientMsg =
       name: string;
       /** Session token from an earlier welcome (reconnect). */
       token?: string;
+      /** The client still shows a battle in progress (it may have missed how it ended). */
+      battle?: boolean;
+      /** The app is in the background right now (a reconnect from a hidden tab). */
+      away?: boolean;
     }
   | { type: 'name'; name: string }
   | { type: 'watchRooms'; on: boolean }
@@ -135,6 +139,8 @@ export type ServerMsg =
       seat: Team | null;
       /** Addresses other devices can open the game at (e.g. http://192.168.1.20:8787/). */
       lan: string[];
+      /** The token was recognised (false: a fresh session — e.g. the server restarted). */
+      resumed: boolean;
     }
   | { type: 'error'; code: ErrorCode; message: string }
   | { type: 'rooms'; rooms: OpenRoom[] }

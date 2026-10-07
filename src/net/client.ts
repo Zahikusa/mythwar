@@ -38,14 +38,18 @@ export class MpClient {
   game: NetGame | null = null;
   /** Set once the server has greeted us (and after every reconnect). */
   welcomed = false;
-  /** The server dropped our session (e.g. it restarted). */
-  sessionLost = false;
+  /** The server no longer knows our room: 'restart' (it forgot us) or 'expired' (away too long). */
+  sessionLost: 'restart' | 'expired' | null = null;
+  /** This session was taken over by another tab or device. */
+  replaced = false;
   /** The server runs another version of the game: no point reconnecting until a reload. */
   versionMismatch = false;
   /** Addresses the server says other devices can reach the game at. */
   lanUrls: string[] = [];
   private token: string | null;
   private watching = false;
+  /** We left a room while offline: tell the server on reconnect, and ignore that battle. */
+  private leaving = false;
   private readonly listeners = new Set<MpListener>();
   private readonly storage: MpClientOptions['storage'];
   private readonly now: () => number;
@@ -59,10 +63,25 @@ export class MpClient {
       url: opts.url,
       socket: opts.socket,
       now: this.now,
-      hello: () => ({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint(), name: this.name, token: this.token ?? undefined }),
+      hello: () => ({
+        type: 'hello',
+        v: PROTOCOL_VERSION,
+        sim: simFingerprint(),
+        name: this.name,
+        token: this.token ?? undefined,
+        battle: !!this.game && !this.game.over,
+        away: typeof document !== 'undefined' && document.hidden,
+      }),
     });
     this.conn.onMessage = (m, at) => this.onMessage(m, at);
     this.conn.onState = (s) => this.onState(s);
+    this.conn.onRefused = (code) => {
+      // 4001: another tab took over this session; 4000: a different game version.
+      if (code === 4001) this.replaced = true;
+      else this.versionMismatch = true;
+      if (this.game && !this.game.over) this.game.abandon();
+      this.emit((l) => l.changed?.());
+    };
   }
 
   get state(): ConnState {
@@ -75,11 +94,44 @@ export class MpClient {
   }
 
   start(): void {
-    this.conn.open();
+    // A duplicated browser tab inherits this tab's session token: if another open tab is
+    // using it, start a fresh session instead of fighting over the seat.
+    const token = this.token;
+    if (!token || typeof BroadcastChannel === 'undefined') {
+      this.answerTokenQueries();
+      this.conn.open();
+      return;
+    }
+    const ch = new BroadcastChannel('mythwar.mp');
+    ch.onmessage = (e) => {
+      if (e.data?.taken === token) {
+        this.token = null;
+        this.storage?.removeItem(TOKEN_KEY);
+      }
+    };
+    ch.postMessage({ ask: token });
+    setTimeout(() => {
+      ch.close();
+      this.answerTokenQueries();
+      this.conn.open();
+    }, 150);
   }
+
+  /** Tells newly opened (duplicated) tabs that our session token is in use. */
+  private answerTokenQueries(): void {
+    if (typeof BroadcastChannel === 'undefined' || this.tokenChannel) return;
+    this.tokenChannel = new BroadcastChannel('mythwar.mp');
+    this.tokenChannel.onmessage = (e) => {
+      if (this.token && e.data?.ask === this.token && this.conn.state !== 'offline') this.tokenChannel?.postMessage({ taken: this.token });
+    };
+  }
+
+  private tokenChannel: BroadcastChannel | null = null;
 
   /** Disconnects for good (leaving the multiplayer screens). */
   stop(): void {
+    this.tokenChannel?.close();
+    this.tokenChannel = null;
     this.conn.close();
     this.welcomed = false;
   }
@@ -119,7 +171,8 @@ export class MpClient {
   }
 
   leave(): void {
-    this.conn.send({ type: 'leave' });
+    // Offline: the server still seats us; say it as soon as we're back.
+    this.leaving = !this.conn.send({ type: 'leave' });
     this.room = null;
     this.seat = null;
     if (this.game && !this.game.over) this.game.abandon();
@@ -148,31 +201,41 @@ export class MpClient {
         this.welcomed = true;
         this.token = msg.token;
         this.storage?.setItem(TOKEN_KEY, msg.token);
+        this.lanUrls = Array.isArray(msg.lan) ? msg.lan : [];
+        if (this.leaving) {
+          // We left while offline: make it so (any battle that follows is ignored until 'left').
+          this.conn.send({ type: 'leave' });
+          break;
+        }
         this.room = msg.room;
         this.seat = msg.seat;
-        this.lanUrls = Array.isArray(msg.lan) ? msg.lan : [];
-        // We thought we were in a room but the server doesn't know us (it restarted).
-        this.sessionLost = hadRoom && !msg.room;
-        if (this.sessionLost && this.game && !this.game.over) this.game.abandon();
+        // We thought we were in a room but the server doesn't seat us any more.
+        this.sessionLost = hadRoom && !msg.room ? (msg.resumed ? 'expired' : 'restart') : null;
+        // (A battle that ended meanwhile is replayed to us by the server; a restart lost it.)
+        if (this.sessionLost === 'restart' && this.game && !this.game.over) this.game.abandon();
         if (this.watching) this.conn.send({ type: 'watchRooms', on: true });
         break;
       }
       case 'room':
+        if (this.leaving) return;
         this.room = msg.room;
         this.seat = msg.seat;
-        this.sessionLost = false;
+        this.sessionLost = null;
         break;
       case 'rooms':
         this.openRooms = msg.rooms;
         break;
       case 'left':
+        this.leaving = false;
         this.room = null;
         this.seat = null;
         break;
       case 'start':
+        if (this.leaving) return;
         this.startGame(new NetGame({ seat: msg.seat, names: msg.names, seed: msg.seed, countdown: msg.countdown, send: (m) => this.conn.send(m), now: this.now }));
         return;
       case 'snapshot':
+        if (this.leaving) return;
         if (this.game && !this.game.over && this.game.seat === msg.seat) this.game.receive(msg, at);
         else this.startGame(new NetGame({ seat: msg.seat, names: msg.names, snapshot: msg, send: (m) => this.conn.send(m), now: this.now }));
         return;
