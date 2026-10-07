@@ -328,15 +328,23 @@ async function main(): Promise<void> {
     const a6 = await info(a);
     check('rematch running', a6.tick > 30 && !a6.paused, `tick ${a6.tick}`);
 
+    console.log('== claiming the win from an absent player ==');
+    await b.evaluate(() => (window as any).__mythwar.mp.away(true));
+    await waitFor(a, 'A can claim after 20 s', () => {
+      const btn = document.querySelector('.nclaim') as HTMLElement | null;
+      return !!btn && !btn.classList.contains('hidden');
+    }, 30_000);
+    await shot(a, '12-claim-desktop');
+    await press(a, '.netoverlay', 'Claim victory');
+    await waitFor(a, 'A results after claiming', () => (window as any).__mythwar.menus.current === 'over', 8000);
+    await waitFor(b, 'B results (lost: away too long)', () => (window as any).__mythwar.menus.current === 'over', 8000);
+    await shot(b, '11-results-phone');
+
     console.log('== leaving the room ==');
-    await a.keyboard.press('Escape');
-    await waitFor(a, 'A pause', () => (window as any).__mythwar.menus.current === 'pause');
-    await press(a, '.screen.pause', 'Leave battle');
+    await press(a, '.screen.over', 'Leave room');
     await waitFor(a, 'A in lobby', () => (window as any).__mythwar.menus.current === 'mp');
     await press(a, '.screen.mp', 'Back');
     await waitFor(a, 'A at title', () => (window as any).__mythwar.menus.current === 'title');
-    await waitFor(b, 'B wins', () => (window as any).__mythwar.menus.current === 'over', 8000);
-    await shot(b, '11-results-phone');
 
     console.log('== server restart ==');
     // B sits on the results in its room; the game server restarts and forgets everyone.

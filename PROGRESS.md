@@ -95,7 +95,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 - Seats: the host is seat 0 (team 0). Everyone sees their own citadel on the left in blue.
 - Either player can pause and either can resume (3 s countdown). Pauses are unlimited (LAN
   friends); an away player (app in background, link lost) pauses the battle for up to 90 s,
-  then forfeits. Leaving mid-battle forfeits. No W/L records for online games (yet).
+  then forfeits (after 20 s the waiting player may claim the win). Leaving mid-battle forfeits. No W/L records for online games (yet).
 - Turns every 2 ticks (33 ms); hash every 60 ticks; commands apply on the server's next tick.
 - Session token lives in sessionStorage (per tab): two tabs = two players (easy local testing),
   a reload of the same tab rejoins.

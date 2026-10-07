@@ -252,6 +252,9 @@ export class Lobby {
           this.broadcastRoom(room);
         }
         return;
+      case 'claim':
+        if (room?.match && seat !== null && room.phase === 'playing') room.match.claim(seat, now);
+        return;
       case 'resync':
         if (room?.match && seat !== null && room.phase === 'playing') this.send(s, room.match.snapshotFor(seat));
         return;

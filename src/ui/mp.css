@@ -571,6 +571,13 @@
   }
 }
 
+.nclaim {
+  flex: none;
+  pointer-events: auto;
+  padding: 9px 16px;
+  font-size: 15px;
+}
+
 .nbtitle {
   font-size: 17px;
   font-weight: 800;

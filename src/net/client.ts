@@ -187,6 +187,11 @@ export class MpClient {
     this.conn.send({ type: 'resume' });
   }
 
+  /** Take the win: the opponent has been away too long (the server checks). */
+  claim(): void {
+    this.conn.send({ type: 'claim' });
+  }
+
   /** The app went to the background (or came back). */
   away(away: boolean): void {
     if (!this.game || this.game.over) return;

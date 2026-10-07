@@ -12,13 +12,15 @@ import type { Command, Team } from '../sim/types.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 2;
+export const PROTOCOL_VERSION = 3;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
 
 /** Seconds a player may be away (disconnected, app in the background) before forfeiting. */
 export const AWAY_GRACE = 90;
+/** After this many seconds away, the other player may claim the victory instead of waiting. */
+export const CLAIM_AFTER = 20;
 /** Countdown before a battle starts and after it resumes, in seconds. */
 export const START_COUNTDOWN = 3;
 export const RESUME_COUNTDOWN = 3;
@@ -123,6 +125,8 @@ export type ClientMsg =
   | { type: 'resume' }
   | { type: 'away'; away: boolean }
   | { type: 'resync' }
+  /** The opponent has been away for CLAIM_AFTER seconds: take the win now. */
+  | { type: 'claim' }
   | { type: 'ping'; t: number };
 
 // ---------------------------------------------------------------------------

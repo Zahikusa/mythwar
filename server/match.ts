@@ -2,7 +2,7 @@ import { TICK } from '../src/sim/data.ts';
 import { hashWorld } from '../src/sim/hash.ts';
 import type { Team } from '../src/sim/types.ts';
 import { World } from '../src/sim/world.ts';
-import { AWAY_GRACE, HASH_EVERY, RESUME_COUNTDOWN } from '../src/net/protocol.ts';
+import { AWAY_GRACE, CLAIM_AFTER, HASH_EVERY, RESUME_COUNTDOWN } from '../src/net/protocol.ts';
 import type { AgeUpMark, EndReason, HistorySample, NetCommand, PauseState, ScheduledCommand, ServerMsg } from '../src/net/protocol.ts';
 
 const TICK_MS = TICK * 1000;
@@ -107,6 +107,15 @@ export class Match {
     if (!this.paused) return;
     this.paused = false;
     this.refreshPause(now);
+  }
+
+  /** `seat` claims the win because the other player has been away long enough. */
+  claim(seat: Team, now: number): boolean {
+    const other = (1 - seat) as Team;
+    const since = this.awaySince[other];
+    if (this.state === 'over' || this.awaySince[seat] !== null || since === null || now - since < CLAIM_AFTER * 1000) return false;
+    this.finish(seat, 'timeout');
+    return true;
   }
 
   /** The player in `seat` gives up (left the room); the other wins. */

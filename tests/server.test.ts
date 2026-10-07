@@ -317,6 +317,19 @@ describe('battle', () => {
     expect(a.last('paused')!.state).toEqual({ reason: 'pause', seat: 0 });
   });
 
+  it('the waiting player may claim the win after a while', () => {
+    const { run, a, b } = battle();
+    run(2000);
+    b.send({ type: 'away', away: true });
+    run(5000);
+    a.send({ type: 'claim' });
+    expect(a.last('over')).toBeUndefined(); // too early
+    b.send({ type: 'claim' }); // the absent player can't claim anything
+    run(16_000);
+    a.send({ type: 'claim' });
+    expect(a.last('over')).toMatchObject({ winner: 0, reason: 'timeout' });
+  });
+
   it('a player who stays away forfeits', () => {
     const { run, a, b } = battle({ awayGrace: 30 });
     run(2000);
