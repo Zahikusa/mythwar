@@ -20,6 +20,20 @@ import { serveStatic } from './static.ts';
 import { terminalQr } from './qr.ts';
 
 const args = process.argv.slice(2);
+if (args.includes('--help') || args.includes('-h')) {
+  console.log(`Mythwar LAN server — serves the game and hosts multiplayer battles.
+
+  node server/main.ts [options]          (npm run lan = build + this)
+
+  --port <n>           port (default 8787; the next free one if busy and not given)
+  --dir <path>         built game to serve (default: dist/)
+  --cert <pem> --key <pem>   serve https/wss (wake lock + app install on phones)
+  --trust-proxy        behind a reverse proxy: client addresses from X-Forwarded-For
+  --latency <ms> --jitter <ms>   simulate a bad network (testing)
+  --quiet              no log lines for joins, battles and results
+  --help               this text`);
+  process.exit(0);
+}
 const arg = (name: string): string | undefined => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : undefined;

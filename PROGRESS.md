@@ -176,8 +176,8 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
     high and `justify-content: safe center` so overflow scrolls instead of clipping.
 25. [ ] Online results screen: no way to say "Well played!" after the battle (emotes only exist
     in battle); a small emote row on the results would fit the rematch flow.
-26. [ ] `server/main.ts`: no `--help`; the flags (--port, --cert/--key, --trust-proxy,
+26. [x] `server/main.ts`: no `--help`; the flags (--port, --cert/--key, --trust-proxy,
     --latency/--jitter, --dir, --quiet) are only documented in the file header / docs.
 27. [ ] Settings: no switch to hide the opponent's quick messages (rate-limited, but some players
     will want them off).
-28. [ ] package.json: the new tools (mpbot, enginecheck, mpengines) have no npm script aliases.
+28. [x] package.json: the new tools (mpbot, enginecheck, mpengines) have no npm script aliases.
