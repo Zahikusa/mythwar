@@ -221,6 +221,36 @@ async function main(): Promise<void> {
     check('B’s order reached A', a2.summoned[1] >= 1, `A sees ${a2.summoned[1]} summons by B`);
     check('both advance', a2.tick > 200 && b2.tick > 200, `${a2.tick} / ${b2.tick}`);
     check('ticks close together', Math.abs(a2.tick - b2.tick) < 30, `${a2.tick} vs ${b2.tick}`);
+    // The mirrored player (B) drags a card onto the bottom lane and taps their own gate (left).
+    const toClient = (stage: { x: number; y: number }) =>
+      b.evaluate((p) => {
+        const app = (window as any).__mythwar;
+        return app.rotated ? { x: window.innerWidth - p.y, y: p.x } : p;
+      }, stage);
+    const geo = await b.evaluate(() => {
+      const g = (window as any).__mythwar.renderer.layout.lanes;
+      return { bottom: { x: (g[2].x0 + g[2].x1) / 2, y: g[2].y - 10 }, gate: { x: g[0].x0 - 8, y: g[0].y - 18 } };
+    });
+    const from = await b.evaluate(() => {
+      const r = document.querySelector('.card:nth-child(2)')!.getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    });
+    const to = await toClient(geo.bottom);
+    const cdp = await b.createCDPSession();
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from.x, y: from.y }] });
+    for (let i = 1; i <= 8; i++) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: from.x + ((to.x - from.x) * i) / 8, y: from.y + ((to.y - from.y) * i) / 8 }] });
+      await sleep(16);
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await waitFor(b, 'B’s dragged creature goes to the bottom lane', () => {
+      const w = (window as any).__mythwar.game.world;
+      return w.players[1].queue.some((q: any) => q.lane === 2) || w.lanes[2].some((u: any) => u.team === 1);
+    });
+    const gate = await toClient(geo.gate);
+    await b.touchscreen.tap(gate.x, gate.y);
+    await waitFor(b, 'tapping your own (left) gate opens its turret slot', () => !document.querySelector('.turretpanel')!.classList.contains('hidden'));
+    await press(b, '.turretpanel', '');
     await shot(a, '5-battle-desktop');
     await shot(b, '6-battle-phone');
 
@@ -254,7 +284,7 @@ async function main(): Promise<void> {
     console.log('== dropped connection ==');
     await b.evaluate(() => (window as any).__mythwar.mp.conn.ws.close());
     await waitFor(a, 'A paused for B', () => ((window as any).__mythwar.game.netPause?.reason ?? '') === 'away');
-    await waitFor(b, 'B back online', () => (window as any).__mythwar.mp.state === 'online' && !(window as any).__mythwar.game.paused, 8000);
+    await waitFor(b, 'B back online', () => (window as any).__mythwar.game.resyncs >= 1 && (window as any).__mythwar.mp.state === 'online' && !(window as any).__mythwar.game.paused, 8000);
     const b3 = await info(b);
     check('B resynced from a snapshot', b3.resyncs >= 1, `resyncs ${b3.resyncs}`);
 

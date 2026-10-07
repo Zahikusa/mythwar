@@ -103,7 +103,8 @@ export class Connection {
   }
 
   send(msg: ClientMsg): boolean {
-    if (!this.ws || this.state !== 'online') return false;
+    // (A socket that is already closing would only log an error.)
+    if (!this.ws || this.state !== 'online' || this.ws.readyState !== 1) return false;
     try {
       this.ws.send(JSON.stringify(msg));
       return true;
