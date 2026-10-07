@@ -138,7 +138,7 @@ export class Lobby {
 
   private hello(conn: Conn, msg: Extract<ClientMsg, { type: 'hello' }>): Session | null {
     if (msg.v !== PROTOCOL_VERSION || msg.sim !== simFingerprint()) {
-      this.error(conn, 'version', 'This game version is out of date — reload the page.');
+      this.error(conn, 'version', 'This page and the game server are different versions — reload the page (or restart the server).');
       conn.close(4000, 'version');
       return null;
     }

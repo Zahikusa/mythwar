@@ -750,7 +750,7 @@ export class App {
 
   private onMpError(code: string, message: string): void {
     this.audio.ui('error');
-    const text = code === 'version' ? 'This page is out of date — reload it to play online.' : message;
+    const text = code === 'version' ? 'This page and the game server are different versions — reload the page (or restart the server).' : message;
     if (this.state === 'playing') this.hud.toast(text, 'bad');
     else this.menus.mp.flash(text);
   }
