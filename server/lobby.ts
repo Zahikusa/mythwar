@@ -142,6 +142,7 @@ export class Lobby {
     if (msg.v !== PROTOCOL_VERSION || msg.sim !== simFingerprint()) {
       this.error(conn, 'version', 'This page and the game server are different versions — reload the page (or restart the server).');
       conn.close(4000, 'version');
+      this.log(`refused ${cleanName(msg.name)}: different game version (reload the page)`);
       return null;
     }
     let s = typeof msg.token === 'string' ? this.sessions.get(msg.token) : undefined;

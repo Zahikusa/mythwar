@@ -127,7 +127,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
    network" list must be scoped (e.g. by the client's public IP) — documented, not built.
 8. [ ] `server/main.ts`: no https option. Phones only allow the screen wake lock (and PWA
    install) on https; `--cert/--key` flags (user-supplied or mkcert certificate) would enable it.
-9. [ ] `server/main.ts` / `server/lobby.ts`: log lines have no timestamps — hard to match a
+9. [x] `server/main.ts` / `server/lobby.ts`: log lines have no timestamps — hard to match a
    player's "it froze at 8 pm" to the log.
 10. [ ] `scripts/mpsmoke.ts`: the mirrored phone only taps a card; dragging a card onto a lane
     and opening a turret slot by tapping its own (left) gate aren't covered for team 1.

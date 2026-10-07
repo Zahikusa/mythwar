@@ -34,7 +34,9 @@ const http = createServer(serveStatic(root));
 
 const latency = Number(arg('latency') ?? 0);
 const jitter = Number(arg('jitter') ?? 0);
-const mp = attachMultiplayer(http, { latency, jitter, log: quiet ? undefined : (l) => console.log(`  · ${l}`) });
+/** "18:42:07  Ada opened room QH7K" */
+const stamp = (line: string) => `  ${new Date().toTimeString().slice(0, 8)}  ${line}`;
+const mp = attachMultiplayer(http, { latency, jitter, log: quiet ? undefined : (l) => console.log(stamp(l)) });
 
 http.on('error', (e: NodeJS.ErrnoException) => {
   if (e.code === 'EADDRINUSE') console.error(`Port ${port} is already in use — try: node server/main.ts --port ${port + 1}`);
