@@ -11,6 +11,9 @@ export interface GameOptions {
   seed?: number;
   /** AI plays both sides (title-screen backdrop / attract mode). */
   demo?: boolean;
+  /** Against another human over the network: no AI; `team` is the local player's side. */
+  online?: boolean;
+  team?: Team;
 }
 
 export type GameListener = (events: SimEvent[]) => void;
@@ -38,10 +41,12 @@ export interface GameSave {
 
 /** One match: the simulation, the AI(s) and the fixed-step clock. */
 export class Game {
-  readonly world: World;
+  /** Replaced wholesale when an online battle resyncs from a server snapshot. */
+  world: World;
   readonly options: GameOptions;
-  readonly playerTeam: Team = 0;
-  readonly ai: AiController;
+  readonly playerTeam: Team;
+  /** The opponent AI (null online). */
+  readonly ai: AiController | null;
   readonly demoAi: AiController | null;
   readonly view: ViewState;
   speed = 1;
@@ -50,17 +55,18 @@ export class Game {
   readonly history: HistorySample[] = [];
   /** Ascension moments for the results chart. */
   readonly ageUps: { t: number; team: Team; age: number }[] = [];
-  private nextSample = 0;
-  private acc = 0;
+  protected nextSample = 0;
+  protected acc = 0;
   private listeners: GameListener[] = [];
 
   constructor(opts: GameOptions, world?: World) {
     this.options = opts;
     const seed = opts.seed ?? (Math.random() * 1e9) | 0;
     this.world = world ?? new World({ seed });
-    this.ai = new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);
+    this.playerTeam = opts.online ? (opts.team ?? 0) : 0;
+    this.ai = opts.online ? null : new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);
     this.demoAi = opts.demo ? new AiController(this.world, 0, AI_PROFILES[opts.difficulty], seed ^ 0x1234567) : null;
-    this.view = { playerTeam: 0, selectedLane: opts.demo ? -1 : 1, hoverLane: -1, targeting: 'none', paused: false };
+    this.view = { playerTeam: this.playerTeam, selectedLane: opts.demo ? -1 : 1, hoverLane: -1, targeting: 'none', paused: false };
   }
 
   toSave(): GameSave {
@@ -70,7 +76,7 @@ export class Game {
       savedAt: Date.now(),
       speed: this.speed,
       world: this.world.serialize(),
-      ai: this.ai.snapshot(),
+      ai: this.ai!.snapshot(),
       history: this.history.slice(),
       ageUps: this.ageUps.slice(),
       selectedLane: this.view.selectedLane,
@@ -83,7 +89,7 @@ export class Game {
     if (save.world.winner !== null) throw new Error('Battle already decided');
     if (!DIFFICULTIES.includes(save.difficulty)) throw new Error('Unknown difficulty');
     const game = new Game({ difficulty: save.difficulty }, World.deserialize(save.world));
-    game.ai.restore(save.ai);
+    game.ai!.restore(save.ai);
     game.history.push(...save.history);
     game.ageUps.push(...(save.ageUps ?? []));
     game.speed = save.speed === 2 ? 2 : 1;
@@ -106,7 +112,7 @@ export class Game {
       this.acc += Math.min(dt, 0.25) * this.speed;
       let steps = 0;
       while (this.acc >= TICK && steps < 40) {
-        this.ai.update(TICK);
+        this.ai?.update(TICK);
         this.demoAi?.update(TICK);
         this.world.step();
         this.acc -= TICK;
@@ -114,28 +120,35 @@ export class Game {
       }
       if (steps >= 40) this.acc = 0;
     }
+    this.publish();
+    this.view.paused = this.paused;
+    return this.acc / TICK;
+  }
+
+  /** After stepping: chart samples, then the new events to everyone listening. */
+  protected publish(): void {
     if (this.world.time >= this.nextSample || (this.world.winner !== null && this.history.at(-1)?.t !== this.world.time)) {
       this.sample();
       this.nextSample = this.world.time + SAMPLE_EVERY;
     }
     const events = this.world.drainEvents();
-    if (events.length) {
-      this.record(events);
-      for (const l of this.listeners) l(events);
-    }
-    this.view.paused = this.paused;
-    return this.acc / TICK;
+    if (events.length) this.emit(events);
+  }
+
+  protected emit(events: SimEvent[]): void {
+    this.record(events);
+    for (const l of this.listeners) l(events);
   }
 
   /** Bookkeeping every event batch needs, whether or not anyone watches it. */
-  private record(events: SimEvent[]): void {
+  protected record(events: SimEvent[]): void {
     for (const e of events) {
       if (e.type === 'gameOver') this.over = true;
       else if (e.type === 'ageUp') this.ageUps.push({ t: e.t, team: e.team, age: e.age });
     }
   }
 
-  private sample(): void {
+  protected sample(): void {
     const army: [number, number] = [0, 0];
     for (const lane of this.world.lanes) for (const u of lane) if (u.alive) army[u.team] += u.def.cost * (u.hp / u.maxHp);
     this.history.push({ t: this.world.time, army });
@@ -149,7 +162,7 @@ export class Game {
     const n = Math.round(seconds / TICK);
     let end: SimEvent | undefined;
     for (let i = 0; i < n && this.world.winner === null; i++) {
-      this.ai.update(TICK);
+      this.ai?.update(TICK);
       this.demoAi?.update(TICK);
       this.world.step();
       if (this.world.time >= this.nextSample) {
