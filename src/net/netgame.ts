@@ -231,9 +231,18 @@ export class NetGame extends Game {
   }
 
   private onTurn(msg: Extract<ServerMsg, { type: 'turn' }>, at: number): void {
-    if (this.awaitingSnapshot || msg.tick <= this.confirmed) return;
+    if (this.awaitingSnapshot) return;
+    // Turns come in order over TCP. Orders for ticks we've already simulated would mean they
+    // didn't (a broken proxy?): don't wait for the next hash check, resync at once.
+    if ((msg.cmds ?? []).some((c) => c.tick <= this.world.tick)) {
+      this.desyncs++;
+      console.warn(`[mythwar] turn ${msg.tick} brought orders for ticks already played (at ${this.world.tick}) — resyncing`);
+      this.requestSnapshot();
+      this.onDesync(this.desyncs);
+      return;
+    }
+    if (msg.tick <= this.confirmed) return;
     for (const c of msg.cmds ?? []) {
-      if (c.tick <= this.world.tick) continue;
       const list = this.cmds.get(c.tick);
       if (list) list.push(c);
       else this.cmds.set(c.tick, [c]);

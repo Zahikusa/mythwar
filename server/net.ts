@@ -97,10 +97,21 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
 
 /** Delays callbacks by latency + random jitter while keeping their order (like TCP). */
 function laggy(opts: AttachOptions): (fn: () => void) => void {
+  // One queue and one timer: separate setTimeouts per message can fire out of order when their
+  // due times are under a millisecond apart (timers are scheduled from the loop's cached clock).
+  const queue: { at: number; fn: () => void }[] = [];
+  let timer: ReturnType<typeof setTimeout> | null = null;
   let last = 0;
+  const pump = () => {
+    timer = null;
+    const now = performance.now();
+    while (queue.length && queue[0].at <= now) queue.shift()!.fn();
+    if (queue.length) timer = setTimeout(pump, Math.max(1, queue[0].at - now));
+  };
   return (fn) => {
     const at = Math.max(last, performance.now() + (opts.latency ?? 0) + Math.random() * (opts.jitter ?? 0));
     last = at;
-    setTimeout(fn, at - performance.now());
+    queue.push({ at, fn });
+    timer ??= setTimeout(pump, Math.max(1, at - performance.now()));
   };
 }

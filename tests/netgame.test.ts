@@ -347,3 +347,23 @@ describe('NetGame over a simulated network', () => {
     expect(ga.desyncs + gb.desyncs).toBe(0);
   });
 });
+
+describe('NetGame on its own', () => {
+  it('asks for a snapshot at once when orders arrive for ticks already played', async () => {
+    const { NetGame } = await import('../src/net/netgame.ts');
+    const sent: string[] = [];
+    let now = 0;
+    const g = new NetGame({ seat: 0, names: ['A', 'B'], seed: 5, countdown: 0, send: (m) => (sent.push(m.type), true), now: () => now });
+    g.receive({ type: 'turn', tick: 2 }, 0);
+    g.receive({ type: 'turn', tick: 4 }, 33);
+    now = 500;
+    g.advance(0.5);
+    expect(g.world.tick).toBe(4);
+    // A turn whose order was for tick 3 — already simulated here.
+    g.receive({ type: 'turn', tick: 6, cmds: [{ tick: 3, team: 1, seq: 1, cmd: { type: 'train', unitId: 'redcap', lane: 0 } }] }, 520);
+    expect(sent).toContain('resync');
+    expect(g.desyncs).toBe(1);
+    g.advance(0.016);
+    expect(g.paused).toBe(true); // waits for the snapshot
+  });
+});
