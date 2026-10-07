@@ -2,7 +2,7 @@ import qrcode from 'qrcode-generator';
 import type { MpClient } from '../net/client.ts';
 import { CODE_LENGTH, NAME_MAX, cleanCode } from '../net/protocol.ts';
 import type { SeatInfo } from '../net/protocol.ts';
-import { h, setText, toggle } from './dom.ts';
+import { h, onTap, setText, toggle } from './dom.ts';
 import { ICONS } from './icons.ts';
 
 export interface MpMenuCallbacks {
@@ -41,7 +41,8 @@ export class MpScreens {
   private invite!: HTMLElement;
   private qr!: HTMLElement;
   private link!: HTMLElement;
-  private seats: { el: HTMLElement; name: HTMLElement; side: HTMLElement; state: HTMLElement; wins: HTMLElement }[] = [];
+  private seats: { el: HTMLElement; name: HTMLElement; side: HTMLElement; state: HTMLElement; wins: HTMLElement; edit: HTMLInputElement }[] = [];
+  private mySeat = -1;
   private readyBtn!: HTMLButtonElement;
   private roomNote!: HTMLElement;
   private flashes: HTMLElement[] = [];
@@ -190,8 +191,33 @@ export class MpScreens {
       const side = h('div', { class: 'sside', text: i === 0 ? 'Host' : 'Guest' });
       const state = h('div', { class: 'sstate' });
       const wins = h('div', { class: 'swins' });
-      const el = h('div', { class: 'rseat' }, name, side, state, wins);
-      this.seats.push({ el, name, side, state, wins });
+      // Your own name can be changed right here (tap it).
+      const edit = h('input', { class: 'mpname sedit hidden', type: 'text', maxlength: NAME_MAX, spellcheck: 'false', 'aria-label': 'Your name' }) as HTMLInputElement;
+      const done = () => {
+        if (edit.classList.contains('hidden')) return;
+        edit.classList.add('hidden');
+        name.classList.remove('hidden');
+        if (edit.value.trim() && edit.value !== this.nameInput.value) this.cb.rename(edit.value);
+      };
+      edit.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+        if (e.key === 'Enter') done();
+        else if (e.key === 'Escape') {
+          edit.value = this.nameInput.value;
+          done();
+        }
+      });
+      edit.addEventListener('blur', done);
+      onTap(name, () => {
+        if (this.mySeat !== i) return;
+        edit.value = this.nameInput.value;
+        name.classList.add('hidden');
+        edit.classList.remove('hidden');
+        edit.focus();
+        edit.select();
+      });
+      const el = h('div', { class: 'rseat' }, name, edit, side, state, wins);
+      this.seats.push({ el, name, side, state, wins, edit });
       seatsBox.appendChild(el);
       if (i === 0) seatsBox.appendChild(h('div', { class: 'rvs', text: 'VS' }));
     }
@@ -264,6 +290,7 @@ export class MpScreens {
       this.qr.innerHTML = qrSvg(url);
       setText(this.link, url.replace(/^https?:\/\//, ''));
     }
+    this.mySeat = me;
     room.seats.forEach((s, i) => this.renderSeat(i, s, i === me));
     this.iAmReady = !!room.seats[me]?.ready;
     setText(this.readyBtn.querySelector('span')!, this.iAmReady ? 'Not ready' : 'Ready');
@@ -286,7 +313,8 @@ export class MpScreens {
     toggle(v.el, 'empty', !s);
     toggle(v.el, 'mine', mine);
     toggle(v.el, 'ready', !!s?.ready);
-    setText(v.name, s ? s.name + (mine ? ' (you)' : '') : 'Open seat');
+    setText(v.name, s ? s.name + (mine ? ' (you) ✎' : '') : 'Open seat');
+    v.name.title = mine ? 'Tap to change your name' : '';
     setText(v.state, !s ? 'Waiting for a player…' : !s.connected ? 'Connecting…' : s.ready ? 'Ready!' : 'Not ready');
     setText(v.wins, s && s.wins ? `${s.wins} ${s.wins === 1 ? 'win' : 'wins'}` : '');
   }

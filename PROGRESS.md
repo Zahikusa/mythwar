@@ -122,6 +122,6 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
    with both hashes; a one-time notice after 3.)
 5. [ ] Online results aren't recorded anywhere (AI records are per difficulty); keep a small
    per-opponent tally (name → W/L) and show it in the room.
-6. [ ] `src/ui/mpmenus.ts`: no way to rename yourself once in a room (only in the lobby).
+6. [x] `src/ui/mpmenus.ts`: no way to rename yourself once in a room (only in the lobby).
 7. [ ] `server/lobby.ts` `openRooms()`: for a public internet server the "open battles on this
    network" list must be scoped (e.g. by the client's public IP) — documented, not built.

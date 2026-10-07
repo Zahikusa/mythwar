@@ -182,6 +182,12 @@ async function main(): Promise<void> {
     await waitFor(a, 'A sees B', () => document.querySelectorAll('.rseat.empty').length === 0);
     check('B in the same room', (await info(b)).room === code);
     check('invite hidden once full', await a.evaluate(() => document.querySelector('.rinvite')!.classList.contains('hidden')));
+    // Renaming from the room: tap your own name.
+    await a.click('.rseat.mine .sname');
+    await a.keyboard.press('End');
+    await a.keyboard.type(' L');
+    await a.keyboard.press('Enter');
+    await waitFor(b, 'B sees the new name', () => [...document.querySelectorAll('.rseat .sname')].some((e) => e.textContent === 'Ada L'));
     await shot(b, '3-room-phone');
 
     console.log('== battle ==');

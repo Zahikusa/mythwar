@@ -397,6 +397,16 @@
   text-overflow: ellipsis;
 }
 
+.rseat.mine .sname {
+  cursor: pointer;
+}
+
+.sedit {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 8px;
+}
+
 .rseat.empty .sname {
   color: var(--muted);
   font-weight: 600;
