@@ -112,7 +112,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 1. [x] `src/net/netgame.ts` / `src/ui/hud.ts`: the gold counter shows the replica's gold, so after
    a tap it drops only when the order comes back (~50–100 ms, longer on bad Wi-Fi) — show gold
    minus orders in flight.
-2. [ ] `server/lobby.ts`: two players can have the same name (random names collide, or both
+2. [x] `server/lobby.ts`: two players can have the same name (random names collide, or both
    type "Player") — "Ada vs Ada" is confusing; suffix duplicates in a room.
 3. [ ] `scripts/mpsmoke.ts`: no end-to-end check of a server restart (clients should land in
    the lobby with the "server restarted" note) or of the version-mismatch screen.

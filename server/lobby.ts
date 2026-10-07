@@ -267,7 +267,7 @@ export class Lobby {
     a.ready = false;
     b.ready = false;
     const seed = (this.random() * 2 ** 31) | 0;
-    const names: [string, string] = [a.session.name, b.session.name];
+    const names: [string, string] = [this.nameIn(room, 0), this.nameIn(room, 1)];
     const countdown = this.opts.countdown ?? START_COUNTDOWN;
     room.phase = 'playing';
     room.match = new Match({ seed, names, countdown, turnTicks: this.opts.turnTicks, awayGrace: this.opts.awayGrace }, this.now(), {
@@ -353,9 +353,16 @@ export class Lobby {
     const seat = (i: Team) => {
       const x = room.seats[i];
       if (!x) return null;
-      return { name: x.session.name, connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins };
+      return { name: this.nameIn(room, i), connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins };
     };
     return { code: room.code, phase: room.phase, seats: [seat(0), seat(1)] };
+  }
+
+  /** A seat's name as shown in its room: "Ada" vs "Ada" becomes "Ada" vs "Ada (2)". */
+  private nameIn(room: Room, seat: Team): string {
+    const name = room.seats[seat]?.session.name ?? '';
+    const other = room.seats[seat === 0 ? 1 : 0]?.session.name;
+    return seat === 1 && other !== undefined && other.toLowerCase() === name.toLowerCase() ? `${name} (2)` : name;
   }
 
   private broadcastRoom(room: Room): void {

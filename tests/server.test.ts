@@ -171,6 +171,20 @@ describe('lobby', () => {
     expect(other.last('error')!.code).toBe('version');
   });
 
+  it('two players with the same name are told apart', () => {
+    const { lobby } = setup();
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    a.hello('Ada');
+    b.hello('ada');
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    expect(a.last('room')!.room.seats.map((s) => s!.name)).toEqual(['Ada', 'ada (2)']);
+    a.send({ type: 'ready', ready: true });
+    b.send({ type: 'ready', ready: true });
+    expect(b.last('start')!.names).toEqual(['Ada', 'ada (2)']);
+  });
+
   it('an empty room disappears', () => {
     const { lobby } = setup();
     const a = new FakeClient(lobby);
