@@ -192,6 +192,8 @@ export class Lobby {
         if (s.watching) this.send(s, { type: 'rooms', rooms: this.openRooms() });
         return;
       case 'host': {
+        // Already waiting alone in an open room (a double tap): keep it.
+        if (room && room.phase === 'waiting' && room.seats.filter((x) => x).length === 1) return this.broadcastRoom(room);
         if (room) this.removeFromRoom(s);
         const r: Room = { code: this.makeCode(), createdAt: now, phase: 'waiting', seats: [null, null], match: null };
         this.rooms.set(r.code, r);

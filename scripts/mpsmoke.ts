@@ -34,7 +34,14 @@ async function waitFor(page: Page, what: string, fn: () => boolean, timeout = 80
     await page.waitForFunction(fn, { timeout, polling: 50 });
     return true;
   } catch {
-    check(`waiting for: ${what}`, false, 'timed out');
+    const dump = await page
+      .evaluate(() => {
+        const app = (window as unknown as { __mythwar: any }).__mythwar;
+        const m = app.mp;
+        return JSON.stringify({ state: app.state, menu: app.menus.current, conn: m?.state, welcomed: m?.welcomed, room: m?.room, seat: m?.seat, url: location.href });
+      })
+      .catch((e: Error) => e.message);
+    check(`waiting for: ${what}`, false, `timed out; ${dump}`);
     return false;
   }
 }

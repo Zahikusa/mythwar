@@ -106,7 +106,13 @@ export class MpClient {
   }
 
   ready(ready: boolean): void {
-    this.conn.send({ type: 'ready', ready });
+    if (!this.conn.send({ type: 'ready', ready })) return;
+    // Show it right away; the server's room update confirms (or corrects) it.
+    const mine = this.seat !== null ? this.room?.seats[this.seat] : null;
+    if (mine) {
+      mine.ready = ready;
+      this.emit((l) => l.changed?.());
+    }
   }
 
   leave(): void {

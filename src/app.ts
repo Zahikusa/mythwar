@@ -160,7 +160,8 @@ export class App {
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.state === 'title') this.escape();
       // Enter on a menu screen presses its main (gold) button, unless a button is focused.
-      if (e.key === 'Enter' && !e.repeat && this.menus.current !== 'none' && !(document.activeElement instanceof HTMLButtonElement)) {
+      const typing = document.activeElement instanceof HTMLInputElement && document.activeElement.type === 'text';
+      if (e.key === 'Enter' && !e.repeat && this.menus.current !== 'none' && !(document.activeElement instanceof HTMLButtonElement) && !typing) {
         if (this.menus.pressPrimary()) e.preventDefault();
       }
     });

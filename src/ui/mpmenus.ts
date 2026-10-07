@@ -95,6 +95,8 @@ export class MpScreens {
     const commitName = () => this.cb.rename(this.nameInput.value);
     this.nameInput.addEventListener('change', commitName);
     this.nameInput.addEventListener('keydown', (e) => {
+      // Enter confirms the name (and must not also press the screen's main button).
+      e.stopPropagation();
       if (e.key === 'Enter') this.nameInput.blur();
     });
     this.status = h('div', { class: 'mpstatus', role: 'status', 'aria-live': 'polite' }, h('i'), h('span'));
