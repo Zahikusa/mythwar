@@ -1,6 +1,22 @@
 # PROGRESS — Local (Wi-Fi) multiplayer
 
-Status: in progress (started run #4, 2026-10-07)
+Status: complete, in verification mode (since run #4, 2026-10-07 ~18:30)
+
+## Run #4 in short (for the morning)
+- **Multiplayer over the local Wi-Fi works end to end:** `npm run lan` → open the printed
+  address / scan the QR code on each device → Multiplayer → Host / Join (code, QR, or the
+  "open battles on this network" list) → both Ready → 3-2-1 → battle. PC, iPhone, Android in
+  any combination (plain browsers; nothing platform-specific). See docs/MULTIPLAYER.md.
+- **Architecture:** authoritative Node server (rooms + the same deterministic simulation,
+  60 Hz) + lockstep replicas in the browsers fed by "turns"; hashes every second, snapshots for
+  reconnect / reload / desync. Ready for an internet server later (wss, room codes, versioned
+  protocol + rules fingerprint).
+- **Robust:** app switches / screen lock (battle waits, 90 s to return), Wi-Fi blips
+  (auto-reconnect + snapshot), reload mid-battle, missed endings, quitting offline, duplicated
+  tabs, version mismatches, laggy networks (adaptive jitter buffer).
+- **Verified by:** 120 unit tests (incl. a simulated network), `scripts/mpsmoke.ts` (two Chrome
+  profiles, desktop + phone, every flow; also `--latency 60 --jitter 80` and `--portrait`), a
+  bot-vs-bot soak (`scripts/mpbot.ts --vs-bot`). Not tested on physical phones (see below).
 
 Task (TASK.md): play a polished, stable match against another human on the same WLAN, across
 PC ↔ phone and iOS ↔ Android, built so it can later be upgraded to public online multiplayer.
@@ -50,7 +66,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
       (only on https/localhost), reload rejoins, upright (rotated) phones (`mpsmoke --portrait`).
 - [x] MP8 Docs: README + docs/MULTIPLAYER.md (setup, firewall, architecture, internet upgrade).
 - [x] MP9 End-to-end: `scripts/mpsmoke.ts` (desktop + phone profiles, all flows), in verify.
-- [ ] MP10 Verification + polish (bad-network run of mpsmoke, review all new code).
+- [x] MP10 Verification + polish (bad-network e2e, fresh-eyes review: 7 defects fixed).
 
 ## Done
 - Server: `server/main.ts` (LAN entry, prints addresses + terminal QR), `server/net.ts`
@@ -92,4 +108,18 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   future native wrapper (Capacitor) or the public online server would cover that.
 
 ## Improvement backlog
-(filled once in verification mode)
+(verification mode: complete ≥ 2 per run, verify with `npm run verify`, commit, add findings.)
+1. [ ] `src/net/netgame.ts` / `src/ui/hud.ts`: the gold counter shows the replica's gold, so after
+   a tap it drops only when the order comes back (~50–100 ms, longer on bad Wi-Fi) — show gold
+   minus orders in flight.
+2. [ ] `server/lobby.ts`: two players can have the same name (random names collide, or both
+   type "Player") — "Ada vs Ada" is confusing; suffix duplicates in a room.
+3. [ ] `scripts/mpsmoke.ts`: no end-to-end check of a server restart (clients should land in
+   the lobby with the "server restarted" note) or of the version-mismatch screen.
+4. [ ] `src/net/netgame.ts`: a device that keeps desyncing (would mean a real engine difference)
+   resyncs every second silently; count it and tell the player / log it after a few.
+5. [ ] Online results aren't recorded anywhere (AI records are per difficulty); keep a small
+   per-opponent tally (name → W/L) and show it in the room.
+6. [ ] `src/ui/mpmenus.ts`: no way to rename yourself once in a room (only in the lobby).
+7. [ ] `server/lobby.ts` `openRooms()`: for a public internet server the "open battles on this
+   network" list must be scoped (e.g. by the client's public IP) — documented, not built.
