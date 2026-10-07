@@ -90,6 +90,13 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   message). Fixed (ordered queue); clients now also resync at once on any out-of-order turn.
   After the fix: a full 18-minute bot battle + rematch over 30–70 ms lag with 0 desyncs (the two
   runs still on the old simulator showed 1–6).
+- Second fresh-eyes review (run #4, ~20:30): 9 findings, all fixed — forged X-Forwarded-For
+  (now the proxy's own rightmost entry; header addresses never get the LAN exemption), per-address
+  session/room quotas with idle eviction, room lists throttled to 4/s, a battle starting in a
+  hidden tab now counts as away, room list resubscribed after an offline leave, snapshots carry
+  fresh away timers and running countdowns, orders pending at a pause are dropped consistently,
+  emote ids type-checked, static server compresses asynchronously / caches one version per file /
+  can't crash on a vanishing file, IPv6 /64 grouping expands "::".
 - Cross-engine: `scripts/enginecheck.ts` (same AI battle in Node, Chrome, Firefox, WebKit —
   identical hashes over 25-minute battles), `scripts/mpengines.ts` (online Chrome/Firefox host vs
   WebKit guest: 0 desyncs). Playwright browsers live in node_modules (PLAYWRIGHT_BROWSERS_PATH=0).

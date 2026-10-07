@@ -17,7 +17,18 @@ export function networkOf(address: string | undefined): string {
   }
   // IPv6: loopback, unique-local (fc00::/7) and link-local (fe80::/10) are local.
   if (ip === '::1' || /^f[cd]/.test(ip) || /^fe[89ab]/.test(ip)) return 'lan';
-  return ip.split(':').slice(0, 4).join(':'); // a home's /64 prefix
+  // A home's /64 prefix (expand "::" first so equal prefixes compare equal).
+  const parts = ip.split('%')[0].split(':');
+  const gap = parts.indexOf('');
+  if (gap >= 0) {
+    const head = parts.slice(0, gap).filter((p) => p !== '');
+    const tail = parts.slice(gap).filter((p) => p !== '');
+    parts.splice(0, parts.length, ...head, ...Array<string>(Math.max(0, 8 - head.length - tail.length)).fill('0'), ...tail);
+  }
+  return parts
+    .slice(0, 4)
+    .map((p) => p.replace(/^0+(?=.)/, ''))
+    .join(':');
 }
 
 /** IPv4 addresses of this machine's network interfaces, likely Wi-Fi / LAN first. */

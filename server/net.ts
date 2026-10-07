@@ -51,21 +51,27 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
   http.on('upgrade', onUpgrade);
 
   wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
-    const forwarded = opts.trustProxy ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '';
+    // Behind a proxy the client address is the entry the proxy itself appended (the rightmost);
+    // anything left of it came from the client and could be forged.
+    const forwarded = opts.trustProxy ? (String(req.headers['x-forwarded-for'] ?? '').split(',').pop() ?? '').trim() : '';
     const address = forwarded || req.socket.remoteAddress || '?';
     const network = networkOf(address);
-    // (Local-network addresses are exempt: on a LAN everyone is trusted, and testing opens many tabs.)
-    const count = (perAddress.get(address) ?? 0) + 1;
-    if (count > MAX_PER_ADDRESS && network !== 'lan') {
+    // Limits count per public address (an IPv6 /64 counts as one). Local-network clients of a
+    // LAN server are exempt: everyone there is trusted, and testing opens many tabs.
+    const quota = network === 'lan' && !opts.trustProxy ? '' : network === 'lan' ? address : network;
+    const count = (perAddress.get(quota) ?? 0) + 1;
+    if (quota && count > MAX_PER_ADDRESS) {
       ws.close(1013, 'too many connections');
       return;
     }
-    perAddress.set(address, count);
-    ws.once('close', () => {
-      const n = (perAddress.get(address) ?? 1) - 1;
-      if (n > 0) perAddress.set(address, n);
-      else perAddress.delete(address);
-    });
+    if (quota) {
+      perAddress.set(quota, count);
+      ws.once('close', () => {
+        const n = (perAddress.get(quota) ?? 1) - 1;
+        if (n > 0) perAddress.set(quota, n);
+        else perAddress.delete(quota);
+      });
+    }
     // Small frames, sent as they happen: no Nagle delay.
     (ws as unknown as { _socket?: { setNoDelay?: (v: boolean) => void } })._socket?.setNoDelay?.(true);
     const lag = opts.latency || opts.jitter ? { up: laggy(opts), down: laggy(opts) } : null;
@@ -76,7 +82,7 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
         else go();
       },
       close: (code, reason) => ws.close(code, reason),
-    }, network);
+    }, network, quota);
     alive.set(ws, performance.now());
     ws.on('message', (data, isBinary) => {
       alive.set(ws, performance.now());

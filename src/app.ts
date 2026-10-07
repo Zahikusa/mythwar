@@ -665,8 +665,18 @@ export class App {
     if (!quiet) {
       this.quietResume = false;
       this.menus.show(this.mp.room ? 'room' : 'mp');
+      this.flushLobbyNote();
     }
     this.onMpChanged();
+  }
+
+  /** A message for the lobby that came while it wasn't on screen. */
+  private lobbyNote: string | null = null;
+
+  private flushLobbyNote(): void {
+    if (!this.lobbyNote) return;
+    this.menus.mp.flash(this.lobbyNote);
+    this.lobbyNote = null;
   }
 
   /** Back from the lobby to the title: leave any room and disconnect. */
@@ -754,7 +764,9 @@ export class App {
         this.toTitle();
         this.openMultiplayer();
       }
-      this.menus.mp.flash(lost === 'restart' ? 'The game server restarted — that battle was lost.' : 'You were away too long and lost your seat in the room.');
+      // (Shown when the lobby is next on screen — after the results, if a battle was replayed.)
+      this.lobbyNote = lost === 'restart' ? 'The game server no longer knows your session (it restarted, or you were away a long time).' : 'You were away too long and lost your seat in the room.';
+      if (this.state === 'title') this.flushLobbyNote();
     }
     if (mp.replaced && this.game instanceof NetGame && this.state !== 'title') {
       this.toTitle();
@@ -802,6 +814,9 @@ export class App {
     this.enterBattle(g);
     this.menus.show('none');
     this.keepAwake(true);
+    // Started while this tab is in the background (both pressed Ready, then one switched away):
+    // the battle must wait for this player like for any other absence.
+    if (document.hidden) this.mp?.away(true);
   }
 
   /** The pause screen follows the server: open while a player has paused, closed otherwise. */

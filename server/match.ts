@@ -128,18 +128,34 @@ export class Match {
     this.finish((1 - seat) as Team, 'forfeit');
   }
 
-  /** Everything a (re)connecting client needs to pick up the battle. */
-  snapshotFor(seat: Team): ServerMsg {
+  /** Everything a (re)connecting client needs to pick up the battle, as of wall time `now`. */
+  snapshotFor(seat: Team, now: number): ServerMsg {
     this.flush();
+    const held = this.state === 'paused' || this.state === 'resuming' || (this.state === 'countdown' && this.startAt === Infinity);
+    let paused = held ? this.pauseState : null;
+    // Timers as of now (the stored state is from when the pause began).
+    if (paused?.reason === 'away' && this.awaySince[paused.seat] !== null) paused = this.awayState(paused.seat, now);
+    const until = this.state === 'resuming' ? this.resumeAt : this.state === 'countdown' && this.startAt !== Infinity ? this.startAt : 0;
     return {
       type: 'snapshot',
       tick: this.world.tick,
       world: this.world.serialize(),
       seat,
       names: this.names,
-      paused: this.state === 'paused' || this.state === 'resuming' ? this.pauseState : null,
+      paused,
+      countdown: until ? Math.max(0, (until - now) / 1000) : 0,
       history: this.history.slice(),
       ageUps: this.ageUps.slice(),
+    };
+  }
+
+  private awayState(seat: Team, now: number): PauseState {
+    const since = this.awaySince[seat]!;
+    return {
+      reason: 'away',
+      seat,
+      forfeitIn: Math.max(0, Math.ceil((since + this.awayGrace * 1000 - now) / 1000)),
+      claimIn: Math.max(0, Math.ceil((since + this.claimAfter * 1000 - now) / 1000)),
     };
   }
 
@@ -232,16 +248,10 @@ export class Match {
     const awaySeat = this.awaySince[0] !== null ? 0 : this.awaySince[1] !== null ? 1 : -1;
     if (awaySeat >= 0 || this.paused) {
       if (this.state === 'running') this.flush();
+      // Orders not yet applied are dropped (clients forget theirs when told about the pause).
+      this.pending = [];
       const seat = (awaySeat >= 0 ? awaySeat : this.pausedBy) as Team;
-      const state: PauseState =
-        awaySeat >= 0
-          ? {
-              reason: 'away',
-              seat,
-              forfeitIn: Math.max(0, Math.ceil((this.awaySince[seat]! + this.awayGrace * 1000 - now) / 1000)),
-              claimIn: Math.max(0, Math.ceil((this.awaySince[seat]! + this.claimAfter * 1000 - now) / 1000)),
-            }
-          : { reason: 'pause', seat };
+      const state: PauseState = awaySeat >= 0 ? this.awayState(seat, now) : { reason: 'pause', seat };
       if (this.state === 'countdown') {
         // Not started yet: the countdown restarts once everyone is back.
         this.startAt = Infinity;

@@ -305,7 +305,7 @@ export class NetGame extends Game {
     this.nextSample = this.world.time + SAMPLE_EVERY;
     this.netPause = msg.paused;
     this.netPauseAt = this.now();
-    this.countdownEnd = 0;
+    this.countdownEnd = msg.countdown ? this.now() + msg.countdown * 1000 : 0;
     this.awaitingSnapshot = false;
     this.resetClock();
   }

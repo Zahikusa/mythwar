@@ -40,6 +40,11 @@ const CMD_RATE = 25;
 /** Server-wide limits (a public server must not be exhausted by one script). */
 const MAX_ROOMS = 2000;
 const MAX_SESSIONS = 10000;
+/** Per public address / IPv6 /64 (LAN addresses are exempt). */
+const MAX_SESSIONS_PER_ADDRESS = 64;
+const MAX_ROOMS_PER_ADDRESS = 8;
+/** Open-battle lists go out at most this often (ms). */
+const ROOM_LIST_EVERY = 250;
 /** Minimum ms between two emotes from one player. */
 const EMOTE_GAP = 1500;
 const MSG_RATE = 120;
@@ -55,6 +60,8 @@ interface Session {
   goneAt: number | null;
   /** The client's network (see networkOf): the open-battles list only shows rooms from it. */
   network: string;
+  /** Key for per-address quotas ('' = exempt: a local-network client). */
+  quota: string;
   /** When the session last sent an emote (rate limit). */
   lastEmote: number;
   /** The client's own round-trip measurement (ms). */
@@ -88,6 +95,8 @@ export class Lobby {
   private readonly random: () => number;
   private readonly opts: LobbyOptions;
   private roomsDirty = false;
+  private lastRoomList = -Infinity;
+  private lastSweep = -Infinity;
 
   constructor(opts: LobbyOptions = {}) {
     this.opts = opts;
@@ -100,7 +109,11 @@ export class Lobby {
   }
 
   /** A new connection. Returns the handlers the transport calls for its messages and close. */
-  connect(conn: Conn, network = 'lan'): { message: (data: string) => void; close: () => void } {
+  /**
+   * `network`: see networkOf; `quota`: the key per-address limits count against ('' = none, for
+   * trusted local-network clients).
+   */
+  connect(conn: Conn, network = 'lan', quota = ''): { message: (data: string) => void; close: () => void } {
     let session: Session | null = null;
     const rate = { start: this.now(), msgs: 0, cmds: 0 };
     return {
@@ -121,7 +134,7 @@ export class Lobby {
         if (++rate.msgs > MSG_RATE) return;
         if (msg.type === 'hello') {
           if (session) return;
-          session = this.hello(conn, msg, network);
+          session = this.hello(conn, msg, network, quota);
           return;
         }
         if (!session || session.conn !== conn) return this.error(conn, 'bad-request', 'Say hello first');
@@ -146,15 +159,21 @@ export class Lobby {
         }
       }
     }
-    for (const s of this.sessions.values()) {
-      if (s.conn === null && s.room === null && s.goneAt !== null && now - s.goneAt > SESSION_TTL * 1000) this.sessions.delete(s.token);
+    if (now - this.lastSweep > 1000) {
+      this.lastSweep = now;
+      for (const s of this.sessions.values()) {
+        if (s.conn === null && s.room === null && s.goneAt !== null && now - s.goneAt > SESSION_TTL * 1000) this.sessions.delete(s.token);
+      }
     }
-    if (this.roomsDirty) this.sendRoomLists();
+    if (this.roomsDirty && now - this.lastRoomList >= ROOM_LIST_EVERY) {
+      this.lastRoomList = now;
+      this.sendRoomLists();
+    }
   }
 
   // -------------------------------------------------------------------------
 
-  private hello(conn: Conn, msg: Extract<ClientMsg, { type: 'hello' }>, network: string): Session | null {
+  private hello(conn: Conn, msg: Extract<ClientMsg, { type: 'hello' }>, network: string, quota: string): Session | null {
     if (msg.v !== PROTOCOL_VERSION || msg.sim !== simFingerprint()) {
       this.error(conn, 'version', 'This page and the game server are different versions — reload the page (or restart the server).');
       conn.close(4000, 'version');
@@ -174,7 +193,12 @@ export class Lobby {
       s.network = network;
       if (msg.name !== undefined) s.name = cleanName(msg.name);
     } else {
-      if (this.sessions.size >= (this.opts.maxSessions ?? MAX_SESSIONS)) {
+      // Full (overall, or for this address): make room by forgetting the oldest idle session.
+      const max = this.opts.maxSessions ?? MAX_SESSIONS;
+      const ofQuota = () => (quota ? [...this.sessions.values()].filter((x) => x.quota === quota) : []);
+      if (quota && ofQuota().length >= MAX_SESSIONS_PER_ADDRESS) this.evictIdle(ofQuota());
+      if (this.sessions.size >= max) this.evictIdle([...this.sessions.values()]);
+      if (this.sessions.size >= max || (quota !== '' && ofQuota().length >= MAX_SESSIONS_PER_ADDRESS)) {
         this.error(conn, 'rate', 'The server is full right now — try again in a minute.');
         conn.close(1013, 'full');
         return null;
@@ -188,6 +212,7 @@ export class Lobby {
         watching: false,
         goneAt: null,
         network,
+        quota,
         lastEmote: -Infinity,
         rtt: 0,
         lastOver: null,
@@ -198,7 +223,7 @@ export class Lobby {
     this.send(s, { type: 'welcome', v: PROTOCOL_VERSION, token: s.token, room: room ? this.info(room) : null, seat: s.seat, lan: this.opts.lanUrls?.() ?? [], resumed });
     const m = room?.match;
     if (room && s.seat !== null && m && room.phase === 'playing') {
-      this.send(s, m.snapshotFor(s.seat));
+      this.send(s, m.snapshotFor(s.seat, this.now()));
       // (A tab reconnecting in the background is still away.)
       m.setAway(s.seat, msg.away === true, this.now());
     } else if (msg.battle && s.lastOver) {
@@ -218,8 +243,11 @@ export class Lobby {
     switch (msg.type) {
       case 'name':
         s.name = cleanName(msg.name);
-        if (room) this.broadcastRoom(room);
-        this.roomsDirty = true;
+        if (room) {
+          this.broadcastRoom(room);
+          // (Only an open room's host name appears in the lists.)
+          if (room.phase === 'waiting') this.roomsDirty = true;
+        }
         return;
       case 'watchRooms':
         s.watching = !!msg.on;
@@ -228,7 +256,8 @@ export class Lobby {
       case 'host': {
         // Already waiting alone in an open room (a double tap): keep it.
         if (room && room.phase === 'waiting' && room.seats.filter((x) => x).length === 1) return this.broadcastRoom(room);
-        if (this.rooms.size >= (this.opts.maxRooms ?? MAX_ROOMS)) return this.error(s.conn, 'rate', 'The server is full right now — try again in a minute.');
+        const hostedHere = s.quota ? [...this.rooms.values()].filter((r) => r.seats.some((x) => x?.session.quota === s.quota)).length : 0;
+        if (this.rooms.size >= (this.opts.maxRooms ?? MAX_ROOMS) || hostedHere >= MAX_ROOMS_PER_ADDRESS) return this.error(s.conn, 'rate', 'The server is full right now — try again in a minute.');
         if (room) this.removeFromRoom(s);
         const r: Room = { code: this.makeCode(), createdAt: now, phase: 'waiting', seats: [null, null], match: null };
         this.rooms.set(r.code, r);
@@ -280,17 +309,18 @@ export class Lobby {
         return;
       case 'emote': {
         // Only in a room with an opponent, at most one every 1.5 s, and only known phrases.
-        if (!room || seat === null || !Object.hasOwn(EMOTES, msg.id) || now - s.lastEmote < EMOTE_GAP) return;
+        const id = msg.id;
+        if (!room || seat === null || typeof id !== 'string' || !Object.hasOwn(EMOTES, id) || now - s.lastEmote < EMOTE_GAP) return;
         s.lastEmote = now;
         const other = room.seats[seat === 0 ? 1 : 0];
-        if (other) this.send(other.session, { type: 'emote', seat, id: msg.id });
+        if (other) this.send(other.session, { type: 'emote', seat, id });
         return;
       }
       case 'claim':
         if (room?.match && seat !== null && room.phase === 'playing') room.match.claim(seat, now);
         return;
       case 'resync':
-        if (room?.match && seat !== null && room.phase === 'playing') this.send(s, room.match.snapshotFor(seat));
+        if (room?.match && seat !== null && room.phase === 'playing') this.send(s, room.match.snapshotFor(seat, now));
         return;
       case 'ping': {
         this.send(s, { type: 'pong', t: Number(msg.t) || 0, tick: room?.match?.tick ?? 0 });
@@ -329,7 +359,7 @@ export class Lobby {
         if (match) {
           for (const seat of [0, 1] as Team[]) {
             const x = room.seats[seat];
-            if (x) x.session.lastOver = { snapshot: match.snapshotFor(seat), over: { type: 'over', winner, reason, tick: match.tick } };
+            if (x) x.session.lastOver = { snapshot: match.snapshotFor(seat, this.now()), over: { type: 'over', winner, reason, tick: match.tick } };
           }
         }
         const w = room.seats[winner];
@@ -446,6 +476,13 @@ export class Lobby {
       for (let i = 0; i < CODE_LENGTH; i++) code += CODE_ALPHABET[Math.floor(this.random() * CODE_ALPHABET.length)];
       if (!this.rooms.has(code)) return code;
     }
+  }
+
+  /** Forgets the longest-idle session among `list` that has no connection and no room. */
+  private evictIdle(list: Session[]): void {
+    let oldest: Session | null = null;
+    for (const x of list) if (x.conn === null && x.room === null && (!oldest || (x.goneAt ?? 0) < (oldest.goneAt ?? 0))) oldest = x;
+    if (oldest) this.sessions.delete(oldest.token);
   }
 
   private makeToken(): string {

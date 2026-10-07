@@ -61,7 +61,7 @@ picks another port.
 | Wi-Fi drops for a moment | The client reconnects on its own (backoff 0.25–3 s), receives a snapshot of the battle and carries on. The other player sees the same away pause meanwhile. |
 | A player reloads the page | The tab remembers its session: it rejoins the room and the battle where it was. |
 | The battle ended while a phone was offline | On reconnect it is shown how the battle ended (final state and result). |
-| A player quits while offline | The quit is delivered when the connection returns; they are not pulled back in. |
+| A player quits while offline | Leaving the battle / room is delivered when the connection returns; they are not pulled back in. (Closing Multiplayer altogether while offline simply lets the seat time out.) |
 | The same game is opened in another tab | A duplicated tab starts its own session; if one session is taken over elsewhere, the old tab says so and stops reconnecting. |
 | A player presses Pause | The battle pauses for both; either player can resume. |
 | A player leaves the battle | They forfeit; the other player wins. The room stays open for a new opponent. |

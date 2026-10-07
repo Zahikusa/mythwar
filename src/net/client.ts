@@ -216,6 +216,7 @@ export class MpClient {
         if (this.leaving) {
           // We left while offline: make it so (any battle that follows is ignored until 'left').
           this.conn.send({ type: 'leave' });
+          if (this.watching) this.conn.send({ type: 'watchRooms', on: true });
           break;
         }
         this.room = msg.room;

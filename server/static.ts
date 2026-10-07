@@ -1,22 +1,33 @@
-import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
+import { createReadStream, statSync } from 'node:fs';
+import type { Stats } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { extname, join, normalize, sep } from 'node:path';
-import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
+import { promisify } from 'node:util';
+import { brotliCompress, constants, gzip } from 'node:zlib';
+
+const brotliAsync = promisify(brotliCompress);
+const gzipAsync = promisify(gzip);
 
 /** Text files worth compressing (images are already compressed). */
 const COMPRESSIBLE = new Set(['.html', '.js', '.css', '.json', '.webmanifest', '.svg', '.txt']);
-/** Compressed copies by path, encoding and modification time (a rebuild invalidates them). */
-const compressed = new Map<string, Buffer>();
 
-function compressedCopy(file: string, mtime: number, encoding: 'br' | 'gzip'): Buffer {
-  const key = `${file}|${encoding}|${mtime}`;
-  let out = compressed.get(key);
-  if (!out) {
-    const raw = readFileSync(file);
-    out = encoding === 'br' ? brotliCompressSync(raw, { params: { [constants.BROTLI_PARAM_QUALITY]: 9 } }) : gzipSync(raw, { level: 9 });
-    compressed.set(key, out);
-  }
-  return out;
+/**
+ * Compressed copies, one per file and encoding (a rebuild replaces the entry instead of piling up
+ * old versions). Compression runs off the main thread's critical path (zlib's thread pool), so
+ * serving a fresh build never stalls the battles running in the same process.
+ */
+const compressed = new Map<string, { mtime: number; body: Promise<Buffer> }>();
+
+function compressedCopy(file: string, mtime: number, encoding: 'br' | 'gzip'): Promise<Buffer> {
+  const key = `${file}|${encoding}`;
+  const hit = compressed.get(key);
+  if (hit && hit.mtime === mtime) return hit.body;
+  const body = readFile(file).then((raw) => (encoding === 'br' ? brotliAsync(raw, { params: { [constants.BROTLI_PARAM_QUALITY]: 9 } }) : gzipAsync(raw, { level: 9 })));
+  compressed.set(key, { mtime, body });
+  // A failed read (file vanished mid-rebuild) must not stay cached.
+  body.catch(() => compressed.get(key)?.body === body && compressed.delete(key));
+  return body;
 }
 
 const TYPES: Record<string, string> = {
@@ -48,7 +59,14 @@ export function serveStatic(root: string): (req: IncomingMessage, res: ServerRes
     }
     if (path.endsWith('/')) path += 'index.html';
     const file = normalize(join(root, path));
-    if (!file.startsWith(root + sep) || !existsSync(file) || !statSync(file).isFile()) {
+    let stat: Stats | null = null;
+    try {
+      // (One check: a file can vanish between two, e.g. while the game is being rebuilt.)
+      if (file.startsWith(root + sep)) stat = statSync(file);
+    } catch {
+      stat = null;
+    }
+    if (!stat || !stat.isFile()) {
       res.writeHead(404, { 'Content-Type': 'text/plain' }).end('Not found');
       return;
     }
@@ -58,22 +76,24 @@ export function serveStatic(root: string): (req: IncomingMessage, res: ServerRes
       'Content-Type': TYPES[ext] ?? 'application/octet-stream',
       // Hashed build assets never change; everything else must be re-checked so updates arrive.
       'Cache-Control': hashed ? 'public, max-age=31536000, immutable' : 'no-cache',
+      Vary: 'Accept-Encoding',
     };
     const accept = String(req.headers['accept-encoding'] ?? '');
     const encoding = !COMPRESSIBLE.has(ext) ? null : /\bbr\b/.test(accept) ? 'br' : /\bgzip\b/.test(accept) ? 'gzip' : null;
     if (encoding) {
-      let body: Buffer;
-      try {
-        body = compressedCopy(file, statSync(file).mtimeMs, encoding);
-      } catch {
-        res.writeHead(500).end();
-        return;
-      }
-      res.writeHead(200, { ...headers, 'Content-Encoding': encoding, 'Content-Length': String(body.length), Vary: 'Accept-Encoding' });
-      res.end(req.method === 'HEAD' ? undefined : body);
+      compressedCopy(file, stat.mtimeMs, encoding).then(
+        (body) => {
+          res.writeHead(200, { ...headers, 'Content-Encoding': encoding, 'Content-Length': String(body.length) });
+          res.end(req.method === 'HEAD' ? undefined : body);
+        },
+        () => {
+          if (!res.headersSent) res.writeHead(404, { 'Content-Type': 'text/plain' }).end('Not found');
+          else res.destroy();
+        },
+      );
       return;
     }
-    res.writeHead(200, { ...headers, Vary: 'Accept-Encoding' });
+    res.writeHead(200, headers);
     if (req.method === 'HEAD') res.end();
     // (A file removed meanwhile — e.g. a rebuild — must not take the server down.)
     else createReadStream(file).on('error', () => res.destroy()).pipe(res);

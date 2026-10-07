@@ -175,6 +175,8 @@ export type ServerMsg =
       seat: Team;
       names: [string, string];
       paused: PauseState | null;
+      /** Seconds left of a start / resume countdown (0 = none). */
+      countdown?: number;
       /** Results-chart bookkeeping from before the snapshot. */
       history: HistorySample[];
       ageUps: AgeUpMark[];

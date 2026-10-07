@@ -136,7 +136,7 @@ describe('lobby', () => {
     b.send({ type: 'join', code: room.room.code.toLowerCase() });
     expect(b.last('room')!.seat).toBe(1);
     expect(a.last('room')!.room.seats[1]!.name).toBe('Bo');
-    run(10);
+    run(300); // (lists are sent at most every 250 ms)
     expect(b.last('rooms')!.rooms).toEqual([]);
 
     a.send({ type: 'ready', ready: true });
@@ -194,6 +194,9 @@ describe('lobby', () => {
     expect(networkOf('::1')).toBe('lan');
     expect(networkOf('203.0.113.7')).toBe('203.0.113.7');
     expect(networkOf('2001:db8:1:2:aaaa::5')).toBe('2001:db8:1:2');
+    // Compressed and full spellings of one /64 are the same home.
+    expect(networkOf('2001:db8:1::5')).toBe('2001:db8:1:0');
+    expect(networkOf('2001:0db8:0001:0000:a:b:c:d')).toBe('2001:db8:1:0');
     const { lobby, run } = setup();
     const mk = (network: string) => {
       const c = new FakeClient(lobby);
@@ -232,6 +235,17 @@ describe('lobby', () => {
     expect(a.inbox.length).toBe(n);
     b.send({ type: 'ping', t: 3, rtt: 300 });
     expect(a.last('room')!.room.seats[1]!.ping).toBe(300);
+  });
+
+  it('a full server makes room by forgetting the longest-idle session', () => {
+    const lobby = new Lobby({ maxSessions: 2 });
+    const [a, b, c] = [new FakeClient(lobby), new FakeClient(lobby), new FakeClient(lobby)];
+    a.hello('A');
+    a.disconnect(); // idle, in no room
+    b.hello('B');
+    c.hello('C');
+    expect(c.last('welcome')).toBeDefined();
+    expect(c.last('error')).toBeUndefined();
   });
 
   it('refuses new rooms and sessions when the server is full', () => {
@@ -429,6 +443,18 @@ describe('battle', () => {
     c.hello('Cy');
     c.send({ type: 'join', code });
     expect(c.last('room')!.seat).toBe(1);
+  });
+
+  it('orders not yet applied when the battle pauses are dropped', () => {
+    const { run, a, b } = battle();
+    run(1000);
+    a.send({ type: 'cmd', seq: 9, cmd: { type: 'train', unitId: 'redcap', lane: 0 } });
+    b.send({ type: 'pause' }); // before the server's next tick
+    b.send({ type: 'resume' });
+    run(5000);
+    const cmds = a.inbox.flatMap((m) => (m.type === 'turn' ? (m.cmds ?? []) : []));
+    expect(cmds).toEqual([]);
+    expect(a.world!.players[0].stats.summoned + a.world!.players[0].queue.length).toBe(0);
   });
 
   it('pause and resume by either player', () => {
