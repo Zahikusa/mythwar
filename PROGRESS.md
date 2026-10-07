@@ -144,7 +144,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
     sideways — the lobby could suggest turning the phone, or un-rotate the lobby.
 13. [ ] `src/ui/hud.ts`: a summon appears in the queue only when the server echoes it (one RTT
     + buffer later); show orders in flight as faded "pending" chips right away.
-14. [ ] `src/ui/hud.ts` netinfo: on unstable Wi-Fi the jitter buffer (and so input delay) can
+14. [x] `src/ui/hud.ts` netinfo: on unstable Wi-Fi the jitter buffer (and so input delay) can
     grow towards 0.5 s silently; the badge only reflects RTT. Flag "unstable" from bufferMs too.
 15. [ ] `scripts/mpsmoke.ts` drives the UI only in Chrome; WebKit is covered for the
     simulation/netcode (`mpengines`) but not for the touch UI flows (lobby, room, drag).

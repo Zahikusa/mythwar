@@ -496,15 +496,16 @@ export class Hud {
   private foeName = '';
 
   /** Online status line: the opponent's name, round-trip time and link quality. */
-  setNet(foe: string, rtt: number, online: boolean): void {
+  setNet(foe: string, rtt: number, online: boolean, bufferMs = 0): void {
     const E = this.el;
     this.foeName = foe;
     setText(E.net.querySelector('.nfoe')!, `vs ${foe}`);
     setText(E.net.querySelector('.nping')!, online ? (rtt ? `${Math.round(rtt)} ms` : '') : 'offline');
-    const q = !online ? 'off' : rtt > 250 ? 'bad' : rtt > 120 ? 'ok' : 'good';
+    // Unsteady Wi-Fi shows up as a deeper jitter buffer (more delay) even when pings look fine.
+    const q = !online ? 'off' : rtt > 250 || bufferMs > 250 ? 'bad' : rtt > 120 || bufferMs > 120 ? 'ok' : 'good';
     if (E.net.dataset.q !== q) {
       E.net.dataset.q = q;
-      E.net.title = online ? `Connection to the game server: ${q === 'good' ? 'good' : q === 'ok' ? 'fair' : 'slow'}` : 'Reconnecting…';
+      E.net.title = online ? `Connection to the game server: ${q === 'good' ? 'good' : q === 'ok' ? 'fair — a little delay' : 'unsteady — orders arrive late'}` : 'Reconnecting…';
     }
   }
 

@@ -618,7 +618,7 @@ export class App {
       }
       if (g instanceof NetGame) {
         this.syncNetPause(g);
-        this.hud.setNet(g.foeName, this.mp?.conn.rtt ?? 0, g.online);
+        this.hud.setNet(g.foeName, this.mp?.conn.rtt ?? 0, g.online, g.bufferMs);
       }
     }
     this.netOverlay.update(g instanceof NetGame && this.state !== 'title' ? g : null, performance.now());
