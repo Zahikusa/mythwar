@@ -729,3 +729,12 @@
     animation: none !important;
   }
 }
+
+/* Online: a summon on its way to the server, shown faded in the queue until it arrives. */
+.qslot.pending {
+  display: grid;
+  place-items: center;
+  border-style: solid;
+  border-color: rgba(63, 184, 255, 0.4);
+  opacity: 0.55;
+}

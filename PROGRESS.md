@@ -144,7 +144,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
     the clock; their HP bar / age badge (right) doesn't say who it is.
 12. [x] Upright phones: typing a name / room code while the stage is rotated opens the keyboard
     sideways — the lobby could suggest turning the phone, or un-rotate the lobby.
-13. [ ] `src/ui/hud.ts`: a summon appears in the queue only when the server echoes it (one RTT
+13. [x] `src/ui/hud.ts`: a summon appears in the queue only when the server echoes it (one RTT
     + buffer later); show orders in flight as faded "pending" chips right away.
 14. [x] `src/ui/hud.ts` netinfo: on unstable Wi-Fi the jitter buffer (and so input delay) can
     grow towards 0.5 s silently; the badge only reflects RTT. Flag "unstable" from bufferMs too.

@@ -321,6 +321,12 @@ export class NetGame extends Game {
   }
 
   /** The simulation's own blocker, counting our orders that are still on their way. */
+  override pendingTrains(): { unitId: string; lane: number }[] {
+    const out: { unitId: string; lane: number }[] = [];
+    for (const { cmd } of this.mine.values()) if (cmd.type === 'train') out.push({ unitId: cmd.unitId, lane: cmd.lane });
+    return out;
+  }
+
   /** Gold as the player should see it: minus orders on their way to the server. */
   override displayGold(): number {
     return Math.max(0, this.world.players[this.seat].gold - this.inflight().spend);

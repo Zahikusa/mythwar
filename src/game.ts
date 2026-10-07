@@ -102,6 +102,11 @@ export class Game {
     this.listeners.push(fn);
   }
 
+  /** Summons ordered but not yet in the queue (online: on their way to the server). */
+  pendingTrains(): { unitId: string; lane: number }[] {
+    return [];
+  }
+
   /** The player's gold as the HUD shows it. */
   displayGold(): number {
     return this.world.players[this.playerTeam].gold;

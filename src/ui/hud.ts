@@ -1052,7 +1052,9 @@ export class Hud {
     const me = g.world.players[g.playerTeam];
     const q = me.queue;
     const chips = this.queueChips;
-    const sig = q.map((i) => `${i.unitId}:${i.lane}`).join(',');
+    // Online, orders still on their way show as faded chips in the next free slots.
+    const pending = g.pendingTrains().slice(0, Math.max(0, QUEUE_MAX - q.length));
+    const sig = q.map((i) => `${i.unitId}:${i.lane}`).join(',') + '|' + pending.map((i) => i.unitId).join(',');
     if (this.el.queue.dataset.sig !== sig) {
       this.el.queue.dataset.sig = sig;
       // Reconcile instead of rebuilding, so surviving chips keep their place (no re-pop).
@@ -1068,7 +1070,10 @@ export class Hud {
       chips.push(...next);
       for (const c of chips) this.el.queue.appendChild(c.el); // keeps order; existing nodes move
       for (const slot of [...this.el.queue.querySelectorAll('.qslot')]) slot.remove();
-      for (let n = q.length; n < QUEUE_MAX; n++) this.el.queue.appendChild(h('div', { class: 'qslot' }));
+      for (let n = q.length; n < QUEUE_MAX; n++) {
+        const p = pending[n - q.length];
+        this.el.queue.appendChild(p ? h('div', { class: 'qslot pending', title: `${UNITS[p.unitId].name}: on its way…` }, portrait(p.unitId, 30, 0, 0.4, false, this.zoom)) : h('div', { class: 'qslot' }));
+      }
     }
     const training = g.world.trainingIndex(g.playerTeam);
     for (let n = 0; n < chips.length; n++) {
