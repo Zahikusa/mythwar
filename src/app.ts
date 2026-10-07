@@ -226,6 +226,7 @@ export class App {
     this.hud.setLayout(this.renderer.layout);
     this.coach.zoom = this.renderer.layout.hud;
     this.stage.classList.toggle('mobile', this.mode === 'mobile');
+    this.stage.classList.toggle('rotated', this.rotated);
     this.coinTarget = this.hud.goldTarget();
   }
 

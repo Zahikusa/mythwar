@@ -133,5 +133,5 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
     and opening a turret slot by tapping its own (left) gate aren't covered for team 1.
 11. [x] `src/ui/hud.ts`: on desktop the opponent's name only appears in the small badge under
     the clock; their HP bar / age badge (right) doesn't say who it is.
-12. [ ] Upright phones: typing a name / room code while the stage is rotated opens the keyboard
+12. [x] Upright phones: typing a name / room code while the stage is rotated opens the keyboard
     sideways — the lobby could suggest turning the phone, or un-rotate the lobby.

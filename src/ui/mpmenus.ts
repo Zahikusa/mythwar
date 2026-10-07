@@ -141,6 +141,8 @@ export class MpScreens {
       h('label', { class: 'mpnamerow' }, h('span', { text: 'Your name' }), this.nameInput),
       this.status,
       this.makeFlash(),
+      // Upright phones show the game rotated, but the keyboard opens upright.
+      h('div', { class: 'mprotate', text: 'Tip: turn your phone sideways before typing a name or code.' }),
       this.help,
       h(
         'div',
