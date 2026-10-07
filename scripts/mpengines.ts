@@ -40,10 +40,11 @@ async function duel(hostName: string, launchHost: () => Promise<Browser>, launch
     await app(host)((a) => a.mp.host());
     await host.waitForFunction(() => !!(window as any).__mythwar.mp.room);
     const code = (await app(host)((a) => a.mp.room.code)) as string;
-    await guest.goto(`${base}/?join=${code}`);
-    await guest.waitForFunction(() => !!(window as any).__mythwar?.mp?.room);
+    // The WebKit player goes through the real touch UI, as on an iPhone: invite link, Ready.
+    await guest.goto(`${base}/?join=${code}&mode=mobile`);
+    await guest.waitForFunction(() => (window as any).__mythwar?.menus?.current === 'room');
     await app(host)((a) => a.mp.ready(true));
-    await app(guest)((a) => a.mp.ready(true));
+    await guest.locator('.screen.room button', { hasText: 'Ready' }).tap();
     await host.waitForFunction(() => (window as any).__mythwar.state === 'playing' && !(window as any).__mythwar.game.paused, undefined, { timeout: 15000 });
     await guest.waitForFunction(() => (window as any).__mythwar.state === 'playing' && !(window as any).__mythwar.game.paused, undefined, { timeout: 15000 });
     // Both sides keep summoning into varying lanes (whatever they can afford).
@@ -56,12 +57,24 @@ async function duel(hostName: string, launchHost: () => Promise<Browser>, launch
       if (Math.random() < 0.2) g.command({ type: 'ageUp', team: g.playerTeam });
       if (Math.random() < 0.1) g.command({ type: 'power', team: g.playerTeam, lane: Math.floor(Math.random() * 3) });
     };
+    // A card tap on WebKit summons (pointer events → HUD → order → server → both replicas).
+    const before = (await app(host)((a) => a.game.world.players[1].stats.summoned + a.game.world.players[1].queue.length)) as number;
+    await guest.waitForTimeout(400);
+    await guest.locator('.card').first().tap();
+    await host.waitForFunction((n) => {
+      const p = (window as any).__mythwar.game.world.players[1];
+      return p.stats.summoned + p.queue.length > n;
+    }, before, { timeout: 5000 }).then(
+      () => check('WebKit card tap reaches the other player', true),
+      () => check('WebKit card tap reaches the other player', false),
+    );
     const until = Date.now() + seconds * 1000;
     while (Date.now() < until) {
       await app(host)(order);
       await app(guest)(order);
       await sleep(1500);
     }
+    await guest.screenshot({ path: `screenshots/mp/webkit-vs-${hostName.toLowerCase()}.png` });
     const stat = (a: App) => ({ tick: a.game.world.tick, desyncs: a.game.desyncs, resyncs: a.game.resyncs, summoned: a.game.world.players.map((p: any) => p.stats.summoned) });
     const h = (await app(host)(stat)) as { tick: number; desyncs: number; resyncs: number; summoned: number[] };
     const g = (await app(guest)(stat)) as typeof h;
