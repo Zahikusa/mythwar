@@ -12,7 +12,7 @@ import type { Command, Team } from '../sim/types.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -28,6 +28,16 @@ export const RESUME_COUNTDOWN = 3;
 export const HASH_EVERY = 60;
 
 export const NAME_MAX = 16;
+
+/** Quick messages players can send during a battle (no free text: nothing to moderate). */
+export const EMOTES = {
+  gl: 'Good luck!',
+  wp: 'Well played!',
+  wow: 'Wow!',
+  oops: 'Oops!',
+  thx: 'Thanks!',
+} as const;
+export type EmoteId = keyof typeof EMOTES;
 /** Room code alphabet: no 0/O, 1/I/L, 5/S, 2/Z look-alikes. */
 export const CODE_ALPHABET = 'ABCDEFGHJKMNPQRTUVWXY346789';
 export const CODE_LENGTH = 4;
@@ -129,6 +139,7 @@ export type ClientMsg =
   | { type: 'resync' }
   /** The opponent has been away for CLAIM_AFTER seconds: take the win now. */
   | { type: 'claim' }
+  | { type: 'emote'; id: EmoteId }
   | { type: 'ping'; t: number };
 
 // ---------------------------------------------------------------------------
@@ -169,7 +180,9 @@ export type ServerMsg =
   | { type: 'resuming'; seconds: number }
   | { type: 'resumed'; tick: number }
   | { type: 'over'; winner: Team; reason: EndReason; tick: number }
-  | { type: 'pong'; t: number; tick: number };
+  | { type: 'pong'; t: number; tick: number }
+  /** A quick message from the player in `seat`. */
+  | { type: 'emote'; seat: Team; id: EmoteId };
 
 export type ErrorCode = 'version' | 'no-room' | 'room-full' | 'bad-request' | 'not-in-room' | 'rate';
 

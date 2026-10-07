@@ -4,7 +4,7 @@ import { Connection } from './connection.ts';
 import type { ConnState, SocketLike } from './connection.ts';
 import { NetGame } from './netgame.ts';
 import { PROTOCOL_VERSION, cleanName } from './protocol.ts';
-import type { ErrorCode, OpenRoom, RoomInfo, ServerMsg } from './protocol.ts';
+import type { EmoteId, ErrorCode, OpenRoom, RoomInfo, ServerMsg } from './protocol.ts';
 
 export interface MpClientOptions {
   name: string;
@@ -21,6 +21,8 @@ export interface MpListener {
   /** A battle starts (or is rejoined after a reload). */
   battle?(game: NetGame): void;
   error?(code: ErrorCode, message: string): void;
+  /** The opponent sent a quick message. */
+  emote?(seat: Team, id: EmoteId): void;
 }
 
 const TOKEN_KEY = 'mythwar.mp.session';
@@ -187,6 +189,10 @@ export class MpClient {
     this.conn.send({ type: 'resume' });
   }
 
+  emote(id: EmoteId): boolean {
+    return this.conn.send({ type: 'emote', id });
+  }
+
   /** Take the win: the opponent has been away too long (the server checks). */
   claim(): void {
     this.conn.send({ type: 'claim' });
@@ -261,6 +267,9 @@ export class MpClient {
         this.emit((l) => l.changed?.());
         return;
       case 'pong':
+        return;
+      case 'emote':
+        this.emit((l) => l.emote?.(msg.seat, msg.id));
         return;
     }
     this.emit((l) => l.changed?.());

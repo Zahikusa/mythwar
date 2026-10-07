@@ -362,6 +362,18 @@ describe('battle', () => {
     expect(a.last('over')).toMatchObject({ winner: 0, reason: 'timeout' });
   });
 
+  it('relays quick messages to the opponent, rate-limited, known phrases only', () => {
+    const { run, a, b } = battle();
+    a.send({ type: 'emote', id: 'gl' });
+    a.send({ type: 'emote', id: 'wp' }); // too soon: dropped
+    a.send({ type: 'emote', id: 'hello there' as never }); // not a phrase: dropped
+    expect(b.inbox.filter((m) => m.type === 'emote')).toEqual([{ type: 'emote', seat: 0, id: 'gl' }]);
+    expect(a.inbox.filter((m) => m.type === 'emote')).toEqual([]);
+    run(1600);
+    a.send({ type: 'emote', id: 'wp' });
+    expect(b.last('emote')).toEqual({ type: 'emote', seat: 0, id: 'wp' });
+  });
+
   it('a player who stays away forfeits', () => {
     const { run, a, b } = battle({ awayGrace: 30 });
     run(2000);

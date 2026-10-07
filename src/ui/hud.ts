@@ -25,6 +25,8 @@ import type { Layout } from '../render/layout.ts';
 import { h, fmt, fmtTime, onTap, setStyle, setText, toggle } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, CLASS_NAME, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
+import { EMOTES } from '../net/protocol.ts';
+import type { EmoteId } from '../net/protocol.ts';
 
 export const LANE_NAMES = ['Top', 'Middle', 'Bottom'];
 
@@ -42,6 +44,8 @@ export interface HudCallbacks {
   isMuted(): boolean;
   /** Remember the player's preferred speed. */
   speedChanged(speed: number): void;
+  /** Online: send a quick message to the opponent (false if it couldn't be sent). */
+  emote?(id: EmoteId): boolean;
 }
 
 interface QueueChip {
@@ -126,6 +130,17 @@ export class Hud {
     E.net = h('div', { class: 'netinfo hidden', role: 'status' }, h('i', { class: 'nsig', html: ICONS.wifi }), h('span', { class: 'nfoe' }), h('span', { class: 'nping' }));
     E.speed = h('button', { class: 'sysbtn speed', title: 'Game speed (F)', 'aria-label': 'Game speed', html: ICONS.fast + '<span>1×</span>' });
     E.pause = h('button', { class: 'sysbtn', title: 'Pause (Esc)', html: ICONS.pause });
+    // Online: quick messages to the opponent.
+    E.emoteBtn = h('button', { class: 'sysbtn emotebtn hidden', title: 'Quick message', 'aria-label': 'Send a quick message', html: ICONS.chat });
+    onTap(E.emoteBtn, () => toggle(E.emotes, 'hidden', !E.emotes.classList.contains('hidden')));
+    E.emotes = h('div', { class: 'emotes hidden', role: 'menu' });
+    for (const [id, text] of Object.entries(EMOTES) as [EmoteId, string][]) {
+      const b = h('button', { class: 'emote', role: 'menuitem', text });
+      onTap(b, () => this.sendEmote(id));
+      E.emotes.appendChild(b);
+    }
+    E.bubbleMine = h('div', { class: 'ebubble mine', 'aria-live': 'polite' });
+    E.bubbleTheirs = h('div', { class: 'ebubble theirs', 'aria-live': 'polite' });
     onTap(E.speed, () => this.toggleSpeed());
     onTap(E.pause, () => this.cb.pause());
     const top = h(
@@ -139,7 +154,7 @@ export class Hud {
     onTap(E.keysBtn, () => this.togglePanel('keys'));
     E.muteBtn = h('button', { class: 'sysbtn mutebtn', title: 'Mute (M)', html: ICONS.sound });
     onTap(E.muteBtn, () => this.toggleMute());
-    const sys = h('div', { class: 'sys' }, E.muteBtn, E.keysBtn, E.speed, E.pause);
+    const sys = h('div', { class: 'sys' }, E.muteBtn, E.keysBtn, E.speed, E.emoteBtn, E.pause);
 
     // Resources
     E.gold = h('span', { class: 'goldnum' });
@@ -209,7 +224,7 @@ export class Hud {
     E.hint = h('div', { class: 'hint' });
     E.tooltip = h('div', { class: 'tooltip hidden' });
 
-    this.root.append(top, sys, res, E.cards, E.queue, acts, E.lanetabs, E.turretPanel, E.blessPanel, E.keysPanel, E.toast, E.banner, E.hint, E.tooltip);
+    this.root.append(top, sys, E.emotes, E.bubbleMine, E.bubbleTheirs, res, E.cards, E.queue, acts, E.lanetabs, E.turretPanel, E.blessPanel, E.keysPanel, E.toast, E.banner, E.hint, E.tooltip);
     this.root.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
@@ -289,6 +304,8 @@ export class Hud {
     this.game = game;
     toggle(this.el.speed, 'hidden', !!game.options.online);
     toggle(this.el.net, 'hidden', !game.options.online);
+    toggle(this.el.emoteBtn, 'hidden', !game.options.online);
+    toggle(this.el.emotes, 'hidden', true);
     this.foeName = '';
     this.root.classList.toggle('online', !!game.options.online);
     this.syncMute();
@@ -490,6 +507,28 @@ export class Hud {
   /** Feedback after a summon was cancelled from the keyboard. */
   onCancelled(): void {
     this.cb.sound('cancel');
+  }
+
+  private lastEmote = -Infinity;
+
+  private sendEmote(id: EmoteId): void {
+    toggle(this.el.emotes, 'hidden', true);
+    const now = performance.now();
+    // (The server drops messages closer together than this anyway.)
+    if (now - this.lastEmote < 1600) return;
+    if (!this.cb.emote?.(id)) return;
+    this.lastEmote = now;
+    this.cb.sound('click');
+    this.showEmote('mine', EMOTES[id]);
+  }
+
+  /** A speech bubble under that side's health bar for a couple of seconds. */
+  showEmote(side: 'mine' | 'theirs', text: string): void {
+    const el = side === 'mine' ? this.el.bubbleMine : this.el.bubbleTheirs;
+    el.textContent = text;
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
   }
 
   /** Online: the opponent's name (shown by their citadel's health bar). */

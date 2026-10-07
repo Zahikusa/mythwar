@@ -1,4 +1,4 @@
-import { CODE_ALPHABET, CODE_LENGTH, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName } from '../src/net/protocol.ts';
+import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName } from '../src/net/protocol.ts';
 import type { ClientMsg, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
 import type { Team } from '../src/sim/types.ts';
 import { simFingerprint } from '../src/sim/fingerprint.ts';
@@ -34,6 +34,8 @@ const SEAT_GRACE = 60;
 const SESSION_TTL = 10 * 60;
 /** Commands per second a player may send (a human manages a handful). */
 const CMD_RATE = 25;
+/** Minimum ms between two emotes from one player. */
+const EMOTE_GAP = 1500;
 const MSG_RATE = 120;
 
 interface Session {
@@ -47,6 +49,8 @@ interface Session {
   goneAt: number | null;
   /** The client's network (see networkOf): the open-battles list only shows rooms from it. */
   network: string;
+  /** When the session last sent an emote (rate limit). */
+  lastEmote: number;
   /** How the session's last battle ended (final snapshot + result), for a client that missed it. */
   lastOver: { snapshot: ServerMsg; over: ServerMsg } | null;
 }
@@ -171,6 +175,7 @@ export class Lobby {
         watching: false,
         goneAt: null,
         network,
+        lastEmote: -Infinity,
         lastOver: null,
       };
       this.sessions.set(s.token, s);
@@ -258,6 +263,14 @@ export class Lobby {
           this.broadcastRoom(room);
         }
         return;
+      case 'emote': {
+        // Only in a room with an opponent, at most one every 1.5 s, and only known phrases.
+        if (!room || seat === null || !Object.hasOwn(EMOTES, msg.id) || now - s.lastEmote < EMOTE_GAP) return;
+        s.lastEmote = now;
+        const other = room.seats[seat === 0 ? 1 : 0];
+        if (other) this.send(other.session, { type: 'emote', seat, id: msg.id });
+        return;
+      }
       case 'claim':
         if (room?.match && seat !== null && room.phase === 'playing') room.match.claim(seat, now);
         return;

@@ -22,6 +22,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  /* Too tall for the window: start at the top and scroll (plain centring would cut the top off). */
+  justify-content: safe center;
   gap: 18px;
   padding: 20px;
   box-sizing: border-box;
@@ -1122,5 +1124,27 @@
   .logo,
   .verdict {
     animation: none !important;
+  }
+}
+
+/* Laptop-height windows (e.g. 1366×768): the results put the verdict beside the champion and the
+   table beside the chart, so everything — buttons included — fits without scrolling. */
+@container stage (min-height: 521px) and (max-height: 860px) {
+  .screen.over {
+    gap: 12px;
+  }
+
+  .vhead {
+    flex-direction: row;
+    gap: 22px;
+  }
+
+  .vstats {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .vstats .chart {
+    width: 400px;
   }
 }

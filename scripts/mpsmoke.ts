@@ -251,6 +251,11 @@ async function main(): Promise<void> {
     await b.touchscreen.tap(gate.x, gate.y);
     await waitFor(b, 'tapping your own (left) gate opens its turret slot', () => !document.querySelector('.turretpanel')!.classList.contains('hidden'));
     await press(b, '.turretpanel', '');
+    // Quick message: A sends "Good luck!", B's screen shows it by A's citadel (right for B).
+    await a.click('.emotebtn');
+    await press(a, '.emotes', 'Good luck!');
+    await waitFor(b, 'B sees the quick message', () => document.querySelector('.ebubble.theirs.show')?.textContent === 'Good luck!');
+    await shot(b, '6b-emote-phone');
     await shot(a, '5-battle-desktop');
     await shot(b, '6-battle-phone');
 
@@ -319,8 +324,9 @@ async function main(): Promise<void> {
     await waitFor(b, 'room listed', () => document.querySelectorAll('.mproom').length === 1);
     await press(b, '.mplist', 'Join');
     await waitFor(b, 'B in room again', () => (window as any).__mythwar.menus.current === 'room');
-    await waitFor(a, 'A offered a rematch', () => (document.querySelector('.rmatch')?.textContent ?? '') === '' || true);
+    await waitFor(a, 'A offered a rematch', () => [...document.querySelectorAll('.screen.over button')].some((b) => b.textContent?.trim() === 'Rematch'));
     await press(a, '.screen.over', 'Rematch');
+    await waitFor(a, 'A ready for the rematch', () => !!(window as any).__mythwar.mp.room?.seats[0]?.ready);
     await press(b, '.screen.room', 'Ready');
     await waitFor(a, 'A in a new battle', () => (window as any).__mythwar.state === 'playing' && (window as any).__mythwar.game.world.tick < 200, 8000);
     await waitFor(b, 'B in a new battle', () => (window as any).__mythwar.state === 'playing', 8000);

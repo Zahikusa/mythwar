@@ -160,8 +160,11 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 19. [x] README shows no multiplayer screenshots (room with QR code, mirrored phone view).
 20. [x] `src/ui/netoverlay.ts`: the Claim victory button gives no click sound / haptic like the
     other buttons.
-21. [ ] Online battles have no way to say anything: quick emotes ("Good luck!", "Well played!",
+21. [x] Online battles have no way to say anything: quick emotes ("Good luck!", "Well played!",
     "Oops!", "Wow!") relayed by the server and shown by the sender's citadel.
 22. [x] `server/main.ts`: if port 8787 is taken it just exits; it could try the next ports.
 23. [ ] The room doesn't show either player's connection quality before the battle; show each
     seat's ping so players can spot a weak Wi-Fi spot before starting.
+24. [x] Results screen overflowed laptop-height windows (1366×768: title cut off, buttons below
+    the fold, single player too) — found by the e2e run; now a side-by-side layout up to 860 px
+    high and `justify-content: safe center` so overflow scrolls instead of clipping.

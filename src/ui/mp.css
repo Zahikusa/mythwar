@@ -745,3 +745,114 @@
   border-color: rgba(63, 184, 255, 0.4);
   opacity: 0.55;
 }
+
+/* ------------------------------------------------------------------ */
+/* Quick messages (emotes)                                             */
+/* ------------------------------------------------------------------ */
+.hud.desktop > :is(.emotes, .ebubble) {
+  zoom: var(--hs, 1);
+}
+
+.emotes {
+  position: absolute;
+  top: 58px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5);
+  z-index: 3;
+}
+
+.emote {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+  background: rgba(70, 52, 112, 0.7);
+  border: 1px solid rgba(255, 221, 150, 0.2);
+}
+
+@media (hover: hover) {
+  .emote:hover {
+    filter: brightness(1.25);
+  }
+}
+
+.ebubble {
+  position: absolute;
+  top: 70px;
+  max-width: 220px;
+  padding: 7px 14px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #1f1530;
+  background: #fff6e0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  opacity: 0;
+  white-space: nowrap;
+}
+
+.ebubble.mine {
+  left: 80px;
+  border-top-left-radius: 4px;
+}
+
+.ebubble.theirs {
+  right: 80px;
+  border-top-right-radius: 4px;
+}
+
+.ebubble.show {
+  animation: ebubble 2.8s ease forwards;
+}
+
+@keyframes ebubble {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.8);
+  }
+  8% {
+    opacity: 1;
+    transform: none;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.hud.mobile .emotes {
+  top: 44px;
+  right: 4px;
+  padding: 5px;
+}
+
+.hud.mobile .emote {
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
+.hud.mobile .ebubble {
+  top: 46px;
+  font-size: 13px;
+  padding: 5px 10px;
+}
+
+.hud.mobile .ebubble.mine {
+  left: calc(var(--side, 80px) + 40px);
+}
+
+.hud.mobile .ebubble.theirs {
+  right: calc(var(--side, 80px) + 40px);
+}

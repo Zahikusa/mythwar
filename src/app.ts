@@ -16,7 +16,7 @@ import { fmtTime } from './ui/dom.ts';
 import type { Settings } from './ui/settings.ts';
 import { MpClient, hasStoredSession } from './net/client.ts';
 import { NetGame } from './net/netgame.ts';
-import { cleanCode, cleanName } from './net/protocol.ts';
+import { EMOTES, cleanCode, cleanName } from './net/protocol.ts';
 import { randomName } from './ui/mpmenus.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
 
@@ -95,6 +95,7 @@ export class App {
         return this.settings.muted;
       },
       isMuted: () => this.settings.muted,
+      emote: (id) => this.mp?.emote(id) ?? false,
       speedChanged: (speed) => {
         this.settings.speed = speed;
         saveSettings(this.settings);
@@ -651,6 +652,12 @@ export class App {
         changed: () => this.onMpChanged(),
         battle: (g) => this.onNetBattle(g),
         error: (code, message) => this.onMpError(code, message),
+        emote: (seat, id) => {
+          const g = this.game;
+          if (!(g instanceof NetGame) || seat === g.seat || this.state === 'title') return;
+          this.hud.showEmote('theirs', EMOTES[id] ?? '');
+          this.audio.ui('select');
+        },
       });
       mp.start();
     }

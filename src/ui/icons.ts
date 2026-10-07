@@ -28,6 +28,7 @@ export const ICONS = {
   versus: svg(
     '<circle cx="7.5" cy="7.5" r="3.2" fill="currentColor"/><circle cx="16.5" cy="7.5" r="3.2" fill="currentColor"/><path d="M2 19.5c0-3.4 2.5-5.6 5.5-5.6s5.5 2.2 5.5 5.6zM11 19.5c0-3.4 2.5-5.6 5.5-5.6s5.5 2.2 5.5 5.6z" fill="currentColor" opacity=".85"/>',
   ),
+  chat: svg('<path d="M4 5.5h16a1.5 1.5 0 011.5 1.5v9a1.5 1.5 0 01-1.5 1.5h-9l-4.5 3.5v-3.5H4A1.5 1.5 0 012.5 16V7A1.5 1.5 0 014 5.5z" fill="currentColor"/>'),
   wifi: svg(
     '<path d="M2.5 9a14 14 0 0119 0M5.5 12.3a9.5 9.5 0 0113 0M8.6 15.5a5 5 0 016.8 0" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="12" cy="19" r="1.8" fill="currentColor"/>',
   ),
