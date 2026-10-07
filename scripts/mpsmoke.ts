@@ -259,6 +259,8 @@ async function main(): Promise<void> {
     check('results: victory by forfeit', res.verdict.includes('Victory') && res.verdict.includes('left'), res.verdict);
     check('results: opponent left the room', res.note.includes('left the room'), res.note);
     await waitFor(b, 'B back in the lobby', () => (window as any).__mythwar.menus.current === 'mp');
+    await waitFor(b, 'room listed', () => document.querySelectorAll('.mproom').length === 1);
+    await shot(b, '10-lobby-phone');
     await shot(a, '9-results-desktop');
 
     console.log('== rematch ==');
@@ -283,6 +285,7 @@ async function main(): Promise<void> {
     await press(a, '.screen.mp', 'Back');
     await waitFor(a, 'A at title', () => (window as any).__mythwar.menus.current === 'title');
     await waitFor(b, 'B wins', () => (window as any).__mythwar.menus.current === 'over', 8000);
+    await shot(b, '11-results-phone');
 
     check('no console errors', errors.length === 0, errors.slice(0, 5).join(' | '));
   } finally {
