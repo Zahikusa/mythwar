@@ -40,6 +40,8 @@ export class MpClient {
   welcomed = false;
   /** The server dropped our session (e.g. it restarted). */
   sessionLost = false;
+  /** The server runs another version of the game: no point reconnecting until a reload. */
+  versionMismatch = false;
   /** Addresses the server says other devices can reach the game at. */
   lanUrls: string[] = [];
   private token: string | null;
@@ -183,7 +185,12 @@ export class MpClient {
         if (msg.type === 'turn') return;
         break;
       case 'error':
+        if (msg.code === 'version') {
+          this.versionMismatch = true;
+          this.conn.close();
+        }
         this.emit((l) => l.error?.(msg.code, msg.message));
+        this.emit((l) => l.changed?.());
         return;
       case 'pong':
         return;

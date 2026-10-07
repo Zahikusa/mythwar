@@ -218,9 +218,13 @@ export class MpScreens {
     if (online) this.offlineSince = 0;
     else if (!this.offlineSince) this.offlineSince = now;
     const stuck = !online && now - this.offlineSince > HELP_AFTER;
-    this.status.className = `mpstatus ${online ? 'ok' : stuck ? 'bad' : 'wait'}`;
-    setText(this.status.lastElementChild!, online ? 'Connected — ready to battle' : stuck ? 'Can’t reach the game server — still trying…' : 'Connecting to the game server…');
-    toggle(this.help, 'hidden', !stuck);
+    const old = c.versionMismatch;
+    this.status.className = `mpstatus ${online ? 'ok' : stuck || old ? 'bad' : 'wait'}`;
+    setText(
+      this.status.lastElementChild!,
+      old ? 'The game server runs another version — reload this page' : online ? 'Connected — ready to battle' : stuck ? 'Can’t reach the game server — still trying…' : 'Connecting to the game server…',
+    );
+    toggle(this.help, 'hidden', !stuck || old);
     this.hostBtn.disabled = !online;
     this.joinBtn.disabled = !online;
 
