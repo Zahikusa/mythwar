@@ -1,5 +1,4 @@
 import type { NetGame } from '../net/netgame.ts';
-import { AWAY_GRACE, CLAIM_AFTER } from '../net/protocol.ts';
 import { fmtTime, h, onTap, setText, toggle } from './dom.ts';
 
 /**
@@ -81,10 +80,11 @@ export class NetOverlay {
     } else if (game.syncing) {
       title = 'Re-syncing the battle…';
     } else if (pause?.reason === 'away' && pause.seat !== game.seat) {
-      const left = Math.max(0, (pause.forfeitIn ?? 0) - (now - game.netPauseAt) / 1000);
+      const waited = (now - game.netPauseAt) / 1000;
+      const left = Math.max(0, (pause.forfeitIn ?? 0) - waited);
       title = `${game.foeName} is away`;
       // Waited long enough: no need to sit out the whole timer.
-      claim = AWAY_GRACE - left >= CLAIM_AFTER;
+      claim = pause.claimIn !== undefined && waited >= pause.claimIn;
       sub = `Their app is in the background or lost the Wi-Fi. The battle waits — if they aren’t back in ${fmtTime(left)}, you win${claim ? ', or claim the victory now' : ''}.`;
     } else if (pause?.reason === 'away') {
       title = 'Rejoining the battle…';

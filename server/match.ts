@@ -25,6 +25,8 @@ export interface MatchOptions {
   /** Ticks per turn message (lower = less delay, more packets). */
   turnTicks?: number;
   awayGrace?: number;
+  /** Seconds away after which the other player may claim the win. */
+  claimAfter?: number;
 }
 
 type MatchState = 'countdown' | 'running' | 'paused' | 'resuming' | 'over';
@@ -45,6 +47,7 @@ export class Match {
   private readonly host: MatchHost;
   private readonly turnTicks: number;
   private readonly awayGrace: number;
+  private readonly claimAfter: number;
   private startAt: number;
   private runFromMs = 0;
   private runFromTick = 0;
@@ -67,6 +70,7 @@ export class Match {
     this.host = host;
     this.turnTicks = opts.turnTicks ?? 2;
     this.awayGrace = opts.awayGrace ?? AWAY_GRACE;
+    this.claimAfter = opts.claimAfter ?? CLAIM_AFTER;
     this.startAt = now + opts.countdown * 1000;
   }
 
@@ -113,7 +117,7 @@ export class Match {
   claim(seat: Team, now: number): boolean {
     const other = (1 - seat) as Team;
     const since = this.awaySince[other];
-    if (this.state === 'over' || this.awaySince[seat] !== null || since === null || now - since < CLAIM_AFTER * 1000) return false;
+    if (this.state === 'over' || this.awaySince[seat] !== null || since === null || now - since < this.claimAfter * 1000) return false;
     this.finish(seat, 'timeout');
     return true;
   }
@@ -231,7 +235,12 @@ export class Match {
       const seat = (awaySeat >= 0 ? awaySeat : this.pausedBy) as Team;
       const state: PauseState =
         awaySeat >= 0
-          ? { reason: 'away', seat, forfeitIn: Math.max(0, Math.ceil((this.awaySince[seat]! + this.awayGrace * 1000 - now) / 1000)) }
+          ? {
+              reason: 'away',
+              seat,
+              forfeitIn: Math.max(0, Math.ceil((this.awaySince[seat]! + this.awayGrace * 1000 - now) / 1000)),
+              claimIn: Math.max(0, Math.ceil((this.awaySince[seat]! + this.claimAfter * 1000 - now) / 1000)),
+            }
           : { reason: 'pause', seat };
       if (this.state === 'countdown') {
         // Not started yet: the countdown restarts once everyone is back.

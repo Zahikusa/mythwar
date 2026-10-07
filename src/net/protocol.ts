@@ -92,6 +92,8 @@ export interface PauseState {
   seat: Team;
   /** Seconds left before the absent player forfeits (away only). */
   forfeitIn?: number;
+  /** Seconds until the other player may claim the win instead (away only). */
+  claimIn?: number;
 }
 
 export type EndReason = 'citadel' | 'forfeit' | 'timeout';

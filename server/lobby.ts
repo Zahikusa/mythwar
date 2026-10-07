@@ -21,6 +21,8 @@ export interface LobbyOptions {
   awayGrace?: number;
   /** Seconds before a battle starts. */
   countdown?: number;
+  /** Seconds a player must have been away before the other may claim the win. */
+  claimAfter?: number;
   log?: (line: string) => void;
   /** Where other devices in the network can open the game (shown as invite link / QR code). */
   lanUrls?: () => string[];
@@ -278,7 +280,7 @@ export class Lobby {
     const names: [string, string] = [this.nameIn(room, 0), this.nameIn(room, 1)];
     const countdown = this.opts.countdown ?? START_COUNTDOWN;
     room.phase = 'playing';
-    room.match = new Match({ seed, names, countdown, turnTicks: this.opts.turnTicks, awayGrace: this.opts.awayGrace }, this.now(), {
+    room.match = new Match({ seed, names, countdown, turnTicks: this.opts.turnTicks, awayGrace: this.opts.awayGrace, claimAfter: this.opts.claimAfter }, this.now(), {
       broadcast: (msg) => {
         const text = JSON.stringify(msg);
         for (const s of room.seats) if (s?.session.conn) s.session.conn.send(text);
