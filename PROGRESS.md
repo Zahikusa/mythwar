@@ -178,6 +178,6 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
     in battle); a small emote row on the results would fit the rematch flow.
 26. [x] `server/main.ts`: no `--help`; the flags (--port, --cert/--key, --trust-proxy,
     --latency/--jitter, --dir, --quiet) are only documented in the file header / docs.
-27. [ ] Settings: no switch to hide the opponent's quick messages (rate-limited, but some players
+27. [x] Settings: no switch to hide the opponent's quick messages (rate-limited, but some players
     will want them off).
 28. [x] package.json: the new tools (mpbot, enginecheck, mpengines) have no npm script aliases.

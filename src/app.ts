@@ -654,7 +654,7 @@ export class App {
         error: (code, message) => this.onMpError(code, message),
         emote: (seat, id) => {
           const g = this.game;
-          if (!(g instanceof NetGame) || seat === g.seat || this.state === 'title') return;
+          if (!(g instanceof NetGame) || seat === g.seat || this.state === 'title' || !this.settings.emotes) return;
           this.hud.showEmote('theirs', EMOTES[id] ?? '');
           this.audio.ui('select');
         },

@@ -27,6 +27,8 @@ export interface Settings {
   playerName: string;
   /** Online results per opponent name (most recent opponents only). */
   online: Record<string, { w: number; l: number }>;
+  /** Show the opponent's quick messages in online battles. */
+  emotes: boolean;
 }
 
 const KEY = 'mythwar.settings.v1';
@@ -47,6 +49,7 @@ const DEFAULTS: Settings = {
   records: {},
   playerName: '',
   online: {},
+  emotes: true,
 };
 
 export function loadSettings(): Settings {
@@ -90,6 +93,7 @@ function sanitize(s: Settings): Settings {
     records,
     playerName: typeof s.playerName === 'string' ? s.playerName.slice(0, 40) : '',
     online: sanitizeOnline(s.online),
+    emotes: bool(s.emotes, true),
   };
 }
 
