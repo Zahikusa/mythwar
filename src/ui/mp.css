@@ -1,0 +1,705 @@
+/* ------------------------------------------------------------------ */
+/* Multiplayer lobby                                                   */
+/* ------------------------------------------------------------------ */
+.screen.mp,
+.screen.room {
+  gap: 14px;
+  justify-content: flex-start;
+  padding-top: max(28px, 5cqh);
+}
+
+.mpsub {
+  margin-top: -6px;
+  font-size: 15px;
+  color: #d9ccf5;
+  text-align: center;
+  text-shadow: 0 1px 3px #000;
+}
+
+.mpnamerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.mpname,
+.mpcode {
+  font: inherit;
+  color: var(--text);
+  background: rgba(14, 9, 28, 0.85);
+  border: 1.5px solid rgba(255, 221, 150, 0.35);
+  border-radius: 10px;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mpname {
+  width: 200px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.mpname:focus,
+.mpcode:focus {
+  border-color: var(--gold-l);
+  box-shadow: 0 0 0 3px rgba(255, 221, 150, 0.18);
+}
+
+.mpcode {
+  width: 132px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  text-align: center;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.mpcode::placeholder {
+  color: rgba(184, 172, 214, 0.45);
+  letter-spacing: 0.2em;
+}
+
+.mpcode.shake {
+  animation: mpshake 0.35s;
+}
+
+@keyframes mpshake {
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+.mpstatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #d9ccf5;
+}
+
+.mpstatus i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f2c45a;
+  box-shadow: 0 0 8px currentColor;
+  animation: mppulse 1s ease-in-out infinite alternate;
+}
+
+.mpstatus.ok i {
+  background: var(--good);
+  color: var(--good);
+  animation: none;
+}
+
+.mpstatus.bad i {
+  background: var(--bad);
+  color: var(--bad);
+}
+
+@keyframes mppulse {
+  to {
+    opacity: 0.35;
+  }
+}
+
+.mphelp {
+  max-width: 520px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #e7dcff;
+  background: rgba(60, 20, 40, 0.6);
+  border: 1px solid rgba(255, 122, 138, 0.4);
+  border-radius: 12px;
+  padding: 10px 14px;
+  text-align: center;
+}
+
+.mphelp code {
+  font-family: Consolas, 'SF Mono', Menlo, monospace;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 5px;
+  padding: 1px 6px;
+  color: var(--gold-l);
+}
+
+.mpflash {
+  min-height: 0;
+  max-height: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffd1d6;
+  text-align: center;
+  transition: max-height 0.25s;
+}
+
+.mpflash.show {
+  max-height: 60px;
+}
+
+.mpactions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.mpcol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.mpor {
+  align-self: center;
+  margin-top: -18px;
+  font-family: var(--title-font);
+  font-style: italic;
+  color: var(--muted);
+}
+
+.mpjoin {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mpjoin .mbtn {
+  padding: 12px 20px;
+}
+
+.mbtn:disabled {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+  pointer-events: none;
+}
+
+.mplisthead {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.mplist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(460px, 92cqw);
+}
+
+.mpempty {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  padding: 10px;
+  border: 1px dashed rgba(255, 221, 150, 0.2);
+  border-radius: 12px;
+}
+
+.mproom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 14px;
+  border-radius: 14px;
+  background: rgba(36, 25, 64, 0.85);
+  border: 1px solid rgba(255, 221, 150, 0.25);
+  animation: mpin 0.35s ease;
+}
+
+@keyframes mpin {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.mproom > i {
+  width: 22px;
+  height: 22px;
+  color: var(--gold-l);
+  flex: none;
+}
+
+.mphost {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mphost b {
+  font-size: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mphost span {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.mproom .mbtn {
+  padding: 9px 18px;
+  font-size: 15px;
+}
+
+.mbtn.mpbtn i {
+  color: #8fd3ff;
+}
+
+/* ------------------------------------------------------------------ */
+/* Battle room                                                         */
+/* ------------------------------------------------------------------ */
+.rhead {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.rcodebox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 18px;
+  border-radius: 14px;
+  background: rgba(14, 9, 28, 0.8);
+  border: 1.5px solid rgba(255, 221, 150, 0.4);
+}
+
+.rcodebox span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.rcode {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  margin-right: -0.28em;
+  color: var(--gold-l);
+  text-shadow: 0 0 16px rgba(255, 200, 100, 0.4);
+  font-variant-numeric: tabular-nums;
+  user-select: all;
+}
+
+.rinvite {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(21, 14, 38, 0.85);
+  border: 1px solid var(--line);
+  max-width: min(620px, 94cqw);
+}
+
+.rqr {
+  flex: none;
+  width: 132px;
+  height: 132px;
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
+.rinvtext {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #d9ccf5;
+  line-height: 1.4;
+}
+
+.rinvtext b {
+  font-size: 16px;
+  color: var(--text);
+}
+
+.rlink {
+  font-family: Consolas, 'SF Mono', Menlo, monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gold-l);
+  word-break: break-all;
+  user-select: all;
+}
+
+.rseats {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.rvs {
+  align-self: center;
+  font-family: var(--title-font);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold-l);
+  text-shadow: 0 2px 6px #000;
+}
+
+.rseat {
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(36, 25, 64, 0.85);
+  border: 1.5px solid rgba(255, 79, 109, 0.45);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.rseat.mine {
+  border-color: rgba(63, 184, 255, 0.6);
+}
+
+.rseat.ready {
+  box-shadow: 0 0 0 2px rgba(126, 224, 138, 0.55), 0 0 18px rgba(126, 224, 138, 0.25);
+}
+
+.rseat.empty {
+  border-style: dashed;
+  border-color: rgba(255, 221, 150, 0.25);
+  background: rgba(20, 12, 36, 0.6);
+}
+
+.sname {
+  font-size: 18px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rseat.empty .sname {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.sside {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sstate {
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #d9ccf5;
+}
+
+.rseat.ready .sstate {
+  color: var(--good);
+}
+
+.swins {
+  font-size: 12px;
+  color: var(--gold-l);
+}
+
+.swins:empty {
+  display: none;
+}
+
+.mnote.rnote,
+.mnote.rmatch {
+  max-width: 420px;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.mnote.hot {
+  color: var(--gold-l);
+  font-weight: 700;
+  animation: mppulse 0.8s ease-in-out infinite alternate;
+}
+
+.vbuttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.vbuttons .mnote:empty {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* In battle                                                           */
+/* ------------------------------------------------------------------ */
+.netoverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 18;
+}
+
+.ncount {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  font-family: var(--title-font);
+  font-size: calc(120px * var(--hs, 1));
+  font-weight: 700;
+  color: var(--gold-l);
+  text-shadow: 0 0 40px rgba(255, 200, 100, 0.8), 0 6px 14px rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  white-space: nowrap;
+}
+
+.ncount.show {
+  opacity: 1;
+}
+
+.ncount.go {
+  font-size: calc(84px * var(--hs, 1));
+  letter-spacing: 0.06em;
+}
+
+.ncount.pop {
+  animation: npop 0.9s ease-out forwards;
+}
+
+@keyframes npop {
+  0% {
+    transform: translate(-50%, -50%) scale(1.6);
+    opacity: 0;
+  }
+  18% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.92);
+    opacity: 0.15;
+  }
+}
+
+.nbanner {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  transform: translate(-50%, -8px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: min(560px, 90cqw);
+  padding: 12px 18px;
+  border-radius: 16px;
+  background: rgba(16, 10, 30, 0.9);
+  border: 1.5px solid rgba(255, 221, 150, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.nbanner.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.nspin {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 221, 150, 0.25);
+  border-top-color: var(--gold-l);
+  animation: nspin 0.9s linear infinite;
+}
+
+.netoverlay:not(:has(.nbanner.show)) .nspin {
+  animation: none;
+}
+
+@keyframes nspin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.nbtitle {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.nbsub {
+  font-size: 13px;
+  color: #d9ccf5;
+  line-height: 1.35;
+}
+
+.nbsub:empty {
+  display: none;
+}
+
+.netinfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 1px 10px;
+  border-radius: 10px;
+  background: rgba(10, 6, 20, 0.55);
+  text-shadow: 0 1px 3px #000;
+  white-space: nowrap;
+}
+
+.netinfo .nsig {
+  width: 14px;
+  height: 14px;
+  color: var(--good);
+}
+
+.netinfo[data-q='ok'] .nsig {
+  color: #f2c45a;
+}
+
+.netinfo[data-q='bad'] .nsig,
+.netinfo[data-q='off'] .nsig {
+  color: var(--bad);
+}
+
+.netinfo .nfoe {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.netinfo .nping {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud.mobile .netinfo {
+  /* Phones: just the signal, tucked beside the clock (gold and XP sit right below). */
+  position: absolute;
+  left: calc(50% + 28px);
+  top: 7px;
+  padding: 0;
+  background: none;
+}
+
+.hud.mobile .netinfo span {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Phones (short landscape stages)                                     */
+/* ------------------------------------------------------------------ */
+@container stage (max-height: 520px) {
+  .screen.mp,
+  .screen.room {
+    gap: 8px;
+    padding-top: 12px;
+  }
+
+  .screen.mp h2,
+  .screen.room h2 {
+    font-size: 26px;
+  }
+
+  .mpsub {
+    font-size: 12px;
+    margin-top: -4px;
+  }
+
+  .mpactions {
+    gap: 10px;
+  }
+
+  .mpactions .mnote {
+    display: none;
+  }
+
+  .mpor {
+    margin-top: 0;
+  }
+
+  .mplist {
+    width: min(460px, 80cqw);
+  }
+
+  .rqr {
+    width: 104px;
+    height: 104px;
+  }
+
+  .rinvite {
+    padding: 8px 12px;
+    gap: 12px;
+  }
+
+  .rinvtext {
+    font-size: 12px;
+  }
+
+  .rcode {
+    font-size: 26px;
+  }
+
+  .rseat {
+    width: 160px;
+    padding: 8px 12px;
+  }
+
+  .sname {
+    font-size: 15px;
+  }
+
+  .ncount {
+    font-size: 90px;
+  }
+
+  .ncount.go {
+    font-size: 64px;
+  }
+
+  .nbanner {
+    top: 18%;
+    padding: 8px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ncount.pop,
+  .mpstatus i,
+  .mnote.hot,
+  .mproom {
+    animation: none !important;
+  }
+}

@@ -12,7 +12,7 @@ import { Fx } from './fx.ts';
 import { artScaleOf, computeLayout, laneX } from './layout.ts';
 import type { LaneGeom, Layout, LayoutMode } from './layout.ts';
 import { drawProjectile, projectileImpact } from './projectiles.ts';
-import { TEAM_COLORS, THEMES } from './theme.ts';
+import { TEAM_COLORS, THEMES, setColorPerspective } from './theme.ts';
 
 export interface ViewState {
   playerTeam: Team;
@@ -100,6 +100,8 @@ export class Renderer {
   /** Game speed (2 = fast-forward): effects timed by the sim (meteor fall, root, freeze) run
    *  this much faster in real time, so they stay in step with what they show. */
   speed = 1;
+  /** The local player is team 1: the battlefield is drawn mirrored so their citadel is on the left. */
+  private mirror = false;
   private bgCache = new Map<number, HTMLCanvasElement>();
   private keepCache = new Map<string, { canvas: HTMLCanvasElement; x: number; w: number }>();
   private gradCache = new Map<string, CanvasGradient>();
@@ -182,6 +184,26 @@ export class Renderer {
     this.prevTheme = this.theme;
     this.theme = index;
     this.themeFade = 0;
+  }
+
+  /**
+   * Whose eyes the battlefield is seen through: that team is drawn on the left and in blue.
+   * (Team 1 online: the world is mirrored; screen positions the HUD uses stay the same.)
+   */
+  setPerspective(team: Team): void {
+    this.mirror = team === 1;
+    if (setColorPerspective(team)) {
+      this.keepCache.clear();
+      this.gateCache.clear();
+      this.gradCache.clear();
+    }
+  }
+
+  /** Mirrors a stage x across the battlefield's centre line (identity when not mirrored). */
+  private flipX(x: number): number {
+    if (!this.mirror) return x;
+    const f = this.layout.field;
+    return 2 * f.x + f.w - x;
   }
 
   reset(): void {
@@ -449,7 +471,7 @@ export class Renderer {
             const target = this.coinTarget;
             if (target && this.fx.coinsInFlight < 8) {
               this.fx.coinsInFlight++;
-              this.fx.timedFx({ kind: 'coin', x, y: by, x2: target[0], y2: target[1], dur: 0.75 + Math.random() * 0.2, layer: 3, size: Math.max(0.8, L.ui) });
+              this.fx.timedFx({ kind: 'coin', x, y: by, x2: this.flipX(target[0]), y2: target[1], dur: 0.75 + Math.random() * 0.2, layer: 3, size: Math.max(0.8, L.ui) });
             }
           }
           this.vis.delete(e.unitId);
@@ -739,6 +761,10 @@ export class Renderer {
       ctx.scale(z, z);
       ctx.translate(-L.width / 2, -L.height / 2);
     }
+    if (this.mirror) {
+      ctx.translate(2 * L.field.x + L.field.w, 0);
+      ctx.scale(-1, 1);
+    }
 
     // Backdrop (cross-fading between ages)
     if (!this.skip.has('bg')) {
@@ -782,7 +808,8 @@ export class Renderer {
 
     this.hover = null;
     // Desktop: hover. Touch: press-and-hold sets view.inspect.
-    this.mouseRef = view.targeting !== 'none' ? null : (view.inspect ?? (L.mode === 'desktop' ? (view.mouse ?? null) : null));
+    const pointer = view.targeting !== 'none' ? null : (view.inspect ?? (L.mode === 'desktop' ? (view.mouse ?? null) : null));
+    this.mouseRef = pointer && this.mirror ? { x: this.flipX(pointer.x), y: pointer.y } : pointer;
 
     // Lanes far → near
     for (let lane = 0; lane < L.lanes.length; lane++) {
@@ -837,9 +864,17 @@ export class Renderer {
     if (this.aimAt.size > 64) this.aimAt.clear();
     this.fx.drawTimed(ctx, 3);
     this.fx.drawParticles(ctx, 3);
-    this.fx.drawTexts(ctx, Math.max(0.8, L.ui));
+    // Writing must read left to right: on a mirrored battlefield, texts are drawn unmirrored
+    // at the mirrored spot.
+    if (this.mirror) {
+      ctx.save();
+      ctx.translate(2 * L.field.x + L.field.w, 0);
+      ctx.scale(-1, 1);
+    }
+    this.fx.drawTexts(ctx, Math.max(0.8, L.ui), (x) => this.flipX(x));
     const hv = this.hover as Renderer['hover'];
-    if (hv) this.drawHoverLabel(ctx, hv.unit, hv.x, hv.top, view);
+    if (hv) this.drawHoverLabel(ctx, hv.unit, this.flipX(hv.x), hv.top, view);
+    if (this.mirror) ctx.restore();
 
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     if (this.ragnarok > 0.01) {
@@ -1334,7 +1369,7 @@ export class Renderer {
     const bx = Math.round(x - w / 2);
     const by = Math.round(y - h);
     ctx.fillStyle = 'rgba(16, 10, 30, 0.88)';
-    ctx.strokeStyle = mine ? TEAM_COLORS[0].main : TEAM_COLORS[1].main;
+    ctx.strokeStyle = TEAM_COLORS[u.team].main;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.roundRect(bx, by, w, h, 8);

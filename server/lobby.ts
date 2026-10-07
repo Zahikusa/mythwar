@@ -21,6 +21,8 @@ export interface LobbyOptions {
   /** Seconds before a battle starts. */
   countdown?: number;
   log?: (line: string) => void;
+  /** Where other devices in the network can open the game (shown as invite link / QR code). */
+  lanUrls?: () => string[];
 }
 
 /** Seconds a disconnected player keeps their seat in a room that isn't fighting. */
@@ -162,7 +164,7 @@ export class Lobby {
       this.sessions.set(s.token, s);
     }
     const room = s.room;
-    this.send(s, { type: 'welcome', v: PROTOCOL_VERSION, token: s.token, room: room ? this.info(room) : null, seat: s.seat });
+    this.send(s, { type: 'welcome', v: PROTOCOL_VERSION, token: s.token, room: room ? this.info(room) : null, seat: s.seat, lan: this.opts.lanUrls?.() ?? [] });
     if (room && s.seat !== null) {
       const m = room.match;
       if (m && room.phase === 'playing') {

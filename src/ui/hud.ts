@@ -122,6 +122,8 @@ export class Hud {
     E.shrines = h('div', { class: 'shrines', title: 'Ley Shrines: capture them for extra gold' });
     for (let i = 0; i < LANE_COUNT; i++) E.shrines.appendChild(h('i', { html: ICONS.shrine }));
     E.rag = h('div', { class: 'ragnarok' });
+    // Online battles: who you're fighting and how good the connection is.
+    E.net = h('div', { class: 'netinfo hidden', role: 'status' }, h('i', { class: 'nsig', html: ICONS.wifi }), h('span', { class: 'nfoe' }), h('span', { class: 'nping' }));
     E.speed = h('button', { class: 'sysbtn speed', title: 'Game speed (F)', 'aria-label': 'Game speed', html: ICONS.fast + '<span>1×</span>' });
     E.pause = h('button', { class: 'sysbtn', title: 'Pause (Esc)', html: ICONS.pause });
     onTap(E.speed, () => this.toggleSpeed());
@@ -130,7 +132,7 @@ export class Hud {
       'div',
       { class: 'topbar' },
       h('div', { class: 'side left' }, E.ageL, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpLd, E.hpL, E.hpLn), h('div', { class: 'agerow left' }, E.ageLn, E.blessL))),
-      h('div', { class: 'mid' }, E.clock, E.shrines, E.rag),
+      h('div', { class: 'mid' }, E.clock, E.shrines, E.rag, E.net),
       h('div', { class: 'side right' }, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpRd, E.hpR, E.hpRn), h('div', { class: 'agerow' }, E.blessR, E.foePow, E.ageRn)), E.ageR),
     );
     E.keysBtn = h('button', { class: 'sysbtn keysbtn', title: 'Controls (?)', 'aria-label': 'Controls', text: '?' });
@@ -285,6 +287,9 @@ export class Hud {
   attach(game: Game): void {
     this.cancelDrag();
     this.game = game;
+    toggle(this.el.speed, 'hidden', !!game.options.online);
+    toggle(this.el.net, 'hidden', !game.options.online);
+    this.root.classList.toggle('online', !!game.options.online);
     this.syncMute();
     setText(this.el.speed.querySelector('span')!, `${game.speed}×`);
     toggle(this.el.speed, 'on', game.speed > 1);
@@ -486,8 +491,21 @@ export class Hud {
     this.cb.sound('cancel');
   }
 
+  /** Online status line: the opponent's name, round-trip time and link quality. */
+  setNet(foe: string, rtt: number, online: boolean): void {
+    const E = this.el;
+    setText(E.net.querySelector('.nfoe')!, `vs ${foe}`);
+    setText(E.net.querySelector('.nping')!, online ? (rtt ? `${Math.round(rtt)} ms` : '') : 'offline');
+    const q = !online ? 'off' : rtt > 250 ? 'bad' : rtt > 120 ? 'ok' : 'good';
+    if (E.net.dataset.q !== q) {
+      E.net.dataset.q = q;
+      E.net.title = online ? `Connection to the game server: ${q === 'good' ? 'good' : q === 'ok' ? 'fair' : 'slow'}` : 'Reconnecting…';
+    }
+  }
+
   toggleSpeed(): void {
-    if (!this.game) return;
+    // Online both players share one clock: no fast-forward.
+    if (!this.game || this.game.options.online) return;
     this.game.speed = this.game.speed === 1 ? 2 : 1;
     this.cb.speedChanged(this.game.speed);
     setText(this.el.speed.querySelector('span')!, `${this.game.speed}×`);

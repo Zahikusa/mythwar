@@ -14,6 +14,11 @@ import { clearBattle, loadBattle, saveBattle } from './save.ts';
 import { AGES } from './sim/data.ts';
 import { fmtTime } from './ui/dom.ts';
 import type { Settings } from './ui/settings.ts';
+import { MpClient, hasStoredSession } from './net/client.ts';
+import { NetGame } from './net/netgame.ts';
+import { cleanCode, cleanName } from './net/protocol.ts';
+import { randomName } from './ui/mpmenus.ts';
+import { NetOverlay } from './ui/netoverlay.ts';
 
 type AppState = 'title' | 'playing' | 'over';
 
@@ -51,6 +56,16 @@ export class App {
   private slowSeconds = 0;
   private autoLowDone = false;
   private params = new URLSearchParams(location.search);
+  /** Multiplayer session while the player is in the multiplayer screens or an online battle. */
+  mp: MpClient | null = null;
+  private mpOff: (() => void) | null = null;
+  readonly netOverlay: NetOverlay;
+  /** Room code to join once connected (invite link). */
+  private pendingJoin: string | null = null;
+  /** Reconnecting after a reload: only show multiplayer if we turn out to be in a room. */
+  private quietResume = false;
+  private wakeLock: { release(): Promise<void> } | null = null;
+  private wakePending = false;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -94,12 +109,39 @@ export class App {
         this.play(this.difficulty);
       },
       quit: () => {
+        // Online: leaving the battle forfeits it and leaves the room.
+        if (this.game instanceof NetGame) return this.leaveRoom();
         this.forfeit();
         this.toTitle();
       },
       settingsChanged: (s) => this.applySettings(s),
       sound: (k) => this.audio.ui(k),
+      multiplayer: () => this.openMultiplayer(),
+      rematch: () => this.rematch(),
+      leaveRoom: () => this.leaveRoom(),
+      toRoom: () => this.menus.show('room'),
+      mp: {
+        sound: (k) => this.audio.ui(k),
+        exit: () => this.closeMultiplayer(),
+        rename: (name) => {
+          this.settings.playerName = cleanName(name);
+          saveSettings(this.settings);
+          this.menus.mp.setName(this.settings.playerName);
+          this.mp?.setName(this.settings.playerName);
+        },
+        host: () => this.mp?.host(),
+        join: (code) => this.mp?.join(code),
+        ready: (on) => this.mp?.ready(on),
+        leaveRoom: () => this.leaveRoom(),
+      },
     });
+    // Battle-time network messages sit above the HUD, below the menus.
+    this.netOverlay = new NetOverlay(this.stage);
+    this.stage.insertBefore(this.netOverlay.root, this.menus.root);
+    this.netOverlay.onBeat = (final) => {
+      this.audio.ui(final ? 'summon' : 'select');
+      if (final) this.buzz(30);
+    };
     window.addEventListener('resize', () => this.resize());
     // Moving the window to a screen with another pixel density doesn't fire 'resize'.
     const watchDpr = () => {
@@ -124,11 +166,19 @@ export class App {
     });
     document.addEventListener('visibilitychange', () => {
       this.audio.setHidden(document.hidden);
+      // Online the battle can't just pause: the server holds it for both players until we're back.
+      if (this.mp) {
+        this.mp.away(document.hidden);
+        if (!document.hidden && (this.state === 'playing' || this.mp.room)) this.keepAwake(true);
+      }
       if (!document.hidden) return;
       this.persist();
-      if (this.state === 'playing' && this.game && !this.game.paused) this.pause();
+      if (this.state === 'playing' && this.game && !this.game.paused && !(this.game instanceof NetGame)) this.pause();
     });
-    window.addEventListener('pagehide', () => this.persist());
+    window.addEventListener('pagehide', () => {
+      this.persist();
+      this.mp?.away(true);
+    });
     this.applySettings(this.settings);
     this.resize();
   }
@@ -226,6 +276,19 @@ export class App {
     } else if (p.has('play')) {
       const d = p.get('play') as Difficulty;
       this.play(DIFFICULTIES.includes(d) ? d : 'adept', Number(p.get('seed') ?? 0) || undefined);
+    } else if (p.has('join') || p.has('mp')) {
+      // Invite link (QR code): straight into the multiplayer lobby and that room.
+      this.toTitle();
+      this.openMultiplayer(cleanCode(p.get('join')) ?? undefined);
+      // A reload shouldn't join again (the session token rejoins the room anyway).
+      const url = new URL(location.href);
+      url.searchParams.delete('join');
+      history.replaceState(null, '', url);
+    } else if (hasStoredSession()) {
+      // Reloaded during an online battle or in a room: quietly reconnect and pick it up again.
+      this.toTitle();
+      this.quietResume = true;
+      this.openMultiplayer(undefined, true);
     } else {
       this.toTitle();
       const screen = p.get('screen');
@@ -248,6 +311,9 @@ export class App {
   /** Makes `game` the active game: resets visuals and routes its events. */
   private hookGame(game: Game, demo: boolean): Game {
     this.renderer.reset();
+    // The local player's side is drawn on the left, in blue (online, that may be team 1).
+    this.renderer.setPerspective(game.playerTeam);
+    this.audio.playerTeam = game.playerTeam;
     this.renderer.setTheme(game.world.players[game.playerTeam].age, true);
     this.game = game;
     game.onEvents((ev) => {
@@ -327,14 +393,15 @@ export class App {
   /** Autosave the battle in progress. */
   private persist(): void {
     const g = this.game;
-    if (this.state !== 'playing' || !g || g.over || g.world.winner !== null || g.options.demo) return;
+    if (this.state !== 'playing' || !g || g.over || g.world.winner !== null || g.options.demo || g.options.online) return;
     saveBattle(g.toSave());
     this.lastSave = g.world.time;
   }
 
   toTitle(): void {
     // Leaving a battle from the menu abandons it.
-    if (this.state === 'playing' && this.game && !this.game.options.demo) clearBattle();
+    if (this.state === 'playing' && this.game && !this.game.options.demo && !this.game.options.online) clearBattle();
+    this.keepAwake(false);
     this.state = 'title';
     this.overTimer = -1;
     this.hud.detach();
@@ -396,14 +463,16 @@ export class App {
   /** Abandoning a battle that has properly started counts as a loss in the records. */
   private forfeit(): void {
     const g = this.game;
-    if (this.state !== 'playing' || !g || g.over || g.options.demo || g.world.time < 60) return;
+    if (this.state !== 'playing' || !g || g.over || g.options.demo || g.options.online || g.world.time < 60) return;
     recordResult(this.settings, this.difficulty, false, g.world.time);
   }
 
   /** Escape / P: leave a sub-menu, otherwise toggle pause. */
   private escape(): void {
     const m = this.menus.current;
-    if (m === 'howto' || m === 'settings' || m === 'difficulty') this.menus.goBack();
+    if (m === 'mp') this.closeMultiplayer();
+    else if (m === 'room') return;
+    else if (m === 'howto' || m === 'settings' || m === 'difficulty') this.menus.goBack();
     else if (this.state !== 'playing') return;
     else if (this.game?.paused) this.resume();
     else this.pause();
@@ -411,6 +480,11 @@ export class App {
 
   pause(): void {
     if (this.state !== 'playing' || !this.game || this.game.over) return;
+    if (this.game instanceof NetGame) {
+      // Online: ask the server; the pause screen opens for both players when it confirms.
+      if (!this.game.netPause && this.game.countdownEnd <= performance.now()) this.mp?.pause();
+      return;
+    }
     this.game.paused = true;
     this.menus.setPauseSummary(this.game.world, this.game.playerTeam, this.difficulty);
     this.hud.cancelTargeting();
@@ -421,6 +495,10 @@ export class App {
 
   resume(): void {
     if (!this.game) return;
+    if (this.game instanceof NetGame) {
+      this.mp?.resume();
+      return;
+    }
     this.game.paused = false;
     this.menus.show('none');
   }
@@ -428,6 +506,18 @@ export class App {
   private onGameOver(): void {
     const g = this.game!;
     const won = g.world.winner === g.playerTeam;
+    if (g instanceof NetGame) {
+      this.audio.ui(won ? 'victory' : 'defeat');
+      this.overTimer = 2.6;
+      this.hud.cancelTargeting();
+      if (this.menus.current !== 'none') this.menus.show('none');
+      const reason = g.result?.reason;
+      let sub = won ? 'The enemy citadel crumbles' : 'Your citadel has fallen';
+      if (reason === 'forfeit' && won) sub = `${g.foeName} left the battle`;
+      else if (reason === 'timeout') sub = won ? `${g.foeName} didn’t come back` : 'You were away too long';
+      this.hud.banner(won ? 'Victory' : 'Defeat', sub, won ? 'gold' : 'red');
+      return;
+    }
     recordResult(this.settings, this.difficulty, won, g.world.time);
     clearBattle();
     this.audio.ui(won ? 'victory' : 'defeat');
@@ -473,15 +563,218 @@ export class App {
         this.coinsSeen = this.renderer.fx.coinsArrived;
         this.hud.pulseGold();
       }
-      if (this.state === 'playing') this.coach.update(this.hud.panelOpen || this.hud.bannerShowing || this.menus.current !== 'none');
+      if (this.state === 'playing') this.coach.update(this.hud.panelOpen || this.hud.bannerShowing || this.menus.current !== 'none' || this.netOverlay.busy);
       if (this.overTimer > 0) {
         this.overTimer -= dt;
         if (this.overTimer <= 0) {
           this.state = 'over';
-          this.menus.showResults(g.world, g.playerTeam, this.difficulty, g.history, g.ageUps);
+          if (g instanceof NetGame) {
+            const seats = this.mp?.room?.seats;
+            this.menus.showResults(g.world, g.playerTeam, this.difficulty, g.history, g.ageUps, {
+              foe: g.foeName,
+              reason: g.result?.reason ?? 'citadel',
+              // (Once the other player has left the room, there's no running score.)
+              score: seats?.[g.seat === 0 ? 1 : 0] ? [seats?.[g.seat]?.wins ?? 0, seats[g.seat === 0 ? 1 : 0]!.wins] : null,
+            });
+            this.syncRematch();
+          } else this.menus.showResults(g.world, g.playerTeam, this.difficulty, g.history, g.ageUps);
         }
       }
+      if (g instanceof NetGame) {
+        this.syncNetPause(g);
+        this.hud.setNet(g.foeName, this.mp?.conn.rtt ?? 0, g.online);
+      }
     }
+    this.netOverlay.update(g instanceof NetGame && this.state !== 'title' ? g : null, performance.now());
+  }
+
+  // -------------------------------------------------------------------------
+  // Multiplayer
+  // -------------------------------------------------------------------------
+
+  /** Opens the multiplayer lobby (connecting if needed). `join`: room code from an invite. */
+  openMultiplayer(join?: string, quiet = false): void {
+    if (!this.settings.playerName) {
+      this.settings.playerName = randomName();
+      saveSettings(this.settings);
+    }
+    this.menus.mp.setName(this.settings.playerName);
+    if (join) {
+      this.pendingJoin = join;
+      this.menus.mp.setCode(join);
+    }
+    if (!this.mp) {
+      const mp = new MpClient({ name: this.settings.playerName });
+      this.mp = mp;
+      this.mpOff = mp.listen({
+        changed: () => this.onMpChanged(),
+        battle: (g) => this.onNetBattle(g),
+        error: (code, message) => this.onMpError(code, message),
+      });
+      mp.start();
+    }
+    this.mp.watchRooms(true);
+    if (!quiet) {
+      this.quietResume = false;
+      this.menus.show(this.mp.room ? 'room' : 'mp');
+    }
+    this.onMpChanged();
+  }
+
+  /** Back from the lobby to the title: leave any room and disconnect. */
+  private closeMultiplayer(): void {
+    const mp = this.mp;
+    if (mp) {
+      if (mp.room) mp.leave();
+      this.mpOff?.();
+      mp.forget();
+      // Let the leave message go out before the socket closes.
+      setTimeout(() => mp.stop(), 150);
+    }
+    this.mp = null;
+    this.mpOff = null;
+    this.pendingJoin = null;
+    this.keepAwake(false);
+    this.menus.show('title');
+  }
+
+  /** Leave the room (from the room screen, the results, or the battle's pause menu). */
+  private leaveRoom(): void {
+    const inBattle = (this.state === 'playing' || this.state === 'over') && this.game instanceof NetGame;
+    this.mp?.leave();
+    if (inBattle) this.toTitle();
+    this.openMultiplayer();
+  }
+
+  /** Results screen: ask for (or withdraw) a rematch; if the other player left, back to the room. */
+  private rematch(): void {
+    const mp = this.mp;
+    const room = mp?.room;
+    if (!mp || !room || mp.seat === null) {
+      this.toTitle();
+      this.openMultiplayer();
+      return;
+    }
+    if (!room.seats[mp.seat === 0 ? 1 : 0]) {
+      this.toTitle();
+      this.openMultiplayer();
+      return;
+    }
+    mp.ready(!room.seats[mp.seat]?.ready);
+  }
+
+  private syncRematch(): void {
+    const mp = this.mp;
+    const g = this.game;
+    if (!mp || !(g instanceof NetGame) || this.state !== 'over') return;
+    const seats = mp.room?.seats;
+    const foe = seats?.[g.seat === 0 ? 1 : 0] ?? null;
+    this.menus.updateRematch(g.foeName, !!seats?.[g.seat]?.ready, foe ? foe.ready : null);
+  }
+
+  private onMpChanged(): void {
+    const mp = this.mp;
+    if (!mp) return;
+    this.menus.mp.update(mp, (code) => this.inviteUrl(code, mp.lanUrls));
+    if (mp.welcomed && this.pendingJoin) {
+      const code = this.pendingJoin;
+      this.pendingJoin = null;
+      if (mp.room?.code !== code) mp.join(code);
+    }
+    if (this.quietResume && mp.welcomed) {
+      // After a reload: carry on in the room (an ongoing battle arrives as a snapshot).
+      this.quietResume = false;
+      if (!mp.room) {
+        this.closeMultiplayer();
+        return;
+      }
+      if (this.state === 'title') this.menus.show('room');
+    }
+    if (this.state === 'title') {
+      const cur = this.menus.current;
+      if (cur === 'mp' && mp.room) this.menus.show('room');
+      else if (cur === 'room' && !mp.room) this.menus.show('mp');
+    }
+    if (mp.sessionLost && this.game instanceof NetGame && this.state !== 'title') {
+      // The server restarted: that battle is gone.
+      mp.sessionLost = false;
+      this.toTitle();
+      this.openMultiplayer();
+      this.menus.mp.flash('The game server restarted — that battle was lost.');
+    }
+    if (mp.room) this.keepAwake(true);
+    this.syncRematch();
+  }
+
+  private onMpError(code: string, message: string): void {
+    this.audio.ui('error');
+    const text = code === 'version' ? 'This page is out of date — reload it to play online.' : message;
+    if (this.state === 'playing') this.hud.toast(text, 'bad');
+    else this.menus.mp.flash(text);
+  }
+
+  /** An online battle starts (or is rejoined after a reload / reconnect). */
+  private onNetBattle(g: NetGame): void {
+    this.hookGame(g, false);
+    g.onReject = (reason) => this.hud.toast(reason, 'bad');
+    g.onResync = () => {
+      this.renderer.reset();
+      this.renderer.setTheme(g.world.players[g.playerTeam].age, true);
+    };
+    this.mp?.watchRooms(false);
+    this.enterBattle(g);
+    this.menus.show('none');
+    this.keepAwake(true);
+  }
+
+  /** The pause screen follows the server: open while a player has paused, closed otherwise. */
+  private syncNetPause(g: NetGame): void {
+    if (this.state !== 'playing' || g.over) return;
+    const p = g.netPause;
+    const want = p?.reason === 'pause' && g.countdownEnd <= performance.now();
+    const cur = this.menus.current;
+    if (want && cur === 'none') {
+      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, pausedBy: p!.seat === g.seat ? 'you' : g.names[p!.seat] });
+      this.hud.cancelTargeting();
+      this.hud.hideTooltip();
+      if (this.hud.panelOpen) this.hud.togglePanel('none');
+      this.menus.show('pause');
+    } else if (!want && (cur === 'pause' || cur === 'howto' || cur === 'settings')) {
+      this.menus.show('none');
+    }
+  }
+
+  /** The link another device opens to join `code` (the LAN address if we're on localhost). */
+  private inviteUrl(code: string, lan: string[]): string {
+    const host = location.hostname;
+    const local = host === 'localhost' || host === '0.0.0.0' || host === '[::1]' || host.startsWith('127.');
+    const base = local && lan.length ? lan[0] : location.origin + location.pathname;
+    return `${base}?join=${code}`;
+  }
+
+  /** Keeps a phone's screen on while in a room or an online battle (needs https or localhost). */
+  private keepAwake(on: boolean): void {
+    type Lock = { release(): Promise<void>; addEventListener(type: string, fn: () => void): void };
+    const nav = navigator as Navigator & { wakeLock?: { request(type: 'screen'): Promise<Lock> } };
+    if (!on) {
+      const lock = this.wakeLock;
+      this.wakeLock = null;
+      lock?.release().catch(() => {});
+      return;
+    }
+    if (this.wakeLock || this.wakePending || !nav.wakeLock || document.hidden) return;
+    this.wakePending = true;
+    nav.wakeLock
+      .request('screen')
+      .then((lock) => {
+        this.wakePending = false;
+        this.wakeLock = lock;
+        // Browsers drop the lock when the page is hidden; becoming visible asks again.
+        lock.addEventListener('release', () => {
+          if (this.wakeLock === lock) this.wakeLock = null;
+        });
+      })
+      .catch(() => (this.wakePending = false));
   }
 
   private battleIntensity(g: Game): number {

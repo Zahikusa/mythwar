@@ -118,7 +118,16 @@ export type ClientMsg =
 // ---------------------------------------------------------------------------
 
 export type ServerMsg =
-  | { type: 'welcome'; v: number; token: string; /** Room the session is still seated in (reconnect). */ room: RoomInfo | null; seat: Team | null }
+  | {
+      type: 'welcome';
+      v: number;
+      token: string;
+      /** Room the session is still seated in (reconnect). */
+      room: RoomInfo | null;
+      seat: Team | null;
+      /** Addresses other devices can open the game at (e.g. http://192.168.1.20:8787/). */
+      lan: string[];
+    }
   | { type: 'error'; code: ErrorCode; message: string }
   | { type: 'rooms'; rooms: OpenRoom[] }
   | { type: 'room'; room: RoomInfo; seat: Team }

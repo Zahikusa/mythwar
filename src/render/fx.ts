@@ -292,7 +292,8 @@ export class Fx {
     }
   }
 
-  drawTexts(ctx: CanvasRenderingContext2D, ui: number): void {
+  /** `mapX`: where a text's x lands (the mirrored battlefield draws texts unmirrored). */
+  drawTexts(ctx: CanvasRenderingContext2D, ui: number, mapX: (x: number) => number = (x) => x): void {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (const t of this.texts) {
@@ -303,9 +304,10 @@ export class Fx {
       ctx.font = `800 ${size}px "Trebuchet MS", "Segoe UI", sans-serif`;
       ctx.lineWidth = Math.max(2, size * 0.22);
       ctx.strokeStyle = 'rgba(20, 10, 30, 0.85)';
-      ctx.strokeText(t.text, t.x, t.y);
+      const x = mapX(t.x);
+      ctx.strokeText(t.text, x, t.y);
       ctx.fillStyle = t.color;
-      ctx.fillText(t.text, t.x, t.y);
+      ctx.fillText(t.text, x, t.y);
     }
     ctx.globalAlpha = 1;
   }

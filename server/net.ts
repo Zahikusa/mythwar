@@ -3,6 +3,7 @@ import type { Duplex } from 'node:stream';
 import { WebSocketServer } from 'ws';
 import type { WebSocket } from 'ws';
 import { MP_PATH } from '../src/net/protocol.ts';
+import { lanAddresses } from './lan.ts';
 import { Lobby } from './lobby.ts';
 import type { LobbyOptions } from './lobby.ts';
 
@@ -26,7 +27,12 @@ const HEARTBEAT = 4;
  * that runs every room and battle. Used by both `npm run lan` and the Vite dev server.
  */
 export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multiplayer {
-  const lobby = new Lobby(opts);
+  const lanUrls = () => {
+    const addr = http.address();
+    const port = addr && typeof addr === 'object' ? addr.port : 0;
+    return port ? lanAddresses().map((ip) => `http://${ip}:${port}/`) : [];
+  };
+  const lobby = new Lobby({ lanUrls, ...opts });
   const wss = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024, perMessageDeflate: false });
   const alive = new Map<WebSocket, number>();
 

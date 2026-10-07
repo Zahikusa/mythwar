@@ -8,6 +8,17 @@ import { CLASS_COLOR, CLASS_ICON, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 import type { Settings } from './settings.ts';
 import type { HistorySample } from '../game.ts';
+import { MpScreens } from './mpmenus.ts';
+import type { MpMenuCallbacks } from './mpmenus.ts';
+import type { EndReason } from '../net/protocol.ts';
+
+/** Results of a battle against another player (instead of an AI difficulty). */
+export interface OnlineResult {
+  foe: string;
+  reason: EndReason;
+  /** Wins in this room so far: [mine, theirs]. */
+  score: [number, number] | null;
+}
 
 export interface MenuCallbacks {
   play(difficulty: Difficulty): void;
@@ -17,9 +28,15 @@ export interface MenuCallbacks {
   quit(): void;
   settingsChanged(s: Settings): void;
   sound(kind: string): void;
+  multiplayer(): void;
+  mp: MpMenuCallbacks;
+  /** Results of an online battle: ask for a rematch / leave the room / back to the room. */
+  rematch(): void;
+  leaveRoom(): void;
+  toRoom(): void;
 }
 
-type Screen = 'none' | 'title' | 'difficulty' | 'howto' | 'settings' | 'pause' | 'over';
+type Screen = 'none' | 'title' | 'difficulty' | 'howto' | 'settings' | 'pause' | 'over' | 'mp' | 'room';
 
 /** Full-screen menus: title, difficulty, how-to-play, settings, pause and results. */
 export class Menus {
@@ -47,6 +64,13 @@ export class Menus {
   /** Set when the how-to is shown before a player's first battle. */
   private afterHowto: (() => void) | null = null;
   private playBtn: HTMLButtonElement | null = null;
+  /** Multiplayer lobby and room screens. */
+  readonly mp: MpScreens;
+  private restartBtn: HTMLButtonElement | null = null;
+  private pauseNote: HTMLElement | null = null;
+  private pauseTitle: HTMLElement | null = null;
+  private rematchBtn: HTMLButtonElement | null = null;
+  private rematchNote: HTMLElement | null = null;
 
   constructor(parent: HTMLElement, settings: Settings, cb: MenuCallbacks) {
     this.cb = cb;
@@ -60,7 +84,19 @@ export class Menus {
     this.screens.settings = this.buildSettings();
     this.screens.pause = this.buildPause();
     this.screens.over = h('div', { class: 'screen over' });
-    const labels: Partial<Record<Screen, string>> = { title: 'Main menu', difficulty: 'Choose your foe', howto: 'How to play', settings: 'Settings', pause: 'Paused', over: 'Battle results' };
+    this.mp = new MpScreens((label, cls, onClick, icon) => this.button(label, cls, onClick, icon), cb.mp);
+    this.screens.mp = this.mp.lobby;
+    this.screens.room = this.mp.room;
+    const labels: Partial<Record<Screen, string>> = {
+      title: 'Main menu',
+      difficulty: 'Choose your foe',
+      howto: 'How to play',
+      settings: 'Settings',
+      pause: 'Paused',
+      over: 'Battle results',
+      mp: 'Multiplayer',
+      room: 'Battle room',
+    };
     for (const [k, el] of Object.entries(this.screens)) {
       el!.setAttribute('role', k === 'title' ? 'region' : 'dialog');
       el!.setAttribute('aria-label', labels[k as Screen] ?? k);
@@ -73,12 +109,17 @@ export class Menus {
     return this.screen;
   }
 
-  /** One-line battle summary shown on the pause screen. */
-  setPauseSummary(world: World, me: Team, difficulty: Difficulty): void {
+  /** One-line battle summary shown on the pause screen. `foe`: the other player's name online. */
+  setPauseSummary(world: World, me: Team, difficulty: Difficulty, online?: { foe: string; pausedBy: string }): void {
     if (!this.pauseSummary) return;
     const P = world.players[me];
     const E = world.players[me === 0 ? 1 : 0];
-    this.pauseSummary.textContent = `vs ${AI_PROFILES[difficulty].name} · ${fmtTime(world.time)} · ${AGES[P.age].name} vs ${AGES[E.age].name} · ${P.stats.kills} foes slain`;
+    const foe = online ? online.foe : AI_PROFILES[difficulty].name;
+    this.pauseSummary.textContent = `vs ${foe} · ${fmtTime(world.time)} · ${AGES[P.age].name} vs ${AGES[E.age].name} · ${P.stats.kills} foes slain`;
+    // Online, either player may pause and either may resume; the battle can't restart.
+    this.restartBtn?.classList.toggle('hidden', !!online);
+    if (this.pauseTitle) this.pauseTitle.textContent = online ? `Paused by ${online.pausedBy}` : 'Paused';
+    if (this.pauseNote) this.pauseNote.textContent = online ? 'Leaving the battle counts as a defeat. Either player can resume.' : 'Leaving or restarting after the first minute counts as a defeat.';
   }
 
   /** One laurel per difficulty the player has beaten (shown on the title screen). */
@@ -173,6 +214,7 @@ export class Menus {
       { class: 'mbuttons' },
       this.continueBtn,
       this.playBtn,
+      this.button('Multiplayer', 'mpbtn', () => this.cb.multiplayer(), ICONS.versus),
       this.button('How to Play', '', () => this.show('howto'), ICONS.info),
       this.button('Settings', '', () => this.show('settings'), ICONS.sound),
     );
@@ -429,10 +471,13 @@ export class Menus {
 
   private buildPause(): HTMLElement {
     this.pauseSummary = h('div', { class: 'psummary' });
+    this.pauseTitle = h('h2', { text: 'Paused' });
+    this.restartBtn = this.button('Restart', '', () => this.cb.restart());
+    this.pauseNote = h('div', { class: 'mnote', text: 'Leaving or restarting after the first minute counts as a defeat.' });
     return h(
       'div',
       { class: 'screen pause' },
-      h('h2', { text: 'Paused' }),
+      this.pauseTitle,
       this.pauseSummary,
       h(
         'div',
@@ -440,9 +485,9 @@ export class Menus {
         this.button('Resume', 'primary big', () => this.cb.resume(), ICONS.play),
         this.button('How to Play', '', () => this.show('howto'), ICONS.info),
         this.button('Settings', '', () => this.show('settings'), ICONS.sound),
-        this.button('Restart', '', () => this.cb.restart()),
+        this.restartBtn,
         this.button('Leave battle', 'ghost', () => this.cb.quit()),
-        h('div', { class: 'mnote', text: 'Leaving or restarting after the first minute counts as a defeat.' }),
+        this.pauseNote,
       ),
     );
   }
@@ -451,17 +496,18 @@ export class Menus {
   // Results
   // -------------------------------------------------------------------------
 
-  showResults(world: World, me: Team, difficulty: Difficulty, history: HistorySample[] = [], ageUps: { t: number; team: Team; age: number }[] = []): void {
+  showResults(world: World, me: Team, difficulty: Difficulty, history: HistorySample[] = [], ageUps: { t: number; team: Team; age: number }[] = [], online?: OnlineResult): void {
     const el = this.screens.over!;
     el.innerHTML = '';
     const won = world.winner === me;
+    const foeName = online ? online.foe : AI_PROFILES[difficulty].name;
     const P = world.players[me];
     const E = world.players[me === 0 ? 1 : 0];
     const row = (label: string, a: string, b: string) => h('tr', null, h('td', { text: a }), h('th', { text: label }), h('td', { text: b }));
     const table = h(
       'table',
       { class: 'stats' },
-      h('thead', null, h('tr', null, h('td', { class: 'you', text: 'You' }), h('th'), h('td', { class: 'foe', text: AI_PROFILES[difficulty].name }))),
+      h('thead', null, h('tr', null, h('td', { class: 'you', text: 'You' }), h('th'), h('td', { class: 'foe', text: foeName }))),
       h(
         'tbody',
         null,
@@ -486,7 +532,7 @@ export class Menus {
         }
       }
     }
-    const shareText = `Mythwar: ${won ? 'Victory' : 'Defeat'} vs ${AI_PROFILES[difficulty].name} in ${fmtTime(world.time)} — reached ${AGES[P.age].name}, ${P.stats.kills} foes slain.`;
+    const shareText = `Mythwar: ${won ? 'Victory' : 'Defeat'} vs ${foeName} in ${fmtTime(world.time)} — reached ${AGES[P.age].name}, ${P.stats.kills} foes slain.`;
     const share = this.button('Copy result', 'ghost', () => {
       const done = (ok: boolean) => (share.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed');
       try {
@@ -499,13 +545,13 @@ export class Menus {
       h(
         'div',
         { class: 'vhead' },
-        h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: won ? 'The enemy citadel has fallen.' : 'Your citadel lies in ruins.' })),
-        h('div', { class: 'vportrait' }, portrait(champion.id, 96, me, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
+        h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: verdictLine(won, online) })),
+        h('div', { class: 'vportrait' }, portrait(champion.id, 96, 0, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
       ),
       h('div', { class: 'vtime', text: `Battle length ${fmtTime(world.time)}` }),
-      h('div', { class: 'vtip', text: battleTip(world, me, difficulty, ageUps) }),
-      h('div', { class: 'vstats' }, table, history.length >= 3 ? armyChart(history, me, AI_PROFILES[difficulty].name, ageUps) : null),
-      h(
+      h('div', { class: 'vtip', text: online && (won || online.reason !== 'citadel') ? scoreLine(online) : battleTip(world, me, difficulty, ageUps) }),
+      h('div', { class: 'vstats' }, table, history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null),
+      online ? this.onlineResultButtons(share) : h(
         'div',
         { class: 'mrow' },
         this.button('Main menu', 'ghost', () => this.cb.quit()),
@@ -516,6 +562,51 @@ export class Menus {
     );
     this.show('over');
   }
+
+  private onlineResultButtons(share: HTMLButtonElement): HTMLElement {
+    this.rematchBtn = this.button('Rematch', 'primary', () => this.cb.rematch(), ICONS.swords);
+    this.rematchNote = h('div', { class: 'mnote rmatch' });
+    return h(
+      'div',
+      { class: 'vbuttons' },
+      this.rematchNote,
+      h('div', { class: 'mrow' }, this.button('Leave room', 'ghost', () => this.cb.leaveRoom()), share, this.rematchBtn),
+    );
+  }
+
+  /**
+   * Online results: whether a rematch is wanted by us / the other player, or they left.
+   * `mine` / `theirs`: readiness; `theirs` null = they left the room.
+   */
+  updateRematch(foe: string, mine: boolean, theirs: boolean | null): void {
+    const btn = this.rematchBtn;
+    const note = this.rematchNote;
+    if (!btn || !note) return;
+    const span = btn.querySelector('span')!;
+    if (theirs === null) {
+      span.textContent = 'Back to room';
+      note.textContent = `${foe} left the room.`;
+      btn.dataset.room = '1';
+    } else {
+      btn.dataset.room = '';
+      span.textContent = mine ? 'Cancel rematch' : theirs ? 'Accept rematch' : 'Rematch';
+      note.textContent = mine ? `Waiting for ${foe}…` : theirs ? `${foe} wants a rematch!` : '';
+    }
+    btn.classList.toggle('primary', !mine);
+    note.classList.toggle('hot', theirs === true && !mine);
+  }
+}
+
+function verdictLine(won: boolean, online?: OnlineResult): string {
+  if (online?.reason === 'forfeit') return won ? `${online.foe} left the battle.` : 'You left the battle.';
+  if (online?.reason === 'timeout') return won ? `${online.foe} didn’t come back in time.` : 'You were away too long.';
+  return won ? 'The enemy citadel has fallen.' : 'Your citadel lies in ruins.';
+}
+
+function scoreLine(o: OnlineResult): string {
+  if (!o.score) return 'Well fought!';
+  const [a, b] = o.score;
+  return `Score in this room: you ${a} – ${b} ${o.foe}`;
 }
 
 /** One concrete lesson from the battle just played (or, after a win, what to try next). */

@@ -1,7 +1,7 @@
 import { artFor } from '../render/creatures/index.ts';
 import { setLineWidth } from '../render/draw.ts';
 import { hudZoom } from '../render/layout.ts';
-import { TEAM_COLORS } from '../render/theme.ts';
+import { TEAM_PALETTE } from '../render/theme.ts';
 import type { Team } from '../sim/types.ts';
 
 const cache = new Map<string, HTMLCanvasElement>();
@@ -13,7 +13,7 @@ function screenZoom(): number {
 }
 
 /**
- * Renders a creature into a square canvas (CSS size `size`, crisp on high-DPI screens).
+ * Renders a creature into a square canvas. `team` picks the colour: 0 = yours (blue), 1 = foe's. (CSS size `size`, crisp on high-DPI screens).
  * `zoom` is the CSS zoom the canvas will be shown under (the large-screen desktop HUD/menus).
  */
 export function portrait(defId: string, size: number, team: Team = 0, t = 0.4, faceLeft = false, zoom = screenZoom()): HTMLCanvasElement {
@@ -56,7 +56,7 @@ export function drawPortrait(c: HTMLCanvasElement, defId: string, team: Team, t:
     moving: false,
     attack: -1,
     hit: 0.5,
-    tc: TEAM_COLORS[team],
+    tc: TEAM_PALETTE[team],
     seed: 0.3,
     enraged: false,
     charged: false,

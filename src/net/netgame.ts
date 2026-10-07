@@ -40,6 +40,8 @@ export class NetGame extends Game {
   result: { winner: Team; reason: EndReason } | null = null;
   /** Set while the server holds the battle (a player paused or is away). */
   netPause: PauseState | null = null;
+  /** performance.now() when netPause arrived (forfeitIn counts from here). */
+  netPauseAt = 0;
   /** performance.now() at which the current start/resume countdown ends (0 = none). */
   countdownEnd = 0;
   /** Whether our own link to the server is up (set by the owner). */
@@ -88,6 +90,11 @@ export class NetGame extends Game {
     return this.bufMs;
   }
 
+  /** Waiting for the server's snapshot after a mismatch. */
+  get syncing(): boolean {
+    return this.awaitingSnapshot;
+  }
+
   /** Ticks received but not yet played. */
   get backlog(): number {
     return this.confirmed - this.world.tick;
@@ -119,6 +126,7 @@ export class NetGame extends Game {
       case 'paused':
         this.playOutConfirmed();
         this.netPause = msg.state;
+        this.netPauseAt = at;
         this.countdownEnd = 0;
         // Orders that reached the server after it paused were dropped.
         this.mine.clear();
@@ -278,6 +286,7 @@ export class NetGame extends Game {
     this.ageUps.splice(0, this.ageUps.length, ...msg.ageUps);
     this.nextSample = this.world.time + SAMPLE_EVERY;
     this.netPause = msg.paused;
+    this.netPauseAt = this.now();
     this.countdownEnd = 0;
     this.awaitingSnapshot = false;
     this.resetClock();

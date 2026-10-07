@@ -25,6 +25,12 @@ export const ICONS = {
   swords: svg(
     '<path d="M4 4l9 9M20 4l-9 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M6.5 15.5l2 2M17.5 15.5l-2 2M3.5 18.5l3 3M20.5 18.5l-3 3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
   ),
+  versus: svg(
+    '<circle cx="7.5" cy="7.5" r="3.2" fill="currentColor"/><circle cx="16.5" cy="7.5" r="3.2" fill="currentColor"/><path d="M2 19.5c0-3.4 2.5-5.6 5.5-5.6s5.5 2.2 5.5 5.6zM11 19.5c0-3.4 2.5-5.6 5.5-5.6s5.5 2.2 5.5 5.6z" fill="currentColor" opacity=".85"/>',
+  ),
+  wifi: svg(
+    '<path d="M2.5 9a14 14 0 0119 0M5.5 12.3a9.5 9.5 0 0113 0M8.6 15.5a5 5 0 016.8 0" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="12" cy="19" r="1.8" fill="currentColor"/>',
+  ),
   shrine: svg('<path d="M12 2l3 5-3 5-3-5z" fill="currentColor"/><path d="M8 22l1.5-8h5L16 22z" fill="currentColor" opacity=".7"/>'),
   skull: svg('<path d="M12 3a8 8 0 00-8 8c0 2.6 1.3 4.4 3 5.5V20h10v-3.5c1.7-1.1 3-2.9 3-5.5a8 8 0 00-8-8z" fill="currentColor"/><circle cx="9" cy="11.5" r="2" fill="#1b1229"/><circle cx="15" cy="11.5" r="2" fill="#1b1229"/>'),
   info: svg('<circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 10.5v6M12 7.2v.6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>'),

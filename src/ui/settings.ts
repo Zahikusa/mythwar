@@ -23,6 +23,8 @@ export interface Settings {
   tutorialSeen: boolean;
   hintsSeen: string[];
   records: Partial<Record<Difficulty, DifficultyRecord>>;
+  /** Name shown to other players in multiplayer ('' = not chosen yet). */
+  playerName: string;
 }
 
 const KEY = 'mythwar.settings.v1';
@@ -41,6 +43,7 @@ const DEFAULTS: Settings = {
   tutorialSeen: false,
   hintsSeen: [],
   records: {},
+  playerName: '',
 };
 
 export function loadSettings(): Settings {
@@ -82,6 +85,7 @@ function sanitize(s: Settings): Settings {
     tutorialSeen: bool(s.tutorialSeen, false),
     hintsSeen: Array.isArray(s.hintsSeen) ? s.hintsSeen.filter((x): x is string => typeof x === 'string') : [],
     records,
+    playerName: typeof s.playerName === 'string' ? s.playerName.slice(0, 40) : '',
   };
 }
 

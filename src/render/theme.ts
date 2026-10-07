@@ -120,10 +120,23 @@ export interface TeamColors {
   rgb: [number, number, number];
 }
 
-export const TEAM_COLORS: Record<Team, TeamColors> = {
-  0: { main: '#3fb8ff', light: '#a8e4ff', dark: '#1a5f9e', glow: 'rgba(63, 184, 255, 0.55)', rgb: [63, 184, 255] },
-  1: { main: '#ff4f6d', light: '#ffb0bd', dark: '#9e1a33', glow: 'rgba(255, 79, 109, 0.55)', rgb: [255, 79, 109] },
-};
+/** Blue is always the local player's colour, red the opponent's (DOM portraits use this directly). */
+export const TEAM_PALETTE: readonly [TeamColors, TeamColors] = [
+  { main: '#3fb8ff', light: '#a8e4ff', dark: '#1a5f9e', glow: 'rgba(63, 184, 255, 0.55)', rgb: [63, 184, 255] },
+  { main: '#ff4f6d', light: '#ffb0bd', dark: '#9e1a33', glow: 'rgba(255, 79, 109, 0.55)', rgb: [255, 79, 109] },
+];
+
+/** Colours by team as drawn on the battlefield (swapped when the local player is team 1). */
+export const TEAM_COLORS: Record<Team, TeamColors> = { 0: TEAM_PALETTE[0], 1: TEAM_PALETTE[1] };
+
+/** Makes `team` blue. Returns true if the colours changed (cached art must be redrawn). */
+export function setColorPerspective(team: Team): boolean {
+  const mine = TEAM_PALETTE[0];
+  if (TEAM_COLORS[team] === mine) return false;
+  TEAM_COLORS[team] = mine;
+  TEAM_COLORS[team === 0 ? 1 : 0] = TEAM_PALETTE[1];
+  return true;
+}
 
 /** Lighten (+) or darken (-) a #rrggbb colour by `amt` (-1..1). */
 export function shade(hex: string, amt: number): string {

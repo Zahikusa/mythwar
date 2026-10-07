@@ -1,6 +1,7 @@
 import './ui/style.css';
 import './ui/hud.css';
 import './ui/menus.css';
+import './ui/mp.css';
 import { App } from './app.ts';
 import { TURRETS, UNITS } from './sim/data.ts';
 

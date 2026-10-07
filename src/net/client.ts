@@ -39,6 +39,8 @@ export class MpClient {
   welcomed = false;
   /** The server dropped our session (e.g. it restarted). */
   sessionLost = false;
+  /** Addresses the server says other devices can reach the game at. */
+  lanUrls: string[] = [];
   private token: string | null;
   private watching = false;
   private readonly listeners = new Set<MpListener>();
@@ -77,6 +79,12 @@ export class MpClient {
   stop(): void {
     this.conn.close();
     this.welcomed = false;
+  }
+
+  /** Forgets the session (this tab won't try to rejoin a room after a reload). */
+  forget(): void {
+    this.token = null;
+    this.storage?.removeItem(TOKEN_KEY);
   }
 
   setName(name: string): void {
@@ -133,6 +141,7 @@ export class MpClient {
         this.storage?.setItem(TOKEN_KEY, msg.token);
         this.room = msg.room;
         this.seat = msg.seat;
+        this.lanUrls = Array.isArray(msg.lan) ? msg.lan : [];
         // We thought we were in a room but the server doesn't know us (it restarted).
         this.sessionLost = hadRoom && !msg.room;
         if (this.sessionLost && this.game && !this.game.over) this.game.abandon();
@@ -192,6 +201,11 @@ export class MpClient {
   private emit(fn: (l: MpListener) => void): void {
     for (const l of [...this.listeners]) fn(l);
   }
+}
+
+/** This tab was in a multiplayer session before (a reload): it may still have a room or battle. */
+export function hasStoredSession(): boolean {
+  return !!safeSessionStorage()?.getItem(TOKEN_KEY);
 }
 
 function safeSessionStorage(): Storage | null {
