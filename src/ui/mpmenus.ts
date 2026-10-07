@@ -237,7 +237,7 @@ export class MpScreens {
   }
 
   /** Refreshes both screens from the session state. `inviteUrl` = link for the other device. */
-  update(c: MpClient, inviteUrl: (code: string) => string): void {
+  update(c: MpClient, inviteUrl: (code: string) => string, record: (foe: string) => { w: number; l: number } | null = () => null): void {
     // Lobby: connection state.
     const now = performance.now();
     const online = c.state === 'online' && c.welcomed;
@@ -292,6 +292,14 @@ export class MpScreens {
     }
     this.mySeat = me;
     room.seats.forEach((s, i) => this.renderSeat(i, s, i === me));
+    // Your all-time record against this opponent (by name), under their seat.
+    if (foe) {
+      const r = record(foe.name);
+      const v = this.seats[me === 0 ? 1 : 0];
+      const inRoom = foe.wins || room.seats[me]?.wins ? `${room.seats[me]?.wins ?? 0} – ${foe.wins} here` : '';
+      const ever = r && r.w + r.l > 0 ? `you ${r.w} – ${r.l} overall` : '';
+      setText(v.wins, [inRoom, ever].filter(Boolean).join(' · '));
+    }
     this.iAmReady = !!room.seats[me]?.ready;
     setText(this.readyBtn.querySelector('span')!, this.iAmReady ? 'Not ready' : 'Ready');
     toggle(this.readyBtn, 'primary', !this.iAmReady);

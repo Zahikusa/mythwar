@@ -25,6 +25,8 @@ export interface Settings {
   records: Partial<Record<Difficulty, DifficultyRecord>>;
   /** Name shown to other players in multiplayer ('' = not chosen yet). */
   playerName: string;
+  /** Online results per opponent name (most recent opponents only). */
+  online: Record<string, { w: number; l: number }>;
 }
 
 const KEY = 'mythwar.settings.v1';
@@ -44,6 +46,7 @@ const DEFAULTS: Settings = {
   hintsSeen: [],
   records: {},
   playerName: '',
+  online: {},
 };
 
 export function loadSettings(): Settings {
@@ -58,7 +61,7 @@ export function loadSettings(): Settings {
   }
   // First run: respect the OS "reduce motion" preference.
   const calm = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  return { ...DEFAULTS, shake: !calm, hintsSeen: [], records: {} };
+  return { ...DEFAULTS, shake: !calm, hintsSeen: [], records: {}, online: {} };
 }
 
 /** Stored settings may come from an older build or be hand-edited: keep only sane values. */
@@ -86,7 +89,31 @@ function sanitize(s: Settings): Settings {
     hintsSeen: Array.isArray(s.hintsSeen) ? s.hintsSeen.filter((x): x is string => typeof x === 'string') : [],
     records,
     playerName: typeof s.playerName === 'string' ? s.playerName.slice(0, 40) : '',
+    online: sanitizeOnline(s.online),
   };
+}
+
+const ONLINE_MAX = 40;
+
+function sanitizeOnline(raw: unknown): Settings['online'] {
+  const out: Settings['online'] = {};
+  if (!raw || typeof raw !== 'object') return out;
+  for (const [name, r] of Object.entries(raw as Record<string, { w?: unknown; l?: unknown }>).slice(-ONLINE_MAX)) {
+    if (r && typeof r === 'object') out[name.slice(0, 40)] = { w: Math.max(0, Number(r.w) || 0), l: Math.max(0, Number(r.l) || 0) };
+  }
+  return out;
+}
+
+/** Counts an online battle against `foe` (kept for the most recent opponents). */
+export function recordOnline(s: Settings, foe: string, won: boolean): void {
+  const r = s.online[foe] ?? { w: 0, l: 0 };
+  delete s.online[foe]; // re-insert: most recent last
+  if (won) r.w++;
+  else r.l++;
+  s.online[foe] = r;
+  const names = Object.keys(s.online);
+  for (const n of names.slice(0, Math.max(0, names.length - ONLINE_MAX))) delete s.online[n];
+  saveSettings(s);
 }
 
 export function saveSettings(s: Settings): void {

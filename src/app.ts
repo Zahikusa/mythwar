@@ -9,7 +9,7 @@ import { Renderer } from './render/renderer.ts';
 import { Coach } from './ui/coach.ts';
 import { Hud } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
-import { loadSettings, recordResult, saveSettings } from './ui/settings.ts';
+import { loadSettings, recordOnline, recordResult, saveSettings } from './ui/settings.ts';
 import { clearBattle, loadBattle, saveBattle } from './save.ts';
 import { AGES } from './sim/data.ts';
 import { fmtTime } from './ui/dom.ts';
@@ -540,6 +540,8 @@ export class App {
     const g = this.game!;
     const won = g.world.winner === g.playerTeam;
     if (g instanceof NetGame) {
+      // (A battle abandoned by the server restarting has no result to count.)
+      if (g.result) recordOnline(this.settings, g.foeName.replace(/ \(2\)$/, ''), won);
       this.audio.ui(won ? 'victory' : 'defeat');
       this.overTimer = 2.6;
       this.hud.cancelTargeting();
@@ -710,7 +712,7 @@ export class App {
   private onMpChanged(): void {
     const mp = this.mp;
     if (!mp) return;
-    this.menus.mp.update(mp, (code) => this.inviteUrl(code, mp.lanUrls));
+    this.menus.mp.update(mp, (code) => this.inviteUrl(code, mp.lanUrls), (name) => this.settings.online[name.replace(/ \(2\)$/, '')] ?? null);
     if (mp.welcomed && this.pendingJoin) {
       const code = this.pendingJoin;
       this.pendingJoin = null;

@@ -422,6 +422,7 @@ export class Menus {
         return;
       }
       s.records = {};
+      s.online = {};
       this.cb.settingsChanged(s);
       resetRecords.dataset.armed = '';
       resetRecords.querySelector('span')!.textContent = 'Records cleared';

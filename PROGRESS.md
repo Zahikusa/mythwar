@@ -120,7 +120,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 4. [x] `src/net/netgame.ts`: a device that keeps desyncing (would mean a real engine difference)
    resyncs every second silently; count it and tell the player / log it after a few. (Logged
    with both hashes; a one-time notice after 3.)
-5. [ ] Online results aren't recorded anywhere (AI records are per difficulty); keep a small
+5. [x] Online results aren't recorded anywhere (AI records are per difficulty); keep a small
    per-opponent tally (name → W/L) and show it in the room.
 6. [x] `src/ui/mpmenus.ts`: no way to rename yourself once in a room (only in the lobby).
 7. [ ] `server/lobby.ts` `openRooms()`: for a public internet server the "open battles on this
