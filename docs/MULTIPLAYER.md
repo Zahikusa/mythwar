@@ -164,8 +164,11 @@ The design already separates everything that matters for that step:
    A matchmaking queue would be the next step.
 4. **Latency:** the jitter buffer adapts by itself (tested with 20–140 ms delays); for long
    distances raise `turnTicks` in `attachMultiplayer` to save packets if needed.
-5. **Scale:** rooms are independent, so several server processes behind sticky sessions (or one
+5. **Abuse limits are in place:** rooms (2000) and sessions (10000) per server, 32 connections per
+   public address, message / command / emote rate limits, strict validation of every message,
+   64 kB maximum frame size. Responses are brotli/gzip-compressed.
+6. **Scale:** rooms are independent, so several server processes behind sticky sessions (or one
    process per region) scale horizontally. A match costs well under 1 % of a CPU core.
-6. **Later:** accounts and persistent ratings, spectators (they would simply receive turns),
+7. **Later:** accounts and persistent ratings, spectators (they would simply receive turns),
    replays (seed + command log is a complete replay), and reconnect across devices (the session
    token is already the key).
