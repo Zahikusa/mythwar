@@ -46,9 +46,9 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 - [x] MP5 Mirrored view for team 1 (canvas mirror, readable text, blue = you, input/HUD
       unchanged because the lane layout is symmetric; stereo panning follows).
 - [x] MP6 Multiplayer UI (lobby, room + QR invite, countdown, overlays, ping badge, rematch).
-- [~] MP7 Phone robustness: away on visibilitychange/pagehide, reconnect nudge, wake lock
-      (only on https/localhost), reload rejoins. Still to check: rotated portrait phone in MP.
-- [ ] MP8 Docs: README + docs/MULTIPLAYER.md (setup, firewall, architecture, internet upgrade).
+- [x] MP7 Phone robustness: away on visibilitychange/pagehide, reconnect nudge, wake lock
+      (only on https/localhost), reload rejoins, upright (rotated) phones (`mpsmoke --portrait`).
+- [x] MP8 Docs: README + docs/MULTIPLAYER.md (setup, firewall, architecture, internet upgrade).
 - [x] MP9 End-to-end: `scripts/mpsmoke.ts` (desktop + phone profiles, all flows), in verify.
 - [ ] MP10 Verification + polish (bad-network run of mpsmoke, review all new code).
 
@@ -62,6 +62,8 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   `tests/netgame.test.ts` (simulated network: latency, jitter, dead links, desync repair).
   `node scripts/mpsmoke.ts [--shots] [--latency 60 --jitter 80]` (screenshots → screenshots/mp).
 - Jitter buffer on a simulated 20–140 ms Wi-Fi: 99% of frames advance exactly one tick.
+- Measured: snapshots ≤ 12 kB in long battles; server sim 2.5 µs/tick (≈0.015% of a core per
+  match). `mpsmoke` passes plain, with `--latency 60 --jitter 80`, and with `--portrait`.
 
 ## Decisions
 - Single-player stays exactly as it was (AI, 2× speed, autosave). Multiplayer is a separate mode.

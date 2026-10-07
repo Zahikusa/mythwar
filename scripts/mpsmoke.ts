@@ -1,7 +1,7 @@
 /**
  * Multiplayer end-to-end test: two players (a desktop browser and a phone, in separate browser
  * profiles) meet in a room through the real UI and fight an online battle.
- *   npm run build && node scripts/mpsmoke.ts [--shots] [--latency 60 --jitter 80]
+ *   npm run build && node scripts/mpsmoke.ts [--shots] [--portrait] [--latency 60 --jitter 80]
  * Checks lobby/room flow, countdown, mirrored view, orders crossing over, pause/resume,
  * a dropped connection, the app going to the background, a reload mid-battle, leaving
  * (forfeit), results and a rematch. Exits non-zero on any failure or console error.
@@ -138,7 +138,9 @@ async function main(): Promise<void> {
     await a.setViewport({ width: 1366, height: 768, deviceScaleFactor: 1 });
     const ctxB = await browser.createBrowserContext();
     const b = await ctxB.newPage();
-    await b.setViewport({ width: 844, height: 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    // --portrait: the phone is held upright (the game rotates its stage into landscape).
+    const portrait = args.includes('--portrait');
+    await b.setViewport({ width: portrait ? 390 : 844, height: portrait ? 844 : 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     watch(a, 'A');
     watch(b, 'B');
 
