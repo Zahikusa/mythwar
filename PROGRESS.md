@@ -78,6 +78,10 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   `tests/netgame.test.ts` (simulated network: latency, jitter, dead links, desync repair).
   `node scripts/mpsmoke.ts [--shots] [--latency 60 --jitter 80]` (screenshots → screenshots/mp).
 - Jitter buffer on a simulated 20–140 ms Wi-Fi: 99% of frames advance exactly one tick.
+- Bot soaks (`node scripts/mpbot.ts --vs-bot --debug` against `node server/main.ts --latency 30
+  --jitter 40`): a desync turned up after a few minutes; the --debug replay diff showed both
+  replicas missing one order — the lag *simulator* reordered messages (one setTimeout per
+  message). Fixed (ordered queue); clients now also resync at once on any out-of-order turn.
 - Measured: snapshots ≤ 12 kB in long battles; server sim 2.5 µs/tick (≈0.015% of a core per
   match). `mpsmoke` passes plain, with `--latency 60 --jitter 80`, and with `--portrait`.
 
