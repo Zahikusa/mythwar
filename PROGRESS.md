@@ -125,3 +125,13 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 6. [x] `src/ui/mpmenus.ts`: no way to rename yourself once in a room (only in the lobby).
 7. [ ] `server/lobby.ts` `openRooms()`: for a public internet server the "open battles on this
    network" list must be scoped (e.g. by the client's public IP) — documented, not built.
+8. [ ] `server/main.ts`: no https option. Phones only allow the screen wake lock (and PWA
+   install) on https; `--cert/--key` flags (user-supplied or mkcert certificate) would enable it.
+9. [ ] `server/main.ts` / `server/lobby.ts`: log lines have no timestamps — hard to match a
+   player's "it froze at 8 pm" to the log.
+10. [ ] `scripts/mpsmoke.ts`: the mirrored phone only taps a card; dragging a card onto a lane
+    and opening a turret slot by tapping its own (left) gate aren't covered for team 1.
+11. [ ] `src/ui/hud.ts`: on desktop the opponent's name only appears in the small badge under
+    the clock; their HP bar / age badge (right) doesn't say who it is.
+12. [ ] Upright phones: typing a name / room code while the stage is rotated opens the keyboard
+    sideways — the lobby could suggest turning the phone, or un-rotate the lobby.
