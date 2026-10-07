@@ -55,6 +55,8 @@ export class NetGame extends Game {
   onReject: (reason: string) => void = () => {};
   /** The world was replaced by a server snapshot (renderer state should be reset). */
   onResync: () => void = () => {};
+  /** Our replica disagreed with the server (count so far). Should never happen; see the log. */
+  onDesync: (count: number) => void = () => {};
   private readonly send: (msg: ClientMsg) => boolean;
   private readonly now: () => number;
   private confirmed = 0;
@@ -196,9 +198,13 @@ export class NetGame extends Game {
     const h = this.hashes.get(w.tick);
     if (h !== undefined) {
       this.hashes.delete(w.tick);
-      if (hashWorld(w) !== h) {
+      const mine = hashWorld(w);
+      if (mine !== h) {
         this.desyncs++;
+        // A desync means this device simulated differently: worth a bug report.
+        console.warn(`[mythwar] state mismatch at tick ${w.tick}: here ${mine.toString(16)}, server ${h.toString(16)} — resyncing`);
         this.requestSnapshot();
+        this.onDesync(this.desyncs);
       }
     }
   }

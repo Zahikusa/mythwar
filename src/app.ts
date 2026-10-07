@@ -774,6 +774,10 @@ export class App {
   private onNetBattle(g: NetGame): void {
     this.hookGame(g, false);
     g.onReject = (reason) => this.hud.toast(reason, 'bad');
+    g.onDesync = (n) => {
+      // Corrected silently each time; if it keeps happening, say so once (and the log has details).
+      if (n === 3) this.hud.toast('This device keeps drifting out of sync — it is corrected automatically.', 'info');
+    };
     g.onResync = () => {
       this.renderer.reset();
       this.renderer.setTheme(g.world.players[g.playerTeam].age, true);

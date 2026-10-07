@@ -123,7 +123,7 @@ async function main(): Promise<void> {
   const root = resolve('dist');
   if (!existsSync(join(root, 'index.html'))) throw new Error('Run "npm run build" first');
   const http = createServer(serveStatic(root));
-  const mp = attachMultiplayer(http, { latency, jitter, countdown: 3 });
+  let mp = attachMultiplayer(http, { latency, jitter, countdown: 3 });
   await new Promise<void>((r) => http.listen(0, '127.0.0.1', () => r()));
   const base = `http://127.0.0.1:${(http.address() as { port: number }).port}`;
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--autoplay-policy=no-user-gesture-required'] });
@@ -301,6 +301,14 @@ async function main(): Promise<void> {
     await waitFor(a, 'A at title', () => (window as any).__mythwar.menus.current === 'title');
     await waitFor(b, 'B wins', () => (window as any).__mythwar.menus.current === 'over', 8000);
     await shot(b, '11-results-phone');
+
+    console.log('== server restart ==');
+    // B sits on the results in its room; the game server restarts and forgets everyone.
+    mp.close();
+    mp = attachMultiplayer(http, { latency, jitter, countdown: 3 });
+    await waitFor(b, 'B back in the lobby after the restart', () => (window as any).__mythwar.menus.current === 'mp' && (window as any).__mythwar.mp?.state === 'online', 10000);
+    const note = await b.evaluate(() => document.querySelector('.screen.mp .mpflash')?.textContent ?? '');
+    check('B told the server restarted', note.includes('restarted'), note);
 
     check('no console errors', errors.length === 0, errors.slice(0, 5).join(' | '));
   } finally {

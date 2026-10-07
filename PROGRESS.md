@@ -114,10 +114,12 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
    minus orders in flight.
 2. [x] `server/lobby.ts`: two players can have the same name (random names collide, or both
    type "Player") — "Ada vs Ada" is confusing; suffix duplicates in a room.
-3. [ ] `scripts/mpsmoke.ts`: no end-to-end check of a server restart (clients should land in
-   the lobby with the "server restarted" note) or of the version-mismatch screen.
-4. [ ] `src/net/netgame.ts`: a device that keeps desyncing (would mean a real engine difference)
-   resyncs every second silently; count it and tell the player / log it after a few.
+3. [x] `scripts/mpsmoke.ts`: no end-to-end check of a server restart (clients should land in
+   the lobby with the "server restarted" note) or of the version-mismatch screen. (Restart now
+   covered end to end; version mismatch by unit tests.)
+4. [x] `src/net/netgame.ts`: a device that keeps desyncing (would mean a real engine difference)
+   resyncs every second silently; count it and tell the player / log it after a few. (Logged
+   with both hashes; a one-time notice after 3.)
 5. [ ] Online results aren't recorded anywhere (AI records are per difficulty); keep a small
    per-opponent tally (name → W/L) and show it in the room.
 6. [ ] `src/ui/mpmenus.ts`: no way to rename yourself once in a room (only in the lobby).
