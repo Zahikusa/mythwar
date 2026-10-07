@@ -306,11 +306,14 @@ export class NetGame extends Game {
   }
 
   /** The simulation's own blocker, counting our orders that are still on their way. */
-  private blocker(cmd: Command): string | null {
-    const w = this.world;
-    const team = this.seat;
-    if (cmd.team !== team) return 'Not your side';
-    const p = w.players[team];
+  /** Gold as the player should see it: minus orders on their way to the server. */
+  override displayGold(): number {
+    return Math.max(0, this.world.players[this.seat].gold - this.inflight().spend);
+  }
+
+  /** What our orders still in flight will cost / take up once the server applies them. */
+  private inflight(): { spend: number; trains: number; ascending: boolean; casting: boolean; blessRanks: Record<string, number> } {
+    const p = this.world.players[this.seat];
     let spend = 0;
     let trains = 0;
     let ascending = false;
@@ -339,6 +342,15 @@ export class NetGame extends Game {
         spend += (TURRETS[c.turretId]?.cost ?? 0) - (cur ? Math.floor(cur.cost * SELL_REFUND) : 0);
       } else if (c.type === 'power') casting = true;
     }
+    return { spend, trains, ascending, casting, blessRanks };
+  }
+
+  private blocker(cmd: Command): string | null {
+    const w = this.world;
+    const team = this.seat;
+    if (cmd.team !== team) return 'Not your side';
+    const p = w.players[team];
+    const { spend, trains, ascending, casting, blessRanks } = this.inflight();
     const gold = p.gold - spend;
     switch (cmd.type) {
       case 'train': {

@@ -102,6 +102,11 @@ export class Game {
     this.listeners.push(fn);
   }
 
+  /** The player's gold as the HUD shows it. */
+  displayGold(): number {
+    return this.world.players[this.playerTeam].gold;
+  }
+
   command(cmd: Command): CommandResult {
     return this.world.apply(cmd);
   }

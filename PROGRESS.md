@@ -109,7 +109,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 
 ## Improvement backlog
 (verification mode: complete ≥ 2 per run, verify with `npm run verify`, commit, add findings.)
-1. [ ] `src/net/netgame.ts` / `src/ui/hud.ts`: the gold counter shows the replica's gold, so after
+1. [x] `src/net/netgame.ts` / `src/ui/hud.ts`: the gold counter shows the replica's gold, so after
    a tap it drops only when the order comes back (~50–100 ms, longer on bad Wi-Fi) — show gold
    minus orders in flight.
 2. [ ] `server/lobby.ts`: two players can have the same name (random names collide, or both

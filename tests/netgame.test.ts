@@ -179,6 +179,8 @@ describe('NetGame over a simulated network', () => {
     const second = ga.command({ type: 'train', team: 0, unitId: 'redcap', lane: 0 });
     expect(first.ok).toBe(true);
     expect(second).toEqual({ ok: false, reason: 'Not enough gold' });
+    // The HUD already shows the gold as spent.
+    expect(ga.displayGold()).toBeCloseTo(UNITS.redcap.cost * 0.5, 5);
   });
 
   it('plays smoothly on jittery Wi-Fi: steady pace, no desync', () => {

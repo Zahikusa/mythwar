@@ -808,7 +808,7 @@ export class Hud {
     toggle(E.rag, 'active', w.ragnarokStarted);
 
     // Resources
-    setText(E.gold, fmt(me.gold));
+    setText(E.gold, fmt(g.displayGold()));
     setText(E.income, `+${w.incomeOf(g.playerTeam).toFixed(1)}/s`);
     if (me.age < MAX_AGE) {
       const next = AGES[me.age + 1];
@@ -931,7 +931,7 @@ export class Hud {
     // Panels
     if (this.panel === 'turret' || this.panel === 'bless') {
       const pg = this.panel === 'turret' ? this.el.pgoldT : this.el.pgoldB;
-      const txt = fmt(g.world.players[g.playerTeam].gold);
+      const txt = fmt(g.displayGold());
       if (pg.dataset.v !== txt) {
         pg.dataset.v = txt;
         pg.innerHTML = `${ICONS.gold}<b>${txt}</b>`;
