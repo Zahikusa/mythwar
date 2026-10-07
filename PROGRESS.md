@@ -80,6 +80,14 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   the menu just locally, so the waiting player can always leave.
 
 ## Open questions for the human
+- Real devices: everything was tested in Chrome (desktop + emulated phones, simulated lag), not
+  on a physical iPhone/Android. Please try `npm run lan` → scan the QR code with an iPhone and an
+  Android phone. Windows will show a firewall prompt for Node.js on first run: allow *private*
+  networks. Safari's JavaScriptCore is expected to simulate identically (only exact IEEE math is
+  used); if not, the build fingerprint / hash checks will report it (resync or refusal).
+- Screen wake lock only works on https/localhost; on `http://192.168…` phones may auto-lock
+  during long pauses (the battle then waits for them as "away"). An https setup (self-signed
+  certificate) would fix that but makes browsers show warnings — not done.
 - Phone ↔ phone without any PC: needs one device to run the server. A browser cannot host; a
   future native wrapper (Capacitor) or the public online server would cover that.
 
