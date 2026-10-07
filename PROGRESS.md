@@ -132,7 +132,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 5. [x] Online results aren't recorded anywhere (AI records are per difficulty); keep a small
    per-opponent tally (name → W/L) and show it in the room.
 6. [x] `src/ui/mpmenus.ts`: no way to rename yourself once in a room (only in the lobby).
-7. [ ] `server/lobby.ts` `openRooms()`: for a public internet server the "open battles on this
+7. [x] `server/lobby.ts` `openRooms()`: for a public internet server the "open battles on this
    network" list must be scoped (e.g. by the client's public IP) — documented, not built.
 8. [x] `server/main.ts`: no https option. Phones only allow the screen wake lock (and PWA
    install) on https; `--cert/--key` flags (user-supplied or mkcert certificate) would enable it.

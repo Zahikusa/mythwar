@@ -46,7 +46,8 @@ const latency = Number(arg('latency') ?? 0);
 const jitter = Number(arg('jitter') ?? 0);
 /** "18:42:07  Ada opened room QH7K" */
 const stamp = (line: string) => `  ${new Date().toTimeString().slice(0, 8)}  ${line}`;
-const mp = attachMultiplayer(http, { latency, jitter, log: quiet ? undefined : (l) => console.log(stamp(l)) });
+// --trust-proxy: behind a reverse proxy (internet deployment), client addresses come from it.
+const mp = attachMultiplayer(http, { latency, jitter, trustProxy: args.includes('--trust-proxy'), log: quiet ? undefined : (l) => console.log(stamp(l)) });
 
 http.on('error', (e: NodeJS.ErrnoException) => {
   if (e.code === 'EADDRINUSE') console.error(`Port ${port} is already in use — try: node server/main.ts --port ${port + 1}`);

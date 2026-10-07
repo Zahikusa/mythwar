@@ -43,6 +43,8 @@ interface Session {
   watching: boolean;
   /** When the connection dropped (null while connected). */
   goneAt: number | null;
+  /** The client's network (see networkOf): the open-battles list only shows rooms from it. */
+  network: string;
   /** How the session's last battle ended (final snapshot + result), for a client that missed it. */
   lastOver: { snapshot: ServerMsg; over: ServerMsg } | null;
 }
@@ -84,7 +86,7 @@ export class Lobby {
   }
 
   /** A new connection. Returns the handlers the transport calls for its messages and close. */
-  connect(conn: Conn): { message: (data: string) => void; close: () => void } {
+  connect(conn: Conn, network = 'lan'): { message: (data: string) => void; close: () => void } {
     let session: Session | null = null;
     const rate = { start: this.now(), msgs: 0, cmds: 0 };
     return {
@@ -105,7 +107,7 @@ export class Lobby {
         if (++rate.msgs > MSG_RATE) return;
         if (msg.type === 'hello') {
           if (session) return;
-          session = this.hello(conn, msg);
+          session = this.hello(conn, msg, network);
           return;
         }
         if (!session || session.conn !== conn) return this.error(conn, 'bad-request', 'Say hello first');
@@ -138,7 +140,7 @@ export class Lobby {
 
   // -------------------------------------------------------------------------
 
-  private hello(conn: Conn, msg: Extract<ClientMsg, { type: 'hello' }>): Session | null {
+  private hello(conn: Conn, msg: Extract<ClientMsg, { type: 'hello' }>, network: string): Session | null {
     if (msg.v !== PROTOCOL_VERSION || msg.sim !== simFingerprint()) {
       this.error(conn, 'version', 'This page and the game server are different versions — reload the page (or restart the server).');
       conn.close(4000, 'version');
@@ -155,6 +157,7 @@ export class Lobby {
       }
       s.conn = conn;
       s.goneAt = null;
+      s.network = network;
       if (msg.name !== undefined) s.name = cleanName(msg.name);
     } else {
       s = {
@@ -165,6 +168,7 @@ export class Lobby {
         seat: null,
         watching: false,
         goneAt: null,
+        network,
         lastOver: null,
       };
       this.sessions.set(s.token, s);
@@ -198,7 +202,7 @@ export class Lobby {
         return;
       case 'watchRooms':
         s.watching = !!msg.on;
-        if (s.watching) this.send(s, { type: 'rooms', rooms: this.openRooms() });
+        if (s.watching) this.send(s, { type: 'rooms', rooms: this.openRooms(s.network) });
         return;
       case 'host': {
         // Already waiting alone in an open room (a double tap): keep it.
@@ -377,13 +381,13 @@ export class Lobby {
     }
   }
 
-  private openRooms(): OpenRoom[] {
+  private openRooms(network: string): OpenRoom[] {
     const now = this.now();
     const out: OpenRoom[] = [];
     for (const r of this.rooms.values()) {
       if (r.phase !== 'waiting') continue;
       const seated = r.seats.filter((x) => x !== null);
-      if (seated.length !== 1 || !seated[0]!.session.conn) continue;
+      if (seated.length !== 1 || !seated[0]!.session.conn || seated[0]!.session.network !== network) continue;
       out.push({ code: r.code, host: seated[0]!.session.name, age: Math.round((now - r.createdAt) / 1000) });
     }
     return out.sort((a, b) => a.age - b.age);
@@ -391,8 +395,13 @@ export class Lobby {
 
   private sendRoomLists(): void {
     this.roomsDirty = false;
-    const msg: ServerMsg = { type: 'rooms', rooms: this.openRooms() };
-    for (const s of this.sessions.values()) if (s.watching && s.conn) this.send(s, msg);
+    const lists = new Map<string, ServerMsg>();
+    for (const s of this.sessions.values()) {
+      if (!s.watching || !s.conn) continue;
+      let msg = lists.get(s.network);
+      if (!msg) lists.set(s.network, (msg = { type: 'rooms', rooms: this.openRooms(s.network) }));
+      this.send(s, msg);
+    }
   }
 
   private makeCode(): string {

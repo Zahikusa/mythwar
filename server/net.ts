@@ -4,7 +4,7 @@ import { Server as TlsServer } from 'node:tls';
 import { WebSocketServer } from 'ws';
 import type { WebSocket } from 'ws';
 import { MP_PATH } from '../src/net/protocol.ts';
-import { lanAddresses } from './lan.ts';
+import { lanAddresses, networkOf } from './lan.ts';
 import { Lobby } from './lobby.ts';
 import type { LobbyOptions } from './lobby.ts';
 
@@ -14,6 +14,8 @@ export interface Multiplayer {
 }
 
 export interface AttachOptions extends LobbyOptions {
+  /** Behind a reverse proxy (internet deployment): take the client address from X-Forwarded-For. */
+  trustProxy?: boolean;
   /** Testing aid: delay (ms) added to every message in both directions, plus random jitter. */
   latency?: number;
   jitter?: number;
@@ -45,7 +47,9 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
   };
   http.on('upgrade', onUpgrade);
 
-  wss.on('connection', (ws: WebSocket) => {
+  wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
+    const forwarded = opts.trustProxy ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '';
+    const network = networkOf(forwarded || req.socket.remoteAddress);
     // Small frames, sent as they happen: no Nagle delay.
     (ws as unknown as { _socket?: { setNoDelay?: (v: boolean) => void } })._socket?.setNoDelay?.(true);
     const lag = opts.latency || opts.jitter ? { up: laggy(opts), down: laggy(opts) } : null;
@@ -56,7 +60,7 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
         else go();
       },
       close: (code, reason) => ws.close(code, reason),
-    });
+    }, network);
     alive.set(ws, performance.now());
     ws.on('message', (data, isBinary) => {
       alive.set(ws, performance.now());

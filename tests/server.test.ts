@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Lobby } from '../server/lobby.ts';
+import { networkOf } from '../server/lan.ts';
 import { validateCommand } from '../server/validate.ts';
 import { PROTOCOL_VERSION } from '../src/net/protocol.ts';
 import type { ClientMsg, ServerMsg } from '../src/net/protocol.ts';
@@ -183,6 +184,37 @@ describe('lobby', () => {
     a.send({ type: 'ready', ready: true });
     b.send({ type: 'ready', ready: true });
     expect(b.last('start')!.names).toEqual(['Ada', 'ada (2)']);
+  });
+
+  it('lists only rooms from the same network (LAN = all private addresses)', () => {
+    expect(networkOf('192.168.1.20')).toBe('lan');
+    expect(networkOf('::ffff:10.0.0.5')).toBe('lan');
+    expect(networkOf('127.0.0.1')).toBe('lan');
+    expect(networkOf('fe80::1')).toBe('lan');
+    expect(networkOf('::1')).toBe('lan');
+    expect(networkOf('203.0.113.7')).toBe('203.0.113.7');
+    expect(networkOf('2001:db8:1:2:aaaa::5')).toBe('2001:db8:1:2');
+    const { lobby, run } = setup();
+    const mk = (network: string) => {
+      const c = new FakeClient(lobby);
+      (c as unknown as { handlers: unknown }).handlers = lobby.connect({ send: (d) => c.inbox.push(JSON.parse(d)), close: () => {} }, network);
+      return c;
+    };
+    const home = mk('203.0.113.7');
+    const sameHome = mk('203.0.113.7');
+    const elsewhere = mk('198.51.100.9');
+    home.hello('Ada');
+    sameHome.hello('Bo');
+    elsewhere.hello('Cy');
+    sameHome.send({ type: 'watchRooms', on: true });
+    elsewhere.send({ type: 'watchRooms', on: true });
+    home.send({ type: 'host' });
+    run(10);
+    expect(sameHome.last('rooms')!.rooms.map((r) => r.host)).toEqual(['Ada']);
+    expect(elsewhere.last('rooms')!.rooms).toEqual([]);
+    // The room code still works from anywhere.
+    elsewhere.send({ type: 'join', code: home.last('room')!.room.code });
+    expect(elsewhere.last('room')!.seat).toBe(1);
   });
 
   it('an empty room disappears', () => {

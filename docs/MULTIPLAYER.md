@@ -157,9 +157,11 @@ The design already separates everything that matters for that step:
    `wss://` to the same host.
 2. **Static hosting elsewhere?** Build with `VITE_MP_SERVER=wss://game.example.com/mp` (or
    open the page with `?server=game.example.com`) to point the client at the server.
-3. **Room codes already work across networks.** For the public server, scope the "open battles
-   on this network" list (e.g. group rooms by the client's public IP — that keeps the LAN
-   experience — or turn it into a matchmaking queue).
+3. **Room codes already work across networks**, and the "open battles on this network" list is
+   already scoped: all private addresses count as one LAN, while on a public server players see
+   only rooms from their own home network (same public IP / IPv6 prefix). Behind a reverse proxy
+   start the server with `--trust-proxy` so it reads the client address from X-Forwarded-For.
+   A matchmaking queue would be the next step.
 4. **Latency:** the jitter buffer adapts by itself (tested with 20–140 ms delays); for long
    distances raise `turnTicks` in `attachMultiplayer` to save packets if needed.
 5. **Scale:** rooms are independent, so several server processes behind sticky sessions (or one
