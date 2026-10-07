@@ -152,3 +152,11 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
     simulation/netcode (`mpengines`) but not for the touch UI flows (lobby, room, drag).
 16. [ ] `server/lobby.ts`: no caps on rooms / sessions / connections per IP — fine on a LAN, needed
     before a public server (part of the internet upgrade).
+17. [ ] `server/match.ts` / `src/ui/netoverlay.ts`: the claim delay (20 s) is a client-side
+    constant mirrored on the server; send `claimIn` with the pause state like `forfeitIn`, so the
+    server alone decides (and tests can shorten it — mpsmoke waits 20 s today).
+18. [ ] `server/static.ts`: no gzip/brotli — irrelevant on Wi-Fi, but the ~300 kB bundle would
+    load 3× faster from an internet server.
+19. [ ] README shows no multiplayer screenshots (room with QR code, mirrored phone view).
+20. [ ] `src/ui/netoverlay.ts`: the Claim victory button gives no click sound / haptic like the
+    other buttons.
