@@ -74,6 +74,10 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 - Turns every 2 ticks (33 ms); hash every 60 ticks; commands apply on the server's next tick.
 - Session token lives in sessionStorage (per tab): two tabs = two players (easy local testing),
   a reload of the same tab rejoins.
+- Builds must match exactly: hello carries `simFingerprint()` (all balance tables + a 30 s
+  scripted battle); a mismatch stops reconnecting and asks for a reload.
+- While the battle is held (opponent away, countdown, reconnecting) the pause button / Esc opens
+  the menu just locally, so the waiting player can always leave.
 
 ## Open questions for the human
 - Phone ↔ phone without any PC: needs one device to run the server. A browser cannot host; a
