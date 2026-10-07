@@ -1,0 +1,139 @@
+# Multiplayer (local Wi-Fi)
+
+Play a battle against another person on the same Wi-Fi — PC against phone, iPhone against
+Android, tablet against laptop. Nothing to install on the devices: they open the game in the
+browser.
+
+## Quick start
+
+On a computer in the Wi-Fi (Windows, macOS or Linux, with Node.js 24+):
+
+```bash
+npm install
+npm run lan
+```
+
+It builds the game and prints something like:
+
+```
+  Mythwar is running.
+
+  On this computer:   http://localhost:8787/
+  Other devices in this Wi-Fi:
+    http://192.168.1.105:8787/
+
+  Scan to open on a phone:
+    ▄▄▄▄▄▄▄ ...
+```
+
+1. **Player 1** opens the game (on the computer, or on a phone via the address / QR code) and
+   chooses **Multiplayer → Host a battle**. The battle room shows a **room code** and a
+   **QR code**.
+2. **Player 2** scans that QR code with the phone's camera (or opens the address and types the
+   code, or taps the room under **Open battles on this network**).
+3. Both press **Ready**. After a 3-2-1 countdown the battle begins.
+
+Each player always sees their own citadel on the left, in blue.
+
+During development `npm run dev` hosts rooms as well (open the "Network" address Vite prints).
+`npm run serve` serves an existing build without rebuilding; `node server/main.ts --port 9000`
+picks another port.
+
+## If the other device can't connect
+
+- **Firewall (Windows):** the first `npm run lan` asks whether Node.js may communicate on
+  networks — allow it for **private networks**. If you dismissed it: Windows Security →
+  Firewall & network protection → Allow an app through firewall → Node.js (Private).
+  Also check that the Wi-Fi is set to a *Private* network profile, not *Public*.
+- **Same network:** both devices must be on the same Wi-Fi. Guest networks and some
+  public/hotel Wi-Fis isolate devices from each other ("AP/client isolation"); a phone hotspot
+  works fine (the computer joins the phone's hotspot).
+- **The right address:** use the `192.168.x.x` / `10.x.x.x` address, not `localhost`. Computers
+  with VPNs or virtual adapters may print several; the first one is usually right.
+- In the lobby the dot next to *Connected* turns red and a help box appears when the game
+  server can't be reached.
+
+## What happens when…
+
+| Situation | Behaviour |
+|---|---|
+| A player switches apps / locks the phone | The battle pauses for both ("… is away"). When they come back it resumes after a 3-2-1 countdown. After **90 s** away they forfeit. |
+| Wi-Fi drops for a moment | The client reconnects on its own (backoff 0.25–3 s), receives a snapshot of the battle and carries on. The other player sees the same away pause meanwhile. |
+| A player reloads the page | The tab remembers its session: it rejoins the room and the battle where it was. |
+| A player presses Pause | The battle pauses for both; either player can resume. |
+| A player leaves the battle | They forfeit; the other player wins. The room stays open for a new opponent. |
+| After a battle | Both press **Rematch** to play again in the same room (wins are counted). |
+| The game server restarts | Clients notice their session is gone and return to the lobby. |
+| Old page against a newer server | The client is told to reload (protocol version check). |
+
+Phones keep their screen on during a battle where the browser allows it (Screen Wake Lock
+needs `https` or `localhost`; on a plain `http://192.168…` address the system's auto-lock
+applies — the away pause covers that).
+
+## How it works
+
+```
+ Phone (Safari)          PC (Chrome)            Phone (Chrome)
+   NetGame  ◀──turns──┐  NetGame             ┌──turns──▶  NetGame
+   replica    ──cmd──▶│                      │◀──cmd──    replica
+                      └──── Node server ─────┘
+                        rooms · authoritative simulation · 60 Hz clock
+```
+
+- **One server, plain browsers.** `server/` is a small Node program: it serves the built game
+  and accepts WebSocket connections on `/mp`. Every platform with a modern browser can play;
+  nothing is platform-specific.
+- **Deterministic lockstep with an authoritative server.** The simulation (`src/sim`) is
+  deterministic: same seed + same commands at the same ticks ⇒ the same battle, bit for bit, on
+  V8 (Chrome, Node) and JavaScriptCore (Safari). It only uses + − × ÷, `Math.min/max/abs/
+  floor/round/imul` (exactly specified) and its own seeded RNG.
+- The **server owns the clock**: it runs the battle at 60 ticks/s, applies each player's
+  commands right before its next tick and broadcasts a *turn* every 2 ticks (33 ms) listing the
+  commands and the tick they were applied at. Clients replay exactly that.
+- Each client plays the ticks out through an **adaptive jitter buffer**: it measures how
+  irregularly turns arrive and stays just far enough behind the server to absorb Wi-Fi hiccups,
+  easing its playback speed ±5 % so changes are invisible. On a good LAN the delay is ~20–40 ms.
+- Orders are checked locally first (gold, queue, cooldowns — counting orders still in flight),
+  so feedback is instant; the server's simulation has the final word.
+- Every second the server sends a **hash** of its state; a client that ever disagrees (or
+  reconnects, or reloads) gets a full **snapshot** (~10–30 kB) and continues from there.
+- The server validates every message (shape, ranges, rate limits) and ignores commands from
+  the wrong seat, so a modified client can't cheat beyond what the rules allow.
+
+Code map: `src/net/protocol.ts` (messages, constants), `src/net/connection.ts` (socket,
+reconnect, ping), `src/net/client.ts` (session, room state), `src/net/netgame.ts` (replica,
+jitter buffer, resync), `server/lobby.ts` (rooms, seats, sessions), `server/match.ts`
+(authoritative battle), `server/net.ts` (WebSocket transport), `server/main.ts` (LAN server),
+`src/ui/mpmenus.ts` + `src/ui/netoverlay.ts` (screens and in-battle notices).
+
+## Testing
+
+```bash
+npm test                                   # incl. determinism, server and simulated-network tests
+node scripts/mpsmoke.ts --shots            # two Chrome profiles (desktop + phone) play it through
+node scripts/mpsmoke.ts --latency 60 --jitter 80   # the same over a bad network
+node server/main.ts --latency 80 --jitter 60       # play by hand with simulated lag
+```
+
+Two browser tabs on one computer are two separate players (the session lives per tab), which is
+the quickest way to try a battle alone.
+
+## Upgrading to online play over the internet
+
+The design already separates everything that matters for that step:
+
+1. **Deploy the same server** (`node server/main.ts`) on any Node host or VPS behind a TLS
+   reverse proxy (Caddy, nginx, a PaaS). Pages served over `https` automatically connect with
+   `wss://` to the same host.
+2. **Static hosting elsewhere?** Build with `VITE_MP_SERVER=wss://game.example.com/mp` (or
+   open the page with `?server=game.example.com`) to point the client at the server.
+3. **Room codes already work across networks.** For the public server, scope the "open battles
+   on this network" list (e.g. group rooms by the client's public IP — that keeps the LAN
+   experience — or turn it into a matchmaking queue).
+4. **Latency:** the jitter buffer adapts by itself (tested with 20–140 ms delays); for long
+   distances raise `turnTicks` in `attachMultiplayer` to save packets if needed.
+5. **Scale:** rooms are independent, so several server processes behind sticky sessions (or one
+   process per region) scale horizontally. A match costs well under 1 % of a CPU core.
+6. **Later:** accounts and persistent ratings, spectators (they would simply receive turns),
+   replays (seed + command log is a complete replay), and reconnect across devices (the session
+   token is already the key).

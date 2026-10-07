@@ -33,6 +33,19 @@ in the same Wi-Fi (landscape recommended; portrait is rotated automatically).
 The build is a static site with a web manifest and offline service worker, so it can be
 installed as an app on phones ("Add to Home Screen"), which also locks landscape.
 
+## Multiplayer (same Wi-Fi)
+
+Battle a friend — PC, iPhone, Android, tablet, in any combination:
+
+```bash
+npm run lan        # builds and serves the game + multiplayer on port 8787
+```
+
+Open the printed address (or scan the QR code it prints) on each device, then
+**Multiplayer → Host a battle** on one and scan the room's QR code / enter its code on the other.
+Both press **Ready**. Battles survive app switches, Wi-Fi blips and reloads; leaving forfeits.
+Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](docs/MULTIPLAYER.md).
+
 ## How to play
 
 - **Goal:** destroy the enemy citadel. Its health is shared by all three lanes — so is yours.
@@ -89,7 +102,8 @@ node scripts/bots.ts 10          # AI difficulty vs scripted players (naive → 
 npm run smoke                    # end-to-end browser test (needs local Chrome)
 npm run shoot -- desktop         # screenshots into screenshots/ (--list, --size 2560x1440)
 node scripts/soak.ts 60 16       # long fast battles in Chrome: errors + fps
-npm run verify                   # typecheck + unit tests + build + smoke (use before commits)
+npm run verify                   # typecheck + unit tests + build + smoke + multiplayer smoke
+node scripts/mpsmoke.ts --shots  # two browsers play an online battle (screenshots/mp/)
 node scripts/playthrough.mjs 90  # casual scripted play through the real UI, screenshots/play/
 node scripts/perf2.mjs 1600 900  # per-frame render cost (supports skipping render passes)
 node scripts/classwar.ts         # equal-gold army battles per class and age
@@ -103,5 +117,6 @@ Debug URLs: `?demo&ff=300&seed=5` (AI vs AI, fast-forwarded), `?play=adept`, `?s
 `?gallery` (every creature's idle / walk / attack animation), `?mode=mobile`.
 
 Code map: `src/sim` (deterministic simulation and all balance data), `src/ai` (opponent),
+`src/net` + `server/` (multiplayer client and server),
 `src/render` (canvas renderer, creature art, effects), `src/ui` (HUD, menus, tips),
 `src/audio` (synth), `DESIGN.md` (game design), `PROGRESS.md` (development log).
