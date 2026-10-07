@@ -188,3 +188,11 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 27. [x] Settings: no switch to hide the opponent's quick messages (rate-limited, but some players
     will want them off).
 28. [x] package.json: the new tools (mpbot, enginecheck, mpengines) have no npm script aliases.
+29. [ ] `scripts/mpsmoke.ts`: nothing checks that a battle starting while a tab is hidden makes
+    that player "away" (fixed in app.ts after the second review, untested end to end).
+30. [ ] `src/ui/hud.ts`: the quick-message picker stays open when you tap elsewhere, open a panel
+    or pause.
+31. [ ] Battle room: no "Copy link" button — on a desktop the invite is easier to paste into a
+    chat than to read off the screen.
+32. [ ] docs/MULTIPLAYER.md troubleshooting doesn't cover "the page loads on the phone but the
+    lobby stays on Connecting…" (WebSocket blocked: some guest Wi-Fis / proxies / VPN apps).
