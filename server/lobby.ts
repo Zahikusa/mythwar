@@ -1,0 +1,395 @@
+import { CODE_ALPHABET, CODE_LENGTH, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName } from '../src/net/protocol.ts';
+import type { ClientMsg, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
+import type { Team } from '../src/sim/types.ts';
+import { Match } from './match.ts';
+import { validateCommand } from './validate.ts';
+
+/** A client connection, as far as the lobby is concerned (a WebSocket in production). */
+export interface Conn {
+  send(data: string): void;
+  close(code?: number, reason?: string): void;
+}
+
+export interface LobbyOptions {
+  /** Wall clock in ms (injectable for tests). */
+  now?: () => number;
+  random?: () => number;
+  /** Ticks per turn message. */
+  turnTicks?: number;
+  /** Seconds a player may be away mid-battle before forfeiting. */
+  awayGrace?: number;
+  /** Seconds before a battle starts. */
+  countdown?: number;
+  log?: (line: string) => void;
+}
+
+/** Seconds a disconnected player keeps their seat in a room that isn't fighting. */
+const SEAT_GRACE = 60;
+/** Seconds a session without connection and room is remembered (reconnect token). */
+const SESSION_TTL = 10 * 60;
+/** Commands per second a player may send (a human manages a handful). */
+const CMD_RATE = 25;
+const MSG_RATE = 120;
+
+interface Session {
+  token: string;
+  name: string;
+  conn: Conn | null;
+  room: Room | null;
+  seat: Team | null;
+  watching: boolean;
+  /** When the connection dropped (null while connected). */
+  goneAt: number | null;
+}
+
+interface Seat {
+  session: Session;
+  ready: boolean;
+  wins: number;
+}
+
+interface Room {
+  code: string;
+  createdAt: number;
+  phase: RoomPhase;
+  seats: [Seat | null, Seat | null];
+  match: Match | null;
+}
+
+/**
+ * Rooms, seats and sessions: everything between "a socket connected" and "a battle runs".
+ * Transport-agnostic and clock-injectable, so tests can drive it directly.
+ */
+export class Lobby {
+  private readonly sessions = new Map<string, Session>();
+  private readonly rooms = new Map<string, Room>();
+  private readonly now: () => number;
+  private readonly random: () => number;
+  private readonly opts: LobbyOptions;
+  private roomsDirty = false;
+
+  constructor(opts: LobbyOptions = {}) {
+    this.opts = opts;
+    this.now = opts.now ?? (() => performance.now());
+    this.random = opts.random ?? Math.random;
+  }
+
+  get roomCount(): number {
+    return this.rooms.size;
+  }
+
+  /** A new connection. Returns the handlers the transport calls for its messages and close. */
+  connect(conn: Conn): { message: (data: string) => void; close: () => void } {
+    let session: Session | null = null;
+    const rate = { start: this.now(), msgs: 0, cmds: 0 };
+    return {
+      message: (data) => {
+        let msg: ClientMsg;
+        try {
+          msg = JSON.parse(data) as ClientMsg;
+        } catch {
+          return this.error(conn, 'bad-request', 'Not JSON');
+        }
+        if (!msg || typeof msg !== 'object' || typeof msg.type !== 'string') return this.error(conn, 'bad-request', 'Bad message');
+        const now = this.now();
+        if (now - rate.start >= 1000) {
+          rate.start = now;
+          rate.msgs = 0;
+          rate.cmds = 0;
+        }
+        if (++rate.msgs > MSG_RATE) return;
+        if (msg.type === 'hello') {
+          if (session) return;
+          session = this.hello(conn, msg);
+          return;
+        }
+        if (!session || session.conn !== conn) return this.error(conn, 'bad-request', 'Say hello first');
+        if (msg.type === 'cmd' && ++rate.cmds > CMD_RATE) return this.error(conn, 'rate', 'Too many commands');
+        this.handle(session, msg);
+      },
+      close: () => {
+        if (session && session.conn === conn) this.disconnected(session);
+      },
+    };
+  }
+
+  /** Drives matches and expiries; call every few milliseconds. */
+  update(): void {
+    const now = this.now();
+    for (const room of this.rooms.values()) {
+      room.match?.update(now);
+      if (room.phase !== 'playing') {
+        for (const seat of [0, 1] as Team[]) {
+          const s = room.seats[seat];
+          if (s && s.session.goneAt !== null && now - s.session.goneAt > SEAT_GRACE * 1000) this.removeFromRoom(s.session);
+        }
+      }
+    }
+    for (const s of this.sessions.values()) {
+      if (s.conn === null && s.room === null && s.goneAt !== null && now - s.goneAt > SESSION_TTL * 1000) this.sessions.delete(s.token);
+    }
+    if (this.roomsDirty) this.sendRoomLists();
+  }
+
+  // -------------------------------------------------------------------------
+
+  private hello(conn: Conn, msg: Extract<ClientMsg, { type: 'hello' }>): Session | null {
+    if (msg.v !== PROTOCOL_VERSION) {
+      this.error(conn, 'version', 'This game version is out of date — reload the page.');
+      conn.close(4000, 'version');
+      return null;
+    }
+    let s = typeof msg.token === 'string' ? this.sessions.get(msg.token) : undefined;
+    if (s) {
+      // Same player again (reconnect, or a second tab taking over).
+      if (s.conn && s.conn !== conn) {
+        this.sendTo(s.conn, { type: 'error', code: 'bad-request', message: 'Connected from another tab' });
+        s.conn.close(4001, 'replaced');
+      }
+      s.conn = conn;
+      s.goneAt = null;
+      if (msg.name !== undefined) s.name = cleanName(msg.name);
+    } else {
+      s = {
+        token: this.makeToken(),
+        name: cleanName(msg.name),
+        conn,
+        room: null,
+        seat: null,
+        watching: false,
+        goneAt: null,
+      };
+      this.sessions.set(s.token, s);
+    }
+    const room = s.room;
+    this.send(s, { type: 'welcome', v: PROTOCOL_VERSION, token: s.token, room: room ? this.info(room) : null, seat: s.seat });
+    if (room && s.seat !== null) {
+      const m = room.match;
+      if (m && room.phase === 'playing') {
+        this.send(s, m.snapshotFor(s.seat));
+        m.setAway(s.seat, false, this.now());
+      }
+      this.broadcastRoom(room);
+    }
+    this.log(`hello ${s.name}${room ? ` (back in ${room.code})` : ''}`);
+    return s;
+  }
+
+  private handle(s: Session, msg: ClientMsg): void {
+    const room = s.room;
+    const seat = s.seat;
+    const now = this.now();
+    switch (msg.type) {
+      case 'name':
+        s.name = cleanName(msg.name);
+        if (room) this.broadcastRoom(room);
+        this.roomsDirty = true;
+        return;
+      case 'watchRooms':
+        s.watching = !!msg.on;
+        if (s.watching) this.send(s, { type: 'rooms', rooms: this.openRooms() });
+        return;
+      case 'host': {
+        if (room) this.removeFromRoom(s);
+        const r: Room = { code: this.makeCode(), createdAt: now, phase: 'waiting', seats: [null, null], match: null };
+        this.rooms.set(r.code, r);
+        this.seat(s, r, 0);
+        this.log(`${s.name} opened room ${r.code}`);
+        return;
+      }
+      case 'join': {
+        const code = cleanCode(msg.code);
+        const r = code ? this.rooms.get(code) : undefined;
+        if (!r) return this.error(s.conn, 'no-room', 'No battle with that code here.');
+        if (r === room) return this.broadcastRoom(r);
+        const free = r.seats[0] === null ? 0 : r.seats[1] === null ? 1 : -1;
+        if (free < 0 || r.phase === 'playing') return this.error(s.conn, 'room-full', 'That battle already has two players.');
+        if (room) this.removeFromRoom(s);
+        this.seat(s, r, free as Team);
+        this.log(`${s.name} joined room ${r.code}`);
+        return;
+      }
+      case 'leave':
+        if (room) this.removeFromRoom(s);
+        this.send(s, { type: 'left' });
+        return;
+      case 'ready': {
+        if (!room || seat === null || (room.phase !== 'waiting' && room.phase !== 'over')) return;
+        room.seats[seat]!.ready = !!msg.ready;
+        if (room.seats.every((x) => x && x.ready && x.session.conn)) this.startMatch(room);
+        else this.broadcastRoom(room);
+        return;
+      }
+      case 'cmd': {
+        if (!room?.match || seat === null || room.phase !== 'playing') return;
+        const cmd = validateCommand(msg.cmd);
+        if (!cmd || !Number.isInteger(msg.seq)) return this.error(s.conn, 'bad-request', 'Bad command');
+        room.match.command(seat, msg.seq, cmd);
+        return;
+      }
+      case 'pause':
+        if (room?.match && seat !== null && room.phase === 'playing') room.match.requestPause(seat, now);
+        return;
+      case 'resume':
+        if (room?.match && seat !== null && room.phase === 'playing') room.match.requestResume(now);
+        return;
+      case 'away':
+        if (room?.match && seat !== null && room.phase === 'playing') {
+          room.match.setAway(seat, !!msg.away, now);
+          this.broadcastRoom(room);
+        }
+        return;
+      case 'resync':
+        if (room?.match && seat !== null && room.phase === 'playing') this.send(s, room.match.snapshotFor(seat));
+        return;
+      case 'ping':
+        this.send(s, { type: 'pong', t: Number(msg.t) || 0, tick: room?.match?.tick ?? 0 });
+        return;
+      default:
+        this.error(s.conn, 'bad-request', 'Unknown message');
+    }
+  }
+
+  private startMatch(room: Room): void {
+    const [a, b] = room.seats as [Seat, Seat];
+    a.ready = false;
+    b.ready = false;
+    const seed = (this.random() * 2 ** 31) | 0;
+    const names: [string, string] = [a.session.name, b.session.name];
+    const countdown = this.opts.countdown ?? START_COUNTDOWN;
+    room.phase = 'playing';
+    room.match = new Match({ seed, names, countdown, turnTicks: this.opts.turnTicks, awayGrace: this.opts.awayGrace }, this.now(), {
+      broadcast: (msg) => {
+        const text = JSON.stringify(msg);
+        for (const s of room.seats) if (s?.session.conn) s.session.conn.send(text);
+      },
+      send: (seat, msg) => {
+        const s = room.seats[seat];
+        if (s) this.send(s.session, msg);
+      },
+      ended: (winner, reason) => {
+        room.phase = 'over';
+        const w = room.seats[winner];
+        if (w) w.wins++;
+        this.log(`room ${room.code}: ${names[winner]} wins (${reason})`);
+        // (The 'over' message went out first; now the room with the new score.)
+        this.broadcastRoom(room);
+      },
+    });
+    for (const seat of [0, 1] as Team[]) this.send(room.seats[seat]!.session, { type: 'start', seed, seat, names, countdown });
+    this.broadcastRoom(room);
+    this.roomsDirty = true;
+    this.log(`room ${room.code}: ${names[0]} vs ${names[1]} (seed ${seed})`);
+  }
+
+  private seat(s: Session, room: Room, seat: Team): void {
+    room.seats[seat] = { session: s, ready: false, wins: 0 };
+    for (const other of room.seats) if (other) other.ready = false;
+    s.room = room;
+    s.seat = seat;
+    if (room.phase === 'over') room.phase = 'waiting';
+    this.broadcastRoom(room);
+    this.roomsDirty = true;
+  }
+
+  private removeFromRoom(s: Session): void {
+    const room = s.room;
+    const seat = s.seat;
+    s.room = null;
+    s.seat = null;
+    if (!room || seat === null) return;
+    if (room.match && room.phase === 'playing') room.match.forfeit(seat);
+    room.seats[seat] = null;
+    room.match = null;
+    room.phase = 'waiting';
+    const other = room.seats[1 - seat];
+    if (other) {
+      other.ready = false;
+      other.wins = 0;
+      this.broadcastRoom(room);
+    } else this.rooms.delete(room.code);
+    this.roomsDirty = true;
+  }
+
+  private disconnected(s: Session): void {
+    s.conn = null;
+    s.watching = false;
+    s.goneAt = this.now();
+    const room = s.room;
+    if (room && s.seat !== null) {
+      if (room.match && room.phase === 'playing') room.match.setAway(s.seat, true, this.now());
+      const seat = room.seats[s.seat];
+      if (seat) seat.ready = false;
+      this.broadcastRoom(room);
+      this.roomsDirty = true;
+    }
+    this.log(`${s.name} disconnected`);
+  }
+
+  private info(room: Room): RoomInfo {
+    const seat = (i: Team) => {
+      const x = room.seats[i];
+      if (!x) return null;
+      return { name: x.session.name, connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins };
+    };
+    return { code: room.code, phase: room.phase, seats: [seat(0), seat(1)] };
+  }
+
+  private broadcastRoom(room: Room): void {
+    const info = this.info(room);
+    for (const seat of [0, 1] as Team[]) {
+      const s = room.seats[seat];
+      if (s) this.send(s.session, { type: 'room', room: info, seat });
+    }
+  }
+
+  private openRooms(): OpenRoom[] {
+    const now = this.now();
+    const out: OpenRoom[] = [];
+    for (const r of this.rooms.values()) {
+      if (r.phase !== 'waiting') continue;
+      const seated = r.seats.filter((x) => x !== null);
+      if (seated.length !== 1 || !seated[0]!.session.conn) continue;
+      out.push({ code: r.code, host: seated[0]!.session.name, age: Math.round((now - r.createdAt) / 1000) });
+    }
+    return out.sort((a, b) => a.age - b.age);
+  }
+
+  private sendRoomLists(): void {
+    this.roomsDirty = false;
+    const msg: ServerMsg = { type: 'rooms', rooms: this.openRooms() };
+    for (const s of this.sessions.values()) if (s.watching && s.conn) this.send(s, msg);
+  }
+
+  private makeCode(): string {
+    for (;;) {
+      let code = '';
+      for (let i = 0; i < CODE_LENGTH; i++) code += CODE_ALPHABET[Math.floor(this.random() * CODE_ALPHABET.length)];
+      if (!this.rooms.has(code)) return code;
+    }
+  }
+
+  private makeToken(): string {
+    return globalThis.crypto.randomUUID();
+  }
+
+  private send(s: Session, msg: ServerMsg): void {
+    if (s.conn) this.sendTo(s.conn, msg);
+  }
+
+  private sendTo(conn: Conn, msg: ServerMsg): void {
+    try {
+      conn.send(JSON.stringify(msg));
+    } catch {
+      // The socket is closing; its close handler cleans up.
+    }
+  }
+
+  private error(conn: Conn | null, code: Extract<ServerMsg, { type: 'error' }>['code'], message: string): void {
+    if (conn) this.sendTo(conn, { type: 'error', code, message });
+  }
+
+  private log(line: string): void {
+    this.opts.log?.(line);
+  }
+}

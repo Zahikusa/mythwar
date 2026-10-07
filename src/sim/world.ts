@@ -395,11 +395,18 @@ export class World {
         return { ok: true };
       }
       case 'cancel': {
-        const item = p.queue[cmd.index];
+        let index = cmd.index;
+        // Multiplayer orders arrive a moment late: if the queue has moved on (the creature in
+        // front stepped out), cancel the nearest earlier item of the same kind instead.
+        if (cmd.unitId !== undefined && p.queue[index]?.unitId !== cmd.unitId) {
+          index = Math.min(index, p.queue.length - 1);
+          while (index >= 0 && p.queue[index].unitId !== cmd.unitId) index--;
+        }
+        const item = p.queue[index];
         if (!item) return { ok: false, reason: 'Nothing to cancel' };
         const def = UNITS[item.unitId];
-        const wasTraining = cmd.index === this.trainingIndex(cmd.team);
-        p.queue.splice(cmd.index, 1);
+        const wasTraining = index === this.trainingIndex(cmd.team);
+        p.queue.splice(index, 1);
         p.gold += def.cost;
         p.stats.goldSpent -= def.cost;
         if (wasTraining) p.trainProgress = 0;

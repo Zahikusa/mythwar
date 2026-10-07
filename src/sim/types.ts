@@ -156,7 +156,8 @@ export type SimEvent =
 
 export type Command =
   | { type: 'train'; team: Team; unitId: string; lane: number }
-  | { type: 'cancel'; team: Team; index: number }
+  /** `unitId`: the creature the player meant (guards against the queue having moved on). */
+  | { type: 'cancel'; team: Team; index: number; unitId?: string }
   | { type: 'ageUp'; team: Team }
   | { type: 'buildTurret'; team: Team; lane: number; turretId: string }
   | { type: 'sellTurret'; team: Team; lane: number }

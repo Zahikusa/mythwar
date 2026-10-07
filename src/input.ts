@@ -182,7 +182,7 @@ export class Input {
     } else if (k === 'backspace' || k === 'delete') {
       // Undo the most recent summon (full refund).
       const last = me.queue.length - 1;
-      if (last >= 0 && g.command({ type: 'cancel', team: g.playerTeam, index: last }).ok) this.hud.onCancelled();
+      if (last >= 0 && g.command({ type: 'cancel', team: g.playerTeam, index: last, unitId: me.queue[last].unitId }).ok) this.hud.onCancelled();
       e.preventDefault();
     } else if (k === '?' || k === 'h' || k === 'f1') {
       this.hud.togglePanel('keys');

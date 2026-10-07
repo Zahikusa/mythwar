@@ -1076,7 +1076,7 @@ export class Hud {
     onTap(el, () => {
       const index = this.queueChips.indexOf(chip);
       if (index < 0) return;
-      const r = g.command({ type: 'cancel', team: g.playerTeam, index });
+      const r = g.command({ type: 'cancel', team: g.playerTeam, index, unitId });
       if (r.ok) this.cb.sound('cancel');
     });
     return chip;
