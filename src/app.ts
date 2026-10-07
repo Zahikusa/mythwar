@@ -68,6 +68,8 @@ export class App {
   private wakePending = false;
   /** Online: the pause menu was opened just on this device (the battle was already held). */
   private netMenuLocal = false;
+  /** The other seat as last seen (room chimes: someone joined / is ready / left). */
+  private lastFoe: { name: string; ready: boolean } | null = null;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -729,7 +731,21 @@ export class App {
       this.menus.mp.flash('The game server restarted — that battle was lost.');
     }
     if (mp.room) this.keepAwake(true);
+    this.roomChimes(mp);
     this.syncRematch();
+  }
+
+  /** Little sounds for what the other player does outside battle. */
+  private roomChimes(mp: MpClient): void {
+    const foe = mp.room && mp.seat !== null ? mp.room.seats[mp.seat === 0 ? 1 : 0] : null;
+    const prev = this.lastFoe;
+    this.lastFoe = foe ? { name: foe.name, ready: foe.ready } : null;
+    if (this.state === 'playing' || !mp.room) return;
+    if (foe && !prev) {
+      this.audio.ui('ready');
+      this.buzz([20, 40, 20]);
+    } else if (foe && prev && foe.ready && !prev.ready) this.audio.ui('bless');
+    else if (!foe && prev) this.audio.ui('cancel');
   }
 
   private onMpError(code: string, message: string): void {
