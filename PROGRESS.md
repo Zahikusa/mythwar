@@ -142,3 +142,11 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
     the clock; their HP bar / age badge (right) doesn't say who it is.
 12. [x] Upright phones: typing a name / room code while the stage is rotated opens the keyboard
     sideways — the lobby could suggest turning the phone, or un-rotate the lobby.
+13. [ ] `src/ui/hud.ts`: a summon appears in the queue only when the server echoes it (one RTT
+    + buffer later); show orders in flight as faded "pending" chips right away.
+14. [ ] `src/ui/hud.ts` netinfo: on unstable Wi-Fi the jitter buffer (and so input delay) can
+    grow towards 0.5 s silently; the badge only reflects RTT. Flag "unstable" from bufferMs too.
+15. [ ] `scripts/mpsmoke.ts` drives the UI only in Chrome; WebKit is covered for the
+    simulation/netcode (`mpengines`) but not for the touch UI flows (lobby, room, drag).
+16. [ ] `server/lobby.ts`: no caps on rooms / sessions / connections per IP — fine on a LAN, needed
+    before a public server (part of the internet upgrade).
