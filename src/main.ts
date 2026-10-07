@@ -29,6 +29,8 @@ if (new URLSearchParams(location.search).has('gallery')) {
   (window as unknown as { __mythwar: App }).__mythwar = app;
   // Handy for debugging and the screenshot / smoke scripts.
   (window as unknown as { __mythwarData: unknown }).__mythwarData = { UNITS, TURRETS };
+  // Cross-engine determinism probe for scripts/enginecheck.ts (loaded on demand).
+  (window as unknown as { __mythwarSelftest: unknown }).__mythwarSelftest = () => import('./selftest.ts');
 }
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator && location.protocol !== 'file:') {

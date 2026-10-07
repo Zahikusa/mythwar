@@ -82,6 +82,9 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   --jitter 40`): a desync turned up after a few minutes; the --debug replay diff showed both
   replicas missing one order — the lag *simulator* reordered messages (one setTimeout per
   message). Fixed (ordered queue); clients now also resync at once on any out-of-order turn.
+- Cross-engine: `scripts/enginecheck.ts` (same AI battle in Node, Chrome, Firefox, WebKit —
+  identical hashes over 25-minute battles), `scripts/mpengines.ts` (online Chrome/Firefox host vs
+  WebKit guest: 0 desyncs). Playwright browsers live in node_modules (PLAYWRIGHT_BROWSERS_PATH=0).
 - Measured: snapshots ≤ 12 kB in long battles; server sim 2.5 µs/tick (≈0.015% of a core per
   match). `mpsmoke` passes plain, with `--latency 60 --jitter 80`, and with `--portrait`.
 
@@ -100,11 +103,11 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   the menu just locally, so the waiting player can always leave.
 
 ## Open questions for the human
-- Real devices: everything was tested in Chrome (desktop + emulated phones, simulated lag), not
-  on a physical iPhone/Android. Please try `npm run lan` → scan the QR code with an iPhone and an
-  Android phone. Windows will show a firewall prompt for Node.js on first run: allow *private*
-  networks. Safari's JavaScriptCore is expected to simulate identically (only exact IEEE math is
-  used); if not, the build fingerprint / hash checks will report it (resync or refusal).
+- Real devices: tested in Chrome (desktop + emulated phones, simulated lag) and with Playwright's
+  WebKit (JavaScriptCore, iPhone's engine) and Firefox — full battles hash identically on all
+  engines, and Chrome/Firefox vs WebKit online battles stayed in sync — but not on a physical
+  iPhone/Android. Please try `npm run lan` → scan the QR code with both phones. Windows shows a
+  firewall prompt for Node.js on first run: allow *private* networks.
 - Screen wake lock only works on https/localhost; on `http://192.168…` phones may auto-lock
   during long pauses (the battle then waits for them as "away"). An https setup (self-signed
   certificate) would fix that but makes browsers show warnings — not done.

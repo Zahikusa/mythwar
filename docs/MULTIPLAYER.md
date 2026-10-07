@@ -130,7 +130,14 @@ npm test                                   # incl. determinism, server and simul
 node scripts/mpsmoke.ts --shots            # two Chrome profiles (desktop + phone) play it through
 node scripts/mpsmoke.ts --latency 60 --jitter 80   # the same over a bad network
 node server/main.ts --latency 80 --jitter 60       # play by hand with simulated lag
+node scripts/enginecheck.ts 30 2                   # same battle in Node, Chrome, Firefox, WebKit
+node scripts/mpengines.ts                          # online: Chrome / Firefox host vs a WebKit guest
 ```
+
+`enginecheck` and `mpengines` use Playwright's Firefox and WebKit (JavaScriptCore — the engine
+behind every iPhone browser), installed inside the project:
+`PLAYWRIGHT_BROWSERS_PATH=0 npx playwright install webkit firefox`. Full-length battles hash
+identically on all four engines.
 
 Two browser tabs on one computer are two separate players (the session lives per tab), which is
 the quickest way to try a battle alone. Or let an AI join your room:

@@ -104,6 +104,8 @@ npm run shoot -- desktop         # screenshots into screenshots/ (--list, --size
 node scripts/soak.ts 60 16       # long fast battles in Chrome: errors + fps
 npm run verify                   # typecheck + unit tests + build + smoke + multiplayer smoke
 node scripts/mpsmoke.ts --shots  # two browsers play an online battle (screenshots/mp/)
+node scripts/enginecheck.ts      # the simulation is identical in V8, SpiderMonkey and JavaScriptCore
+node scripts/mpbot.ts            # an AI opponent that joins online rooms
 node scripts/playthrough.mjs 90  # casual scripted play through the real UI, screenshots/play/
 node scripts/perf2.mjs 1600 900  # per-frame render cost (supports skipping render passes)
 node scripts/classwar.ts         # equal-gold army battles per class and age
