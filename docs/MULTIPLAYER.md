@@ -73,6 +73,20 @@ Phones keep their screen on during a battle where the browser allows it (Screen 
 needs `https` or `localhost`; on a plain `http://192.168…` address the system's auto-lock
 applies — the away pause covers that).
 
+### Optional: https on the LAN
+
+With a certificate the server speaks https/wss, which also lets phones keep the screen awake
+and install the game as an app. The easiest trusted certificate comes from
+[mkcert](https://github.com/FiloSottile/mkcert) (install its root certificate on the phones):
+
+```bash
+mkcert 192.168.1.105 localhost          # → 192.168.1.105+1.pem and 192.168.1.105+1-key.pem
+npm run build
+node server/main.ts --cert "192.168.1.105+1.pem" --key "192.168.1.105+1-key.pem"
+```
+
+A self-signed certificate works too, but every device has to click through a warning first.
+
 ## How it works
 
 ```

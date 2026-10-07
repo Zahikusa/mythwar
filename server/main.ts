@@ -4,11 +4,14 @@
  *   npm run lan                      # build, then serve on port 8787
  *   node server/main.ts --port 9000  # serve an existing build
  *   node server/main.ts --latency 80 --jitter 60   # simulate a bad network (testing)
+ *   node server/main.ts --cert cert.pem --key key.pem   # https (e.g. a mkcert certificate)
  *
  * Every device in the same Wi-Fi opens the printed address (or scans the QR code).
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
+import type { Server } from 'node:http';
+import { createServer as createHttpsServer } from 'node:https';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { lanAddresses } from './lan.ts';
@@ -30,7 +33,14 @@ if (!existsSync(join(root, 'index.html'))) {
   process.exit(1);
 }
 
-const http = createServer(serveStatic(root));
+// --cert / --key: serve https (phones then allow the screen wake lock and installing the app).
+const certFile = arg('cert');
+const keyFile = arg('key');
+const secure = !!(certFile && keyFile);
+const http: Server = secure
+  ? (createHttpsServer({ cert: readFileSync(certFile!), key: readFileSync(keyFile!) }, serveStatic(root)) as unknown as Server)
+  : createServer(serveStatic(root));
+const scheme = secure ? 'https' : 'http';
 
 const latency = Number(arg('latency') ?? 0);
 const jitter = Number(arg('jitter') ?? 0);
@@ -45,9 +55,9 @@ http.on('error', (e: NodeJS.ErrnoException) => {
 });
 
 http.listen(port, '0.0.0.0', () => {
-  const urls = lanAddresses().map((ip) => `http://${ip}:${port}/`);
+  const urls = lanAddresses().map((ip) => `${scheme}://${ip}:${port}/`);
   console.log('\n  Mythwar is running.\n');
-  console.log(`  On this computer:   http://localhost:${port}/`);
+  console.log(`  On this computer:   ${scheme}://localhost:${port}/`);
   if (urls.length) {
     console.log(`  Other devices in this Wi-Fi:`);
     for (const u of urls) console.log(`    ${u}`);

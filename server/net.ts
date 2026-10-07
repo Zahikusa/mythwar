@@ -1,5 +1,6 @@
 import type { IncomingMessage, Server } from 'node:http';
 import type { Duplex } from 'node:stream';
+import { Server as TlsServer } from 'node:tls';
 import { WebSocketServer } from 'ws';
 import type { WebSocket } from 'ws';
 import { MP_PATH } from '../src/net/protocol.ts';
@@ -30,7 +31,8 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
   const lanUrls = () => {
     const addr = http.address();
     const port = addr && typeof addr === 'object' ? addr.port : 0;
-    return port ? lanAddresses().map((ip) => `http://${ip}:${port}/`) : [];
+    const scheme = (http as unknown) instanceof TlsServer ? 'https' : 'http';
+    return port ? lanAddresses().map((ip) => `${scheme}://${ip}:${port}/`) : [];
   };
   const lobby = new Lobby({ lanUrls, ...opts });
   const wss = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024, perMessageDeflate: false });
