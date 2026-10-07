@@ -564,8 +564,12 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     const chip = await center(page, '.qchip:last-of-type');
     if (viewport.mobile) await page.touchscreen.tap(chip.x, chip.y);
     else await page.mouse.click(chip.x, chip.y);
-    await sleep(120);
-    const after = await page.evaluate(() => ({ q: (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.length, chips: document.querySelectorAll('.qchip').length }));
+    // (The chips follow on the next rendered frame: poll rather than guess a delay.)
+    let after = { q: -1, chips: -2 };
+    for (let i = 0; i < 20 && (after.q !== before.q - 1 || after.chips !== after.q); i++) {
+      await sleep(50);
+      after = await page.evaluate(() => ({ q: (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.length, chips: document.querySelectorAll('.qchip').length }));
+    }
     check('tapping a queue chip cancels that summon', after.q === before.q - 1 && after.chips === after.q, JSON.stringify(after));
   }
 
