@@ -98,6 +98,15 @@ export class Hud {
     this.ghost = h('div', { class: 'drag-ghost hidden' });
     this.root.appendChild(this.ghost);
     window.addEventListener('pointermove', (e) => this.onDragMove(e));
+    // The quick-message picker closes on any tap outside it.
+    window.addEventListener(
+      'pointerdown',
+      (e) => {
+        const t = e.target as Node | null;
+        if (!this.el.emotes.classList.contains('hidden') && t && !this.el.emotes.contains(t) && !this.el.emoteBtn.contains(t)) toggle(this.el.emotes, 'hidden', true);
+      },
+      true,
+    );
     window.addEventListener('pointerup', (e) => this.onDragEnd(e));
     window.addEventListener('pointercancel', (e) => this.onDragEnd(e, true));
   }
@@ -443,6 +452,7 @@ export class Hud {
 
   cancelTargeting(): void {
     this.cancelDrag();
+    toggle(this.el.emotes, 'hidden', true);
     if (!this.game) return;
     this.game.view.targeting = 'none';
     this.hint('');
@@ -559,6 +569,7 @@ export class Hud {
   }
 
   togglePanel(which: 'none' | 'turret' | 'bless' | 'keys'): void {
+    toggle(this.el.emotes, 'hidden', true);
     if (this.panel === which) which = 'none';
     this.panel = which;
     toggle(this.el.turretPanel, 'hidden', which !== 'turret');

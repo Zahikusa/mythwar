@@ -252,6 +252,10 @@ async function main(): Promise<void> {
     await waitFor(b, 'tapping your own (left) gate opens its turret slot', () => !document.querySelector('.turretpanel')!.classList.contains('hidden'));
     await press(b, '.turretpanel', '');
     // Quick message: A sends "Good luck!", B's screen shows it by A's citadel (right for B).
+    // (The picker closes when you tap elsewhere.)
+    await a.click('.emotebtn');
+    await a.mouse.click(700, 400);
+    check('quick-message picker closes on an outside tap', await a.evaluate(() => document.querySelector('.emotes')!.classList.contains('hidden')));
     await a.click('.emotebtn');
     await press(a, '.emotes', 'Good luck!');
     await waitFor(b, 'B sees the quick message', () => document.querySelector('.ebubble.theirs.show')?.textContent === 'Good luck!');
