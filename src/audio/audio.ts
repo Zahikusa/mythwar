@@ -324,6 +324,10 @@ export class Audio {
           this.tone({ freq: 55, to: 41, dur: 3, vol: 0.35, type: 'sawtooth', attack: 0.4 });
           this.noiseBurst({ dur: 2.5, vol: 0.4, freq: 200, type: 'lowpass', sweep: 60 });
           break;
+        case 'crumble':
+          this.noiseBurst({ dur: 3, vol: 0.45, freq: 160, type: 'lowpass', sweep: 40 });
+          this.tone({ freq: 41, to: 30, dur: 3.2, vol: 0.3, type: 'sawtooth', attack: 0.6 });
+          break;
         default:
           break;
       }

@@ -151,6 +151,7 @@ export type SimEvent =
   | { type: 'shrine'; lane: number; owner: Team | -1 }
   | { type: 'trainStart'; team: Team }
   | { type: 'ragnarok' }
+  | { type: 'crumble' }
   | { type: 'gameOver'; winner: Team };
 
 export type Command =

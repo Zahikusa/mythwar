@@ -10,6 +10,8 @@ import {
   MAX_AGE,
   PASSIVE_XP,
   RAGNAROK_AFTER_FINAL,
+  RAGNAROK_CRUMBLE,
+  RAGNAROK_CRUMBLE_AFTER,
   RAGNAROK_RAMP,
   RAGNAROK_TIME,
   POWER_SCALE,
@@ -478,7 +480,7 @@ export class World {
     for (const lane of this.lanes) for (const u of lane) u.px = u.x;
     for (const pr of this.projectiles) pr.px = pr.x;
     for (const p of this.players) this.updatePlayer(p, dt);
-    this.updateRagnarok();
+    this.updateRagnarok(dt);
     for (let lane = 0; lane < LANE_COUNT; lane++) this.updateLane(lane, dt);
     this.updateTurrets(dt);
     this.updateProjectiles(dt);
@@ -488,8 +490,15 @@ export class World {
     this.checkWin();
   }
 
-  private updateRagnarok(): void {
-    if (this.ragnarokStarted) return;
+  private updateRagnarok(dt: number): void {
+    if (this.ragnarokStarted) {
+      // Long into Ragnarök both citadels crumble, so every battle ends (healthier one wins).
+      const into = this.time - this.ragnarokAt;
+      if (into < RAGNAROK_CRUMBLE_AFTER) return;
+      if (into - dt < RAGNAROK_CRUMBLE_AFTER) this.emit({ type: 'crumble' });
+      for (const p of this.players) p.baseHp = Math.max(0, p.baseHp - p.baseMaxHp * RAGNAROK_CRUMBLE * dt);
+      return;
+    }
     if (this.players[0].age === MAX_AGE && this.players[1].age === MAX_AGE) {
       this.ragnarokAt = Math.min(this.ragnarokAt, Math.max(this.time, this.finalAgeAt ?? this.time) + RAGNAROK_AFTER_FINAL);
       this.finalAgeAt ??= this.time;

@@ -10,6 +10,7 @@ import {
   MAX_AGE,
   POWERS,
   QUEUE_MAX,
+  RAGNAROK_CRUMBLE_AFTER,
   SELL_REFUND,
   TURRETS,
   UNITS,
@@ -730,6 +731,8 @@ export class Hud {
         this.toast(`Enemy casts ${POWERS[e.kind].name}!`, 'bad');
       } else if (e.type === 'ragnarok') {
         this.banner('Ragnarök', 'The wards fall silent — citadels crumble', 'red');
+      } else if (e.type === 'crumble') {
+        this.banner('The citadels crumble', 'Both are falling — the sturdier one stands last', 'red');
       } else if (e.type === 'blessing' && e.team !== me) {
         this.toast(`Enemy gains ${BLESSINGS[e.blessing].name} ${ROMAN[e.rank - 1]}`, 'info');
       }
@@ -778,7 +781,10 @@ export class Hud {
       toggle(pip, 'theirs', o !== -1 && o !== g.playerTeam);
       toggle(pip, 'contested', w.shrines[i].contested);
     }
-    if (w.ragnarokStarted) setText(E.rag, 'RAGNARÖK');
+    if (w.ragnarokStarted) {
+      const crumbleIn = w.ragnarokAt + RAGNAROK_CRUMBLE_AFTER - w.time;
+      setText(E.rag, crumbleIn <= 0 ? 'CITADELS CRUMBLE' : crumbleIn < 120 ? `Citadels crumble in ${fmtTime(crumbleIn)}` : 'RAGNARÖK');
+    }
     else if (w.ragnarokAt - w.time < 120) setText(E.rag, `Ragnarök in ${fmtTime(w.ragnarokAt - w.time)}`);
     else setText(E.rag, '');
     toggle(E.rag, 'active', w.ragnarokStarted);

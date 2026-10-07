@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AGES, AGE_UNITS, BLESSINGS, BLESSING_PRICE_FLOOR_AGE, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_TIME, SHRINE_X, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
+import { AGES, AGE_UNITS, BLESSINGS, BLESSING_PRICE_FLOOR_AGE, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_CRUMBLE, RAGNAROK_CRUMBLE_AFTER, RAGNAROK_TIME, SHRINE_X, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
 import { World } from '../src/sim/world.ts';
 import type { Team } from '../src/sim/types.ts';
 
@@ -415,6 +415,24 @@ describe('ragnarok', () => {
     setAge(w, MAX_AGE);
     run(w, 1);
     expect(w.ragnarokAt).toBeLessThanOrEqual(1 + RAGNAROK_AFTER_FINAL + 0.01);
+  });
+
+  it('ends every battle: long into it both citadels crumble and the sturdier one stands', () => {
+    const w = new World();
+    w.ragnarokAt = 1;
+    for (const p of w.players) p.baseHp = p.baseMaxHp;
+    w.players[1].baseHp = w.players[1].baseMaxHp * 0.6;
+    run(w, 2 + RAGNAROK_CRUMBLE_AFTER - 1);
+    expect(w.players[0].baseHp).toBe(w.players[0].baseMaxHp); // not yet
+    const log: string[] = [];
+    for (let i = 0; i < 3 / TICK; i++) {
+      w.step();
+      for (const e of w.drainEvents()) log.push(e.type);
+    }
+    expect(log.filter((t) => t === 'crumble').length).toBe(1);
+    expect(w.players[0].baseHp).toBeLessThan(w.players[0].baseMaxHp);
+    run(w, 1 / RAGNAROK_CRUMBLE, () => w.winner !== null);
+    expect(w.winner).toBe(0);
   });
 });
 

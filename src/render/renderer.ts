@@ -549,6 +549,11 @@ export class Renderer {
           this.fx.flashColor = '255,80,40';
           this.shake = 8;
           break;
+        case 'crumble':
+          this.fx.flash = 0.6;
+          this.fx.flashColor = '255,80,40';
+          this.shake = 10;
+          break;
         default:
           break;
       }

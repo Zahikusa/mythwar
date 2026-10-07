@@ -160,6 +160,13 @@ export const TICK = 1 / 60;
 export const RAGNAROK_TIME = 18 * 60;
 export const RAGNAROK_AFTER_FINAL = 3 * 60;
 export const RAGNAROK_RAMP = 1;
+/**
+ * Every battle ends: this long into Ragnarök both citadels start to crumble, losing
+ * RAGNAROK_CRUMBLE of their full health per second, so the healthier one outlasts the other
+ * (armies grinding in midfield forever stalled ~1% of evenly matched AI battles past 45 min).
+ */
+export const RAGNAROK_CRUMBLE_AFTER = 10 * 60;
+export const RAGNAROK_CRUMBLE = 0.005;
 
 /** Every citadel gate has a built-in ward that shoots the nearest enemy (damage scales with age). */
 export const WARD: { damage: number; cooldown: number; range: number; projectile: ProjectileSpec } = {
