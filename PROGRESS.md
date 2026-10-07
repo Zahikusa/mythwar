@@ -14,9 +14,15 @@ Status: complete, in verification mode (since run #4, 2026-10-07 ~18:30)
 - **Robust:** app switches / screen lock (battle waits, 90 s to return), Wi-Fi blips
   (auto-reconnect + snapshot), reload mid-battle, missed endings, quitting offline, duplicated
   tabs, version mismatches, laggy networks (adaptive jitter buffer).
-- **Verified by:** 120 unit tests (incl. a simulated network), `scripts/mpsmoke.ts` (two Chrome
-  profiles, desktop + phone, every flow; also `--latency 60 --jitter 80` and `--portrait`), a
-  bot-vs-bot soak (`scripts/mpbot.ts --vs-bot`). Not tested on physical phones (see below).
+- **Polish:** shared pause, 3-2-1 countdowns, opponent-away banner with forfeit timer and a
+  "Claim victory" after 20 s, quick messages (emotes), ping per seat in the room and a
+  connection badge in battle, orders in flight shown at once (gold, faded queue chips),
+  per-opponent records, rename in the room, chimes, fullscreen on Ready for phones.
+- **Verified by:** 128 unit tests (incl. a simulated network), `scripts/mpsmoke.ts` (two Chrome
+  profiles, desktop + phone, every flow; also `--latency 60 --jitter 80` and `--portrait`),
+  `scripts/enginecheck.ts` + `scripts/mpengines.ts` (V8, SpiderMonkey and JavaScriptCore/WebKit
+  simulate identically; online Chrome/Firefox vs WebKit battles stay in sync), bot-vs-bot soaks
+  (`scripts/mpbot.ts --vs-bot --debug`). Not tested on physical phones (see below).
 
 Task (TASK.md): play a polished, stable match against another human on the same WLAN, across
 PC ↔ phone and iOS ↔ Android, built so it can later be upgraded to public online multiplayer.
