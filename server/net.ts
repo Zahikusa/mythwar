@@ -21,6 +21,8 @@ export interface AttachOptions extends LobbyOptions {
   jitter?: number;
 }
 
+/** Simultaneous connections from one address (a household has a few devices; a script many). */
+const MAX_PER_ADDRESS = 32;
 /** Seconds without any sign of life before a connection is considered dead. */
 const DEAD_AFTER = 12;
 const HEARTBEAT = 4;
@@ -39,6 +41,7 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
   const lobby = new Lobby({ lanUrls, ...opts });
   const wss = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024, perMessageDeflate: false });
   const alive = new Map<WebSocket, number>();
+  const perAddress = new Map<string, number>();
 
   const onUpgrade = (req: IncomingMessage, socket: Duplex, head: Buffer) => {
     const path = (req.url ?? '').split('?')[0];
@@ -49,7 +52,20 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
 
   wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
     const forwarded = opts.trustProxy ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() : '';
-    const network = networkOf(forwarded || req.socket.remoteAddress);
+    const address = forwarded || req.socket.remoteAddress || '?';
+    const network = networkOf(address);
+    // (Local-network addresses are exempt: on a LAN everyone is trusted, and testing opens many tabs.)
+    const count = (perAddress.get(address) ?? 0) + 1;
+    if (count > MAX_PER_ADDRESS && network !== 'lan') {
+      ws.close(1013, 'too many connections');
+      return;
+    }
+    perAddress.set(address, count);
+    ws.once('close', () => {
+      const n = (perAddress.get(address) ?? 1) - 1;
+      if (n > 0) perAddress.set(address, n);
+      else perAddress.delete(address);
+    });
     // Small frames, sent as they happen: no Nagle delay.
     (ws as unknown as { _socket?: { setNoDelay?: (v: boolean) => void } })._socket?.setNoDelay?.(true);
     const lag = opts.latency || opts.jitter ? { up: laggy(opts), down: laggy(opts) } : null;

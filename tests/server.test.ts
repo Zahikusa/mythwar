@@ -234,6 +234,20 @@ describe('lobby', () => {
     expect(a.last('room')!.room.seats[1]!.ping).toBe(300);
   });
 
+  it('refuses new rooms and sessions when the server is full', () => {
+    const lobby = new Lobby({ maxRooms: 1, maxSessions: 2 });
+    const [a, b, c] = [new FakeClient(lobby), new FakeClient(lobby), new FakeClient(lobby)];
+    a.hello('A');
+    b.hello('B');
+    c.hello('C');
+    expect(c.last('error')!.code).toBe('rate');
+    expect(c.open).toBe(false);
+    a.send({ type: 'host' });
+    b.send({ type: 'host' });
+    expect(b.last('error')!.code).toBe('rate');
+    expect(lobby.roomCount).toBe(1);
+  });
+
   it('an empty room disappears', () => {
     const { lobby } = setup();
     const a = new FakeClient(lobby);

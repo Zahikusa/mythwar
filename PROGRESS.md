@@ -150,7 +150,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
     grow towards 0.5 s silently; the badge only reflects RTT. Flag "unstable" from bufferMs too.
 15. [x] `scripts/mpsmoke.ts` drives the UI only in Chrome; WebKit is covered for the
     simulation/netcode (`mpengines`) but not for the touch UI flows (lobby, room, drag).
-16. [ ] `server/lobby.ts`: no caps on rooms / sessions / connections per IP — fine on a LAN, needed
+16. [x] `server/lobby.ts`: no caps on rooms / sessions / connections per IP — fine on a LAN, needed
     before a public server (part of the internet upgrade).
 17. [x] `server/match.ts` / `src/ui/netoverlay.ts`: the claim delay (20 s) is a client-side
     constant mirrored on the server; send `claimIn` with the pause state like `forfeitIn`, so the

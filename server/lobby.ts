@@ -26,6 +26,9 @@ export interface LobbyOptions {
   log?: (line: string) => void;
   /** Where other devices in the network can open the game (shown as invite link / QR code). */
   lanUrls?: () => string[];
+  /** Server-wide limits (defaults suit a small public server). */
+  maxRooms?: number;
+  maxSessions?: number;
 }
 
 /** Seconds a disconnected player keeps their seat in a room that isn't fighting. */
@@ -34,6 +37,9 @@ const SEAT_GRACE = 60;
 const SESSION_TTL = 10 * 60;
 /** Commands per second a player may send (a human manages a handful). */
 const CMD_RATE = 25;
+/** Server-wide limits (a public server must not be exhausted by one script). */
+const MAX_ROOMS = 2000;
+const MAX_SESSIONS = 10000;
 /** Minimum ms between two emotes from one player. */
 const EMOTE_GAP = 1500;
 const MSG_RATE = 120;
@@ -168,6 +174,11 @@ export class Lobby {
       s.network = network;
       if (msg.name !== undefined) s.name = cleanName(msg.name);
     } else {
+      if (this.sessions.size >= (this.opts.maxSessions ?? MAX_SESSIONS)) {
+        this.error(conn, 'rate', 'The server is full right now — try again in a minute.');
+        conn.close(1013, 'full');
+        return null;
+      }
       s = {
         token: this.makeToken(),
         name: cleanName(msg.name),
@@ -217,6 +228,7 @@ export class Lobby {
       case 'host': {
         // Already waiting alone in an open room (a double tap): keep it.
         if (room && room.phase === 'waiting' && room.seats.filter((x) => x).length === 1) return this.broadcastRoom(room);
+        if (this.rooms.size >= (this.opts.maxRooms ?? MAX_ROOMS)) return this.error(s.conn, 'rate', 'The server is full right now — try again in a minute.');
         if (room) this.removeFromRoom(s);
         const r: Room = { code: this.makeCode(), createdAt: now, phase: 'waiting', seats: [null, null], match: null };
         this.rooms.set(r.code, r);
