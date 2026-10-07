@@ -147,7 +147,11 @@ export class App {
     // Battle-time network messages sit above the HUD, below the menus.
     this.netOverlay = new NetOverlay(this.stage);
     this.stage.insertBefore(this.netOverlay.root, this.menus.root);
-    this.netOverlay.onClaim = () => this.mp?.claim();
+    this.netOverlay.onClaim = () => {
+      this.audio.ui('click');
+      this.buzz(15);
+      this.mp?.claim();
+    };
     this.netOverlay.onBeat = (final) => {
       this.audio.ui(final ? 'summon' : 'select');
       if (final) this.buzz(30);

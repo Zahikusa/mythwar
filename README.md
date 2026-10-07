@@ -46,6 +46,10 @@ Open the printed address (or scan the QR code it prints) on each device, then
 Both press **Ready**. Battles survive app switches, Wi-Fi blips and reloads; leaving forfeits.
 Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](docs/MULTIPLAYER.md).
 
+| Battle room: code + QR invite | The guest's phone: every player sees their own citadel on the left |
+|---|---|
+| ![Room](docs/mp-room.jpg) | ![Phone](docs/mp-phone.jpg) |
+
 ## How to play
 
 - **Goal:** destroy the enemy citadel. Its health is shared by all three lanes — so is yours.
