@@ -19,6 +19,8 @@ class SimNet {
   private n = 0;
   readonly lobby: Lobby;
   readonly clients: MpClient[] = [];
+  /** Clients whose page renders no frames (a frozen / throttled tab). */
+  readonly frozen = new Set<MpClient>();
   /** Sockets currently "unplugged" (messages dropped, as on a dead Wi-Fi link). */
   readonly cut = new Set<FakeSocket>();
 
@@ -56,7 +58,7 @@ class SimNet {
       if (this.now % 4 === 0) this.lobby.update();
       if (this.now >= nextFrame) {
         nextFrame += 1000 / 60;
-        for (const c of this.clients) c.game?.advance(1 / 60);
+        for (const c of this.clients) if (!this.frozen.has(c)) c.game?.advance(1 / 60);
         onFrame?.();
       }
     }
@@ -221,6 +223,25 @@ describe('NetGame over a simulated network', () => {
     net.run(5000);
     expectInSync(ga, gb);
     expect(a.room!.seats[1]!.connected).toBe(true);
+  });
+
+  it('a page frozen for 15 s catches up at once, without effects, and stays in sync', () => {
+    const { b, ga, gb } = twoPlayers();
+    net.run(3000);
+    let events = 0;
+    gb.onEvents((ev) => (events += ev.length));
+    net.frozen.add(b);
+    for (let i = 0; i < 5; i++) {
+      ga.command({ type: 'train', team: 0, unitId: 'redcap', lane: i % 3 });
+      net.run(3000);
+    }
+    expect(gb.backlog).toBeGreaterThan(800);
+    net.frozen.delete(b);
+    net.run(100);
+    expect(gb.backlog).toBeLessThan(20);
+    expect(events).toBeLessThan(40); // the skipped stretch made no fireworks
+    expect(gb.desyncs).toBe(0);
+    expectInSync(ga, gb);
   });
 
   it('repairs a diverged replica from a snapshot', () => {
