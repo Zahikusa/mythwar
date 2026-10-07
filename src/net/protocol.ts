@@ -99,7 +99,15 @@ export type EndReason = 'citadel' | 'forfeit' | 'timeout';
 // ---------------------------------------------------------------------------
 
 export type ClientMsg =
-  | { type: 'hello'; v: number; name: string; /** Session token from an earlier welcome (reconnect). */ token?: string }
+  | {
+      type: 'hello';
+      v: number;
+      /** simFingerprint() of the client's build: both sides must run the very same rules. */
+      sim: number;
+      name: string;
+      /** Session token from an earlier welcome (reconnect). */
+      token?: string;
+    }
   | { type: 'name'; name: string }
   | { type: 'watchRooms'; on: boolean }
   | { type: 'host' }

@@ -1,3 +1,4 @@
+import { simFingerprint } from '../sim/fingerprint.ts';
 import type { Team } from '../sim/types.ts';
 import { Connection } from './connection.ts';
 import type { ConnState, SocketLike } from './connection.ts';
@@ -56,7 +57,7 @@ export class MpClient {
       url: opts.url,
       socket: opts.socket,
       now: this.now,
-      hello: () => ({ type: 'hello', v: PROTOCOL_VERSION, name: this.name, token: this.token ?? undefined }),
+      hello: () => ({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint(), name: this.name, token: this.token ?? undefined }),
     });
     this.conn.onMessage = (m, at) => this.onMessage(m, at);
     this.conn.onState = (s) => this.onState(s);

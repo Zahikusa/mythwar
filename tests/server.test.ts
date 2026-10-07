@@ -3,6 +3,7 @@ import { Lobby } from '../server/lobby.ts';
 import { validateCommand } from '../server/validate.ts';
 import { PROTOCOL_VERSION } from '../src/net/protocol.ts';
 import type { ClientMsg, ServerMsg } from '../src/net/protocol.ts';
+import { simFingerprint } from '../src/sim/fingerprint.ts';
 import { hashWorld } from '../src/sim/hash.ts';
 import { World } from '../src/sim/world.ts';
 
@@ -61,7 +62,7 @@ class FakeClient {
   }
 
   hello(name: string, token?: string): void {
-    this.send({ type: 'hello', v: PROTOCOL_VERSION, name, token });
+    this.send({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint(), name, token });
   }
 
   disconnect(): void {
@@ -161,9 +162,13 @@ describe('lobby', () => {
     c.send({ type: 'join', code });
     expect(c.last('error')!.code).toBe('room-full');
     const old = new FakeClient(lobby);
-    old.send({ type: 'hello', v: PROTOCOL_VERSION - 1, name: 'x' });
+    old.send({ type: 'hello', v: PROTOCOL_VERSION - 1, sim: simFingerprint(), name: 'x' });
     expect(old.last('error')!.code).toBe('version');
     expect(old.open).toBe(false);
+    // Same protocol, different rules (e.g. a rebalanced build): refused too.
+    const other = new FakeClient(lobby);
+    other.send({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint() ^ 1, name: 'y' });
+    expect(other.last('error')!.code).toBe('version');
   });
 
   it('an empty room disappears', () => {
@@ -325,7 +330,7 @@ describe('over a real WebSocket', () => {
         ws.onmessage = (e) => inbox.push(JSON.parse(String(e.data)));
         ws.onerror = reject;
         ws.onopen = () => {
-          ws.send(JSON.stringify({ type: 'hello', v: PROTOCOL_VERSION, name }));
+          ws.send(JSON.stringify({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint(), name }));
           resolve({ ws, inbox });
         };
       });

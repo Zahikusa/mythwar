@@ -1,6 +1,7 @@
 import { CODE_ALPHABET, CODE_LENGTH, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName } from '../src/net/protocol.ts';
 import type { ClientMsg, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
 import type { Team } from '../src/sim/types.ts';
+import { simFingerprint } from '../src/sim/fingerprint.ts';
 import { Match } from './match.ts';
 import { validateCommand } from './validate.ts';
 
@@ -136,7 +137,7 @@ export class Lobby {
   // -------------------------------------------------------------------------
 
   private hello(conn: Conn, msg: Extract<ClientMsg, { type: 'hello' }>): Session | null {
-    if (msg.v !== PROTOCOL_VERSION) {
+    if (msg.v !== PROTOCOL_VERSION || msg.sim !== simFingerprint()) {
       this.error(conn, 'version', 'This game version is out of date — reload the page.');
       conn.close(4000, 'version');
       return null;
