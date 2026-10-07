@@ -221,6 +221,12 @@ async function main(): Promise<void> {
     await b.evaluate(() => (window as any).__mythwar.mp.away(true));
     await waitFor(a, 'A told B is away', () => (document.querySelector('.nbanner.show')?.textContent ?? '').includes('is away'));
     await shot(a, '8-opponent-away');
+    // The waiting player can still reach the menu (to leave, say) and close it again.
+    await a.keyboard.press('Escape');
+    await waitFor(a, 'A menu while B is away', () => (window as any).__mythwar.menus.current === 'pause');
+    await press(a, '.screen.pause', 'Resume');
+    await waitFor(a, 'A menu closed', () => (window as any).__mythwar.menus.current === 'none');
+    check('B still away after A closed the menu', (await info(a)).netPause === 'away:1');
     await b.evaluate(() => (window as any).__mythwar.mp.away(false));
     await waitFor(a, 'resumed after away', () => !(window as any).__mythwar.game.paused, 6000);
 

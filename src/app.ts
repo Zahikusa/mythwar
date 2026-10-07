@@ -66,6 +66,8 @@ export class App {
   private quietResume = false;
   private wakeLock: { release(): Promise<void> } | null = null;
   private wakePending = false;
+  /** Online: the pause menu was opened just on this device (the battle was already held). */
+  private netMenuLocal = false;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -403,6 +405,7 @@ export class App {
     // Leaving a battle from the menu abandons it.
     if (this.state === 'playing' && this.game && !this.game.options.demo && !this.game.options.online) clearBattle();
     this.keepAwake(false);
+    this.netMenuLocal = false;
     this.state = 'title';
     this.overTimer = -1;
     this.hud.detach();
@@ -475,15 +478,33 @@ export class App {
     else if (m === 'room') return;
     else if (m === 'howto' || m === 'settings' || m === 'difficulty') this.menus.goBack();
     else if (this.state !== 'playing') return;
-    else if (this.game?.paused) this.resume();
+    else if (this.game instanceof NetGame) {
+      // Online the battle may be held for other reasons (countdown, someone away): Esc
+      // toggles the menu itself.
+      if (m === 'pause') this.resume();
+      else this.pause();
+    } else if (this.game?.paused) this.resume();
     else this.pause();
   }
 
   pause(): void {
     if (this.state !== 'playing' || !this.game || this.game.over) return;
-    if (this.game instanceof NetGame) {
+    const g = this.game;
+    if (g instanceof NetGame) {
       // Online: ask the server; the pause screen opens for both players when it confirms.
-      if (!this.game.netPause && this.game.countdownEnd <= performance.now()) this.mp?.pause();
+      if (!g.netPause && g.countdownEnd <= performance.now() && g.online) {
+        this.mp?.pause();
+        return;
+      }
+      // Already held (the other player is away, a countdown, reconnecting): open the menu
+      // just here, so leaving or the settings stay reachable.
+      if (this.menus.current !== 'none') return;
+      this.netMenuLocal = true;
+      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title: 'Menu' });
+      this.hud.cancelTargeting();
+      this.hud.hideTooltip();
+      if (this.hud.panelOpen) this.hud.togglePanel('none');
+      this.menus.show('pause');
       return;
     }
     this.game.paused = true;
@@ -497,7 +518,11 @@ export class App {
   resume(): void {
     if (!this.game) return;
     if (this.game instanceof NetGame) {
-      this.mp?.resume();
+      const local = this.netMenuLocal;
+      this.netMenuLocal = false;
+      if (local) this.menus.show('none');
+      // (A menu opened while the battle was held for another reason resumes nothing.)
+      if (!local || this.game.netPause?.reason === 'pause') this.mp?.resume();
       return;
     }
     this.game.paused = false;
@@ -723,6 +748,7 @@ export class App {
       this.renderer.setTheme(g.world.players[g.playerTeam].age, true);
     };
     this.mp?.watchRooms(false);
+    this.netMenuLocal = false;
     this.enterBattle(g);
     this.menus.show('none');
     this.keepAwake(true);
@@ -734,13 +760,14 @@ export class App {
     const p = g.netPause;
     const want = p?.reason === 'pause' && g.countdownEnd <= performance.now();
     const cur = this.menus.current;
-    if (want && cur === 'none') {
-      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, pausedBy: p!.seat === g.seat ? 'you' : g.names[p!.seat] });
+    if (want && (cur === 'none' || (cur === 'pause' && this.netMenuLocal))) {
+      this.netMenuLocal = false;
+      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title: `Paused by ${p!.seat === g.seat ? 'you' : g.names[p!.seat]}` });
       this.hud.cancelTargeting();
       this.hud.hideTooltip();
       if (this.hud.panelOpen) this.hud.togglePanel('none');
       this.menus.show('pause');
-    } else if (!want && (cur === 'pause' || cur === 'howto' || cur === 'settings')) {
+    } else if (!want && !this.netMenuLocal && (cur === 'pause' || cur === 'howto' || cur === 'settings')) {
       this.menus.show('none');
     }
   }

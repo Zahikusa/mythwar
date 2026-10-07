@@ -110,7 +110,7 @@ export class Menus {
   }
 
   /** One-line battle summary shown on the pause screen. `foe`: the other player's name online. */
-  setPauseSummary(world: World, me: Team, difficulty: Difficulty, online?: { foe: string; pausedBy: string }): void {
+  setPauseSummary(world: World, me: Team, difficulty: Difficulty, online?: { foe: string; title: string }): void {
     if (!this.pauseSummary) return;
     const P = world.players[me];
     const E = world.players[me === 0 ? 1 : 0];
@@ -118,7 +118,7 @@ export class Menus {
     this.pauseSummary.textContent = `vs ${foe} · ${fmtTime(world.time)} · ${AGES[P.age].name} vs ${AGES[E.age].name} · ${P.stats.kills} foes slain`;
     // Online, either player may pause and either may resume; the battle can't restart.
     this.restartBtn?.classList.toggle('hidden', !!online);
-    if (this.pauseTitle) this.pauseTitle.textContent = online ? `Paused by ${online.pausedBy}` : 'Paused';
+    if (this.pauseTitle) this.pauseTitle.textContent = online ? online.title : 'Paused';
     if (this.pauseNote) this.pauseNote.textContent = online ? 'Leaving the battle counts as a defeat. Either player can resume.' : 'Leaving or restarting after the first minute counts as a defeat.';
   }
 
