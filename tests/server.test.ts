@@ -217,6 +217,23 @@ describe('lobby', () => {
     expect(elsewhere.last('room')!.seat).toBe(1);
   });
 
+  it('seats show each player ping, refreshed when it changes noticeably', () => {
+    const { lobby } = setup();
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    a.hello('A');
+    b.hello('B');
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    b.send({ type: 'ping', t: 1, rtt: 40 });
+    expect(a.last('room')!.room.seats[1]!.ping).toBe(40);
+    const n = a.inbox.length;
+    b.send({ type: 'ping', t: 2, rtt: 42 }); // small change: no extra room update
+    expect(a.inbox.length).toBe(n);
+    b.send({ type: 'ping', t: 3, rtt: 300 });
+    expect(a.last('room')!.room.seats[1]!.ping).toBe(300);
+  });
+
   it('an empty room disappears', () => {
     const { lobby } = setup();
     const a = new FakeClient(lobby);

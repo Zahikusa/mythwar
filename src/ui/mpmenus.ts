@@ -325,7 +325,10 @@ export class MpScreens {
     toggle(v.el, 'ready', !!s?.ready);
     setText(v.name, s ? s.name + (mine ? ' (you) ✎' : '') : 'Open seat');
     v.name.title = mine ? 'Tap to change your name' : '';
-    setText(v.state, !s ? 'Waiting for a player…' : !s.connected ? 'Connecting…' : s.ready ? 'Ready!' : 'Not ready');
+    const ping = s?.connected && s.ping ? ` · ${s.ping} ms` : '';
+    setText(v.state, (!s ? 'Waiting for a player…' : !s.connected ? 'Connecting…' : s.ready ? 'Ready!' : 'Not ready') + ping);
+    // A weak link shows before the battle: amber / red ping.
+    v.state.dataset.q = !s?.connected || !s.ping ? '' : s.ping > 250 ? 'bad' : s.ping > 120 ? 'ok' : 'good';
     setText(v.wins, s && s.wins ? `${s.wins} ${s.wins === 1 ? 'win' : 'wins'}` : '');
   }
 }

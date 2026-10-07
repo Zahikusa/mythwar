@@ -12,7 +12,7 @@ import type { Command, Team } from '../sim/types.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 4;
+export const PROTOCOL_VERSION = 5;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -63,6 +63,8 @@ export interface SeatInfo {
   away: boolean;
   /** Matches won in this room (rematches). */
   wins: number;
+  /** Round-trip time to the server as the player's device measures it (ms; 0 = unknown). */
+  ping: number;
 }
 
 /** waiting: seats filling / getting ready; playing: a battle runs (incl. its countdown); over: results, rematch. */
@@ -140,7 +142,8 @@ export type ClientMsg =
   /** The opponent has been away for CLAIM_AFTER seconds: take the win now. */
   | { type: 'claim' }
   | { type: 'emote'; id: EmoteId }
-  | { type: 'ping'; t: number };
+  /** `rtt`: this client's smoothed round-trip time so far (shown to the other player). */
+  | { type: 'ping'; t: number; rtt?: number };
 
 // ---------------------------------------------------------------------------
 // Server → client

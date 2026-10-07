@@ -440,6 +440,14 @@
   color: var(--good);
 }
 
+.sstate[data-q='ok'] {
+  color: #f2c45a;
+}
+
+.sstate[data-q='bad'] {
+  color: var(--bad);
+}
+
 .swins {
   font-size: 12px;
   color: var(--gold-l);

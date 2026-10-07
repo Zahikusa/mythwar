@@ -185,7 +185,7 @@ export class Connection {
   }
 
   private ping(): void {
-    this.send({ type: 'ping', t: this.now() });
+    this.send({ type: 'ping', t: this.now(), rtt: Math.round(this.rtt) });
   }
 
   private drop(): void {

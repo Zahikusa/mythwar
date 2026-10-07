@@ -51,6 +51,8 @@ interface Session {
   network: string;
   /** When the session last sent an emote (rate limit). */
   lastEmote: number;
+  /** The client's own round-trip measurement (ms). */
+  rtt: number;
   /** How the session's last battle ended (final snapshot + result), for a client that missed it. */
   lastOver: { snapshot: ServerMsg; over: ServerMsg } | null;
 }
@@ -176,6 +178,7 @@ export class Lobby {
         goneAt: null,
         network,
         lastEmote: -Infinity,
+        rtt: 0,
         lastOver: null,
       };
       this.sessions.set(s.token, s);
@@ -277,9 +280,15 @@ export class Lobby {
       case 'resync':
         if (room?.match && seat !== null && room.phase === 'playing') this.send(s, room.match.snapshotFor(seat));
         return;
-      case 'ping':
+      case 'ping': {
         this.send(s, { type: 'pong', t: Number(msg.t) || 0, tick: room?.match?.tick ?? 0 });
+        const rtt = Math.max(0, Math.min(9999, Math.round(Number(msg.rtt) || 0)));
+        // Seats show each player's ping before a battle: refresh when it changes noticeably.
+        const changed = Math.abs(rtt - s.rtt) > Math.max(5, s.rtt * 0.25);
+        s.rtt = rtt;
+        if (changed && room && room.phase !== 'playing') this.broadcastRoom(room);
         return;
+      }
       default:
         this.error(s.conn, 'bad-request', 'Unknown message');
     }
@@ -376,7 +385,7 @@ export class Lobby {
     const seat = (i: Team) => {
       const x = room.seats[i];
       if (!x) return null;
-      return { name: this.nameIn(room, i), connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins };
+      return { name: this.nameIn(room, i), connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins, ping: x.session.rtt };
     };
     return { code: room.code, phase: room.phase, seats: [seat(0), seat(1)] };
   }
