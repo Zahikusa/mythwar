@@ -28,6 +28,15 @@ const PING_EVERY = 1000;
 const SILENT_LIMIT = 6000;
 const BACKOFF = [250, 500, 1000, 2000, 3000];
 
+/**
+ * False on a plain static host (the GitHub Pages build, `vite build --mode pages`): there is no
+ * multiplayer server next to the page there — unless `?server=` points at one.
+ */
+export function hasMpServer(): boolean {
+  if (import.meta.env.VITE_STATIC_HOST !== '1') return true;
+  return !!(new URLSearchParams(location.search).get('server') ?? import.meta.env.VITE_MP_SERVER);
+}
+
 /** The multiplayer server's address: same host as the page unless `?server=` says otherwise. */
 export function defaultServerUrl(): string {
   const params = new URLSearchParams(location.search);

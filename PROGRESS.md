@@ -55,6 +55,17 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   https pages automatically, or a configured server URL), room codes already work across
   networks; add accounts/matchmaking later. Protocol is versioned.
 
+## Distribution (2026-10-08)
+- Public repo https://github.com/Zahikusa/mythwar (`master`). Every push to master runs typecheck +
+  unit tests and publishes the game on GitHub Pages: https://zahikusa.github.io/mythwar/ (single
+  player on any device, installable, offline). That build (`npm run build:pages`, `.env.pages`)
+  has no game server, so its multiplayer lobby explains how to start one and links the download.
+- A version tag (`v1.0.0`, must match package.json) publishes `mythwar-server-v<version>.zip`
+  as a release (`npm run package`): server bundled into one `server.mjs` (ws included, Node 20+),
+  the normal LAN build in `game/`, double-click starters for Windows (offers `winget install`
+  of Node.js) and macOS, `start.sh`, README.txt. Tested: unzipped with Expand-Archive, started via
+  the .cmd, two bots battled over it with 0 desyncs.
+
 ## Milestones
 - [x] MP1 Foundation: deps (`ws`, `qrcode-generator`), `src/net/protocol.ts`, `src/sim/hash.ts`,
       determinism tests (replay, snapshot mid-battle continues identically).
@@ -194,5 +205,5 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
     or pause.
 31. [ ] Battle room: no "Copy link" button — on a desktop the invite is easier to paste into a
     chat than to read off the screen.
-32. [ ] docs/MULTIPLAYER.md troubleshooting doesn't cover "the page loads on the phone but the
+32. [x] docs/MULTIPLAYER.md troubleshooting doesn't cover "the page loads on the phone but the
     lobby stays on Connecting…" (WebSocket blocked: some guest Wi-Fis / proxies / VPN apps).

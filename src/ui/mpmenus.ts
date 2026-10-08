@@ -21,6 +21,9 @@ type ButtonFactory = (label: string, cls: string, onClick: () => void, icon?: st
 /** After this long without reaching the server, explain how multiplayer is set up. */
 const HELP_AFTER = 3500;
 
+/** Where the ready-to-run game server (release package) is downloaded. */
+const SERVER_DOWNLOAD = 'https://github.com/Zahikusa/mythwar/releases/latest';
+
 /**
  * The multiplayer screens: the lobby (name, host, join by code, open battles on this network)
  * and the battle room (room code, invite QR code, both players' readiness).
@@ -82,6 +85,11 @@ export class MpScreens {
     this.codeInput.value = code;
   }
 
+  /** No game server behind this page (static hosting): the lobby only explains how to start one. */
+  showNoServer(): void {
+    this.lobby.classList.add('noserver');
+  }
+
   // -------------------------------------------------------------------------
 
   private buildLobby(): HTMLElement {
@@ -104,7 +112,7 @@ export class MpScreens {
     this.help = h('div', {
       class: 'mphelp hidden',
       html:
-        'Multiplayer needs the <b>game server</b>: on a computer in this Wi-Fi run <code>npm run lan</code> and open the address it prints — on every device. ' +
+        'Multiplayer needs the <b>game server</b>: on a computer in this Wi-Fi start <b>Mythwar Server</b> (or <code>npm run lan</code>) and open the address it prints — on every device. ' +
         'Check that both devices use the same Wi-Fi (not a guest network) and that the firewall allows Node.js on private networks.',
     });
     this.hostBtn = this.button('Host a battle', 'primary big', () => this.cb.host(), ICONS.swords);
@@ -132,6 +140,19 @@ export class MpScreens {
     });
     this.joinBtn = this.button('Join', '', () => this.tryJoin(), ICONS.play);
     this.list = h('div', { class: 'mplist', role: 'list' });
+    const noServer = h(
+      'div',
+      { class: 'mpnoserver' },
+      h('b', { text: 'Start the game server on a computer in your Wi-Fi:' }),
+      h('ol', {
+        html:
+          '<li>Download <b>Mythwar Server</b> on a Windows PC, Mac or Linux computer and start it.</li>' +
+          '<li>Scan the <b>QR code</b> it shows with each phone — or open the address it prints in any browser.</li>' +
+          '<li>There, choose <b>Multiplayer → Host a battle</b>; your friend joins with the room code.</li>',
+      }),
+      h('div', { class: 'mrow' }, this.button('Download Mythwar Server', 'primary', () => window.open(SERVER_DOWNLOAD, '_blank', 'noopener'))),
+      h('div', { class: 'mnote', text: 'Battles against the AI work right here — even offline.' }),
+    );
     const back = this.button('Back', 'ghost', () => this.cb.exit());
     return h(
       'div',
@@ -144,6 +165,7 @@ export class MpScreens {
       // Upright phones show the game rotated, but the keyboard opens upright.
       h('div', { class: 'mprotate', text: 'Tip: turn your phone sideways before typing a name or code.' }),
       this.help,
+      noServer,
       h(
         'div',
         { class: 'mpactions' },

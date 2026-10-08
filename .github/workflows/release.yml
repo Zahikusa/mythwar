@@ -1,0 +1,38 @@
+# Pushing a version tag (git tag v1.2.0 && git push origin v1.2.0 — the same version as
+# package.json) builds the ready-to-run "Mythwar Server" package and publishes it as a release.
+# The game's multiplayer lobby on GitHub Pages links to the latest one.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Tag matches package.json
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match package.json ($version)"
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm test
+      - run: npm run package
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >
+          gh release create "$GITHUB_REF_NAME" release/mythwar-server-*.zip
+          --verify-tag --title "Mythwar $GITHUB_REF_NAME"
+          --notes-file .github/release-notes.md --generate-notes

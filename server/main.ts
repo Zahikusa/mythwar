@@ -40,7 +40,10 @@ const arg = (name: string): string | undefined => {
 };
 const fixedPort = arg('port') ?? process.env.PORT;
 let port = Number(fixedPort ?? 8787);
-const root = resolve(arg('dir') ?? join(fileURLToPath(new URL('.', import.meta.url)), '..', 'dist'));
+// The built game: dist/ in the repository, or game/ next to the bundled server (release package).
+const here = fileURLToPath(new URL('.', import.meta.url));
+const builds = [join(here, 'game'), join(here, '..', 'dist')];
+const root = resolve(arg('dir') ?? builds.find((d) => existsSync(join(d, 'index.html'))) ?? builds[1]);
 const quiet = args.includes('--quiet');
 
 if (!existsSync(join(root, 'index.html'))) {

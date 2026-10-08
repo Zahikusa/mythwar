@@ -6,14 +6,20 @@ browser.
 
 ## Quick start
 
-On a computer in the Wi-Fi (Windows, macOS or Linux, with Node.js 24+):
+One computer in the Wi-Fi (Windows, macOS or Linux) runs the game server. Either:
 
-```bash
-npm install
-npm run lan
-```
+- **Ready-to-run package** (no build, only [Node.js](https://nodejs.org/) 20+): download
+  `mythwar-server-v….zip` from the [latest release](https://github.com/Zahikusa/mythwar/releases/latest),
+  unzip it and start it — Windows: double-click `Start Mythwar Server` (offers to install Node.js
+  if it's missing); macOS: right-click `Start Mythwar Server.command` → *Open*; Linux: `sh start.sh`.
+- **From this repository** (Node.js 24+):
 
-It builds the game and prints something like:
+  ```bash
+  npm install
+  npm run lan
+  ```
+
+Either way it prints something like:
 
 ```
   Mythwar is running.
@@ -50,8 +56,13 @@ picks another port.
   works fine (the computer joins the phone's hotspot).
 - **The right address:** use the `192.168.x.x` / `10.x.x.x` address, not `localhost`. Computers
   with VPNs or virtual adapters may print several; the first one is usually right.
+- **The page loads, but the lobby stays on "Connecting…":** the page came through, the live
+  connection (WebSocket) didn't. VPN apps, ad blockers that filter traffic, company proxies and
+  some guest Wi-Fis do that — switch the VPN off or try another Wi-Fi / the phone's hotspot.
 - In the lobby the dot next to *Connected* turns red and a help box appears when the game
   server can't be reached.
+- The game on GitHub Pages (`zahikusa.github.io/mythwar`) has no game server behind it; its
+  multiplayer screen links to the server download. Open the address the server prints instead.
 
 ## What happens when…
 

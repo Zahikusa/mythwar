@@ -15,6 +15,7 @@ import { AGES } from './sim/data.ts';
 import { fmtTime } from './ui/dom.ts';
 import type { Settings } from './ui/settings.ts';
 import { MpClient, hasStoredSession } from './net/client.ts';
+import { hasMpServer } from './net/connection.ts';
 import { NetGame } from './net/netgame.ts';
 import { EMOTES, cleanCode, cleanName } from './net/protocol.ts';
 import { randomName } from './ui/mpmenus.ts';
@@ -636,6 +637,12 @@ export class App {
 
   /** Opens the multiplayer lobby (connecting if needed). `join`: room code from an invite. */
   openMultiplayer(join?: string, quiet = false): void {
+    if (!hasMpServer()) {
+      // Static hosting (GitHub Pages): no server here — the lobby explains how to start one.
+      this.menus.mp.showNoServer();
+      if (!quiet) this.menus.show('mp');
+      return;
+    }
     if (!this.settings.playerName) {
       this.settings.playerName = randomName();
       saveSettings(this.settings);

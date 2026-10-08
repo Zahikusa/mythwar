@@ -8,6 +8,12 @@ Celestial realm — and topple the enemy citadel.
 Everything is procedural: all creatures, citadels and effects are drawn in code (Canvas 2D)
 and all sound and music is synthesized with WebAudio. No asset files.
 
+<a href="https://zahikusa.github.io/mythwar/"><img src="docs/play-qr.svg" width="132" align="right" alt="QR code: open the game on a phone"></a>
+
+**▶ Play now: [zahikusa.github.io/mythwar](https://zahikusa.github.io/mythwar/)** — in any browser
+on a PC, Mac, iPhone, Android phone or tablet. Nothing to install; scan the QR code with a phone.
+For battles against a friend in the same Wi-Fi, see [Multiplayer](#multiplayer-same-wi-fi).
+
 ![Title screen over a live AI battle](docs/title.jpg)
 
 | Jade Empire battle | Starfall in the Celestial age |
@@ -18,32 +24,34 @@ and all sound and music is synthesized with WebAudio. No asset files.
 |---|---|
 | ![Mobile](docs/mobile.jpg) | ![Creatures](docs/creatures.jpg) |
 
-## Run it
+## Install it as an app
 
-```bash
-npm install
-npm run dev        # http://localhost:5173
-npm run build      # static build in dist/ (open via any static web server)
-npm run preview    # serve the production build
-```
+The game at [zahikusa.github.io/mythwar](https://zahikusa.github.io/mythwar/) installs like an
+app (own icon, fullscreen, landscape) and then also works offline. It updates itself.
 
-To try it on a phone, run `npm run dev` and open the **Network** URL it prints on a phone
-in the same Wi-Fi (landscape recommended; portrait is rotated automatically).
-
-The build is a static site with a web manifest and offline service worker, so it can be
-installed as an app on phones ("Add to Home Screen"), which also locks landscape.
+- **iPhone / iPad:** open it in Safari → Share → *Add to Home Screen*.
+- **Android:** open it in Chrome → ⋮ → *Add to Home screen* / *Install app*.
+- **Windows / Mac:** Chrome or Edge → the install icon at the right of the address bar.
 
 ## Multiplayer (same Wi-Fi)
 
-Battle a friend — PC, iPhone, Android, tablet, in any combination:
+Battle a friend — PC, iPhone, Android, tablet, in any combination. One computer in the Wi-Fi
+runs the small game server, and every device plays in its browser:
 
-```bash
-npm run lan        # builds and serves the game + multiplayer on port 8787
-```
+1. Download **mythwar-server-….zip** from the [latest release](https://github.com/Zahikusa/mythwar/releases/latest)
+   on a Windows PC, Mac or Linux computer and unzip it.
+2. Start it: **Windows** — double-click `Start Mythwar Server` (it offers to install
+   [Node.js](https://nodejs.org/) if needed; if Windows warns about the file: *More info → Run
+   anyway*; when the firewall asks, allow **private** networks). **macOS** — right-click
+   `Start Mythwar Server.command` → *Open*. **Linux** — `sh start.sh`.
+3. Scan the QR code it shows with each phone (or open the printed address in any browser).
+4. **Multiplayer → Host a battle** on one device; the other scans the room's QR code or enters
+   its code. Both press **Ready**.
 
-Open the printed address (or scan the QR code it prints) on each device, then
-**Multiplayer → Host a battle** on one and scan the room's QR code / enter its code on the other.
-Both press **Ready**. Battles survive app switches, Wi-Fi blips and reloads; leaving forfeits.
+From a checkout of this repository, `npm install` and `npm run lan` do the same (build + serve
+on port 8787).
+
+Battles survive app switches, Wi-Fi blips and reloads; leaving forfeits.
 Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](docs/MULTIPLAYER.md).
 
 | Battle room: code + QR invite | The guest's phone: every player sees their own citadel on the left |
@@ -99,6 +107,12 @@ Master / Mythic over 300+ games each (`node scripts/calib.ts smart mythic 300`).
 ## Development
 
 ```bash
+npm install
+npm run dev                      # http://localhost:5173 (+ multiplayer; phones: open the Network URL)
+npm run build                    # static build in dist/
+npm run preview                  # serve the production build
+npm run lan                      # build + LAN server with QR code on port 8787
+npm run package                  # the release's server package → release/mythwar-server-v<version>.zip
 npm test                         # unit tests (simulation + AI)
 npm run sim -- 20 master adept   # headless AI-vs-AI balance runs
 node scripts/trace.ts 1003       # timeline of one headless match
@@ -121,6 +135,14 @@ Battles autosave; "Continue" on the title screen resumes them.
 
 Debug URLs: `?demo&ff=300&seed=5` (AI vs AI, fast-forwarded), `?play=adept`, `?screen=howto`,
 `?gallery` (every creature's idle / walk / attack animation), `?mode=mobile`.
+
+### Publishing
+
+- Every push to `master` runs the typecheck and unit tests and publishes the game on GitHub Pages
+  (`.github/workflows/pages.yml`, built with `npm run build:pages` — that build has no game
+  server, so its multiplayer lobby links to the server download instead).
+- A version tag publishes the server package as a GitHub release (`.github/workflows/release.yml`):
+  raise `version` in package.json, commit, then `git tag v1.1.0 && git push origin master v1.1.0`.
 
 Code map: `src/sim` (deterministic simulation and all balance data), `src/ai` (opponent),
 `src/net` + `server/` (multiplayer client and server),

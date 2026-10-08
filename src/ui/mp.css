@@ -140,6 +140,41 @@
   display: block;
 }
 
+/* Static hosting (GitHub Pages build): no game server here — explain how to start one. */
+.mpnoserver {
+  display: none;
+  max-width: 540px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #e7dcff;
+  background: rgba(20, 12, 40, 0.65);
+  border: 1px solid rgba(255, 221, 150, 0.25);
+  border-radius: 12px;
+  padding: 12px 18px 14px;
+}
+
+.mpnoserver ol {
+  margin: 6px 0 12px;
+  padding-left: 22px;
+}
+
+.mpnoserver li + li {
+  margin-top: 4px;
+}
+
+.mpnoserver .mnote {
+  max-width: none;
+  margin-top: 8px;
+}
+
+#stage .screen.mp.noserver > .mpnoserver {
+  display: block;
+}
+
+#stage .screen.mp.noserver > :is(.mpnamerow, .mpstatus, .mpflash, .mprotate, .mphelp, .mpactions, .mplisthead, .mplist) {
+  display: none;
+}
+
 .mpflash {
   min-height: 0;
   max-height: 0;
