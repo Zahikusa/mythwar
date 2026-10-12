@@ -4,6 +4,18 @@ Status: **Phase 2 in progress** — 100 design iterations, one per lens of Jesse
 *The Art of Game Design* (started run #5, 2026-10-12). Phase 1 (local Wi-Fi multiplayer) is
 complete; its log follows below the lens plan.
 
+## Run #5 in short (for the morning)
+- Phase 2 started: lenses #1–#20 done, one commit each (`git log --oneline | grep Lens`), full
+  reasoning in `docs/LENSES.md`. Highlights: battle opening + war horn, **Ley Surges** (a foretold
+  shrine surge — new mechanic, AI uses it), rout callouts, next-age silhouettes, card savings
+  bars, Counter!-advice switch, a lore line per age, age-tinted HUD, a cry per creature,
+  **Bestiary**, **Sandbox**, Novice follows the player up the ages, "Start here" ribbon,
+  **15 Feats**, flow nudges, **progress codes** (PC ↔ phone), three-star battle rating.
+- New tools: `npm run designcheck` (difficulty ladder, pacing, variety, fairness — all pass),
+  `npm run perfcheck` (per-frame JS budget; 0.9 of 3 ms).
+- Findings parked for later lenses: even AI battles run ~18 min (Ragnarök decides them, #39);
+  the AI never summons the Elder Dragon (#46/#47).
+
 ## Phase 2 — how each iteration works
 - One iteration = one lens (numbering of the book's first edition / the 100-card deck).
   Ask the lens's questions about Mythwar, pick the **one most valuable concrete change** it
