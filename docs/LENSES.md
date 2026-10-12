@@ -317,10 +317,11 @@ steady stream of challenges, at the right level, accounting for the player's gro
   losing to Master slides into anxiety and quits instead of practising against Adept. The
   results screen offered a fixed "Change foe" (a trip back to the four cards).
 - Change: records keep the **current run** per difficulty (`DifficultyRecord.streak`: +n wins /
-  −n defeats in a row). The results' third button becomes the flow nudge
-  (`flowSuggestion`): after a win, **"Face the Master"** (the next foe up — one tap starts it);
-  after three defeats in a row, **"Face the Adept"** (one down, to sharpen the same skills);
-  otherwise it stays "Change foe". Rematch remains the primary button: the nudge is a channel,
-  not a push. (#16's ribbon does the same on the foe screen.)
-- Checked: unit tests for the suggestion and the streak bookkeeping; results screenshot on a
-  phone (four buttons fit); full verify.
+  −n defeats in a row). Beside the results tip sits the flow nudge (`flowSuggestion`): after a
+  win, **"Face the Master →"** (the next foe up — one tap starts it); after three defeats in a
+  row, **"Face the Adept →"** (one down, to sharpen the same skills). Rematch remains the primary
+  button and "Change foe" stays: the nudge is a channel, not a push. (#16's ribbon does the same
+  on the foe screen.) A first version replaced "Change foe" with the nudge — the smoke test
+  caught that the results → foe screen → back path disappeared, so the nudge moved into the tip.
+- Checked: unit tests for the suggestion and the streak bookkeeping; results screenshots
+  (phone, desktop); full verify.

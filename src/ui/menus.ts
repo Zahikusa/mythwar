@@ -424,11 +424,11 @@ export class Menus {
     if (next) next.textContent = i === this.howtoPages.length - 1 ? (this.afterHowto ? 'To battle!' : 'Got it') : 'Next';
   }
 
-  /** "Face the Master" (after a win) / "Face the Adept" (after a losing run), else "Change foe". */
-  private flowButton(won: boolean, difficulty: Difficulty): HTMLButtonElement {
+  /** Beside the tip: "Face the Master →" after a win, "Face the Adept →" after a losing run. */
+  private flowButton(won: boolean, difficulty: Difficulty): HTMLButtonElement | null {
     const next = flowSuggestion(won, difficulty, this.settings.records[difficulty]?.streak ?? 0);
-    if (!next) return this.button('Change foe', '', () => this.show('difficulty'));
-    const b = this.button(`Face the ${AI_PROFILES[next].name}`, '', () => this.cb.play(next));
+    if (!next) return null;
+    const b = this.button(`Face the ${AI_PROFILES[next].name} →`, 'vnext', () => this.cb.play(next));
     b.title = won ? 'Ready for a harder foe' : 'Three defeats in a row: sharpen your skills against an easier foe';
     return b;
   }
@@ -622,14 +622,19 @@ export class Menus {
       ),
       h('div', { class: 'vtime', text: `Battle length ${fmtTime(world.time)}` }),
       ...(this.featsEarned.length ? [h('div', { class: 'vfeats' }, h('i', { html: ICONS.xp }), `New feat${this.featsEarned.length > 1 ? 's' : ''}: ${this.featsEarned.map((f) => f.name).join(', ')}`)] : []),
-      h('div', { class: 'vtip', text: online && (won || online.reason !== 'citadel') ? scoreLine(online) : battleTip(world, me, difficulty, ageUps, this.settings.advice) }),
+      h(
+        'div',
+        { class: 'vtip' },
+        h('span', { text: online && (won || online.reason !== 'citadel') ? scoreLine(online) : battleTip(world, me, difficulty, ageUps, this.settings.advice) }),
+        online ? null : this.flowButton(won, difficulty),
+      ),
       h('div', { class: 'vstats' }, table, history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null),
       online ? this.onlineResultButtons(share) : h(
         'div',
         { class: 'mrow' },
         this.button('Main menu', 'ghost', () => this.cb.quit()),
         share,
-        this.flowButton(won, difficulty),
+        this.button('Change foe', '', () => this.show('difficulty')),
         this.button('Rematch', 'primary', () => this.cb.restart(), ICONS.swords),
       ),
     );
