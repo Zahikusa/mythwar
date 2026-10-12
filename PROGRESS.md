@@ -23,7 +23,7 @@ complete; its log follows below the lens plan.
 - [x] #2 Surprise — Ley Surges: a foretold, seeded shrine surge every 2–3 min (race for a flood of gold)
 - [x] #3 Fun — "Rout! / Slaughter! / Annihilation! ×N" callouts + brass stab when 4+ foes fall in a lane within 2.5 s
 - [x] #4 Curiosity — Ascend preview of the next age; never-reached ages are glowing silhouettes and "???"
-- [ ] #5 Endogenous Value — make gold/XP value felt (kill gold popups, bounty)
+- [x] #5 Endogenous Value — unaffordable cards show a savings bar and "in Ns" from your current income
 - [ ] #6 Problem Solving — surface the problem: enemy lane composition at your gate
 - [ ] #7 The Elemental Tetrad — story is the weakest element: lore line per age on ascension
 - [ ] #8 Holographic Design — whole-game pass: fix the most jarring inconsistency found

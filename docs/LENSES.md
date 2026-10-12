@@ -72,3 +72,18 @@ about these questions? What can I do to make them invent even more questions?*
   beside the button, towards the middle (the old placement assumed a left-hand anchor).
 - Checked: screenshots `age-preview`, `age-preview-known`, `age-preview-mobile` (new shoot
   scenarios); full verify.
+
+## #5 The Lens of Endogenous Value
+*What is valuable to the players? How can I make it more valuable? What is the relationship
+between value in the game and the player's motivations?*
+- Gold is the currency of every decision, and its value is really *time*: 35 gold at +3/s is a
+  pixie in nine seconds. The game showed an unaffordable card only as greyed out with a red price,
+  so the player learned nothing about how close they were — and couldn't feel what a shrine or a
+  surge (more gold per second) was worth.
+- Change: unaffordable cards show a **savings bar** along their bottom edge (how much of the
+  price you already have) and an **"in Ns"** estimate next to the price, computed from the
+  income you actually have right now (shrines and a running Ley Surge included; online, gold
+  committed to orders in flight is already subtracted). Holding a shrine visibly shortens every
+  wait.
+- Checked: desktop and phone screenshots (cards read "30 7s / 25 6s / 35 9s" with bars at
+  matching fills); full verify.

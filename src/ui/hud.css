@@ -818,6 +818,32 @@ svg {
   color: var(--bad);
 }
 
+.card .save {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 3px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #b8862e, var(--gold-l));
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.card.poor .save {
+  opacity: 0.9;
+}
+
+.card.poor .cost[data-eta]:not([data-eta=''])::after {
+  content: attr(data-eta);
+  margin-left: 2px;
+  font-size: 0.75em;
+  font-weight: 700;
+  color: #cfc4e8;
+}
+
 .card.blocked {
   filter: grayscale(1) brightness(0.6);
 }

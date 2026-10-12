@@ -59,6 +59,8 @@ interface CardEl {
   def: UnitDef;
   el: HTMLButtonElement;
   cost: HTMLElement;
+  /** Savings bar: how much of the price you already have. */
+  save: HTMLElement;
 }
 
 /** The in-game heads-up display and the player's action layer (shared by mouse, touch and keys). */
@@ -954,9 +956,16 @@ export class Hud {
 
     // Cards (+ highlight the class that counters the selected lane's enemies)
     const advice = this.counterAdvice();
+    const gold = g.displayGold();
+    const rate = w.incomeOf(g.playerTeam) + surging;
     for (const c of this.cards) {
       const why = w.trainBlocker(g.playerTeam, c.def.id);
-      toggle(c.el, 'poor', why === 'Not enough gold');
+      const poor = why === 'Not enough gold';
+      toggle(c.el, 'poor', poor);
+      // What the gold is worth in time: a short savings bar and "in Ns" on a card you can't pay yet.
+      setStyle(c.save, 'transform', `scaleX(${poor ? Math.max(0, Math.min(1, gold / c.def.cost)).toFixed(3) : '0'})`);
+      const eta = poor && rate > 0 ? `${Math.max(1, Math.ceil((c.def.cost - gold) / rate))}s` : '';
+      if (c.cost.dataset.eta !== eta) c.cost.dataset.eta = eta;
       const blocked = !!why && why !== 'Not enough gold';
       toggle(c.el, 'blocked', blocked);
       const label = blocked ? (why!.startsWith('Only') ? 'One at a time' : why === 'Summoning queue is full' ? 'Queue full' : '') : '';
@@ -1134,6 +1143,7 @@ export class Hud {
     const size = mobile ? 52 : 70;
     AGE_UNITS[age].forEach((def, i) => {
       const cost = h('div', { class: 'cost' }, h('i', { html: ICONS.gold }), String(def.cost));
+      const save = h('div', { class: 'save' });
       const el = h(
         'button',
         { class: `card cls-${def.cls}`, style: `--cls:${CLASS_COLOR[def.cls]}`, 'aria-label': `Summon ${def.name} (${CLASS_NAME[def.cls]}), ${def.cost} gold` },
@@ -1143,6 +1153,7 @@ export class Hud {
         cost,
         h('div', { class: 'key', text: String(i + 1) }),
         h('div', { class: 'advice', text: 'Counter!' }),
+        save,
       );
       el.style.animationDelay = `${i * 60}ms`;
       el.addEventListener('pointerdown', (e) => this.startDrag(e as PointerEvent, def.id, false));
@@ -1164,7 +1175,7 @@ export class Hud {
         this.showTooltip(def, el);
       });
       E.cards.appendChild(el);
-      this.cards.push({ def, el, cost });
+      this.cards.push({ def, el, cost, save });
     });
     toggle(E.cards, 'four', this.cards.length > 3);
   }
