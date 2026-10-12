@@ -165,7 +165,7 @@ export const TICK = 1 / 60;
  */
 export const RAGNAROK_TIME = 18 * 60;
 export const RAGNAROK_AFTER_FINAL = 3 * 60;
-export const RAGNAROK_RAMP = 1;
+export const RAGNAROK_RAMP = 1.5;
 /**
  * Every battle ends: this long into Ragnarök both citadels start to crumble, losing
  * RAGNAROK_CRUMBLE of their full health per second, so the healthier one outlasts the other
@@ -578,7 +578,7 @@ export const POWERS: Record<PowerKind, PowerDef> = {
     age: 4,
     cooldown: 65,
     damage: 85 * POWER_SCALE[4],
-    blurb: 'Stars rain down upon the lane.',
+    blurb: 'Stars rain down upon the lane, thickest where the enemy crowds.',
   },
 };
 
