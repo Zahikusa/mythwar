@@ -631,9 +631,9 @@ export class Menus {
         row('Highest age', AGES[P.age].name, AGES[E.age].name),
         row('Creatures summoned', String(P.stats.summoned), String(E.stats.summoned)),
         row('Foes slain', String(P.stats.kills), String(E.stats.kills)),
-        row('… top / middle / bottom', P.stats.killsByLane.join(' / '), E.stats.killsByLane.join(' / ')),
-        row('Gold earned', fmt(P.stats.goldEarned), fmt(E.stats.goldEarned)),
-        (P.stats.surgeGold ?? 0) + (E.stats.surgeGold ?? 0) >= 1 ? row('… from Ley Surges', fmt(P.stats.surgeGold), fmt(E.stats.surgeGold)) : null,
+        row('Creature damage that countered', counterShare(P.stats.classDamage), counterShare(E.stats.classDamage)),
+        // (Gold drawn from Ley Surges in brackets, when there was any.)
+        row('Gold earned', goldLine(P.stats.goldEarned, P.stats.surgeGold), goldLine(E.stats.goldEarned, E.stats.surgeGold)),
         row('Damage to citadel', fmt(P.stats.damageToBase), fmt(E.stats.damageToBase)),
         row('God powers cast', String(P.stats.powersCast), String(E.stats.powersCast)),
       ),
@@ -731,6 +731,15 @@ export function flowSuggestion(won: boolean, difficulty: Difficulty, streak: num
   return streak <= -3 && i > 0 ? DIFFICULTIES[i - 1] : null;
 }
 
+function goldLine(earned: number, surge: number | undefined): string {
+  return surge && surge >= 1 ? `${fmt(earned)} (${fmt(surge)} surge)` : fmt(earned);
+}
+
+/** Share of a side's creature damage that hit a class it beats ("64%"), or "–" with no damage. */
+function counterShare(cd: [number, number, number] | undefined): string {
+  return cd && cd[0] > 0 ? `${Math.round((cd[1] / cd[0]) * 100)}%` : '–';
+}
+
 /** The star goals of a battle in progress: "Stars to win: ★ Victory · ★ Citadel above half (now 72%) · ★ Within 12 minutes (3:39 left)". */
 export function starGoals(world: World, me: Team, difficulty: Difficulty): string {
   const P = world.players[me];
@@ -788,6 +797,11 @@ export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps
   }
   if (P.stats.powersCast === 0 && world.time > 90) return 'Tip: you never cast your god power. It recharges — unleash it on the lane under the most pressure.';
   if (P.turrets.every((t) => !t.def) && world.time > 150) return 'Tip: mount turrets on your gates (click a gate or press T) — they hold a lane while you fight elsewhere.';
+  // Countering is the core skill: say so when the creatures mostly hit the wrong classes.
+  const cd = P.stats.classDamage ?? [0, 0, 0];
+  if (cd[0] > 500 && cd[1] < cd[0] * 0.3 && cd[2] > cd[1]) {
+    return `Tip: only ${Math.round((cd[1] / cd[0]) * 100)}% of your creatures’ damage hit a class they beat, and ${Math.round((cd[2] / cd[0]) * 100)}% hit one that beats them. Shields beat fangs, fangs beat orbs, orbs beat shields — answer what is in the lane.`;
+  }
   const surged = [P.stats.surgeGold ?? 0, world.players[foe].stats.surgeGold ?? 0];
   if (surged[1] > Math.max(100, surged[0] * 2)) return `Tip: the enemy drew ${fmt(surged[1])} gold from Ley Surges. When a shrine starts to flicker, march on it — the surge pays whoever holds it.`;
   if (world.shrines.filter((s) => s.owner === foe).length >= 2) return 'Tip: the enemy held the Ley Shrines. Retake them when a lane is quiet — each one pays extra gold.';

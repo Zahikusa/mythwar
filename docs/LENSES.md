@@ -486,3 +486,26 @@ rules simple to understand, or is there confusion?*
   (`mobile-howto-6`) keeps it in view on small phones.
 - Checked: page on desktop and a 667×375 phone; full verify (the first-battle how-to flow and its
   skip button still work).
+
+## #27 The Lens of Skill
+*What skills does my game require from the player? Are there categories of skill this game is
+missing? Which skills are dominant? Are these skills creating the experience I want? Are some
+players much better at these skills than others? Can players improve their skills with practice?
+Does this game demand the right level of skill?*
+- Skills: *reading* (what's coming down each lane), *knowledge* (the counter triangle and the
+  formation rules), *economy and timing* (when to save for an age, when to bless), *attention*
+  (three lanes at once), a little *dexterity* (fast taps and drags). The dominant one — and the
+  one the whole design rests on — is **countering**. Yet nothing measured it: a player could
+  lose ten battles without learning that half their army was walking into the class that beats
+  it. Skill improves with practice only when practice gets feedback.
+- Change: the simulation counts each side's **creature damage by class matchup**
+  (`TeamStats.classDamage`: all / into a class it beats / into one that beats it; turrets, wards
+  and powers excluded). The results table shows **"Creature damage that countered"** for both
+  sides (e.g. 56% vs 41%), and when a defeated player's share is poor (< 30% countered and more
+  damage into bad matchups than good ones) the post-battle tip names it: "only 20% of your
+  creatures' damage hit a class they beat, and 50% hit one that beats them…".
+- Layout: to keep the results within a 900-px-high window (the smoke test caught the buttons
+  being pushed below the fold), the new row replaces the per-lane kills row, and #8's Ley Surge
+  row folds into "Gold earned" ("560 (210 surge)").
+- Checked: unit test (the split by matchup, non-creature damage excluded, the tip); results
+  screenshot; full verify.

@@ -104,3 +104,25 @@ describe('star goals in the pause menu', () => {
     expect(starGoals(w, 0, 'adept')).toMatch(/☆ Citadel above half \(now 30%\) · ☆ Within 12 minutes \(passed\)/);
   });
 });
+
+describe('counter skill', () => {
+  it('creature damage is split by class matchup, and a poor counterer is told so', async () => {
+    const { UNITS } = await import('../src/sim/data.ts');
+    const w = new World();
+    const hunter = w.spawnUnit(1, 0, UNITS.redcap, 500);
+    const mystic = w.spawnUnit(1, 1, UNITS.pixie, 500);
+    w.damageUnit(hunter, 10, 'guardian', 'unit', null); // guardian beats hunter: ×1.5
+    w.damageUnit(mystic, 10, 'guardian', 'unit', null); // mystic beats guardian: ×0.75
+    w.damageUnit(mystic, 10, null, 'turret', null); // not a creature: not counted
+    const cd = w.players[0].stats.classDamage;
+    expect(cd[0]).toBeCloseTo(22.5);
+    expect(cd[1]).toBeCloseTo(15);
+    expect(cd[2]).toBeCloseTo(7.5);
+    w.winner = 1;
+    w.time = 400;
+    w.players[0].stats.powersCast = 2;
+    w.players[0].turrets[0].def = { id: 'thornspitter' } as never;
+    w.players[0].stats.classDamage = [1000, 200, 500];
+    expect(battleTip(w, 0, 'adept', [])).toMatch(/only 20% of your creatures’ damage hit a class they beat, and 50%/);
+  });
+});

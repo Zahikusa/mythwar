@@ -175,7 +175,7 @@ export class World {
       incomeMult,
       wardCooldown: Array.from({ length: LANE_COUNT }, () => 0),
       blessings: { might: 0, vitality: 0, bastion: 0 },
-      stats: { summoned: 0, summonedBy: {}, kills: 0, killsByLane: [0, 0, 0], losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0, surgeGold: 0 },
+      stats: { summoned: 0, summonedBy: {}, kills: 0, killsByLane: [0, 0, 0], losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0, surgeGold: 0, classDamage: [0, 0, 0] },
       lastBaseHit: -10,
       hold: [false, false, false],
     };
@@ -232,6 +232,7 @@ export class World {
       p.stats.killsByLane ??= [0, 0, 0];
       p.stats.summonedBy ??= {};
       p.stats.surgeGold ??= 0;
+      p.stats.classDamage ??= [0, 0, 0];
       p.hold ??= [false, false, false];
       w.players[i] = {
         ...p,
@@ -1127,6 +1128,13 @@ export class World {
     const mult = counterMultiplier(cls, target.def.cls);
     // Frozen solid, a creature is brittle: whatever hits it before it thaws hits harder.
     const dealt = amount * mult * (target.freezeTimer > 0 ? BRITTLE_MULT : 1);
+    // How well each side counters: its creatures' damage, split by the class matchup.
+    if (cls) {
+      const cd = this.players[other(target.team)].stats.classDamage;
+      cd[0] += dealt;
+      if (mult > 1) cd[1] += dealt;
+      else if (mult < 1) cd[2] += dealt;
+    }
     target.hp -= dealt;
     target.lastHitAt = this.time;
     this.emit({ type: 'hit', targetId: target.id, team: target.team, lane: target.lane, x: target.x, amount: dealt, mult, source });

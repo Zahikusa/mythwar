@@ -57,7 +57,7 @@ complete; its log follows below the lens plan.
 - [x] #24 Action — new verb: hold the line (per-lane stance at the shrine, G / shield button, war banner)
 - [x] #25 Goals — star goals live in the pause menu, toasts when the citadel or par star slips
 - [x] #26 Rules — new rules were only in coach tips: how-to page 6 "Tactics" (hold the line, ley sight, brittle frost)
-- [ ] #27 Skill — measure/show skill (counter rate on results)
+- [x] #27 Skill — countering measured: "creature damage that countered" on results + a tip for poor counterers
 - [ ] #28 Expected Value — show values that inform choices (cards, blessings)
 - [ ] #29 Chance — review randomness; add or tune
 - [ ] #30 Fairness — mirror-symmetry test; AI income transparency
