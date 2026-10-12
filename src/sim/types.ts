@@ -89,6 +89,8 @@ export interface TeamStats {
   goldSpent: number;
   damageToBase: number;
   powersCast: number;
+  /** Gold drawn from Ley Surges. */
+  surgeGold: number;
 }
 
 export interface PlayerState {

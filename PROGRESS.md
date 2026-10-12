@@ -26,7 +26,7 @@ complete; its log follows below the lens plan.
 - [x] #5 Endogenous Value — unaffordable cards show a savings bar and "in Ns" from your current income
 - [x] #6 Problem Solving — setting to switch off the "Counter!" advice so experts solve the counter puzzle themselves
 - [x] #7 The Elemental Tetrad — story was the weak element: a lore line per age under the opening and ascension banners
-- [ ] #8 Holographic Design — whole-game pass: fix the most jarring inconsistency found
+- [x] #8 Holographic Design — seams between systems: results count Ley Surge gold, tip for lost surges, tip respects the advice setting
 - [ ] #9 Unification — one theme everywhere (copy, names, AI foes)
 - [ ] #10 Resonance — what resonates (gods/myths) → amplify
 - [ ] #11 Infinite Inspiration — bestiary / codex with myth origins

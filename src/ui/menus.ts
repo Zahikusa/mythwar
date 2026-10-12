@@ -519,6 +519,7 @@ export class Menus {
         row('Foes slain', String(P.stats.kills), String(E.stats.kills)),
         row('… top / middle / bottom', P.stats.killsByLane.join(' / '), E.stats.killsByLane.join(' / ')),
         row('Gold earned', fmt(P.stats.goldEarned), fmt(E.stats.goldEarned)),
+        (P.stats.surgeGold ?? 0) + (E.stats.surgeGold ?? 0) >= 1 ? row('… from Ley Surges', fmt(P.stats.surgeGold), fmt(E.stats.surgeGold)) : null,
         row('Damage to citadel', fmt(P.stats.damageToBase), fmt(E.stats.damageToBase)),
         row('God powers cast', String(P.stats.powersCast), String(E.stats.powersCast)),
       ),
@@ -552,7 +553,7 @@ export class Menus {
         h('div', { class: 'vportrait' }, portrait(champion.id, 96, 0, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
       ),
       h('div', { class: 'vtime', text: `Battle length ${fmtTime(world.time)}` }),
-      h('div', { class: 'vtip', text: online && (won || online.reason !== 'citadel') ? scoreLine(online) : battleTip(world, me, difficulty, ageUps) }),
+      h('div', { class: 'vtip', text: online && (won || online.reason !== 'citadel') ? scoreLine(online) : battleTip(world, me, difficulty, ageUps, this.settings.advice) }),
       h('div', { class: 'vstats' }, table, history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null),
       online ? this.onlineResultButtons(share) : h(
         'div',
@@ -613,7 +614,7 @@ function scoreLine(o: OnlineResult): string {
 }
 
 /** One concrete lesson from the battle just played (or, after a win, what to try next). */
-export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps: { t: number; team: Team; age: number }[]): string {
+export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps: { t: number; team: Team; age: number }[], advice = true): string {
   const foe: Team = me === 0 ? 1 : 0;
   const P = world.players[me];
   if (world.winner === me) {
@@ -634,7 +635,10 @@ export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps
   }
   if (P.stats.powersCast === 0 && world.time > 90) return 'Tip: you never cast your god power. It recharges — unleash it on the lane under the most pressure.';
   if (P.turrets.every((t) => !t.def) && world.time > 150) return 'Tip: mount turrets on your gates (click a gate or press T) — they hold a lane while you fight elsewhere.';
+  const surged = [P.stats.surgeGold ?? 0, world.players[foe].stats.surgeGold ?? 0];
+  if (surged[1] > Math.max(100, surged[0] * 2)) return `Tip: the enemy drew ${fmt(surged[1])} gold from Ley Surges. When a shrine starts to flicker, march on it — the surge pays whoever holds it.`;
   if (world.shrines.filter((s) => s.owner === foe).length >= 2) return 'Tip: the enemy held the Ley Shrines. Retake them when a lane is quiet — each one pays extra gold.';
+  if (!advice) return 'Tip: read a lane before you summon into it — Guardians beat Hunters, Hunters beat Mystics, Mystics beat Guardians. (Settings can bring back the Counter! advice.)';
   return 'Tip: follow the Counter! badge — the card it marks beats what is coming down your selected lane.';
 }
 

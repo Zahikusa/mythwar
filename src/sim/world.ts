@@ -171,7 +171,7 @@ export class World {
       incomeMult,
       wardCooldown: Array.from({ length: LANE_COUNT }, () => 0),
       blessings: { might: 0, vitality: 0, bastion: 0 },
-      stats: { summoned: 0, summonedBy: {}, kills: 0, killsByLane: [0, 0, 0], losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0 },
+      stats: { summoned: 0, summonedBy: {}, kills: 0, killsByLane: [0, 0, 0], losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0, surgeGold: 0 },
       lastBaseHit: -10,
     };
   }
@@ -226,6 +226,7 @@ export class World {
       // Older saves may predate some stats fields.
       p.stats.killsByLane ??= [0, 0, 0];
       p.stats.summonedBy ??= {};
+      p.stats.surgeGold ??= 0;
       w.players[i] = {
         ...p,
         turrets: p.turrets.map((t) => {
@@ -567,6 +568,7 @@ export class World {
         const gold = this.surgeIncomeOf(owner) * dt;
         p.gold += gold;
         p.stats.goldEarned += gold;
+        p.stats.surgeGold += gold;
         s.gained[owner] += gold;
       }
       if (this.time >= s.end) {

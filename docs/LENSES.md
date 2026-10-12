@@ -120,3 +120,19 @@ mind? Could any element be improved to enhance the others? Are they in harmony?*
   had covered the gold counter).
 - Checked: opening-banner screenshots on desktop, landscape phone and upright phone; full
   verify.
+
+## #8 The Lens of Holographic Design
+*What elements of the game make the experience enjoyable? What detracts from it? How can I
+change game elements to improve the experience?* — seeing everything at once: the experience,
+the player, the mechanics, the interface and how they touch.
+- Looked at a whole session at once: a scripted casual playthrough through the real UI
+  (`scripts/playthrough.mjs`, Fae Wilds → Asgard), title → battle → results → back.
+- What detracted were seams *between* systems — exactly what the earlier lenses had just
+  added: (1) with the new Counter! advice switched off (#6), the results tip still told the
+  player to "follow the Counter! badge"; (2) the Ley Surge (#2) was invisible after the battle:
+  the results neither counted its gold nor pointed at it when the enemy won the surges.
+- Change: `TeamStats.surgeGold` (saves from before default to 0); the results table shows
+  "… from Ley Surges" under "Gold earned" when any surge gold was drawn; the post-defeat tip
+  says so when the enemy out-drew the player at the surges; with the advice off, the generic
+  tip teaches the triangle itself instead of the badge.
+- Checked: unit tests for both new tips; results screenshot with surge gold; full verify.

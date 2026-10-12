@@ -22,6 +22,15 @@ describe('results tip', () => {
     expect(battleTip(w, 0, 'adept', [{ t: 120, team: 1, age: 1 }, { t: 130, team: 0, age: 1 }])).toMatch(/god power/);
     w.players[0].stats.powersCast = 3;
     expect(battleTip(w, 0, 'adept', [])).toMatch(/turrets/);
+    w.players[0].turrets[1].def = w.players[0].turrets[1].def ?? ({ id: 'thornspitter' } as never);
+    // Out-drawn at the Ley Surges.
+    w.players[1].stats.surgeGold = 300;
+    w.players[0].stats.surgeGold = 50;
+    expect(battleTip(w, 0, 'adept', [])).toMatch(/Ley Surges/);
+    w.players[1].stats.surgeGold = 0;
+    // Nothing specific: the counter advice — or, with it switched off, the triangle itself.
+    expect(battleTip(w, 0, 'adept', [])).toMatch(/Counter! badge/);
+    expect(battleTip(w, 0, 'adept', [], false)).toMatch(/Hunters beat Mystics/);
   });
 });
 
