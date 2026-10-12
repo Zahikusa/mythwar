@@ -29,6 +29,8 @@ export interface Settings {
   online: Record<string, { w: number; l: number }>;
   /** Show the opponent's quick messages in online battles. */
   emotes: boolean;
+  /** Mark the card that counters the selected lane ("Counter!"). Off = read the lanes yourself. */
+  advice: boolean;
   /** Highest age (index) this player has ever reached — later ages stay a mystery until then. */
   ageSeen: number;
 }
@@ -52,6 +54,7 @@ const DEFAULTS: Settings = {
   playerName: '',
   online: {},
   emotes: true,
+  advice: true,
   ageSeen: 0,
 };
 
@@ -97,6 +100,7 @@ function sanitize(s: Settings): Settings {
     playerName: typeof s.playerName === 'string' ? s.playerName.slice(0, 40) : '',
     online: sanitizeOnline(s.online),
     emotes: bool(s.emotes, true),
+    advice: bool(s.advice, true),
     ageSeen: Math.max(0, Math.min(4, Math.floor(Number(s.ageSeen) || 0))),
   };
 }

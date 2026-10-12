@@ -87,3 +87,18 @@ between value in the game and the player's motivations?*
   wait.
 - Checked: desktop and phone screenshots (cards read "30 7s / 25 6s / 35 9s" with bars at
   matching fills); full verify.
+
+## #6 The Lens of Problem Solving
+*What problems does my game ask the player to solve? Are there hidden problems that arise as
+part of gameplay? How can my game generate new problems so that players keep coming back?*
+- Mythwar's problems: which lane needs help, which class answers what is coming, when to save
+  for the next age, when to contest a shrine, where to aim the god power.
+- The central one — *which class answers this lane?* — is solved *for* the player by the
+  "Counter!" badge on the right card. Great while learning; but once the triangle is known it
+  turns the core puzzle into "press the glowing card", and there was no way to take the
+  training wheels off.
+- Change: a setting **"Counter!" advice on cards** (on by default). Off, the cards stay neutral
+  and the player reads the lanes themselves; the how-to's counter page mentions the switch. While
+  at it, the compact (phone / short window) settings layout puts the about note under the
+  sliders, so the longer toggle list doesn't push the panel under the sticky buttons.
+- Checked: desktop + phone settings screenshots; full verify.

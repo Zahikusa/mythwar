@@ -324,7 +324,7 @@ export class Menus {
         body: [
           triangleArt(),
           p('Every creature belongs to a class. <b style="color:#f2b84b">Guardians</b> crush <b style="color:#7ed957">Hunters</b>, Hunters tear through <b style="color:#b48cff">Mystics</b>, and Mystics melt Guardians.'),
-          p('Hunters strike as a <b>pack</b>, Guardians’ <b>sweeping</b> blows break packs, and massed Mystics melt a Guardian line. A counter deals <b>+50% damage</b> and takes 25% less in return; the card marked <b>Counter!</b> answers your selected lane.'),
+          p('Hunters strike as a <b>pack</b>, Guardians’ <b>sweeping</b> blows break packs, and massed Mystics melt a Guardian line. A counter deals <b>+50% damage</b> and takes 25% less in return; the card marked <b>Counter!</b> answers your selected lane (Settings can switch that advice off once you read the lanes yourself).'),
         ],
       },
       {
@@ -403,7 +403,7 @@ export class Menus {
       if (key !== 'music') input.addEventListener('change', () => this.cb.sound('summon'));
       return h('label', { class: 'srow' }, h('span', { text: label }), input, val);
     };
-    const toggleRow = (label: string, key: 'shake' | 'hints' | 'lowQuality' | 'fullscreen' | 'emotes') => {
+    const toggleRow = (label: string, key: 'shake' | 'hints' | 'advice' | 'lowQuality' | 'fullscreen' | 'emotes') => {
       const input = h('input', { type: 'checkbox' }) as HTMLInputElement;
       input.checked = !!s[key];
       this.syncers.push(() => (input.checked = !!s[key]));
@@ -453,6 +453,7 @@ export class Menus {
         slider('Effects', 'sfx'),
         toggleRow('Screen shake & vibration', 'shake'),
         toggleRow('Gameplay hints', 'hints'),
+        toggleRow('“Counter!” advice on cards', 'advice'),
         toggleRow('Battery saver (lower quality)', 'lowQuality'),
         toggleRow('Fullscreen on phones', 'fullscreen'),
         toggleRow('Opponent’s quick messages', 'emotes'),

@@ -24,7 +24,7 @@ complete; its log follows below the lens plan.
 - [x] #3 Fun — "Rout! / Slaughter! / Annihilation! ×N" callouts + brass stab when 4+ foes fall in a lane within 2.5 s
 - [x] #4 Curiosity — Ascend preview of the next age; never-reached ages are glowing silhouettes and "???"
 - [x] #5 Endogenous Value — unaffordable cards show a savings bar and "in Ns" from your current income
-- [ ] #6 Problem Solving — surface the problem: enemy lane composition at your gate
+- [x] #6 Problem Solving — setting to switch off the "Counter!" advice so experts solve the counter puzzle themselves
 - [ ] #7 The Elemental Tetrad — story is the weakest element: lore line per age on ascension
 - [ ] #8 Holographic Design — whole-game pass: fix the most jarring inconsistency found
 - [ ] #9 Unification — one theme everywhere (copy, names, AI foes)

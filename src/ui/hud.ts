@@ -69,6 +69,8 @@ export class Hud {
   private game: Game | null = null;
   /** Highest age this player has ever reached (from the settings): later ones preview as silhouettes. */
   ageSeen = 0;
+  /** Mark the card that counters the selected lane (a setting: experts may prefer to read lanes themselves). */
+  advice = true;
   private cb: HudCallbacks;
   private layoutInfo: Layout | null = null;
   private cards: CardEl[] = [];
@@ -1116,7 +1118,7 @@ export class Hud {
   private counterAdvice(): string | null {
     const g = this.game!;
     const lane = g.view.targeting === 'summon' && g.view.hoverLane >= 0 ? g.view.hoverLane : g.view.selectedLane;
-    if (lane < 0) return null;
+    if (lane < 0 || !this.advice) return null;
     const weight: Record<string, number> = { guardian: 0, hunter: 0, mystic: 0, legend: 0 };
     let total = 0;
     for (const u of g.world.lanes[lane]) {
