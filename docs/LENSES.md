@@ -509,3 +509,22 @@ Does this game demand the right level of skill?*
   row folds into "Gold earned" ("560 (210 surge)").
 - Checked: unit test (the split by matchup, non-creature damage excluded, the tip); results
   screenshot; full verify.
+
+## #28 The Lens of Expected Value
+*What is the actual chance of a certain event? What is the perceived chance? What value does the
+outcome of that event have? Can it be quantified? Are there intangible aspects of value? Do I
+need to make my game more transparent so players can compute expected value?*
+- Mythwar has little chance but many *value* comparisons: a creature now, or a turret, or a
+  blessing, or saving for the age. Creatures show their price and (on hover) their health and
+  damage per second; turrets their stats. **Blessings** only showed a percentage — "+10% damage
+  for all your creatures" — which can't be weighed against a 154-gold Valkyrie: +10% of *what*?
+  The value depends on the army on the field, the age, the citadel — so players either ignored
+  blessings or bought them blindly.
+- Change: each blessing row says what its **next rank is worth right now, in the game's own
+  units**: Might — "+21 damage per second for the 7 creatures on the field now — and all to
+  come"; Vitality — "+46 health for each new Frost Jötunn, and as much in proportion for every
+  other new creature"; Bastion — "+975 citadel health at once (and after every ascension), +7.5%
+  ward and turret damage". The numbers follow the battle as the panel stays open.
+- While at it: centre banners (opening, ascension) no longer draw over an open panel — found
+  while screenshotting this one.
+- Checked: blessing panel on desktop (Asgard army) and phone (empty field, first age); full verify.

@@ -87,7 +87,7 @@ export class Hud {
   private panel: 'none' | 'turret' | 'bless' | 'keys' = 'none';
   private turretRows: HTMLElement[] = [];
   private blessRows: Record<string, HTMLElement> = {};
-  private blessRefs: Record<string, { pips: Element[]; buy: HTMLButtonElement; cost: number }> = {};
+  private blessRefs: Record<string, { pips: Element[]; buy: HTMLButtonElement; cost: number; gain: HTMLElement }> = {};
   private turretBuys: HTMLButtonElement[][] = [[], [], []];
   private hpShown: [number, number] = [1, 1];
   private readyChimeAt = -100;
@@ -325,9 +325,10 @@ export class Hud {
       for (let i = 0; i < BLESSING_MAX_RANK; i++) pips.appendChild(h('i'));
       const buy = h('button', { class: 'buy' });
       onTap(buy, () => this.tryBless(id));
-      const row = h('div', { class: `brow b-${id}` }, h('div', { class: 'bname', text: b.name }), pips, h('div', { class: 'bdesc', text: b.blurb }), buy);
+      const gain = h('div', { class: 'bgain' });
+      const row = h('div', { class: `brow b-${id}` }, h('div', { class: 'bname', text: b.name }), pips, h('div', { class: 'bdesc', text: b.blurb }), gain, buy);
       this.blessRows[id] = row;
-      this.blessRefs[id] = { pips: [...pips.children], buy, cost: -2 };
+      this.blessRefs[id] = { pips: [...pips.children], buy, cost: -2, gain };
       panel.appendChild(row);
     }
     return panel;
@@ -631,6 +632,8 @@ export class Hud {
     toggle(this.el.turretPanel, 'hidden', which !== 'turret');
     toggle(this.el.blessPanel, 'hidden', which !== 'bless');
     toggle(this.el.keysPanel, 'hidden', which !== 'keys');
+    // (Centre banners would draw over an open panel: they wait behind it.)
+    this.root.classList.toggle('panelopen', which !== 'none');
     toggle(this.el.keysBtn, 'on', which === 'keys');
     toggle(this.el.turretBtn, 'on', which === 'turret');
     toggle(this.el.blessBtn, 'on', which === 'bless');
@@ -1365,7 +1368,34 @@ export class Hud {
         ref.buy.setAttribute('aria-label', cost < 0 ? `${BLESSINGS[id].name}: highest rank` : `Buy ${BLESSINGS[id].name} rank ${ROMAN[rank]} for ${fmt(cost)} gold`);
       }
       toggle(ref.buy, 'poor', cost >= 0 && me.gold < cost);
+      setText(ref.gain, cost < 0 ? 'Highest rank reached.' : this.blessingGain(id));
     }
+  }
+
+  /** What the next rank of a blessing is worth right now, in concrete numbers. */
+  private blessingGain(id: BlessingId): string {
+    const g = this.game!;
+    const w = g.world;
+    const team = g.playerTeam;
+    const p = w.players[team];
+    const per = BLESSINGS[id].perRank;
+    if (id === 'might') {
+      let dps = 0;
+      let n = 0;
+      for (const lane of w.lanes) {
+        for (const u of lane) {
+          if (!u.alive || u.team !== team) continue;
+          dps += u.def.damage / u.def.cooldown;
+          n++;
+        }
+      }
+      return n ? `Next rank: +${fmt(dps * per)} damage per second for the ${n} creature${n > 1 ? 's' : ''} on the field now — and all to come.` : 'Next rank: +10% damage for every creature you summon from now on.';
+    }
+    if (id === 'vitality') {
+      const guardian = AGE_UNITS[p.age][0];
+      return `Next rank: +${fmt(guardian.hp * per)} health for each new ${guardian.name}, and as much in proportion for every other new creature.`;
+    }
+    return `Next rank: +${fmt(AGES[p.age].baseHp * per)} citadel health at once (and after every ascension), +7.5% ward and turret damage.`;
   }
 
   get teamOf(): Team {

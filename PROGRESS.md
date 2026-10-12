@@ -58,7 +58,7 @@ complete; its log follows below the lens plan.
 - [x] #25 Goals — star goals live in the pause menu, toasts when the citadel or par star slips
 - [x] #26 Rules — new rules were only in coach tips: how-to page 6 "Tactics" (hold the line, ley sight, brittle frost)
 - [x] #27 Skill — countering measured: "creature damage that countered" on results + a tip for poor counterers
-- [ ] #28 Expected Value — show values that inform choices (cards, blessings)
+- [x] #28 Expected Value — blessings show their next rank's worth in concrete numbers (dps for your army, health, citadel)
 - [ ] #29 Chance — review randomness; add or tune
 - [ ] #30 Fairness — mirror-symmetry test; AI income transparency
 - [ ] #31 Challenge — challenge modifiers
