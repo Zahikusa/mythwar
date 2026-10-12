@@ -845,3 +845,24 @@ can several be combined into one? Elements with several purposes: can they do mo
   flawless victory: all three stars." — and after a flawless Mythic win at the Trials (#31). One
   line of text, a purpose of its own, linking the judgment (#20) to concrete play.
 - Checked: unit tests for each win tip; smoke ("Face the Master" offered after a win); full verify.
+
+## #44 The Lens of Character
+*What are my characters' traits? Do they have a voice? Are they consistent, memorable? Are
+there characters players can identify with?*
+- The creatures have character (art, cries #10, myths #11). The **opponent** — the one character
+  the player spends every single-player battle with — had none: "Novice", "Adept", "Master",
+  "Mythic" are difficulty settings, not someone you want to beat.
+- Change: each difficulty is **a general out of myth with a voice** (`src/ui/personas.ts`):
+  **Puck**, the Wandering Spirit (playful, petulant — "Oh, a game! I love games." / "Fine. Best
+  of three?"); **Hippolyta**, Queen of the Amazons (proud, martial — "Draw your line, then. I will
+  cross it."); **Odin**, the All-Father (cryptic, fatalistic — "I gave an eye for wisdom. What
+  will you give?" / "The Norns did not tell me this."); **Ares**, God of War (wrathful — "War. At
+  last." / "Impossible. I AM war."). Their personalities match how the AIs play (Puck dawdles,
+  Odin foresees, Ares hits hardest). They speak in a speech bubble on their side: at the start,
+  when they ascend, cast, take a shrine, when either citadel is nearly down, and at the end —
+  at most one line per 25 s, longer lines held longer. Their names and titles appear on the foe
+  cards, in the opening banner ("vs Odin, the All-Father"), by their health bar, on the pause
+  screen and the results. The quick-message setting silences them too.
+- Fixed on the way: speech bubbles never wrapped (long text overflowed the screen edge); on
+  phones they now sit under the resource pill instead of over it.
+- Checked: screenshots (desktop bubble, phone bubble, foe cards on a small phone); full verify.

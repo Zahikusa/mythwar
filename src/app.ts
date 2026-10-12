@@ -1,6 +1,7 @@
 import { Audio } from './audio/audio.ts';
 import { Game } from './game.ts';
-import { AI_PROFILES, DIFFICULTIES } from './ai/ai.ts';
+import { DIFFICULTIES } from './ai/ai.ts';
+import type { SimEvent } from './sim/types.ts';
 import type { Difficulty } from './ai/ai.ts';
 import { Input } from './input.ts';
 import { detectMode } from './render/layout.ts';
@@ -20,6 +21,8 @@ import { NetGame } from './net/netgame.ts';
 import { EMOTES, cleanCode, cleanName, emoteLane } from './net/protocol.ts';
 import { randomName } from './ui/mpmenus.ts';
 import { FeatTracker } from './ui/feats.ts';
+import { PERSONAS, tauntLine } from './ui/personas.ts';
+import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
 
 type AppState = 'title' | 'playing' | 'over';
@@ -57,6 +60,9 @@ export class App {
   private lastBuzz = -10;
   /** Star goals already announced as slipping (citadel below half) / gone (par time passed). */
   private starWarned = { half: false, par: false };
+  /** The AI general's lines: how many so far (to rotate them), when the last one was, and the
+   *  one-off moments already used (losing / winning). */
+  private taunts = { n: 0, at: -100, said: new Set<TauntEvent>() };
   /** Feats earned in the current battle (null until one starts). */
   private feats: FeatTracker | null = null;
   private slowSeconds = 0;
@@ -365,6 +371,7 @@ export class App {
         this.hud.onEvents(ev);
         this.coach.onEvents(ev);
         if (!demo && !game.options.sandbox) this.feats?.onEvents(ev, game.world);
+        if (!demo) this.tauntEvents(game, ev);
         for (const e of ev) {
           if (e.type === 'ageUp' && e.team === game.playerTeam) {
             this.buzz([30, 60, 30, 60, 60]);
@@ -404,7 +411,12 @@ export class App {
     this.enterBattle(game);
     this.menus.show('none');
     if (sandbox) this.hud.banner('Sandbox', 'No foe · endless gold · try anything', 'gold', 'Summon for either side with the “For:” button (X) and watch any match-up play out.');
-    else this.hud.opening(AI_PROFILES[difficulty].name);
+    else {
+      this.hud.opening(PERSONAS[difficulty].title);
+      this.hud.setFoeName(PERSONAS[difficulty].name);
+      // The general speaks once the opening banner has had its moment.
+      window.setTimeout(() => this.taunt('start', true), 3200);
+    }
   }
 
   private enterBattle(game: Game): void {
@@ -417,6 +429,7 @@ export class App {
       this.audio.ui('bless');
     });
     this.feats.start(game.world, game.playerTeam);
+    this.taunts = { n: 0, at: -100, said: new Set() };
     this.starWarned = { half: false, par: game.world.time > parTime(this.difficulty, game.world.quick) };
     this.immersive();
     this.state = 'playing';
@@ -940,6 +953,38 @@ export class App {
         });
       })
       .catch(() => (this.wakePending = false));
+  }
+
+  /** Against the AI: the general reacts to what happens (ascending, casting, taking a shrine). */
+  private tauntEvents(g: Game, events: SimEvent[]): void {
+    if (g.options.online || g.options.sandbox) return;
+    const foe = g.playerTeam === 0 ? 1 : 0;
+    for (const e of events) {
+      if (e.type === 'ageUp' && e.team === foe) this.taunt('ageUp');
+      else if (e.type === 'power' && e.team === foe) this.taunt('power');
+      else if (e.type === 'shrine' && e.owner === foe) this.taunt('shrine');
+      else if (e.type === 'gameOver') this.taunt(e.winner === foe ? 'won' : 'lost', true);
+    }
+    // Once per battle: when either citadel is close to falling.
+    const hp = (t: number) => g.world.players[t].baseHp / g.world.players[t].baseMaxHp;
+    if (!this.taunts.said.has('losing') && hp(foe) < 0.25 && hp(foe) > 0) {
+      this.taunts.said.add('losing');
+      this.taunt('losing', true);
+    }
+    if (!this.taunts.said.has('winning') && hp(g.playerTeam) < 0.25 && hp(g.playerTeam) > 0) {
+      this.taunts.said.add('winning');
+      this.taunt('winning', true);
+    }
+  }
+
+  /** The AI general says a line by their side of the field (at most one every 25 s unless `urgent`). */
+  private taunt(event: TauntEvent, urgent = false): void {
+    const g = this.game;
+    if (!g || g.options.online || g.options.sandbox || g.options.demo || !this.settings.emotes || this.state === 'title') return;
+    const now = g.world.time;
+    if (!urgent && now - this.taunts.at < 25) return;
+    this.taunts.at = now;
+    this.hud.showEmote('theirs', tauntLine(this.difficulty, event, this.taunts.n++));
   }
 
   /** Against the AI: say when a star goal slips (citadel below half) or is gone (par time). */

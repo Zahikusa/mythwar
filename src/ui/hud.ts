@@ -600,10 +600,16 @@ export class Hud {
     el.classList.remove('show');
     void el.offsetWidth;
     el.classList.add('show');
+    el.classList.toggle('long', text.length > 24);
   }
 
-  /** Online: the opponent's name (shown by their citadel's health bar). */
+  /** The opponent's name, shown by their citadel's health bar (online player or AI general). */
   private foeName = '';
+
+  /** Single player: the AI general's name by their health bar. */
+  setFoeName(name: string): void {
+    this.foeName = name;
+  }
   /** Co-op: the ally sharing our side (shown by our age name). */
   private allyName = '';
 

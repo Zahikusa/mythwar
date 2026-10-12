@@ -1,0 +1,82 @@
+import type { Difficulty } from '../ai/ai.ts';
+
+/** When a general speaks. */
+export type TauntEvent = 'start' | 'ageUp' | 'power' | 'shrine' | 'losing' | 'winning' | 'won' | 'lost';
+
+export interface Persona {
+  /** The general's name ("Puck"). */
+  name: string;
+  /** "Puck, the Wandering Spirit". */
+  title: string;
+  lines: Record<TauntEvent, string[]>;
+}
+
+/**
+ * Each AI difficulty is a general out of myth with a voice of its own: a playful fae trickster, a
+ * proud Amazon queen, the far-seeing All-Father, the god of war himself. Their lines appear in a
+ * speech bubble by their side of the field (the "Opponent's quick messages" setting silences them).
+ */
+export const PERSONAS: Record<Difficulty, Persona> = {
+  novice: {
+    name: 'Puck',
+    title: 'Puck, the Wandering Spirit',
+    lines: {
+      start: ['Oh, a game! I love games.', 'Shall we play at war?'],
+      ageUp: ['Look, I can do it too!', 'Ooh, shiny new friends!'],
+      power: ['Whee! Brambles for everyone!', 'Hee hee — surprise!'],
+      shrine: ['Finders keepers!', 'Mine now, mine now!'],
+      losing: ['This isn’t fun any more…', 'Wait, wait — no fair!'],
+      winning: ['Am I… winning?', 'Ha! Too easy!'],
+      won: ['I won? I won!'],
+      lost: ['Fine. Best of three?'],
+    },
+  },
+  adept: {
+    name: 'Hippolyta',
+    title: 'Hippolyta, Queen of the Amazons',
+    lines: {
+      start: ['Draw your line, then. I will cross it.', 'Show me what your gods are worth.'],
+      ageUp: ['My warband grows.', 'New blades for an old queen.'],
+      power: ['Feel the favour of the gods!', 'Break, and run!'],
+      shrine: ['This ground is mine.', 'Hold it, sisters!'],
+      losing: ['You fight well. Too well.', 'I have bled before.'],
+      winning: ['Kneel, and it ends.', 'Your walls are paper.'],
+      won: ['A worthy hunt.'],
+      lost: ['I yield. This once.'],
+    },
+  },
+  master: {
+    name: 'Odin',
+    title: 'Odin, the All-Father',
+    lines: {
+      start: ['I gave an eye for wisdom. What will you give?', 'My ravens have watched you.'],
+      ageUp: ['The ravens bring me new allies.', 'Another saga begins.'],
+      power: ['Huginn saw this coming.', 'As the runes foretold.'],
+      shrine: ['Every crossing is watched.', 'The ley lines answer me.'],
+      losing: ['The Norns did not tell me this.', 'Hm. A thread I did not see.'],
+      winning: ['As foreseen.', 'Your end is already woven.'],
+      won: ['It was always going to end so.'],
+      lost: ['Well played. The skalds will sing of you.'],
+    },
+  },
+  mythic: {
+    name: 'Ares',
+    title: 'Ares, God of War',
+    lines: {
+      start: ['War. At last.', 'I have waited for you.'],
+      ageUp: ['More. Bring me more.', 'Rise, my legions!'],
+      power: ['Burn!', 'Feel war itself!'],
+      shrine: ['Bleed for it.', 'Take it back — if you can.'],
+      losing: ['Impossible. I AM war.', 'You dare?'],
+      winning: ['Crawl back to your wood.', 'Is that all?'],
+      won: ['Victory is mine. As always.'],
+      lost: ['…This is not over.'],
+    },
+  },
+};
+
+/** A line for this moment (rotating through the general's lines, so repeats are spaced). */
+export function tauntLine(d: Difficulty, event: TauntEvent, n: number): string {
+  const lines = PERSONAS[d].lines[event];
+  return lines[n % lines.length];
+}

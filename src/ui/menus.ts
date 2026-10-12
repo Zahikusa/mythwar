@@ -11,6 +11,7 @@ import { battleStars, parTime } from './settings.ts';
 import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
 import { Bestiary } from './bestiary.ts';
+import { PERSONAS } from './personas.ts';
 import { FEATS } from './feats.ts';
 import { exportProgress, importProgress } from './progress.ts';
 import type { Feat } from './feats.ts';
@@ -136,7 +137,7 @@ export class Menus {
     if (!this.pauseSummary) return;
     const P = world.players[me];
     const E = world.players[me === 0 ? 1 : 0];
-    const foe = online ? online.foe : AI_PROFILES[difficulty].name;
+    const foe = online ? online.foe : `${PERSONAS[difficulty].name} (${AI_PROFILES[difficulty].name})`;
     this.pauseSummary.textContent = sandbox
       ? `Sandbox · ${fmtTime(world.time)} · ${AGES[P.age].name}`
       : `vs ${foe} · ${fmtTime(world.time)} · ${AGES[P.age].name} vs ${AGES[E.age].name} · ${P.stats.kills} foes slain`;
@@ -295,7 +296,7 @@ export class Menus {
         h('span', { title: 'How often it summons the right counter' }, h('b', { text: 'Counters' }), counters),
         h('span', { title: 'Its gold over time and from shrines, compared with yours (gold from kills is the same)' }, h('b', { text: 'Income' }), `${Math.round(p.incomeMult * 100)}%`),
       );
-      const card = h('button', { class: `diff d-${d}` }, h('div', { class: 'ribbon' }), h('div', { class: 'dname', text: p.name }), skulls, h('div', { class: 'dblurb', text: p.blurb }), chips, rec);
+      const card = h('button', { class: `diff d-${d}` }, h('div', { class: 'ribbon' }), h('div', { class: 'dname', text: p.name }), h('div', { class: 'dpersona', text: PERSONAS[d].title }), skulls, h('div', { class: 'dblurb', text: p.blurb }), chips, rec);
       onTap(card, (e) => {
         // Enter / Space on the card already chosen (a keyboard click: onTap only passes clicks
         // without a pointer) begins the battle, as a double-click does.
@@ -607,7 +608,7 @@ export class Menus {
         toggleRow('“Counter!” advice on cards', 'advice'),
         toggleRow('Battery saver (lower quality)', 'lowQuality'),
         toggleRow('Fullscreen on phones', 'fullscreen'),
-        toggleRow('Opponent’s quick messages', 'emotes'),
+        toggleRow('Opponent’s messages (AI taunts too)', 'emotes'),
         progress,
         h(
           'div',
@@ -658,7 +659,7 @@ export class Menus {
     const el = this.screens.over!;
     el.innerHTML = '';
     const won = world.winner === me;
-    const foeName = online ? online.foe : AI_PROFILES[difficulty].name;
+    const foeName = online ? online.foe : PERSONAS[difficulty].name;
     const P = world.players[me];
     const E = world.players[me === 0 ? 1 : 0];
     const row = (label: string, a: string, b: string) => h('tr', null, h('td', { text: a }), h('th', { text: label }), h('td', { text: b }));

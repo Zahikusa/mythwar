@@ -131,6 +131,13 @@ turret (splash). Turrets can be sold for 50%.
   the right. Tap lane to select, tap card to summon, or drag a card onto a lane.
   Long-press a card for info. Portrait is supported by rotating the game.
 
+## AI generals
+Each difficulty is a general out of myth with a voice: **Puck**, the Wandering Spirit (Novice),
+**Hippolyta**, Queen of the Amazons (Adept), **Odin**, the All-Father (Master), **Ares**, God of
+War (Mythic). They speak a line in a speech bubble at the start, when they ascend, cast, take a
+shrine, when either citadel is nearly down, and at the end (at most one every 25 s; the
+"Opponent's messages" setting silences them).
+
 ## AI
 Same command API as the player. Four difficulties: Novice, Adept, Master, Mythic.
 Evaluates per-lane threat, picks counters, contests shrines, saves to ascend,

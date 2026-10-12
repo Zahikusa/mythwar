@@ -301,6 +301,13 @@
   position: relative;
 }
 
+.dpersona {
+  margin-top: -6px;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--muted);
+}
+
 .diff .ribbon {
   position: absolute;
   top: 0;

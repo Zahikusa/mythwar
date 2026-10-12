@@ -90,7 +90,7 @@ complete; its log follows below the lens plan.
 - [x] #41 Punishment — a power cast into an empty lane is refused (charge kept) instead of silently wasted
 - [x] #42 Simplicity/Complexity — progressive disclosure: newcomers see the hold shields when the coach introduces them (2:30)
 - [x] #43 Elegance — results tip and next-foe button no longer say the same thing: the tip points at the missing star
-- [ ] #44 Character — AI foes as characters (personas, taunts)
+- [x] #44 Character — the AI difficulties are generals with a voice: Puck, Hippolyta, Odin, Ares (taunts at key moments)
 - [ ] #45 Imagination — leave room for imagination (lore lines)
 - [ ] #46 Economy — economy analysis & fix
 - [ ] #47 Balance — per-creature balance from sims

@@ -831,7 +831,9 @@
 .ebubble {
   position: absolute;
   top: 70px;
-  max-width: 220px;
+  width: max-content;
+  max-width: min(300px, 40%);
+  line-height: 1.3;
   padding: 7px 14px;
   border-radius: 14px;
   font-size: 15px;
@@ -841,7 +843,6 @@
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
   pointer-events: none;
   opacity: 0;
-  white-space: nowrap;
 }
 
 .ebubble.mine {
@@ -856,6 +857,11 @@
 
 .ebubble.show {
   animation: ebubble 2.8s ease forwards;
+}
+
+/* A general's longer lines stay up long enough to read. */
+.ebubble.show.long {
+  animation-duration: 4.5s;
 }
 
 @keyframes ebubble {
@@ -887,7 +893,9 @@
 }
 
 .hud.mobile .ebubble {
-  top: 46px;
+  /* Below the resource pill in the middle of the top. */
+  top: 84px;
+  max-width: 30%;
   font-size: 13px;
   padding: 5px 10px;
 }
