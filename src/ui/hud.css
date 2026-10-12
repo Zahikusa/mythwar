@@ -62,6 +62,25 @@ svg {
   --bottom: 130px;
   --side: 96px;
   --ui: 1;
+  /* The current age's accent (set per age): cards and action buttons take a little of it. */
+  --age: #9be27a;
+  --age-bg: color-mix(in srgb, var(--age) 16%, rgba(58, 42, 92, 0.95));
+}
+
+.hud.age-1 {
+  --age: #ffd98a;
+}
+
+.hud.age-2 {
+  --age: #9fdcff;
+}
+
+.hud.age-3 {
+  --age: #ff8a5c;
+}
+
+.hud.age-4 {
+  --age: #e6d2ff;
 }
 
 .hud > * {
@@ -680,7 +699,7 @@ svg {
   height: calc(var(--bottom) - 22px);
   max-height: 124px;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(58, 42, 92, 0.95), rgba(26, 18, 46, 0.97));
+  background: linear-gradient(180deg, var(--age-bg), rgba(26, 18, 46, 0.97));
   border: 2px solid color-mix(in srgb, var(--cls) 70%, #000);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   display: flex;
@@ -994,8 +1013,8 @@ svg {
 .act {
   position: relative;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(58, 42, 92, 0.95), rgba(26, 18, 46, 0.97));
-  border: 2px solid rgba(255, 221, 150, 0.3);
+  background: linear-gradient(180deg, var(--age-bg), rgba(26, 18, 46, 0.97));
+  border: 2px solid color-mix(in srgb, var(--age) 30%, rgba(255, 221, 150, 0.3));
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;

@@ -1141,6 +1141,8 @@ export class Hud {
   private rebuildCards(age: number): void {
     const E = this.el;
     this.cardAge = age;
+    // The HUD takes on the age's accent, like the battlefield, the music and the citadel.
+    for (let i = 0; i <= MAX_AGE; i++) this.root.classList.toggle(`age-${i}`, i === age);
     E.cards.innerHTML = '';
     this.cards = [];
     const mobile = this.layoutInfo?.mode === 'mobile';

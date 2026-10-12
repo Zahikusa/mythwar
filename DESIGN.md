@@ -13,6 +13,12 @@ triangle, the flaring portals) and escalation (five ages) are the three things e
 should serve. The battle opens with that promise ("Topple their citadel — vs <foe>") and a war
 horn, so the goal and the rival are named before the first summon.
 
+## Theme
+*Legends rising through the ages.* Every channel climbs together when a side ascends: the
+battlefield and sky, the citadel, the music's mode and instruments, the creatures and their
+projectiles, the god power, the story line on the banner — and the HUD's accent colour (leaf
+green, marble gold, glacier blue, lacquer vermilion, starlight).
+
 ## Pillars
 1. **Simple to pick up** — tap a lane, tap a creature. Everything else is optional depth.
 2. **Readable depth** — a 3-way counter triangle, three lanes to balance, shrines

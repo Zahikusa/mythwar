@@ -136,3 +136,18 @@ the player, the mechanics, the interface and how they touch.
   says so when the enemy out-drew the player at the surges; with the advice off, the generic
   tip teaches the triangle itself instead of the badge.
 - Checked: unit tests for both new tips; results screenshot with surge gold; full verify.
+
+## #9 The Lens of Unification
+*What is my theme? Am I using every means possible to reinforce it?*
+- Theme (now in `DESIGN.md`): *legends rising through the ages.* Checked every channel against
+  it: battlefield, sky and ambient particles change per age; so do the citadels, the music's
+  mode and instruments, the creatures, turrets and their projectiles, the god power and (since
+  #7) the story line. Names are on theme too (generated player names are "Swift Griffin" and
+  co.).
+- The one channel that stayed the same from the fae wood to the halls of the gods was the
+  interface: the cards and action buttons were the same purple in every age.
+- Change: the HUD takes on the age's accent (`.hud.age-N`, `--age`): a tint in the cards' and
+  action buttons' backgrounds and the action buttons' borders — leaf green, marble gold,
+  glacier blue, lacquer vermilion, starlight. Subtle enough not to fight the class colours on
+  the card borders.
+- Checked: card/action strips in all five ages side by side; full verify.
