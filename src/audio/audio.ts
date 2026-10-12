@@ -220,6 +220,13 @@ export class Audio {
       case 'power':
         this.tone({ freq: 300, to: 900, dur: 0.3, vol: 0.12, type: 'sawtooth' });
         break;
+      case 'horn':
+        // The battle begins: two war-horn calls, a fifth apart, over a low drum.
+        this.noiseBurst({ dur: 0.35, vol: 0.35, freq: 140, type: 'lowpass' });
+        [0, 7].forEach((n) => this.tone({ freq: midi(43 + n), dur: 0.9, vol: 0.09, type: 'sawtooth', attack: 0.12, delay: 0.1 }));
+        [0, 7, 12].forEach((n) => this.tone({ freq: midi(43 + n), dur: 1.5, vol: 0.08, type: 'sawtooth', attack: 0.15, delay: 1.0 }));
+        this.noiseBurst({ dur: 0.4, vol: 0.3, freq: 120, type: 'lowpass', delay: 0.95 });
+        break;
       case 'victory':
         [0, 4, 7, 12, 16].forEach((n, i) => this.tone({ freq: midi(60 + n), dur: 1.4 - i * 0.1, vol: 0.12, type: 'triangle', delay: i * 0.14 }));
         [0, 7, 12].forEach((n) => this.tone({ freq: midi(48 + n), dur: 2.2, vol: 0.1, type: 'sawtooth', attack: 0.2, delay: 0.7 }));

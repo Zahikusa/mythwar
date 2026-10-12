@@ -638,6 +638,15 @@ export class Hud {
     this.bannerTimer = 2.8;
   }
 
+  /** The battle begins: who you face and what you must do (the game's essential experience). */
+  opening(foe: string): void {
+    const g = this.game;
+    if (!g) return;
+    const age = AGES[g.world.players[g.playerTeam].age];
+    this.banner('Topple their citadel', `vs ${foe} · ${age.name}`, 'gold');
+    this.cb.sound('horn');
+  }
+
   hint(text: string): void {
     setText(this.el.hint, text);
     toggle(this.el.hint, 'show', !!text);

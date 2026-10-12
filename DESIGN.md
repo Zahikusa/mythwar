@@ -5,6 +5,14 @@ Two citadels face each other across three parallel lanes. Summon mythical
 creatures into a lane, kill enemy creatures for gold and XP, evolve through
 five mythic ages, and topple the enemy citadel.
 
+## Essential experience
+*Outwitting a rival general in a tug-of-war of legends:* reading what is coming down each of
+three lanes, answering it with the right creature at the right moment, and feeling your side
+climb from fae skirmishes to a clash of gods. Tension (the shared citadel), insight (the counter
+triangle, the flaring portals) and escalation (five ages) are the three things every change
+should serve. The battle opens with that promise ("Topple their citadel — vs <foe>") and a war
+horn, so the goal and the rival are named before the first summon.
+
 ## Pillars
 1. **Simple to pick up** — tap a lane, tap a creature. Everything else is optional depth.
 2. **Readable depth** — a 3-way counter triangle, three lanes to balance, shrines

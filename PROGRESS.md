@@ -1,6 +1,128 @@
-# PROGRESS — Local (Wi-Fi) multiplayer
+# PROGRESS
 
-Status: complete, in verification mode (since run #4, 2026-10-07 ~18:30)
+Status: **Phase 2 in progress** — 100 design iterations, one per lens of Jesse Schell's
+*The Art of Game Design* (started run #5, 2026-10-12). Phase 1 (local Wi-Fi multiplayer) is
+complete; its log follows below the lens plan.
+
+## Phase 2 — how each iteration works
+- One iteration = one lens (numbering of the book's first edition / the 100-card deck).
+  Ask the lens's questions about Mythwar, pick the **one most valuable concrete change** it
+  reveals, build it, verify it, commit it as `Lens #N (Name): …`.
+- The full reasoning per lens (questions, observations, change, verification) goes to
+  `docs/LENSES.md`; the checklist below gets the one-line result.
+- Verification per change: `npx tsc --noEmit` + `npx vitest run` always; `npm run smoke` for
+  UI/app changes; `npm run mpsmoke` for app/net/sim changes; `npm run sim` / `node
+  scripts/calib.ts` for balance changes. Simulation changes alter `simFingerprint()` (builds
+  must match online — fine, both devices load the same server build).
+- Single player keeps working with every new mechanic: the AI must use/handle it.
+- Order: numeric. A lens whose idea turns out not to be worth it still gets a real change
+  (a smaller one the lens points at) — never an empty iteration.
+
+## Phase 2 — lens checklist (tentative idea → result)
+- [x] #1 Essential Experience — essence written in DESIGN.md; every battle opens with "Topple their citadel — vs <foe>" + war horn
+- [ ] #2 Surprise — a seeded, fair surprise in battle (e.g. a Ley Surge on a random shrine)
+- [ ] #3 Fun — celebrate the fun moments (multi-kill callouts for powers / dragon)
+- [ ] #4 Curiosity — peek at the next age (creatures/power) from the Ascend button
+- [ ] #5 Endogenous Value — make gold/XP value felt (kill gold popups, bounty)
+- [ ] #6 Problem Solving — surface the problem: enemy lane composition at your gate
+- [ ] #7 The Elemental Tetrad — story is the weakest element: lore line per age on ascension
+- [ ] #8 Holographic Design — whole-game pass: fix the most jarring inconsistency found
+- [ ] #9 Unification — one theme everywhere (copy, names, AI foes)
+- [ ] #10 Resonance — what resonates (gods/myths) → amplify
+- [ ] #11 Infinite Inspiration — bestiary / codex with myth origins
+- [ ] #12 The Problem Statement — problem statement in DESIGN.md + check features against it
+- [ ] #13 The Eight Filters — run the filters; fix the weakest
+- [ ] #14 Risk Mitigation — biggest risk → mitigate (real devices / network diagnostics)
+- [ ] #15 The Toy — a toy-like sandbox / practice mode
+- [ ] #16 The Player — who plays; first-run defaults / recommendations
+- [ ] #17 Pleasure — completion pleasure: feats/achievements
+- [ ] #18 Flow — suggest the right next difficulty
+- [ ] #19 Needs — esteem: ranks/titles
+- [ ] #20 Judgment — fair judgment: battle grade on results
+- [ ] #21 Functional Space — lane space: pressure indicators
+- [ ] #22 Dynamic State — show public state the player lacks (enemy XP / ascension)
+- [ ] #23 Emergence — an emergent interaction between existing traits/powers
+- [ ] #24 Action — a new meaningful verb (e.g. lane stance: hold / advance)
+- [ ] #25 Goals — short-term goals inside a battle
+- [ ] #26 Rules — rules clarity: in-game reference
+- [ ] #27 Skill — measure/show skill (counter rate on results)
+- [ ] #28 Expected Value — show values that inform choices (cards, blessings)
+- [ ] #29 Chance — review randomness; add or tune
+- [ ] #30 Fairness — mirror-symmetry test; AI income transparency
+- [ ] #31 Challenge — challenge modifiers
+- [ ] #32 Meaningful Choices — make an existing choice more meaningful
+- [ ] #33 Triangularity — a risky high-reward option
+- [ ] #34 Skill vs. Chance — balance check
+- [ ] #35 Head and Hands — dexterity vs thought: input convenience
+- [ ] #36 Competition — competitive comparison (stats on results)
+- [ ] #37 Cooperation — cooperative element
+- [ ] #38 Competition vs. Cooperation — balance of the two
+- [ ] #39 Time — battle length options / pacing
+- [ ] #40 Reward — rewards: unlocks / celebrations
+- [ ] #41 Punishment — punishment & comeback
+- [ ] #42 Simplicity/Complexity — progressive disclosure
+- [ ] #43 Elegance — remove a wart
+- [ ] #44 Character — AI foes as characters (personas, taunts)
+- [ ] #45 Imagination — leave room for imagination (lore lines)
+- [ ] #46 Economy — economy analysis & fix
+- [ ] #47 Balance — per-creature balance from sims
+- [ ] #48 Accessibility — colour-blind friendly team/class cues, text size
+- [ ] #49 Visible Progress — progress across battles
+- [ ] #50 Parallelism — parallel lanes: overview
+- [ ] #51 The Pyramid — a pinnacle goal
+- [ ] #52 The Puzzle — puzzle-like challenge scenarios
+- [ ] #53 Control — input responsiveness / cancel
+- [ ] #54 Physical Interface — gamepad support
+- [ ] #55 Virtual Interface — HUD information
+- [ ] #56 Transparency — declutter the interface
+- [ ] #57 Feedback — feedback for counters/hits
+- [ ] #58 Juiciness — more juice
+- [ ] #59 Channels and Dimensions — map info to new channels (low-HP heartbeat)
+- [ ] #60 Modes — mode clarity (targeting)
+- [ ] #61 The Interest Curve — battle pacing / music intensity
+- [ ] #62 Inherent Interest — spectacle moments
+- [ ] #63 Beauty — art polish
+- [ ] #64 Projection — player identity (banner/colour)
+- [ ] #65 The Story Machine — battle chronicle on results
+- [ ] #66 The Obstacle — obstacles worth overcoming
+- [ ] #67 Simplicity and Transcendence — a transcendent power moment
+- [ ] #68 The Hero's Journey — a short campaign path
+- [ ] #69 The Weirdest Thing — fix the weirdest thing
+- [ ] #70 Story — story framing
+- [ ] #71 Freedom — custom battle options
+- [ ] #72 Indirect Control — guide via visuals
+- [ ] #73 Collusion — a guide character
+- [ ] #74 The World — world lore
+- [ ] #75 The Avatar — the player's avatar (patron god)
+- [ ] #76 Character Function — creature roles
+- [ ] #77 Character Traits — creature personality
+- [ ] #78 The Interpersonal Circumplex — rival personalities
+- [ ] #79 The Character Web — relationships between characters
+- [ ] #80 Status — status among players
+- [ ] #81 Character Transformation — veteran creatures
+- [ ] #82 Inner Contradiction — character depth
+- [ ] #83 The Nameless Quality — feel polish
+- [ ] #84 Friendship — multiplayer friendship tools (copy invite link)
+- [ ] #85 Expression — player expression
+- [ ] #86 Community — share results
+- [ ] #87 Griefing — online griefing (pause abuse)
+- [ ] #88 Love — care for the details
+- [ ] #89 The Team — contributor guide
+- [ ] #90 Documentation — design doc refresh
+- [ ] #91 Playtesting — playtest kit / local stats
+- [ ] #92 Technology — performance/tech improvement
+- [ ] #93 The Crystal Ball — roadmap
+- [ ] #94 The Client — what the client (owner) needs
+- [ ] #95 The Pitch — pitch / store text
+- [ ] #96 Profit — sustainability notes
+- [ ] #97 Transformation — what players take away
+- [ ] #98 Responsibility — healthy play / privacy
+- [ ] #99 The Raven — step back: biggest remaining issue
+- [ ] #100 Your Secret Purpose — final reflection
+
+# Phase 1 — Local (Wi-Fi) multiplayer (complete)
+
+Status: complete (verification mode since run #4, 2026-10-07; backlog below still open for spare time)
 
 ## Run #4 in short (for the morning)
 - **Multiplayer over the local Wi-Fi works end to end:** `npm run lan` → open the printed

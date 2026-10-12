@@ -1,6 +1,6 @@
 import { Audio } from './audio/audio.ts';
 import { Game } from './game.ts';
-import { DIFFICULTIES } from './ai/ai.ts';
+import { AI_PROFILES, DIFFICULTIES } from './ai/ai.ts';
 import type { Difficulty } from './ai/ai.ts';
 import { Input } from './input.ts';
 import { detectMode } from './render/layout.ts';
@@ -372,6 +372,7 @@ export class App {
     game.speed = this.settings.speed === 2 ? 2 : 1;
     this.enterBattle(game);
     this.menus.show('none');
+    this.hud.opening(AI_PROFILES[difficulty].name);
   }
 
   private enterBattle(game: Game): void {
@@ -820,6 +821,7 @@ export class App {
     this.netMenuLocal = false;
     this.enterBattle(g);
     this.menus.show('none');
+    if (g.world.time < 1) this.hud.opening(g.foeName);
     this.keepAwake(true);
     // Started while this tab is in the background (both pressed Ready, then one switched away):
     // the battle must wait for this player like for any other absence.
