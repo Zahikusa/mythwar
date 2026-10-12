@@ -248,6 +248,81 @@ export class Audio {
     this.ambience = saved;
   }
 
+  /**
+   * Each creature answers the summons with its own cry (a few synth strokes): the oak creaks,
+   * the redcap cackles, the wolf howls, the dragon roars. The foe's are quieter.
+   */
+  private cry(defId: string, team: Team): void {
+    const pan = this.sidePan(team, 0.7);
+    const k = team === this.playerTeam ? 1 : 0.6;
+    const t = (o: Parameters<Audio['tone']>[0]) => this.tone({ ...o, vol: o.vol * k, pan });
+    const n = (o: Parameters<Audio['noiseBurst']>[0]) => this.noiseBurst({ ...o, vol: o.vol * k, pan });
+    switch (defId) {
+      case 'treant': // creaking wood
+        t({ freq: 120, to: 85, dur: 0.38, vol: 0.05, type: 'sawtooth', attack: 0.06 });
+        n({ dur: 0.22, vol: 0.12, freq: 320, type: 'lowpass' });
+        break;
+      case 'redcap': // a goblin cackle
+        [0, 0.07, 0.14].forEach((d, i) => t({ freq: 760 + i * 90, to: 620, dur: 0.06, vol: 0.05, type: 'triangle', delay: d }));
+        break;
+      case 'pixie': // a twinkle
+        [88, 91, 95].forEach((m, i) => t({ freq: midi(m), dur: 0.16, vol: 0.035, delay: i * 0.045 }));
+        break;
+      case 'minotaur': // a bellow
+        t({ freq: 104, to: 72, dur: 0.5, vol: 0.07, type: 'sawtooth', attack: 0.06 });
+        n({ dur: 0.3, vol: 0.1, freq: 260, type: 'lowpass' });
+        break;
+      case 'centaur': // hooves and a horn call
+        [0, 0.08, 0.16].forEach((d) => n({ dur: 0.06, vol: 0.18, freq: 420, type: 'lowpass', delay: d }));
+        t({ freq: midi(67), dur: 0.32, vol: 0.05, type: 'triangle', attack: 0.04, delay: 0.12 });
+        break;
+      case 'gorgon': // a hiss
+        n({ dur: 0.4, vol: 0.09, freq: 5200, type: 'highpass', sweep: 3000 });
+        break;
+      case 'jotunn': // cracking ice
+        n({ dur: 0.12, vol: 0.14, freq: 3200, type: 'highpass' });
+        t({ freq: 1250, to: 600, dur: 0.12, vol: 0.03 });
+        t({ freq: 70, to: 55, dur: 0.4, vol: 0.07, type: 'triangle', delay: 0.05 });
+        break;
+      case 'fenrir': // a howl
+        t({ freq: 380, to: 640, dur: 0.6, vol: 0.045, type: 'triangle', attack: 0.18 });
+        break;
+      case 'valkyrie': // a horn chord
+        [62, 69].forEach((m) => t({ freq: midi(m), dur: 0.5, vol: 0.035, type: 'sawtooth', attack: 0.08 }));
+        break;
+      case 'oni': // a war drum
+        t({ freq: 84, to: 50, dur: 0.32, vol: 0.12 });
+        n({ dur: 0.12, vol: 0.14, freq: 200, type: 'lowpass' });
+        t({ freq: 84, to: 50, dur: 0.25, vol: 0.08, delay: 0.16 });
+        break;
+      case 'byakko': // a growl
+        t({ freq: 190, to: 95, dur: 0.45, vol: 0.05, type: 'sawtooth', attack: 0.04 });
+        n({ dur: 0.4, vol: 0.08, freq: 600, q: 2 });
+        break;
+      case 'kitsune': // a bell
+        [76, 83, 88].forEach((m, i) => t({ freq: midi(m), dur: 0.45, vol: 0.03, delay: i * 0.06 }));
+        break;
+      case 'titan': // the ground rumbles
+        t({ freq: 56, to: 40, dur: 0.85, vol: 0.12, attack: 0.1 });
+        n({ dur: 0.6, vol: 0.12, freq: 130, type: 'lowpass' });
+        break;
+      case 'griffin': // a screech
+        t({ freq: 1900, to: 1150, dur: 0.28, vol: 0.03, type: 'sawtooth', attack: 0.02 });
+        break;
+      case 'phoenix': // a rush of flame and a trill
+        n({ dur: 0.4, vol: 0.1, freq: 1200, sweep: 3200 });
+        t({ freq: midi(91), to: midi(96), dur: 0.25, vol: 0.03, delay: 0.1 });
+        break;
+      case 'dragon': // a roar
+        t({ freq: 125, to: 58, dur: 1.1, vol: 0.12, type: 'sawtooth', attack: 0.12 });
+        t({ freq: 63, to: 40, dur: 1.2, vol: 0.12, attack: 0.15 });
+        n({ dur: 1.0, vol: 0.2, freq: 420, type: 'lowpass', sweep: 160 });
+        break;
+      default:
+        t({ freq: 330, to: 660, dur: 0.18, vol: 0.06, type: 'triangle' });
+    }
+  }
+
   /** Stereo position of a lane position: the local player's citadel is on the left. */
   private panFor(x: number): number {
     const p = ((x / LANE_LENGTH) * 2 - 1) * 0.7;
@@ -295,7 +370,7 @@ export class Audio {
           }
           break;
         case 'spawn':
-          if (this.allow('spawn' + e.team, 0.2)) this.tone({ freq: 330, to: 660, dur: 0.18, vol: 0.06, type: 'triangle', pan: this.sidePan(e.team, 0.7) });
+          if (this.allow('spawn' + e.team, 0.2) || e.defId === 'dragon') this.cry(e.defId, e.team);
           break;
         case 'baseHit':
           if (this.allow('base' + e.team, 0.35)) {

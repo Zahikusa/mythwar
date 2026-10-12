@@ -151,3 +151,20 @@ the player, the mechanics, the interface and how they touch.
   glacier blue, lacquer vermilion, starlight. Subtle enough not to fight the class colours on
   the card borders.
 - Checked: card/action strips in all five ages side by side; full verify.
+
+## #10 The Lens of Resonance
+*What is it about my game that feels powerful and special? When I describe it to people, what
+ideas get them really excited? What is driving my instincts about how it should be?*
+- What gets people excited when Mythwar is described is not "three lanes" — it is *the
+  legends*: "you summon minotaurs, Fenrir, kitsune, a phoenix… and in the end an elder dragon".
+  The instinct behind the game is that calling on a legend should feel like it.
+- But every summons sounded the same: one generic rising blip, whether a pixie or the Elder
+  Dragon answered. The art made each creature special; the sound made them interchangeable.
+- Change: every creature answers with its own synthesized cry (`Audio.cry`): the treant creaks,
+  the redcap cackles, the pixie twinkles, the minotaur bellows, hooves and a horn for the
+  centaur, a gorgon's hiss, cracking ice for the Jötunn, Fenrir's howl, a valkyrie horn chord, an
+  oni war drum, a tiger's growl, kitsune bells, the titan's rumble, a griffin's screech, a rush of
+  flame for the phoenix, and a long roar for the Elder Dragon (never rate-limited away). The
+  foe's cries are quieter and panned to their side.
+- Checked: all 16 cries played for both teams in Chrome without errors (ad-hoc puppeteer run);
+  full verify.
