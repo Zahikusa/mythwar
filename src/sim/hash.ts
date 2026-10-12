@@ -65,6 +65,16 @@ export function hashWorld(w: World): number {
     h.num(s.capture);
     h.num(s.owner);
   }
+  h.num(w.nextSurgeAt);
+  h.num(w.surgeRng.state);
+  h.num(w.lastSurgeLane);
+  if (w.surge) {
+    h.num(w.surge.lane);
+    h.num(w.surge.start);
+    h.num(w.surge.end);
+    h.num(w.surge.gained[0]);
+    h.num(w.surge.gained[1]);
+  }
   for (const p of w.projectiles) {
     if (p.done) continue;
     h.num(p.id);

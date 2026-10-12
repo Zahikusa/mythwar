@@ -32,6 +32,10 @@ horn, so the goal and the rival are named before the first summon.
 - Creatures only fight creatures in the same lane. Any lane can reach the citadel.
 - Each lane has a **Ley Shrine** at its centre. Only your creatures near it ⇒ you
   capture it over a few seconds. Each held shrine adds gold income.
+- **Ley Surges** (seeded surprise): from ~2 minutes in, every 2–3 minutes the ley lines flare under
+  one shrine (never the same lane twice in a row). A 10 s omen (flickering shrine, toast, hum),
+  then for 20 s its holder draws 1.5× their passive age income on top. Both sides see the same
+  thing at the same time — a race to the shrine, not a dice roll on who wins. No surges in Ragnarök.
 - Each lane has one **turret slot** on each citadel.
 - A gate's portal **flares** for the last ~1.2 s before a creature steps out of it (both sides),
   so an attentive player sees which lane the enemy's next creature is coming down.

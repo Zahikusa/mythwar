@@ -118,6 +118,15 @@ export interface Shrine {
   contested: boolean;
 }
 
+/** A Ley Surge: foretold at `start - SURGE_OMEN`, paying the shrine's holder from `start` to `end`. */
+export interface Surge {
+  lane: number;
+  start: number;
+  end: number;
+  /** Gold each team has drawn from it so far. */
+  gained: [number, number];
+}
+
 export interface PowerInstance {
   id: number;
   kind: PowerKind;
@@ -149,6 +158,7 @@ export type SimEvent =
   | { type: 'strike'; team: Team; lane: number; x: number; kind: PowerKind; radius: number }
   | { type: 'meteor'; team: Team; lane: number; x: number; fall: number }
   | { type: 'shrine'; lane: number; owner: Team | -1 }
+  | { type: 'surge'; lane: number; phase: 'omen' | 'start' | 'end'; gained: [number, number] }
   | { type: 'trainStart'; team: Team }
   | { type: 'ragnarok' }
   | { type: 'crumble' }

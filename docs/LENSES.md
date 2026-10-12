@@ -20,3 +20,25 @@ capture that essence?*
   for the banner as it already does for other banners.
 - Checked: typecheck, unit tests, screenshot of `?play=adept` at 0:02 (banner over the lanes,
   readable on desktop); full `npm run verify`.
+
+## #2 The Lens of Surprise
+*What will surprise players when they play? Do the rules give players ways to surprise each
+other — and themselves?*
+- Mythwar had almost no surprise after the first few battles: one map, fixed shrines, every
+  battle unfolds in the same rhythm (powers and ages are the only spikes, and both are
+  predictable). The only randomness was hidden (power targeting).
+- Change: **Ley Surges.** From ~2 minutes in, every 2–3 minutes the ley lines flare under one
+  shrine (seeded, never the same lane twice in a row, none during Ragnarök): a 10 s omen
+  (flickering pillar of light, a toast, a swelling hum, a blinking shrine pip in the top bar), then
+  for 20 s whoever holds that shrine draws 1.5× their passive age income on top (gold income in
+  the HUD turns gold while you do). The end says what it paid. It is a *fair* surprise — both
+  sides learn of it at the same moment — which turns into a race and a skirmish at the shrine.
+- Determinism: surges draw from their own RNG stream (seeded from the battle seed), so no other
+  random outcome shifts; state is in snapshots (older saves get a fresh schedule) and in the
+  multiplayer hash.
+- AI: lanes with a surge get a "need" bonus scaled by the AI's lane skill (Novice mostly
+  ignores it, Mythic goes for it); a coach tip explains the first one; how-to page 4, README and
+  DESIGN.md mention it.
+- Checked: 3 new unit tests (omen → start → end, payout = 1.5× income × 20 s, lane never
+  repeats, survives save/load, none in Ragnarök); scripted smart bot vs Master 23/100 (documented
+  25%) — calibration intact; screenshot of an active surge (`?demo&ff=120&seed=5`); full verify.

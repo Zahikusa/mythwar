@@ -816,6 +816,16 @@ export class Hud {
         this.banner('Ragnarök', 'The wards fall silent — citadels crumble', 'red');
       } else if (e.type === 'crumble') {
         this.banner('The citadels crumble', 'Both are falling — the sturdier one stands last', 'red');
+      } else if (e.type === 'surge') {
+        const where = `${LANE_NAMES[e.lane].toLowerCase()} shrine`;
+        if (e.phase === 'omen') this.toast(`A Ley Surge stirs beneath the ${where}…`, 'info');
+        else if (e.phase === 'start') this.toast(`Ley Surge! Hold the ${where} for gold`, 'good');
+        else {
+          const mine = Math.round(e.gained[me]);
+          const theirs = Math.round(e.gained[me === 0 ? 1 : 0]);
+          if (mine > 0) this.toast(`The Ley Surge gave you ${mine} gold`, 'good');
+          else if (theirs > 0) this.toast(`The enemy drew ${theirs} gold from the Ley Surge`, 'bad');
+        }
       } else if (e.type === 'blessing' && e.team !== me) {
         this.toast(`Enemy gains ${BLESSINGS[e.blessing].name} ${ROMAN[e.rank - 1]}`, 'info');
       }
@@ -864,6 +874,8 @@ export class Hud {
       toggle(pip, 'mine', o === g.playerTeam);
       toggle(pip, 'theirs', o !== -1 && o !== g.playerTeam);
       toggle(pip, 'contested', w.shrines[i].contested);
+      toggle(pip, 'omen', w.surge?.lane === i && w.time < w.surge.start);
+      toggle(pip, 'surge', w.surge?.lane === i && w.time >= w.surge.start);
     }
     if (w.ragnarokStarted) {
       const crumbleIn = w.ragnarokAt + RAGNAROK_CRUMBLE_AFTER - w.time;
@@ -875,7 +887,9 @@ export class Hud {
 
     // Resources
     setText(E.gold, fmt(g.displayGold()));
-    setText(E.income, `+${w.incomeOf(g.playerTeam).toFixed(1)}/s`);
+    const surging = w.surgeIncomeOf(g.playerTeam);
+    setText(E.income, `+${(w.incomeOf(g.playerTeam) + surging).toFixed(1)}/s`);
+    toggle(E.income, 'surging', surging > 0);
     if (me.age < MAX_AGE) {
       const next = AGES[me.age + 1];
       // Total XP against the next age's requirement — what the text says and the Ascend fill shows.

@@ -23,6 +23,11 @@ import {
   SHRINE_X,
   START_GOLD,
   START_POWER_COOLDOWN,
+  SURGE_FIRST,
+  SURGE_GAP,
+  SURGE_INCOME,
+  SURGE_OMEN,
+  SURGE_TIME,
   TICK,
   TURRETS,
   UNITS,
@@ -43,6 +48,7 @@ import type {
   Projectile,
   Shrine,
   SimEvent,
+  Surge,
   Team,
   Unit,
 } from './types.ts';
@@ -98,6 +104,11 @@ export interface WorldSnapshot {
   ragnarokAt: number;
   ragnarokStarted: boolean;
   finalAgeAt: number | null;
+  /** Ley Surge state (absent in saves from before surges existed). */
+  surge?: Surge | null;
+  nextSurgeAt?: number;
+  surgeRng?: number;
+  lastSurgeLane?: number;
   players: (Omit<PlayerState, 'turrets'> & { turrets: (Omit<TurretSlot, 'def'> & { def: string | null })[] })[];
   lanes: (Omit<Unit, 'def'> & { def: string })[][];
   shrines: Shrine[];
@@ -120,6 +131,12 @@ export class World {
   ragnarokAt = RAGNAROK_TIME;
   ragnarokStarted = false;
   private finalAgeAt: number | null = null;
+  /** The Ley Surge foretold or running (null between surges). */
+  surge: Surge | null = null;
+  nextSurgeAt: number;
+  lastSurgeLane = -1;
+  /** Surges draw from their own stream, so they don't shift any other random outcome. */
+  readonly surgeRng: Rng;
   private nextId = 1;
   private events: SimEvent[] = [];
   /** Scratch: each unit's distance to its target at the start of the lane update. */
@@ -129,6 +146,8 @@ export class World {
 
   constructor(opts: WorldOptions = {}) {
     this.rng = new Rng(opts.seed ?? 12345);
+    this.surgeRng = new Rng(((opts.seed ?? 12345) ^ 0x51ed2705) >>> 0);
+    this.nextSurgeAt = this.surgeRng.range(SURGE_FIRST[0], SURGE_FIRST[1]);
     const mult = opts.incomeMult ?? [1, 1];
     this.players = [this.makePlayer(0, mult[0]), this.makePlayer(1, mult[1])];
     for (let i = 0; i < LANE_COUNT; i++) {
@@ -169,6 +188,10 @@ export class World {
       ragnarokAt: this.ragnarokAt,
       ragnarokStarted: this.ragnarokStarted,
       finalAgeAt: this.finalAgeAt,
+      surge: this.surge,
+      nextSurgeAt: this.nextSurgeAt,
+      surgeRng: this.surgeRng.state,
+      lastSurgeLane: this.lastSurgeLane,
       players: this.players.map((p) => ({ ...p, turrets: p.turrets.map((t) => ({ ...t, def: t.def ? t.def.id : null })) })),
       lanes: this.lanes.map((l) => l.filter((u) => u.alive).map((u) => ({ ...u, def: u.def.id }))),
       shrines: this.shrines,
@@ -192,6 +215,12 @@ export class World {
     w.ragnarokAt = snap.ragnarokAt;
     w.ragnarokStarted = snap.ragnarokStarted;
     w.finalAgeAt = snap.finalAgeAt;
+    if (typeof snap.nextSurgeAt === 'number') {
+      w.surge = snap.surge ?? null;
+      w.nextSurgeAt = snap.nextSurgeAt;
+      w.surgeRng.state = snap.surgeRng ?? 0;
+      w.lastSurgeLane = snap.lastSurgeLane ?? -1;
+    } else w.nextSurgeAt = Math.max(w.nextSurgeAt, w.time + SURGE_GAP[0]);
     for (let i = 0; i < 2; i++) {
       const p = snap.players[i];
       // Older saves may predate some stats fields.
@@ -267,6 +296,14 @@ export class World {
     let n = 0;
     for (const s of this.shrines) if (s.owner === team) n++;
     return n;
+  }
+
+  /** Extra gold per second `team` draws from a running Ley Surge (0 unless it holds that shrine). */
+  surgeIncomeOf(team: Team): number {
+    const s = this.surge;
+    if (!s || this.time < s.start || this.shrines[s.lane].owner !== team) return 0;
+    const p = this.players[team];
+    return AGES[p.age].income * SURGE_INCOME * p.incomeMult;
   }
 
   /** Multiplier on damage dealt to citadels (1 before Ragnarök). */
@@ -488,6 +525,7 @@ export class World {
     for (const pr of this.projectiles) pr.px = pr.x;
     for (const p of this.players) this.updatePlayer(p, dt);
     this.updateRagnarok(dt);
+    this.updateSurge(dt);
     for (let lane = 0; lane < LANE_COUNT; lane++) this.updateLane(lane, dt);
     this.updateTurrets(dt);
     this.updateProjectiles(dt);
@@ -515,6 +553,34 @@ export class World {
       this.ragnarokAt = this.time;
       this.emit({ type: 'ragnarok' });
     }
+  }
+
+  /** Ley Surges: foretell one, pay the holder of its shrine while it runs, schedule the next. */
+  private updateSurge(dt: number): void {
+    const s = this.surge;
+    if (s) {
+      if (this.time < s.start) return;
+      if (this.time - dt < s.start) this.emit({ type: 'surge', lane: s.lane, phase: 'start', gained: [0, 0] });
+      const owner = this.shrines[s.lane].owner;
+      if (owner !== -1) {
+        const p = this.players[owner];
+        const gold = this.surgeIncomeOf(owner) * dt;
+        p.gold += gold;
+        p.stats.goldEarned += gold;
+        s.gained[owner] += gold;
+      }
+      if (this.time >= s.end) {
+        this.surge = null;
+        this.nextSurgeAt = this.time + this.surgeRng.range(SURGE_GAP[0], SURGE_GAP[1]);
+        this.emit({ type: 'surge', lane: s.lane, phase: 'end', gained: [s.gained[0], s.gained[1]] });
+      }
+      return;
+    }
+    if (this.ragnarokStarted || this.time < this.nextSurgeAt) return;
+    const lane = this.lastSurgeLane < 0 ? this.surgeRng.int(LANE_COUNT) : (this.lastSurgeLane + 1 + this.surgeRng.int(LANE_COUNT - 1)) % LANE_COUNT;
+    this.lastSurgeLane = lane;
+    this.surge = { lane, start: this.time + SURGE_OMEN, end: this.time + SURGE_OMEN + SURGE_TIME, gained: [0, 0] };
+    this.emit({ type: 'surge', lane, phase: 'omen', gained: [0, 0] });
   }
 
   private updatePlayer(p: PlayerState, dt: number): void {

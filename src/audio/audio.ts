@@ -301,6 +301,16 @@ export class Audio {
           if (mine) this.setMusicAge(e.age);
           break;
         }
+        case 'surge':
+          if (e.phase === 'omen') {
+            // A low hum that swells: something stirs under the shrine.
+            this.tone({ freq: midi(45), dur: 2.2, vol: 0.08, type: 'triangle', attack: 0.9, pan: 0 });
+            [0, 7, 12].forEach((n, i) => this.tone({ freq: midi(69 + n), dur: 0.7, vol: 0.035, delay: 0.6 + i * 0.18 }));
+          } else if (e.phase === 'start') {
+            [0, 4, 7, 11, 14].forEach((n, i) => this.tone({ freq: midi(74 + n), dur: 0.6, vol: 0.06, delay: i * 0.05 }));
+            this.noiseBurst({ dur: 0.8, vol: 0.12, freq: 4000, type: 'highpass', sweep: 9000 });
+          }
+          break;
         case 'shrine':
           if (e.owner === this.playerTeam) [0, 7, 12].forEach((n, i) => this.tone({ freq: midi(76 + n), dur: 0.5, vol: 0.07, delay: i * 0.07 }));
           else if (e.owner !== -1) [0, 6].forEach((n, i) => this.tone({ freq: midi(52 + n), dur: 0.6, vol: 0.08, type: 'triangle', delay: i * 0.12 }));

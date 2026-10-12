@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AGES, AGE_UNITS, BLESSINGS, BLESSING_PRICE_FLOOR_AGE, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_CRUMBLE, RAGNAROK_CRUMBLE_AFTER, RAGNAROK_TIME, SHRINE_X, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
+import { AGES, AGE_UNITS, BLESSINGS, BLESSING_PRICE_FLOOR_AGE, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_CRUMBLE, RAGNAROK_CRUMBLE_AFTER, RAGNAROK_TIME, SHRINE_X, SURGE_FIRST, SURGE_INCOME, SURGE_OMEN, SURGE_TIME, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
 import { World } from '../src/sim/world.ts';
 import type { Team } from '../src/sim/types.ts';
 
@@ -289,6 +289,56 @@ describe('shrines', () => {
     run(w, 6);
     expect(w.shrines[2].owner).toBe(-1);
     expect(w.shrines[2].contested).toBe(true);
+  });
+});
+
+describe('ley surges', () => {
+  it('are foretold, pay the shrine holder while they run, then the next one is scheduled', () => {
+    const w = new World({ seed: 9 });
+    expect(w.nextSurgeAt).toBeGreaterThanOrEqual(SURGE_FIRST[0]);
+    expect(w.nextSurgeAt).toBeLessThanOrEqual(SURGE_FIRST[1]);
+    const events: string[] = [];
+    run(w, w.nextSurgeAt + TICK);
+    const s = w.surge!;
+    expect(s).not.toBeNull();
+    expect(w.drainEvents().some((e) => e.type === 'surge' && e.phase === 'omen' && e.lane === s.lane)).toBe(true);
+    // Hold the surging shrine with team 0.
+    w.shrines[s.lane].owner = 0;
+    w.shrines[s.lane].capture = -1;
+    const gold = w.players[0].gold;
+    const foeGold = w.players[1].gold;
+    run(w, SURGE_OMEN + SURGE_TIME + 0.1);
+    for (const e of w.drainEvents()) if (e.type === 'surge') events.push(e.phase);
+    expect(events).toEqual(['start', 'end']);
+    expect(w.surge).toBeNull();
+    const extra = w.players[0].gold - gold - (w.players[1].gold - foeGold); // both earn the same base income
+    const shrineIncome = AGES[0].shrineIncome * (SURGE_OMEN + SURGE_TIME + 0.1);
+    expect(extra - shrineIncome).toBeCloseTo(AGES[0].income * SURGE_INCOME * SURGE_TIME, 0);
+    expect(w.nextSurgeAt).toBeGreaterThan(w.time + 90);
+  });
+
+  it('never strike the same lane twice in a row, and survive a save', () => {
+    const w = new World({ seed: 3 });
+    const lanes: number[] = [];
+    for (let i = 0; i < 6; i++) {
+      run(w, w.nextSurgeAt - w.time + TICK);
+      lanes.push(w.surge!.lane);
+      if (i === 2) {
+        const copy = World.deserialize(w.serialize());
+        expect(copy.surge).toEqual(w.surge);
+        expect(copy.nextSurgeAt).toBe(w.nextSurgeAt);
+        expect(copy.surgeRng.state).toBe(w.surgeRng.state);
+      }
+      run(w, SURGE_OMEN + SURGE_TIME + TICK);
+    }
+    for (let i = 1; i < lanes.length; i++) expect(lanes[i]).not.toBe(lanes[i - 1]);
+  });
+
+  it('stop once Ragnarok has begun', () => {
+    const w = new World({ seed: 4 });
+    w.ragnarokStarted = true;
+    run(w, w.nextSurgeAt + 1);
+    expect(w.surge).toBeNull();
   });
 });
 

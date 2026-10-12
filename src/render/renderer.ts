@@ -131,6 +131,8 @@ export class Renderer {
   private gateChips = [-1, -1, -1, -1, -1, -1];
   private laneAlert = [0, 0, 0];
   private shrineGlint = [0, 0, 0];
+  /** Last golden mote shed by a surging shrine. */
+  private surgeMote = [0, 0, 0];
   private winner: Team | null = null;
   private embers: { x: number; y: number; vx: number; vy: number; life: number }[] = [];
   private hover: { unit: Unit; x: number; top: number; d: number } | null = null;
@@ -1093,6 +1095,33 @@ export class Renderer {
     if (owner !== -1 && this.time - this.shrineGlint[g.index] > 1.6) {
       this.shrineGlint[g.index] = this.time + Math.random() * 0.8;
       this.fx.add({ x: x + (Math.random() - 0.5) * 8 * sc, y: y - 44 * sc, vy: -26, life: 1.1, size: 2.4, color: '#ffd76a', rgb: [255, 215, 106], shape: 'glow', layer: g.index });
+    }
+    // Ley Surge: a flickering omen, then a pillar of golden light pouring out of the shrine.
+    const surge = world.surge?.lane === g.index ? world.surge : null;
+    if (surge) {
+      const live = world.time >= surge.start;
+      const k = live ? 0.75 + 0.15 * Math.sin(this.time * 5) : 0.25 + 0.2 * Math.max(0, Math.sin(this.time * 7));
+      const top = y - 190 * sc;
+      const bw = (live ? 16 : 9) * sc;
+      const grad = ctx.createLinearGradient(0, y, 0, top);
+      grad.addColorStop(0, `rgba(255,220,120,${0.55 * k})`);
+      grad.addColorStop(1, 'rgba(255,220,120,0)');
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(x - bw, y);
+      ctx.lineTo(x - bw * 0.4, top);
+      ctx.lineTo(x + bw * 0.4, top);
+      ctx.lineTo(x + bw, y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      drawGlow(ctx, x, y - 6 * sc, 44 * sc, [255, 215, 106], 0.35 * k);
+      if (live && this.time - this.surgeMote[g.index] > 0.07) {
+        this.surgeMote[g.index] = this.time;
+        this.fx.add({ x: x + (Math.random() - 0.5) * 40 * sc, y: y - Math.random() * 10 * sc, vy: -40 - Math.random() * 30, life: 1.4, size: 2.2, color: '#ffd76a', rgb: [255, 215, 106], shape: 'glow', layer: g.index });
+      }
     }
     // Capture radius hint
     const rx = (SHRINE_RADIUS / LANE_LENGTH) * (g.x1 - g.x0);

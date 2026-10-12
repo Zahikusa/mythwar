@@ -20,7 +20,7 @@ complete; its log follows below the lens plan.
 
 ## Phase 2 — lens checklist (tentative idea → result)
 - [x] #1 Essential Experience — essence written in DESIGN.md; every battle opens with "Topple their citadel — vs <foe>" + war horn
-- [ ] #2 Surprise — a seeded, fair surprise in battle (e.g. a Ley Surge on a random shrine)
+- [x] #2 Surprise — Ley Surges: a foretold, seeded shrine surge every 2–3 min (race for a flood of gold)
 - [ ] #3 Fun — celebrate the fun moments (multi-kill callouts for powers / dragon)
 - [ ] #4 Curiosity — peek at the next age (creatures/power) from the Ascend button
 - [ ] #5 Endogenous Value — make gold/XP value felt (kill gold popups, bounty)

@@ -168,6 +168,18 @@ export const RAGNAROK_RAMP = 1;
 export const RAGNAROK_CRUMBLE_AFTER = 10 * 60;
 export const RAGNAROK_CRUMBLE = 0.005;
 
+/**
+ * Ley Surge — a seeded surprise. Now and then the ley lines flare under one lane's shrine: an omen
+ * gives SURGE_OMEN seconds of warning, then for SURGE_TIME seconds whoever holds that shrine draws
+ * SURGE_INCOME x their passive age income on top (about a creature every few seconds — worth
+ * marching for). Never the same lane twice in a row; no surges once Ragnarok has begun.
+ */
+export const SURGE_FIRST: readonly [number, number] = [100, 150];
+export const SURGE_GAP: readonly [number, number] = [100, 160];
+export const SURGE_OMEN = 10;
+export const SURGE_TIME = 20;
+export const SURGE_INCOME = 1.5;
+
 /** Every citadel gate has a built-in ward that shoots the nearest enemy (damage scales with age). */
 export const WARD: { damage: number; cooldown: number; range: number; projectile: ProjectileSpec } = {
   damage: 8,

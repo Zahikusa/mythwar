@@ -222,7 +222,9 @@ export class AiController {
       const turretValue = turret ? turret.cost * 0.8 * (info.enemyFront < 0.3 ? 1 : 0.3) : 0;
       const shrine = w.shrines[lane];
       const shrineBonus = shrine.owner === this.team ? 0 : 12 * AGE_COST_SCALE(me.age);
-      info.need = info.enemyThreat - info.myValue * 1.1 - turretValue + shrineBonus;
+      // A Ley Surge (foretold or running) makes this shrine worth a march; skilled AIs answer it.
+      const surge = w.surge?.lane === lane ? (shrine.owner === this.team ? 15 : 35) * AGE_COST_SCALE(me.age) * this.profile.laneSkill : 0;
+      info.need = info.enemyThreat - info.myValue * 1.1 - turretValue + shrineBonus + surge;
       // Enemies at the gate are an emergency: they are hitting the citadel.
       if (info.enemyFront < 0.25) info.need += 40 * AGE_COST_SCALE(me.age) + info.enemyValue * 2;
       out.push(info);

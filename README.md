@@ -67,7 +67,8 @@ Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](doc
   Guardians. Hunters strike as packs, Guardians' sweeping blows break packs, and Mystics hang
   back behind the front line. The card marked **Counter!** answers what's in your selected lane.
 - **Economy:** gold trickles in and comes from kills. Capture the **Ley Shrine** in a lane's centre
-  (stand there with no foes nearby) for extra income until the enemy takes it back.
+  (stand there with no foes nearby) for extra income until the enemy takes it back. Now and then a
+  **Ley Surge** flares under one shrine: its holder earns a flood of gold for 20 seconds.
 - **Read the enemy:** a gate's portal flares just before a creature steps out — watch the enemy
   gates to see which lane their next creature is coming down.
 - **Ascend:** XP comes from kills, blows against the enemy citadel and time; with enough XP and a gold tithe you advance to the next age (new

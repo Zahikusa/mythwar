@@ -77,6 +77,12 @@ const TIPS: Tip[] = [
     done: (_g, t, s) => t - s > 8,
   },
   {
+    id: 'surge',
+    text: 'A Ley Surge! For a short while, whoever holds the glowing shrine earns a flood of gold. March creatures there — the enemy will too.',
+    when: (g) => !!g.world.surge,
+    done: (g, t, s) => !g.world.surge || t - s > 10,
+  },
+  {
     id: 'ascend',
     text: 'You have the XP to Ascend! Pay the gold tithe shown on the Ascend button: a new age brings stronger creatures and a sturdier citadel.',
     anchor: '.act.ascend',
