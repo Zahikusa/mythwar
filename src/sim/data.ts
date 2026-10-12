@@ -152,6 +152,8 @@ export const KILL_GOLD_MULT = 0.75;
 export const KILL_XP_MULT = 1.0;
 export const BASE_DAMAGE_XP = 0.15; // xp per point of base damage, divided by attacker age power scale
 export const SELL_REFUND = 0.5;
+/** Frozen creatures are brittle: every blow against them (creature, turret, ward, power) deals this much more. */
+export const BRITTLE_MULT = 1.5;
 export const TICK = 1 / 60;
 
 /**
@@ -558,7 +560,7 @@ export const POWERS: Record<PowerKind, PowerDef> = {
     age: 2,
     cooldown: 60,
     damage: 45 * POWER_SCALE[2],
-    blurb: 'A killing frost freezes every foe in the lane solid.',
+    blurb: 'A killing frost freezes every foe in the lane solid. Frozen foes are brittle: they take 50% more damage until they thaw.',
   },
   spiritdragon: {
     id: 'spiritdragon',

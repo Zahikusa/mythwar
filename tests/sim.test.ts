@@ -374,6 +374,18 @@ describe('god powers', () => {
     run(w, 1.5);
     expect(e.x).toBe(x);
   });
+
+  it('frozen foes are brittle: they take 50% more damage until they thaw', () => {
+    const w = new World();
+    const e = w.spawnUnit(1, 0, UNITS.jotunn, 700);
+    const hp = e.hp;
+    w.damageUnit(e, 100, null, 'turret', null);
+    expect(hp - e.hp).toBeCloseTo(100);
+    e.freezeTimer = 1;
+    const hp2 = e.hp;
+    w.damageUnit(e, 100, null, 'turret', null);
+    expect(hp2 - e.hp).toBeCloseTo(150);
+  });
 });
 
 describe('victory', () => {

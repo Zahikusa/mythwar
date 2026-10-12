@@ -480,6 +480,8 @@ export class Renderer {
             by = v.hy;
           }
           if (!Number.isNaN(px)) {
+            // A blow against a frozen (brittle) creature chips ice off it.
+            if (u && u.freezeTimer > 0) this.fx.burst(px, by, { count: 5, color: '#d8f4ff', speed: 150, life: 0.45, size: 2.4, shape: 'shard', layer: e.lane, gravity: 260 });
             if (e.mult > 1) {
               this.fx.burst(px, by, { count: 6, color: '#ffe27a', speed: 120, life: 0.35, size: 2.2, shape: 'spark', layer: e.lane, drag: 4 });
             } else if (e.source === 'unit') {

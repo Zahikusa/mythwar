@@ -400,3 +400,23 @@ game be better if more or less were known? Can information change state during p
   presentation (no simulation change), so online battles stay in sync; a coach tip explains it.
 - Checked: screenshot with all three shrines held and a five-deep foe queue (one to three
   portraits per lane, training ring on the next); full verify.
+
+## #23 The Lens of Emergence
+*How many verbs do my players have? How many objects can each verb act upon? How many ways can
+players achieve their goals? How many subjects do the players control? How do side effects
+change constraints?*
+- Verbs: summon (into one of three lanes), cast (one power per age), build/sell turrets, bless,
+  ascend. The creature traits already combine (packs vs sweep, mystics behind guardians, gorgon
+  slows, foxfire bounces). But the **god powers were islands**: each did its damage and its status
+  (root, freeze) and nothing else in the game cared about that status — the side effect didn't
+  change anybody's options.
+- Change: **brittle.** A creature frozen solid by Fimbulwinter takes 50% more damage from
+  everything (creatures, turrets, wards, powers — `BRITTLE_MULT` in `damageUnit`) until it
+  thaws; blows against it chip visible ice shards. Fimbulwinter turns from "damage + pause" into
+  a *setup*: freeze the lane your Jötunn are cleaving, freeze a wave inside your turret's reach,
+  freeze their push right before your own creatures arrive — or, as the victim, pull back for
+  3 seconds. The foe's freeze works the same way on you. The power's blurb (card, bestiary) says so.
+- Measured (`designcheck`, 60 games/foe, 30 even battles): difficulty ladder intact (100/63/33/3%);
+  sides 53%; even AI battles 20.2 min median (19.6 without brittle) — just past the 20-minute
+  line; pacing is #39's job and is noted there.
+- Checked: unit test (frozen → ×1.5); Fimbulwinter screenshot; full verify.

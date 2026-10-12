@@ -53,7 +53,7 @@ complete; its log follows below the lens plan.
 - [x] #20 Judgment — three-star rating with reasons (victory, citadel above half, par time); best per foe on its card
 - [x] #21 Functional Space — each gate's reach (ward or turret range) drawn as a dashed line that lights up with foes inside
 - [x] #22 Dynamic State — ley sight: holding a lane's shrine reveals the foe's queued summons for that lane
-- [ ] #23 Emergence — an emergent interaction between existing traits/powers
+- [x] #23 Emergence — brittle: frozen creatures take +50% damage from everything (Fimbulwinter becomes a setup)
 - [ ] #24 Action — a new meaningful verb (e.g. lane stance: hold / advance)
 - [ ] #25 Goals — short-term goals inside a battle
 - [ ] #26 Rules — rules clarity: in-game reference
@@ -69,7 +69,7 @@ complete; its log follows below the lens plan.
 - [ ] #36 Competition — competitive comparison (stats on results)
 - [ ] #37 Cooperation — cooperative element
 - [ ] #38 Competition vs. Cooperation — balance of the two
-- [ ] #39 Time — battle length options / pacing
+- [ ] #39 Time — battle length options / pacing (designcheck: even AI battles median ~20.2 min, just over the 20-min line since #23)
 - [ ] #40 Reward — rewards: unlocks / celebrations
 - [ ] #41 Punishment — punishment & comeback
 - [ ] #42 Simplicity/Complexity — progressive disclosure

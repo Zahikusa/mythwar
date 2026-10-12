@@ -3,6 +3,7 @@ import {
   BLESSINGS,
   BLESSING_MAX_RANK,
   BASE_DAMAGE_XP,
+  BRITTLE_MULT,
   KILL_GOLD_MULT,
   KILL_XP_MULT,
   LANE_COUNT,
@@ -1110,7 +1111,8 @@ export class World {
   ): number {
     if (!target.alive) return 0;
     const mult = counterMultiplier(cls, target.def.cls);
-    const dealt = amount * mult;
+    // Frozen solid, a creature is brittle: whatever hits it before it thaws hits harder.
+    const dealt = amount * mult * (target.freezeTimer > 0 ? BRITTLE_MULT : 1);
     target.hp -= dealt;
     target.lastHitAt = this.time;
     this.emit({ type: 'hit', targetId: target.id, team: target.team, lane: target.lane, x: target.x, amount: dealt, mult, source });
