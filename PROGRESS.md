@@ -59,7 +59,7 @@ complete; its log follows below the lens plan.
 - [x] #26 Rules — new rules were only in coach tips: how-to page 6 "Tactics" (hold the line, ley sight, brittle frost)
 - [x] #27 Skill — countering measured: "creature damage that countered" on results + a tip for poor counterers
 - [x] #28 Expected Value — blessings show their next rank's worth in concrete numbers (dps for your army, health, citadel)
-- [ ] #29 Chance — review randomness; add or tune
+- [x] #29 Chance — Starfall's meteors weighted toward crowds (was uniform per foe: stragglers soaked stars)
 - [ ] #30 Fairness — mirror-symmetry test; AI income transparency
 - [ ] #31 Challenge — challenge modifiers
 - [ ] #32 Meaningful Choices — make an existing choice more meaningful
@@ -69,7 +69,7 @@ complete; its log follows below the lens plan.
 - [ ] #36 Competition — competitive comparison (stats on results)
 - [ ] #37 Cooperation — cooperative element
 - [ ] #38 Competition vs. Cooperation — balance of the two
-- [ ] #39 Time — battle length options / pacing (designcheck: even AI battles median ~20.2 min, just over the 20-min line since #23)
+- [ ] #39 Time — battle length options / pacing (Ragnarök ramp raised to +150%/min in #29's maintenance: even battles ~18.8 min)
 - [ ] #40 Reward — rewards: unlocks / celebrations
 - [ ] #41 Punishment — punishment & comeback
 - [ ] #42 Simplicity/Complexity — progressive disclosure

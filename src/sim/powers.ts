@@ -134,6 +134,24 @@ function updateSpiritDragon(world: World, inst: PowerInstance): void {
   if (inst.t >= POWER_TIMING.spiritdragon.duration) inst.done = true;
 }
 
+/**
+ * A random foe, weighted by how many others stand within `radius` of it: stars fall where the
+ * enemy crowds, not evenly on stragglers — casting into a packed lane pays off.
+ */
+function crowdPick(world: World, list: Unit[], radius: number): Unit {
+  const weights = list.map((u) => {
+    let n = 1;
+    for (const o of list) if (o !== u && Math.abs(o.x - u.x) <= radius) n++;
+    return n * n;
+  });
+  let r = world.rng.next() * weights.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < list.length; i++) {
+    r -= weights[i];
+    if (r < 0) return list[i];
+  }
+  return list[list.length - 1];
+}
+
 /** Meteors are launched first (renderer shows the fall), then land `fall` seconds later. */
 function updateStarfall(world: World, inst: PowerInstance): void {
   const T = POWER_TIMING.starfall;
@@ -141,7 +159,7 @@ function updateStarfall(world: World, inst: PowerInstance): void {
   while (inst.fired < T.count && inst.t >= T.start + inst.fired * T.interval) {
     inst.fired++;
     const list = enemies(world, inst);
-    const x = list.length > 0 ? world.rng.pick(list).x + world.rng.range(-30, 30) : randomEnemySideX(world, inst.team);
+    const x = list.length > 0 ? crowdPick(world, list, T.radius).x + world.rng.range(-30, 30) : randomEnemySideX(world, inst.team);
     inst.hit.push(x);
     world.emit({ type: 'meteor', team: inst.team, lane: inst.lane, x, fall: T.fall });
   }

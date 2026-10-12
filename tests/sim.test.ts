@@ -372,6 +372,29 @@ describe('ley surges', () => {
 });
 
 describe('god powers', () => {
+  it('starfall rains where the enemy crowds, not on a lone straggler', () => {
+    let crowd = 0;
+    let straggler = 0;
+    for (let seed = 1; seed <= 10; seed++) {
+      const w = new World({ seed });
+      setAge(w, 4);
+      w.players[0].powerCooldown = 0;
+      const units = [w.spawnUnit(1, 1, UNITS.titan, 300)];
+      for (let i = 0; i < 6; i++) units.push(w.spawnUnit(1, 1, UNITS.titan, 640 + i * 8));
+      for (const u of units) u.def = { ...u.def, speed: 0, damage: 0, hp: 1e9 };
+      for (const u of units) u.hp = u.maxHp = 1e9;
+      w.apply({ type: 'power', team: 0, lane: 1 });
+      run(w, 4);
+      for (const e of w.drainEvents()) {
+        if (e.type !== 'meteor') continue;
+        if (Math.abs(e.x - 300) < 40) straggler++;
+        else crowd++;
+      }
+    }
+    expect(crowd + straggler).toBe(140);
+    expect(straggler).toBeLessThan(6);
+  });
+
   const kinds = [0, 1, 2, 3, 4];
   for (const age of kinds) {
     it(`${AGES[age].power} damages only enemies in the target lane`, () => {

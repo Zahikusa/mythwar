@@ -528,3 +528,27 @@ need to make my game more transparent so players can compute expected value?*
 - While at it: centre banners (opening, ascension) no longer draw over an open panel — found
   while screenshotting this one.
 - Checked: blessing panel on desktop (Asgard army) and phone (empty field, first age); full verify.
+
+## #29 The Lens of Chance
+*What in my game is truly random? What parts just feel random? Does the randomness give the
+players positive feelings or negative ones? Would changing my probability distribution curves
+improve my game? Do players have the opportunity to take interesting risks?*
+- Truly random (seeded, identical on every device): Ley Surge timing and lane (#2, foretold, so
+  it feels fair), which foe each of Zeus's seven bolts strikes (already preferring foes not yet
+  struck), where Starfall's fourteen meteors land, and coin tosses for dead heats. Combat itself
+  is deterministic. Feels random: the foe's next summon (mitigated by portal flares and #22's ley
+  sight).
+- The negative randomness was **Starfall**, the final age's power: each meteor aimed at a foe
+  picked uniformly, so one straggler at the gate drew as many stars as each member of the army
+  in midfield — a tenth of the shower could fall on a single creature, and the cast's strength
+  felt like luck rather than timing.
+- Change: meteors pick targets **weighted by crowding** (each foe weighted by the square of how
+  many foes stand within a meteor's radius, `crowdPick` in `src/sim/powers.ts`), so stars fall
+  thickest where the enemy masses and casting into a packed lane is reliably rewarding — the
+  skill is *when* to cast. A straggler still catches the odd one. The blurb says so.
+- Checked: unit test over 10 seeds (a straggler and a crowd of six: was ~20 of 140 meteors on
+  the straggler by uniform choice, now < 6); `designcheck` and full verify.
+- Follow-up in the same run (maintenance, not a lens): the design check's pacing criterion had
+  drifted over the line (even AI battles 20–21 min median after #23/#29 strengthened defence and
+  late powers). Measured options over 30 battles: Ragnarök at 16:00 → 19.8 min; siege ramp
+  +200%/min → 18.3; **+150%/min → 18.8** (chosen, the gentler fix). DESIGN.md updated.
