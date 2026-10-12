@@ -424,6 +424,15 @@ export class Menus {
     if (next) next.textContent = i === this.howtoPages.length - 1 ? (this.afterHowto ? 'To battle!' : 'Got it') : 'Next';
   }
 
+  /** "Face the Master" (after a win) / "Face the Adept" (after a losing run), else "Change foe". */
+  private flowButton(won: boolean, difficulty: Difficulty): HTMLButtonElement {
+    const next = flowSuggestion(won, difficulty, this.settings.records[difficulty]?.streak ?? 0);
+    if (!next) return this.button('Change foe', '', () => this.show('difficulty'));
+    const b = this.button(`Face the ${AI_PROFILES[next].name}`, '', () => this.cb.play(next));
+    b.title = won ? 'Ready for a harder foe' : 'Three defeats in a row: sharpen your skills against an easier foe';
+    return b;
+  }
+
   // -------------------------------------------------------------------------
   // Feats
   // -------------------------------------------------------------------------
@@ -620,7 +629,7 @@ export class Menus {
         { class: 'mrow' },
         this.button('Main menu', 'ghost', () => this.cb.quit()),
         share,
-        this.button('Change foe', '', () => this.show('difficulty')),
+        this.flowButton(won, difficulty),
         this.button('Rematch', 'primary', () => this.cb.restart(), ICONS.swords),
       ),
     );
@@ -659,6 +668,16 @@ export class Menus {
     btn.classList.toggle('primary', !mine);
     note.classList.toggle('hot', theirs === true && !mine);
   }
+}
+
+/**
+ * Keeping the challenge in step with the player: after a win, the next foe up; after three
+ * defeats in a row, the one below (`streak` = the current run at `difficulty`). Null: no nudge.
+ */
+export function flowSuggestion(won: boolean, difficulty: Difficulty, streak: number): Difficulty | null {
+  const i = DIFFICULTIES.indexOf(difficulty);
+  if (won) return i < DIFFICULTIES.length - 1 ? DIFFICULTIES[i + 1] : null;
+  return streak <= -3 && i > 0 ? DIFFICULTIES[i - 1] : null;
 }
 
 function verdictLine(won: boolean, online?: OnlineResult): string {

@@ -306,3 +306,21 @@ from my experience? Why? Can they be added?*
 - Checked: 4 unit tests (unique ids, annihilation once and only in one lane, victory feats per
   foe/time/health, nothing for a defeat, online win); screenshots of the feats screen (desktop,
   phone), the title chip (desktop, phone) and the results line; full verify.
+
+## #18 The Lens of Flow
+*Does my game have clear goals? Are the player's goals the same as the ones I intended? Does
+the game have parts that distract players to the point they forget their goal? Does it give a
+steady stream of challenges, at the right level, accounting for the player's growing skill?*
+- Goals are clear (topple the citadel, named at the start since #1) and distractions are few.
+  The weak spot is the *stream of challenges across battles*: difficulty is a fixed choice. A
+  player who keeps winning drifts into boredom unless they think of moving up; one who keeps
+  losing to Master slides into anxiety and quits instead of practising against Adept. The
+  results screen offered a fixed "Change foe" (a trip back to the four cards).
+- Change: records keep the **current run** per difficulty (`DifficultyRecord.streak`: +n wins /
+  −n defeats in a row). The results' third button becomes the flow nudge
+  (`flowSuggestion`): after a win, **"Face the Master"** (the next foe up — one tap starts it);
+  after three defeats in a row, **"Face the Adept"** (one down, to sharpen the same skills);
+  otherwise it stays "Change foe". Rematch remains the primary button: the nudge is a channel,
+  not a push. (#16's ribbon does the same on the foe screen.)
+- Checked: unit tests for the suggestion and the streak bookkeeping; results screenshot on a
+  phone (four buttons fit); full verify.

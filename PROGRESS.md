@@ -36,7 +36,7 @@ complete; its log follows below the lens plan.
 - [x] #15 The Toy — Sandbox: no foe, endless gold, unbreakable citadels, summon for either side (X)
 - [x] #16 The Player — "Start here" / "Next challenge" ribbon on the easiest foe not beaten yet
 - [x] #17 Pleasure — pride in accomplishment was missing: 15 Feats, toasts, results line, title chip + list
-- [ ] #18 Flow — suggest the right next difficulty
+- [x] #18 Flow — win/loss runs per foe; results offer "Face the <next>" after a win, the easier foe after 3 defeats in a row
 - [ ] #19 Needs — esteem: ranks/titles
 - [ ] #20 Judgment — fair judgment: battle grade on results
 - [ ] #21 Functional Space — lane space: pressure indicators

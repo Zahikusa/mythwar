@@ -6,6 +6,8 @@ export interface DifficultyRecord {
   losses: number;
   /** Fastest win in seconds (0 = none). */
   best: number;
+  /** Current run: +n wins in a row, -n defeats in a row (0 = none yet). */
+  streak?: number;
 }
 
 export interface Settings {
@@ -84,7 +86,7 @@ function sanitize(s: Settings): Settings {
   const raw = s.records && typeof s.records === 'object' ? s.records : {};
   for (const d of DIFFICULTIES) {
     const r = raw[d];
-    if (r && typeof r === 'object') records[d] = { wins: Number(r.wins) || 0, losses: Number(r.losses) || 0, best: Number(r.best) || 0 };
+    if (r && typeof r === 'object') records[d] = { wins: Number(r.wins) || 0, losses: Number(r.losses) || 0, best: Number(r.best) || 0, streak: Math.round(Number(r.streak) || 0) };
   }
   return {
     master: vol(s.master, DEFAULTS.master),
@@ -146,6 +148,8 @@ export function recordResult(s: Settings, d: Difficulty, won: boolean, time: num
     r.wins++;
     if (!r.best || time < r.best) r.best = Math.round(time);
   } else r.losses++;
+  const run = r.streak ?? 0;
+  r.streak = won ? Math.max(0, run) + 1 : Math.min(0, run) - 1;
   s.records[d] = r;
   saveSettings(s);
 }

@@ -54,3 +54,26 @@ describe('recommended foe', () => {
     expect(recommendedDifficulty({ novice: { wins: 1, losses: 0, best: 300 }, adept: { wins: 1, losses: 0, best: 300 }, master: { wins: 1, losses: 0, best: 300 }, mythic: { wins: 1, losses: 0, best: 300 } })).toBe('mythic');
   });
 });
+
+describe('flow between battles', () => {
+  it('suggests the next foe after a win, an easier one after three defeats in a row', async () => {
+    const { flowSuggestion } = await import('../src/ui/menus.ts');
+    expect(flowSuggestion(true, 'adept', 1)).toBe('master');
+    expect(flowSuggestion(true, 'mythic', 4)).toBeNull();
+    expect(flowSuggestion(false, 'master', -2)).toBeNull();
+    expect(flowSuggestion(false, 'master', -3)).toBe('adept');
+    expect(flowSuggestion(false, 'novice', -5)).toBeNull();
+  });
+
+  it('records count the current run of wins or defeats', async () => {
+    const { loadSettings, recordResult } = await import('../src/ui/settings.ts');
+    const s = loadSettings();
+    recordResult(s, 'master', false, 300);
+    recordResult(s, 'master', false, 300);
+    expect(s.records.master!.streak).toBe(-2);
+    recordResult(s, 'master', true, 300);
+    expect(s.records.master!.streak).toBe(1);
+    recordResult(s, 'master', true, 300);
+    expect(s.records.master!.streak).toBe(2);
+  });
+});
