@@ -8,6 +8,8 @@ export interface DifficultyRecord {
   best: number;
   /** Current run: +n wins in a row, -n defeats in a row (0 = none yet). */
   streak?: number;
+  /** Best battle rating (0-3 stars, see battleStars). */
+  stars?: number;
 }
 
 export interface Settings {
@@ -86,7 +88,7 @@ function sanitize(s: Settings): Settings {
   const raw = s.records && typeof s.records === 'object' ? s.records : {};
   for (const d of DIFFICULTIES) {
     const r = raw[d];
-    if (r && typeof r === 'object') records[d] = { wins: Number(r.wins) || 0, losses: Number(r.losses) || 0, best: Number(r.best) || 0, streak: Math.round(Number(r.streak) || 0) };
+    if (r && typeof r === 'object') records[d] = { wins: Number(r.wins) || 0, losses: Number(r.losses) || 0, best: Number(r.best) || 0, streak: Math.round(Number(r.streak) || 0), stars: Math.max(0, Math.min(3, Math.round(Number(r.stars) || 0))) };
   }
   return {
     master: vol(s.master, DEFAULTS.master),
@@ -142,12 +144,29 @@ export function saveSettings(s: Settings): void {
   }
 }
 
-export function recordResult(s: Settings, d: Difficulty, won: boolean, time: number): void {
+/** Par time per foe for the third star (a little slower than a strong player's typical win). */
+export const PAR_TIME: Record<Difficulty, number> = { novice: 8 * 60, adept: 12 * 60, master: 14 * 60, mythic: 16 * 60 };
+
+/**
+ * The battle's rating: one star each for the victory, for keeping the citadel above half health,
+ * and for winning within the foe's par time. (The last two only count with the first.)
+ */
+export function battleStars(won: boolean, citadelFrac: number, time: number, d: Difficulty): { stars: number; parts: { label: string; got: boolean }[] } {
+  const parts = [
+    { label: 'Victory', got: won },
+    { label: 'Citadel above half', got: won && citadelFrac > 0.5 },
+    { label: `Within ${Math.round(PAR_TIME[d] / 60)} minutes`, got: won && time <= PAR_TIME[d] },
+  ];
+  return { stars: parts.filter((p) => p.got).length, parts };
+}
+
+export function recordResult(s: Settings, d: Difficulty, won: boolean, time: number, stars = 0): void {
   const r = s.records[d] ?? { wins: 0, losses: 0, best: 0 };
   if (won) {
     r.wins++;
     if (!r.best || time < r.best) r.best = Math.round(time);
   } else r.losses++;
+  r.stars = Math.max(r.stars ?? 0, stars);
   const run = r.streak ?? 0;
   r.streak = won ? Math.max(0, run) + 1 : Math.min(0, run) - 1;
   s.records[d] = r;

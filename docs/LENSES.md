@@ -346,3 +346,21 @@ basic needs? On the levels it is already operating, how can it fulfill those nee
 - Checked: unit tests (round trip + merge rules + idempotence; garbage, wrong prefix, non-JSON
   and non-object payloads rejected without side effects); settings screenshots (desktop, phone);
   full verify.
+
+## #20 The Lens of Judgment
+*What does my game judge about the players? How does it communicate this judgment? Do players
+feel the judgment is fair? Do they care about the judgment? Does the judgment make them want to
+improve?*
+- Mythwar judged one bit: won or lost. A crushing 6-minute win with the citadel untouched and a
+  23-minute scrape with 40 health left were the same "Victory", and the record kept only the
+  fastest time. The numbers in the results table describe a battle; they don't *judge* it, so
+  there was nothing to improve on once a foe had been beaten.
+- Change: a transparent **three-star rating** (`battleStars` in `src/ui/settings.ts`): ★ for the
+  victory, ★ for keeping the citadel above half health, ★ for winning within the foe's par time
+  (8/12/14/16 minutes for Novice/Adept/Master/Mythic — a little slower than a strong player's
+  typical win). Each star is shown *with its reason* next to the battle length on the results,
+  so the judgment is legible and feels fair; the best rating per foe is kept and shown on its
+  card ("3W · 1L · best 7:42 · ★★☆") — a reason to come back to a foe already beaten.
+- Checked: unit tests (each star's condition, par per foe, best rating kept); results
+  screenshots (desktop, phone victory/defeat — the stars share the battle-length line so the
+  phone layout doesn't grow); full verify.

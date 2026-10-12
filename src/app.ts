@@ -9,7 +9,7 @@ import { Renderer } from './render/renderer.ts';
 import { Coach } from './ui/coach.ts';
 import { Hud } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
-import { loadSettings, recordOnline, recordResult, saveSettings } from './ui/settings.ts';
+import { battleStars, loadSettings, recordOnline, recordResult, saveSettings } from './ui/settings.ts';
 import { clearBattle, loadBattle, saveBattle } from './save.ts';
 import { AGES } from './sim/data.ts';
 import { fmtTime } from './ui/dom.ts';
@@ -597,7 +597,8 @@ export class App {
       this.hud.banner(won ? 'Victory' : 'Defeat', sub, won ? 'gold' : 'red');
       return;
     }
-    recordResult(this.settings, this.difficulty, won, g.world.time);
+    const P = g.world.players[g.playerTeam];
+    recordResult(this.settings, this.difficulty, won, g.world.time, battleStars(won, P.baseHp / P.baseMaxHp, g.world.time, this.difficulty).stars);
     clearBattle();
     this.audio.ui(won ? 'victory' : 'defeat');
     this.overTimer = 2.6;

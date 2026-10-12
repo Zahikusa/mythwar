@@ -7,6 +7,7 @@ import { h, fmt, fmtTime, onTap } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 import type { Settings } from './settings.ts';
+import { battleStars } from './settings.ts';
 import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
 import { Bestiary } from './bestiary.ts';
@@ -334,7 +335,7 @@ export class Menus {
       const rb = this.diffCards[d].querySelector('.ribbon')!;
       if (rb.textContent !== ribbon) rb.textContent = ribbon;
       const r = rec[d];
-      this.recordEls[d].textContent = r && (r.wins || r.losses) ? `${r.wins}W · ${r.losses}L${r.best ? ` · best ${fmtTime(r.best)}` : ''}` : '';
+      this.recordEls[d].textContent = r && (r.wins || r.losses) ? `${r.wins}W · ${r.losses}L${r.best ? ` · best ${fmtTime(r.best)}` : ''}${r.stars ? ` · ${'★'.repeat(r.stars)}${'☆'.repeat(3 - r.stars)}` : ''}` : '';
     }
   }
 
@@ -652,7 +653,7 @@ export class Menus {
         h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: verdictLine(won, online) })),
         h('div', { class: 'vportrait' }, portrait(champion.id, 96, 0, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
       ),
-      h('div', { class: 'vtime', text: `Battle length ${fmtTime(world.time)}` }),
+      h('div', { class: 'vtime' }, h('span', { text: `Battle length ${fmtTime(world.time)}` }), online ? null : starsRow(battleStars(won, P.baseHp / P.baseMaxHp, world.time, difficulty).parts)),
       ...(this.featsEarned.length ? [h('div', { class: 'vfeats' }, h('i', { html: ICONS.xp }), `New feat${this.featsEarned.length > 1 ? 's' : ''}: ${this.featsEarned.map((f) => f.name).join(', ')}`)] : []),
       h(
         'div',
@@ -715,6 +716,11 @@ export function flowSuggestion(won: boolean, difficulty: Difficulty, streak: num
   const i = DIFFICULTIES.indexOf(difficulty);
   if (won) return i < DIFFICULTIES.length - 1 ? DIFFICULTIES[i + 1] : null;
   return streak <= -3 && i > 0 ? DIFFICULTIES[i - 1] : null;
+}
+
+/** The battle's three stars, each with what it was for. */
+function starsRow(parts: { label: string; got: boolean }[]): HTMLElement {
+  return h('div', { class: 'vstars', 'aria-label': `${parts.filter((p) => p.got).length} of 3 stars` }, ...parts.map((p) => h('span', { class: p.got ? 'got' : '' }, h('b', { text: p.got ? '★' : '☆' }), p.label)));
 }
 
 function verdictLine(won: boolean, online?: OnlineResult): string {

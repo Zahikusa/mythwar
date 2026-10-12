@@ -38,7 +38,7 @@ complete; its log follows below the lens plan.
 - [x] #17 Pleasure — pride in accomplishment was missing: 15 Feats, toasts, results line, title chip + list
 - [x] #18 Flow — win/loss runs per foe; results offer "Face the <next>" after a win, the easier foe after 3 defeats in a row
 - [x] #19 Needs — safety: progress codes carry records/feats/ages between devices (merging, never losing)
-- [ ] #20 Judgment — fair judgment: battle grade on results
+- [x] #20 Judgment — three-star rating with reasons (victory, citadel above half, par time); best per foe on its card
 - [ ] #21 Functional Space — lane space: pressure indicators
 - [ ] #22 Dynamic State — show public state the player lacks (enemy XP / ascension)
 - [ ] #23 Emergence — an emergent interaction between existing traits/powers

@@ -77,3 +77,18 @@ describe('flow between battles', () => {
     expect(s.records.master!.streak).toBe(2);
   });
 });
+
+describe('battle stars', () => {
+  it('one each for the victory, a citadel above half and the par time', async () => {
+    const { battleStars, loadSettings, recordResult } = await import('../src/ui/settings.ts');
+    expect(battleStars(true, 0.9, 5 * 60, 'adept').stars).toBe(3);
+    expect(battleStars(true, 0.3, 5 * 60, 'adept').stars).toBe(2);
+    expect(battleStars(true, 0.9, 13 * 60, 'adept').stars).toBe(2);
+    expect(battleStars(true, 0.9, 13 * 60, 'master').stars).toBe(3);
+    expect(battleStars(false, 1, 60, 'novice').stars).toBe(0);
+    const s = loadSettings();
+    recordResult(s, 'adept', true, 300, 2);
+    recordResult(s, 'adept', true, 300, 1);
+    expect(s.records.adept!.stars).toBe(2);
+  });
+});
