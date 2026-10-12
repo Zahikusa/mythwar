@@ -18,6 +18,7 @@
     "serve": "node server/main.ts",
     "package": "tsc --noEmit && node scripts/package.ts",
     "mpbot": "node scripts/mpbot.ts",
+    "designcheck": "node scripts/designcheck.ts",
     "enginecheck": "vite build && node scripts/enginecheck.ts",
     "mpengines": "vite build && node scripts/mpengines.ts",
     "typecheck": "tsc --noEmit",

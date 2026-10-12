@@ -184,3 +184,21 @@ essence of that experience and put it into my game?*
   named "???" with silhouettes — discovered in battle, not read in advance.
 - Checked: screenshots `menu-bestiary`, `menu-bestiary-known` (Olympus tab), `mobile-bestiary`,
   the title on phone (five buttons in a row) and upright phone, the phone pause menu; full verify.
+
+## #12 The Lens of the Problem Statement
+*What problem, or problems, am I really trying to solve? Have I been making assumptions about
+this game that have nothing to do with its true purpose? Is a game really the best solution?
+How will I be able to tell when the problem is solved?*
+- The problem (now in `DESIGN.md`): a tug-of-war strategy game that two people — or one and
+  the machine — can pick up in a minute on any device and that keeps rewarding insight for many
+  battles. A game is the solution by definition; the open question was the last one: *how do we
+  know it is solved?* The criteria lived scattered in README numbers and memory.
+- Change: four measurable success criteria (difficulty ladder, pacing, variety, side fairness)
+  and **`npm run designcheck`** (`scripts/designcheck.ts`), which measures them in ~70 s with
+  the scripted smart player and AI-vs-AI battles and prints PASS/FAIL with the numbers. Future
+  balance-touching lenses run it.
+- Result today: all pass — smart player vs Novice/Adept/Master/Mythic 100/73/23/0%, even
+  battles median 18.4 min (16–26), every age's three classes at 22–46% of summons, left side
+  wins 53%. Two findings for later lenses: even battles run long (the median sits just past
+  Ragnarök at 18:00 — #39 Time), and **the AI never summoned the Elder Dragon** in 15 even
+  battles (it spends gold as it comes and never banks the 2565 — #46/#47).

@@ -13,6 +13,20 @@ triangle, the flaring portals) and escalation (five ages) are the three things e
 should serve. The battle opens with that promise ("Topple their citadel — vs <foe>") and a war
 horn, so the goal and the rival are named before the first summon.
 
+## Problem statement
+*Make a tug-of-war strategy game that two people — or one person and the machine — can pick up
+in a minute on whatever device they have (PC, iPhone, Android), and that keeps rewarding
+insight (reading lanes, answering with counters, timing the ages) for many battles.*
+How we know it is solved — measured by `npm run designcheck` (scripted "smart" player and
+AI-vs-AI battles; see the script for thresholds):
+1. **A ladder of challenge:** a competent player beats Novice ≥ 85% of the time, Mythic ≤ 20%,
+   and each difficulty is harder than the one before.
+2. **Pacing:** evenly matched battles last 8–20 minutes (median) and mostly reach the fourth age.
+3. **Variety:** every class is used in every age (12–60% of that age's summons).
+4. **Fairness:** neither side of the field is favoured (30–70% in even AI battles).
+Plus what the tests already guard: identical simulation on every engine, online battles stay
+in sync, and the first battle can be played without reading anything (coach tips).
+
 ## Theme
 *Legends rising through the ages.* Every channel climbs together when a side ascends: the
 battlefield and sky, the citadel, the music's mode and instruments, the creatures and their
