@@ -992,6 +992,17 @@
   gap: 4px 18px;
 }
 
+.pgoals {
+  max-width: min(640px, 92cqw);
+  text-align: center;
+  font-size: 13px;
+  color: var(--gold-l);
+}
+
+.pgoals:empty {
+  display: none;
+}
+
 .vstars {
   display: flex;
   gap: 14px;

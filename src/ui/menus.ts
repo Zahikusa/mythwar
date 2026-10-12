@@ -7,7 +7,7 @@ import { h, fmt, fmtTime, onTap } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 import type { Settings } from './settings.ts';
-import { battleStars } from './settings.ts';
+import { PAR_TIME, battleStars } from './settings.ts';
 import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
 import { Bestiary } from './bestiary.ts';
@@ -79,6 +79,7 @@ export class Menus {
   private rematchBtn: HTMLButtonElement | null = null;
   private rematchNote: HTMLElement | null = null;
   private bestiary!: Bestiary;
+  private pauseGoals: HTMLElement | null = null;
   /** Feats earned in the battle whose results are shown next. */
   featsEarned: Feat[] = [];
   private featList: HTMLElement | null = null;
@@ -135,6 +136,8 @@ export class Menus {
     this.pauseSummary.textContent = sandbox
       ? `Sandbox · ${fmtTime(world.time)} · ${AGES[P.age].name}`
       : `vs ${foe} · ${fmtTime(world.time)} · ${AGES[P.age].name} vs ${AGES[E.age].name} · ${P.stats.kills} foes slain`;
+    // Against the AI: the battle's star goals, while they can still be won.
+    if (this.pauseGoals) this.pauseGoals.textContent = online || sandbox ? '' : starGoals(world, me, difficulty);
     // Online, either player may pause and either may resume; the battle can't restart.
     this.restartBtn?.classList.toggle('hidden', !!online);
     if (this.pauseTitle) this.pauseTitle.textContent = online ? online.title : 'Paused';
@@ -574,6 +577,7 @@ export class Menus {
 
   private buildPause(): HTMLElement {
     this.pauseSummary = h('div', { class: 'psummary' });
+    this.pauseGoals = h('div', { class: 'pgoals' });
     this.pauseTitle = h('h2', { text: 'Paused' });
     this.restartBtn = this.button('Restart', '', () => this.cb.restart());
     this.pauseNote = h('div', { class: 'mnote', text: 'Leaving or restarting after the first minute counts as a defeat.' });
@@ -582,6 +586,7 @@ export class Menus {
       { class: 'screen pause' },
       this.pauseTitle,
       this.pauseSummary,
+      this.pauseGoals,
       h(
         'div',
         { class: 'mbuttons' },
@@ -716,6 +721,19 @@ export function flowSuggestion(won: boolean, difficulty: Difficulty, streak: num
   const i = DIFFICULTIES.indexOf(difficulty);
   if (won) return i < DIFFICULTIES.length - 1 ? DIFFICULTIES[i + 1] : null;
   return streak <= -3 && i > 0 ? DIFFICULTIES[i - 1] : null;
+}
+
+/** The star goals of a battle in progress: "Stars to win: ★ Victory · ★ Citadel above half (now 72%) · ★ Within 12 minutes (3:39 left)". */
+export function starGoals(world: World, me: Team, difficulty: Difficulty): string {
+  const P = world.players[me];
+  const frac = P.baseHp / P.baseMaxHp;
+  const par = PAR_TIME[difficulty];
+  const left = par - world.time;
+  return [
+    'Stars to win: ★ Victory',
+    `${frac > 0.5 ? '★' : '☆'} Citadel above half (now ${Math.round(frac * 100)}%)`,
+    left > 0 ? `★ Within ${Math.round(par / 60)} minutes (${fmtTime(left)} left)` : `☆ Within ${Math.round(par / 60)} minutes (passed)`,
+  ].join(' · ');
 }
 
 /** The battle's three stars, each with what it was for. */

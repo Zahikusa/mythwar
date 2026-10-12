@@ -92,3 +92,15 @@ describe('battle stars', () => {
     expect(s.records.adept!.stars).toBe(2);
   });
 });
+
+describe('star goals in the pause menu', () => {
+  it('say which stars are still in reach', async () => {
+    const { starGoals } = await import('../src/ui/menus.ts');
+    const w = new World();
+    w.time = 9 * 60 + 21;
+    expect(starGoals(w, 0, 'adept')).toBe('Stars to win: ★ Victory · ★ Citadel above half (now 100%) · ★ Within 12 minutes (2:39 left)');
+    w.players[0].baseHp = w.players[0].baseMaxHp * 0.3;
+    w.time = 13 * 60;
+    expect(starGoals(w, 0, 'adept')).toMatch(/☆ Citadel above half \(now 30%\) · ☆ Within 12 minutes \(passed\)/);
+  });
+});

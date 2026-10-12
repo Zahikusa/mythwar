@@ -447,3 +447,23 @@ do that they cannot?*
   unaffected; released lanes march on; mirrored for the right-hand side; survives a save;
   validation accepts/rejects); screenshots (desktop: held middle lane with banner; phone);
   full verify.
+
+## #25 The Lens of Goals
+*What is the ultimate goal of my game? Is it clear to players? If there are various goals, do
+players understand them? Are they related to each other in a meaningful way? Are my goals
+concrete, achievable and rewarding? Do I have a good balance of short- and long-term goals? Do
+players have the chance to decide on their own goals?*
+- Ultimate goal: topple the citadel (named at the start since #1). Short-term: the next counter,
+  a shrine, a surge, the next age. Long-term: the four foes, feats (#17), the best star rating
+  per foe (#20). Self-chosen: which feats to chase, which stars to go for.
+- The stars, though, were a *retrospective* judgment: their two harder conditions — keep the
+  citadel above half, finish within par — only appeared on the results screen, when nothing
+  could be done about them. A goal the player can't see while acting on it isn't a goal.
+- Change: the pause menu (single player) lists the battle's **star goals live** — "Stars to win:
+  ★ Victory · ★ Citadel above half (now 72%) · ★ Within 12 minutes (3:39 left)", turning to ☆
+  when slipping or gone — and the moment one slips the HUD says so: "Citadel below half — win
+  back its health (ascend, Bastion) to keep the second star" (re-armed above 55%), "12 minutes
+  have passed — the third star is out of reach". Short-term choices now connect to the
+  long-term rating.
+- Checked: unit test for the goals line (in reach / slipping / passed); phone pause screenshot;
+  full verify.

@@ -55,7 +55,7 @@ complete; its log follows below the lens plan.
 - [x] #22 Dynamic State — ley sight: holding a lane's shrine reveals the foe's queued summons for that lane
 - [x] #23 Emergence — brittle: frozen creatures take +50% damage from everything (Fimbulwinter becomes a setup)
 - [x] #24 Action — new verb: hold the line (per-lane stance at the shrine, G / shield button, war banner)
-- [ ] #25 Goals — short-term goals inside a battle
+- [x] #25 Goals — star goals live in the pause menu, toasts when the citadel or par star slips
 - [ ] #26 Rules — rules clarity: in-game reference
 - [ ] #27 Skill — measure/show skill (counter rate on results)
 - [ ] #28 Expected Value — show values that inform choices (cards, blessings)

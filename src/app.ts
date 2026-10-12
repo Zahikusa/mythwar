@@ -9,7 +9,7 @@ import { Renderer } from './render/renderer.ts';
 import { Coach } from './ui/coach.ts';
 import { Hud } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
-import { battleStars, loadSettings, recordOnline, recordResult, saveSettings } from './ui/settings.ts';
+import { PAR_TIME, battleStars, loadSettings, recordOnline, recordResult, saveSettings } from './ui/settings.ts';
 import { clearBattle, loadBattle, saveBattle } from './save.ts';
 import { AGES } from './sim/data.ts';
 import { fmtTime } from './ui/dom.ts';
@@ -55,6 +55,8 @@ export class App {
   private coinsSeen = 0;
   private lastSave = 0;
   private lastBuzz = -10;
+  /** Star goals already announced as slipping (citadel below half) / gone (par time passed). */
+  private starWarned = { half: false, par: false };
   /** Feats earned in the current battle (null until one starts). */
   private feats: FeatTracker | null = null;
   private slowSeconds = 0;
@@ -406,6 +408,7 @@ export class App {
       this.audio.ui('bless');
     });
     this.feats.start(game.world, game.playerTeam);
+    this.starWarned = { half: false, par: game.world.time > PAR_TIME[this.difficulty] };
     this.immersive();
     this.state = 'playing';
     this.overTimer = -1;
@@ -643,6 +646,7 @@ export class App {
         this.coinsSeen = this.renderer.fx.coinsArrived;
         this.hud.pulseGold();
       }
+      if (this.state === 'playing') this.watchStars(g);
       if (this.state === 'playing') this.coach.update(this.hud.panelOpen || this.hud.bannerShowing || this.menus.current !== 'none' || this.netOverlay.busy);
       if (this.overTimer > 0) {
         this.overTimer -= dt;
@@ -913,6 +917,22 @@ export class App {
         });
       })
       .catch(() => (this.wakePending = false));
+  }
+
+  /** Against the AI: say when a star goal slips (citadel below half) or is gone (par time). */
+  private watchStars(g: Game): void {
+    if (g.options.online || g.options.sandbox || g.options.demo || g.over) return;
+    const P = g.world.players[g.playerTeam];
+    const frac = P.baseHp / P.baseMaxHp;
+    if (!this.starWarned.half && frac <= 0.5) {
+      this.starWarned.half = true;
+      this.hud.toast('Citadel below half — win back its health (ascend, Bastion) to keep the second star', 'bad');
+    } else if (this.starWarned.half && frac > 0.55) this.starWarned.half = false;
+    const par = PAR_TIME[this.difficulty];
+    if (!this.starWarned.par && g.world.time > par) {
+      this.starWarned.par = true;
+      this.hud.toast(`${Math.round(par / 60)} minutes have passed — the third star is out of reach`, 'info');
+    }
   }
 
   private battleIntensity(g: Game): number {
