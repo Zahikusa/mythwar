@@ -116,6 +116,8 @@ Same command API as the player. Four difficulties: Novice, Adept, Master, Mythic
 Evaluates per-lane threat, picks counters, contests shrines, saves to ascend,
 builds turrets, buys blessings, aims god powers, and piles into the weakest lane during
 Ragnarök. Difficulty scales reaction time, decision quality and income (Novice 50%,
-Adept 90%, Master 100%, Mythic 120%). Mythic also plans ahead: it holds summons back to mount
+Adept 90%, Master 100%, Mythic 120%). Novice *follows the player up the ages*: it ascends
+readily, but never into an age the player hasn't reached — beginners see the war escalate with
+them without being out-tiered for not ascending yet. Mythic also plans ahead: it holds summons back to mount
 a turret as soon as foes push past midfield, and keeps buying blessings instead of hoarding
 gold for them (calibrated against the scripted bots in `scripts/bots.ts`).

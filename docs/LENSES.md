@@ -202,3 +202,27 @@ How will I be able to tell when the problem is solved?*
   wins 53%. Two findings for later lenses: even battles run long (the median sits just past
   Ragnarök at 18:00 — #39 Time), and **the AI never summoned the Elder Dragon** in 15 even
   battles (it spends gold as it comes and never banks the 2565 — #46/#47).
+
+## #13 The Lens of the Eight Filters
+*Does the game feel right? Will the intended audience like it enough? Is it well designed? Is it
+novel enough? Will it sell? Is it technically possible? Does it meet our social and community
+goals? Have the playtesters enjoyed it enough?*
+- (1) Feel: yes — juicy, readable, consistent across devices. (3) Well designed: the design
+  check (#12) passes. (4) Novel: three lanes + a counter triangle with formation rules + myth
+  ages + surges — a distinct twist on Age of War. (5) Sell: free, installable, shareable — fine
+  for its purpose. (6) Technically: done and tested on three engines. (7) Community: same-Wi-Fi
+  multiplayer, quick messages, shareable results. (8) Playtesters: only bots so far (→ #91).
+- **(2) Audience** was the weak filter. The newcomer's first battles are against Novice (the
+  default), and measured with the scripted players (`botMatch` now reports ages): a competent
+  player wins in 5.2 min, mostly still in Fae Wilds/Olympus (ages 1.4 vs 0.5 on average); simpler
+  players never leave the first age. The newcomer — the audience the default exists for — never
+  sees the war escalate, which *is* the essential experience (#1).
+- Tried and rejected: simply letting Novice ascend more (ascendSkill 0.45–0.7). It showed more
+  ages but out-tiered players who don't ascend yet — the "counter" bot dropped from 29/30 to
+  14/30.
+- Change: **Novice follows the player up the ages** (`AiProfile.followsAge`): it ascends
+  readily (0.7), but never into an age the player hasn't reached. Result (30 games each): smart
+  player 30/30 in 7.3 min reaching ~2 ages with the enemy following (1.6); counter bot 29/30
+  (unchanged); spam bot 30/30 (was 22/30 — the old Novice sometimes ascended ahead of it). The
+  difficulty card says "it only ascends after you do"; DESIGN.md documents it.
+- Checked: `npm run designcheck` (ladder 100/73/23/0, all criteria pass); full verify.

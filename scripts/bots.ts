@@ -132,7 +132,7 @@ export class Bot {
   }
 }
 
-export function botMatch(bot: BotKind, ai: Difficulty, seed: number): { winner: Team | null; time: number } {
+export function botMatch(bot: BotKind, ai: Difficulty, seed: number): { winner: Team | null; time: number; ages: [number, number] } {
   const w = new WorldClass({ seed });
   const b = new Bot(w, 0, bot, seed + 1);
   const a = new AiController(w, 1, AI_PROFILES[ai], seed + 2);
@@ -142,7 +142,7 @@ export function botMatch(bot: BotKind, ai: Difficulty, seed: number): { winner: 
     w.step();
     w.drainEvents();
   }
-  return { winner: w.winner, time: w.time };
+  return { winner: w.winner, time: w.time, ages: [w.players[0].age, w.players[1].age] };
 }
 
 if ((process.argv[1] ?? '').endsWith('bots.ts')) {

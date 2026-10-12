@@ -31,7 +31,7 @@ complete; its log follows below the lens plan.
 - [x] #10 Resonance — the legends are the resonant core: each of the 16 creatures answers the summons with its own synthesized cry
 - [x] #11 Infinite Inspiration — a Bestiary (title + pause): every creature with the real myth behind it; unreached ages hidden
 - [x] #12 The Problem Statement — problem + 4 measurable success criteria in DESIGN.md; `npm run designcheck` measures them (all pass)
-- [ ] #13 The Eight Filters — run the filters; fix the weakest
+- [x] #13 The Eight Filters — weak filter = audience: newcomers never saw the ages; Novice now follows the player up the ages
 - [ ] #14 Risk Mitigation — biggest risk → mitigate (real devices / network diagnostics)
 - [ ] #15 The Toy — a toy-like sandbox / practice mode
 - [ ] #16 The Player — who plays; first-run defaults / recommendations

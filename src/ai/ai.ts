@@ -32,6 +32,8 @@ export interface AiProfile {
   blessMargin: number;
   /** Holds summons back to mount an up-to-date turret on a lane the foe has pushed into. */
   plansTurrets: boolean;
+  /** Never ascends past the opponent's age: it follows the player up the ages instead of leading. */
+  followsAge?: boolean;
   /** Max summons waiting in the queue. */
   maxQueue: number;
   /** Seconds before the AI first considers turrets. */
@@ -43,12 +45,15 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
   novice: {
     id: 'novice',
     name: 'Novice',
-    blurb: 'A wandering spirit. Slow to react and easily outwitted.',
+    blurb: 'A wandering spirit. Slow to react, easily outwitted — and it only ascends after you do.',
     think: 2.8,
     counterSkill: 0.15,
     laneSkill: 0.35,
-    ascendSkill: 0.25,
-    saveRamp: 0.3,
+    // Ascends readily, but only into ages the player has already reached: a beginner sees the
+    // war escalate with them, and is never out-tiered for not ascending yet.
+    ascendSkill: 0.7,
+    saveRamp: 0.6,
+    followsAge: true,
     turretSkill: 0.15,
     powerSkill: 0.3,
     blessSkill: 0.1,
@@ -250,7 +255,8 @@ export class AiController {
     // ahead and we could ascend: their creatures out-tier ours, so spending on more of ours is a
     // death spiral, and ascending also reinforces the citadel.
     let saveThroughSiege = false;
-    if (me.age < AGES.length - 1) {
+    const foeAge = w.players[this.team === 0 ? 1 : 0].age;
+    if (me.age < AGES.length - 1 && !(p.followsAge && me.age >= foeAge)) {
       const next = AGES[me.age + 1];
       const xpReady = me.xp >= next.xpRequired;
       if (xpReady) {
