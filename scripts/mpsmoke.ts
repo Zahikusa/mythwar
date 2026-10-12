@@ -356,6 +356,40 @@ async function main(): Promise<void> {
     await press(a, '.screen.mp', 'Back');
     await waitFor(a, 'A at title', () => (window as any).__mythwar.menus.current === 'title');
 
+    console.log('== co-op against the AI ==');
+    // B (still in the room, at the results) makes it a co-op room; A comes back and joins.
+    const coopCode = await b.evaluate(() => (window as any).__mythwar.mp.room.code as string);
+    await b.evaluate(() => (window as any).__mythwar.mp.setCoop('novice'));
+    await a.evaluate((c) => (window as any).__mythwar.openMultiplayer(c), coopCode);
+    await waitFor(a, 'A in the co-op room', () => (window as any).__mythwar.mp?.room?.coop === 'novice' && (window as any).__mythwar.menus.current === 'room', 8000);
+    const vs = await a.evaluate(() => document.querySelector('.screen.room .rvs')?.textContent ?? '');
+    check('co-op room shows the allies together', vs === '&', vs);
+    for (const p of [a, b]) await p.evaluate(() => (window as any).__mythwar.mp.ready(true));
+    await waitFor(a, 'A in the co-op battle', () => (window as any).__mythwar.state === 'playing' && (window as any).__mythwar.game.coop === 'novice', 8000);
+    await waitFor(b, 'B in the co-op battle', () => (window as any).__mythwar.state === 'playing' && (window as any).__mythwar.game.coop === 'novice', 8000);
+    await waitFor(a, 'co-op battle running', () => !(window as any).__mythwar.game.paused && (window as any).__mythwar.game.world.tick > 30, 8000);
+    // Both allies summon for the left side; the server's AI fights back on the right.
+    for (const p of [a, b]) await p.evaluate(() => (window as any).__mythwar.game.command({ type: 'train', team: 0, unitId: 'redcap', lane: 1 }));
+    await waitFor(a, 'the AI summons', () => (window as any).__mythwar.game.world.players[1].stats.summoned > 0, 20_000);
+    await sleep(2500);
+    const ca = await info(a);
+    const cb2 = await info(b);
+    check('co-op: both allies play the left side, unmirrored', ca.seat === 0 && cb2.seat === 0 && !ca.mirror && !cb2.mirror, JSON.stringify([ca.seat, cb2.seat, ca.mirror, cb2.mirror]));
+    check('co-op: both orders went to the shared side', ca.summoned[0] >= 2 && cb2.summoned[0] >= 2, JSON.stringify([ca.summoned, cb2.summoned]));
+    check('co-op: no desyncs with the server-run AI', ca.desyncs === 0 && cb2.desyncs === 0, `${ca.desyncs} / ${cb2.desyncs}`);
+    const ally = await b.evaluate(() => document.querySelector('.hud .agerow.left .agename')?.textContent ?? document.querySelector('.hud .agerow.left')?.textContent ?? '');
+    check('co-op: the HUD names the ally', ally.includes('You &'), ally);
+    // A steps out of the battle: B fights on alone.
+    await a.evaluate(() => (window as any).__mythwar.leaveRoom());
+    await sleep(1500);
+    const solo = await info(b);
+    check('co-op: the ally plays on when the other leaves', !solo.over && !solo.paused && solo.netPause === null, JSON.stringify(solo));
+    await b.evaluate(() => (window as any).__mythwar.leaveRoom());
+    await waitFor(b, 'B in the lobby after co-op', () => (window as any).__mythwar.menus.current === 'mp', 8000);
+    // (B waits in a fresh room for the restart check below.)
+    await b.evaluate(() => (window as any).__mythwar.mp.host());
+    await waitFor(b, 'B hosting again', () => (window as any).__mythwar.menus.current === 'room', 8000);
+
     console.log('== server restart ==');
     // B sits on the results in its room; the game server restarts and forgets everyone.
     mp.close();

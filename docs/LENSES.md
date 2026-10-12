@@ -703,3 +703,32 @@ generally be sure they will defeat novices?*
 - Checked: server test (sanitizing, un-readying, the start message, both replicas apply the
   handicap and keep hashing equal); multiplayer smoke with screenshots (room on desktop and
   phone); full verify.
+
+## #37 The Lens of Cooperation
+*Cooperation requires communication, trust and synergy. Are players able to communicate? Do they
+need to? Can they build trust? Is there synergy? Are there different roles?*
+- Mythwar had **no cooperation at all**. Two friends on the same Wi-Fi — the very situation the
+  multiplayer was built for — could only fight each other; with a big skill gap (#36) that is a
+  short evening. Many pairs would rather face something *together*.
+- Change: **co-op rooms.** "Battle: Versus · Together vs Novice / Adept / Master / Mythic" in the
+  battle room. In co-op both seats command the left side — one citadel, one purse — against an AI
+  that **runs on the server**: it thinks against the authoritative world at the same point a local
+  game would (after the players' orders, before the step), and every order it gives is sent to
+  both devices like a player's (`ScheduledCommand` without a seat), so the replicas need no AI and
+  stay in lockstep. Players' orders now carry their seat so each device still recognises its own.
+  Either ally can step away or leave and the other plays on; the battle waits only when both are
+  gone, and is lost when both are gone for good. Victories count for both seats in the room, the
+  HUD names the ally ("You & Bo · Asgard"), the results speak of "you and Bo", co-op wins don't
+  enter head-to-head tallies, and a new feat — **Shoulder to Shoulder** — marks the first one.
+- Communication and synergy: the quick messages work between allies; the shared purse *forces*
+  coordination (who spends, who saves for the age), and natural roles emerge (one watches the top
+  lanes and casts, the other builds and blesses). Handicaps (#36) combine: both allies' trials
+  apply to the shared side.
+- Found on the way: creating the AI on the server set the AI side's income handicap, which the
+  replicas never applied — the end-to-end test showed one desync per battle (self-healed by a
+  snapshot). The new `battleWorld()` builds every battle's starting world in one place for server,
+  replicas, tests and the `mpbot`.
+- Checked: server test (Mythic co-op: both seats' orders go to team 0 with their seats, the AI's
+  orders reach both, every hash matches, an ally leaving neither ends nor pauses the battle);
+  multiplayer smoke extended with a co-op battle in two browsers (allies unmirrored on the left,
+  shared orders, 0 desyncs, HUD ally name, the ally plays on alone); full verify. Protocol v8.

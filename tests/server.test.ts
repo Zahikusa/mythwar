@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Lobby } from '../server/lobby.ts';
 import { networkOf } from '../server/lan.ts';
 import { validateCommand } from '../server/validate.ts';
-import { PROTOCOL_VERSION } from '../src/net/protocol.ts';
+import { PROTOCOL_VERSION, battleWorld } from '../src/net/protocol.ts';
 import type { ClientMsg, ServerMsg } from '../src/net/protocol.ts';
 import { simFingerprint } from '../src/sim/fingerprint.ts';
 import { hashWorld } from '../src/sim/hash.ts';
@@ -40,7 +40,7 @@ class FakeClient {
   private receive(m: ServerMsg): void {
     this.inbox.push(m);
     if (m.type === 'welcome') this.token = m.token;
-    if (m.type === 'start') this.world = new World({ seed: m.seed, trials: m.trials });
+    if (m.type === 'start') this.world = battleWorld(m.seed, m.trials, m.coop);
     if (m.type === 'snapshot') this.world = World.deserialize(m.world);
     if (m.type === 'turn' && this.world) {
       const w = this.world;
@@ -173,6 +173,49 @@ describe('lobby', () => {
     // (The replicas keep hashing equal with the handicaps applied: FakeClient checks every hash.)
     run(2000);
     expect(b.hashChecks).toBeGreaterThan(0);
+  });
+
+  it('co-op: both players command the left side against an AI run by the server, in lockstep', () => {
+    const { lobby, run } = setup();
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    a.hello('Ada');
+    b.hello('Bo');
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    b.send({ type: 'ready', ready: true });
+    // (Mythic: its +20% income must be applied identically by the server and the replicas.)
+    a.send({ type: 'coop', coop: 'mythic' });
+    expect(b.last('room')!.room.coop).toBe('mythic');
+    expect(b.last('room')!.room.seats[1]!.ready).toBe(false);
+    a.send({ type: 'ready', ready: true });
+    b.send({ type: 'ready', ready: true });
+    expect(b.last('start')!.coop).toBe('mythic');
+    run(3100);
+    // Both seats order creatures for team 0.
+    a.send({ type: 'cmd', seq: 1, cmd: { type: 'train', unitId: 'redcap', lane: 0 } });
+    b.send({ type: 'cmd', seq: 1, cmd: { type: 'train', unitId: 'pixie', lane: 2 } });
+    run(60 * 1000);
+    const turns = b.inbox.filter((m) => m.type === 'turn') as Extract<ServerMsg, { type: 'turn' }>[];
+    const cmds = turns.flatMap((t) => t.cmds ?? []);
+    const players = cmds.filter((c) => c.seat !== undefined);
+    expect(players.map((c) => [c.seat, c.team])).toEqual([
+      [0, 0],
+      [1, 0],
+    ]);
+    // The AI's orders reach the clients like any other (team 1, no seat).
+    expect(cmds.some((c) => c.team === 1 && c.seat === undefined && c.cmd.type === 'train')).toBe(true);
+    expect(a.hashChecks).toBeGreaterThan(30);
+    expect(b.hashChecks).toBeGreaterThan(30);
+    expect(hashWorld(a.world!)).toBe(hashWorld(b.world!));
+    // One ally leaves: the other plays on (no forfeit, no pause).
+    a.send({ type: 'leave' });
+    run(1000);
+    expect(b.last('over')).toBeUndefined();
+    expect(b.last('paused')).toBeUndefined();
+    const tick = b.world!.tick;
+    run(1000);
+    expect(b.world!.tick).toBeGreaterThan(tick);
   });
 
   it('refuses unknown codes, full rooms and old versions', () => {

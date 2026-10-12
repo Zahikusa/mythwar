@@ -41,6 +41,11 @@ Either way it prints something like:
 
 Each player always sees their own citadel on the left, in blue.
 
+**Co-op:** in the room, "Battle: Together vs Novice / Adept / Master / Mythic" makes it a
+cooperative battle — both players share the left citadel and its gold against an AI that the
+server runs (its orders go to both devices like a player's, so nothing can drift). Either ally
+can step away (or leave) and the other fights on; the battle waits only when both are gone.
+
 **Handicaps:** a stronger player can take trials in the room ("Your handicap": Glass Citadel,
 Godless, No Walls) so a newer friend has a real chance. Both players see each other's handicaps,
 and changing them takes both out of Ready, so nobody starts against handicaps they haven't seen.

@@ -351,6 +351,7 @@ export class Hud {
     toggle(this.el.side, 'foe', false);
     toggle(this.el.emotes, 'hidden', true);
     this.foeName = '';
+    this.allyName = '';
     this.root.classList.toggle('online', !!game.options.online);
     this.syncMute();
     setText(this.el.speed.querySelector('span')!, `${game.speed}×`);
@@ -592,11 +593,14 @@ export class Hud {
 
   /** Online: the opponent's name (shown by their citadel's health bar). */
   private foeName = '';
+  /** Co-op: the ally sharing our side (shown by our age name). */
+  private allyName = '';
 
   /** Online status line: the opponent's name, round-trip time and link quality. */
-  setNet(foe: string, rtt: number, online: boolean, bufferMs = 0): void {
+  setNet(foe: string, rtt: number, online: boolean, bufferMs = 0, ally = ''): void {
     const E = this.el;
     this.foeName = foe;
+    this.allyName = ally;
     setText(E.net.querySelector('.nfoe')!, `vs ${foe}`);
     setText(E.net.querySelector('.nping')!, online ? (rtt ? `${Math.round(rtt)} ms` : '') : 'offline');
     // Unsteady Wi-Fi shows up as a deeper jitter buffer (more delay) even when pings look fine.
@@ -958,7 +962,7 @@ export class Hud {
     toggle(E.ageR, 'ripe', canAscend(foe));
     const foeTitle = canAscend(foe) ? `The enemy has the XP to ascend to ${AGES[foe.age + 1].name}!` : `Enemy age: ${AGES[foe.age].name}`;
     if (E.ageR.title !== foeTitle) E.ageR.title = foeTitle;
-    setText(E.ageLn, AGES[me.age].name);
+    setText(E.ageLn, this.allyName ? `You & ${this.allyName} · ${AGES[me.age].name}` : AGES[me.age].name);
     // Online, the right-hand side says who it is.
     setText(E.ageRn, this.foeName ? `${this.foeName} · ${AGES[foe.age].name}` : AGES[foe.age].name);
     toggle(E.hpL.parentElement!, 'low', fracs[0] < 0.3);

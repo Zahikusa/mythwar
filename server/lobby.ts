@@ -1,6 +1,8 @@
 import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName, cleanTrials } from '../src/net/protocol.ts';
 import type { ClientMsg, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
 import type { TrialId } from '../src/sim/data.ts';
+import { DIFFICULTIES } from '../src/ai/ai.ts';
+import type { Difficulty } from '../src/ai/ai.ts';
 import type { Team } from '../src/sim/types.ts';
 import { simFingerprint } from '../src/sim/fingerprint.ts';
 import { Match } from './match.ts';
@@ -84,6 +86,8 @@ interface Room {
   phase: RoomPhase;
   seats: [Seat | null, Seat | null];
   match: Match | null;
+  /** Co-op against this AI (null = the two players fight each other). */
+  coop: Difficulty | null;
 }
 
 /**
@@ -261,7 +265,7 @@ export class Lobby {
         const hostedHere = s.quota ? [...this.rooms.values()].filter((r) => r.seats.some((x) => x?.session.quota === s.quota)).length : 0;
         if (this.rooms.size >= (this.opts.maxRooms ?? MAX_ROOMS) || hostedHere >= MAX_ROOMS_PER_ADDRESS) return this.error(s.conn, 'rate', 'The server is full right now — try again in a minute.');
         if (room) this.removeFromRoom(s);
-        const r: Room = { code: this.makeCode(), createdAt: now, phase: 'waiting', seats: [null, null], match: null };
+        const r: Room = { code: this.makeCode(), createdAt: now, phase: 'waiting', seats: [null, null], match: null, coop: null };
         this.rooms.set(r.code, r);
         this.seat(s, r, 0);
         this.log(`${s.name} opened room ${r.code}`);
@@ -288,6 +292,20 @@ export class Lobby {
         room.seats[seat]!.trials = cleanTrials(msg.trials);
         // Nobody starts against handicaps they haven't seen: a change takes both seats out of Ready.
         for (const x of room.seats) if (x) x.ready = false;
+        this.broadcastRoom(room);
+        return;
+      }
+      case 'coop': {
+        if (!room || seat === null || (room.phase !== 'waiting' && room.phase !== 'over')) return;
+        const coop = DIFFICULTIES.includes(msg.coop as Difficulty) ? (msg.coop as Difficulty) : null;
+        if (coop === room.coop) return;
+        room.coop = coop;
+        // A different kind of battle: both confirm again, and the running score starts over.
+        for (const x of room.seats) {
+          if (!x) continue;
+          x.ready = false;
+          x.wins = 0;
+        }
         this.broadcastRoom(room);
         return;
       }
@@ -355,7 +373,8 @@ export class Lobby {
     const countdown = this.opts.countdown ?? START_COUNTDOWN;
     const trials: [TrialId[], TrialId[]] = [[...a.trials], [...b.trials]];
     room.phase = 'playing';
-    room.match = new Match({ seed, names, countdown, trials, turnTicks: this.opts.turnTicks, awayGrace: this.opts.awayGrace, claimAfter: this.opts.claimAfter }, this.now(), {
+    const coop = room.coop;
+    room.match = new Match({ seed, names, countdown, trials, coop, turnTicks: this.opts.turnTicks, awayGrace: this.opts.awayGrace, claimAfter: this.opts.claimAfter }, this.now(), {
       broadcast: (msg) => {
         const text = JSON.stringify(msg);
         for (const s of room.seats) if (s?.session.conn) s.session.conn.send(text);
@@ -373,9 +392,14 @@ export class Lobby {
             if (x) x.session.lastOver = { snapshot: match.snapshotFor(seat, this.now()), over: { type: 'over', winner, reason, tick: match.tick } };
           }
         }
-        const w = room.seats[winner];
-        if (w) w.wins++;
-        this.log(`room ${room.code}: ${names[winner]} wins (${reason})`);
+        // (Co-op: a victory counts for both allies; the AI's wins aren't kept.)
+        if (coop) {
+          if (winner === 0) for (const x of room.seats) if (x) x.wins++;
+        } else {
+          const w = room.seats[winner];
+          if (w) w.wins++;
+        }
+        this.log(`room ${room.code}: ${coop ? (winner === 0 ? `${names.join(' & ')} beat the ${coop} AI` : `the ${coop} AI wins`) : `${names[winner]} wins`} (${reason})`);
         // (The 'over' message went out first; now the room with the new score.)
         this.broadcastRoom(room);
       },
@@ -383,7 +407,7 @@ export class Lobby {
     for (const seat of [0, 1] as Team[]) {
       const s = room.seats[seat]!.session;
       s.lastOver = null;
-      this.send(s, { type: 'start', seed, seat, names, countdown, trials });
+      this.send(s, { type: 'start', seed, seat, names, countdown, trials, coop });
     }
     this.broadcastRoom(room);
     this.roomsDirty = true;
@@ -406,7 +430,16 @@ export class Lobby {
     s.room = null;
     s.seat = null;
     if (!room || seat === null) return;
-    if (room.match && room.phase === 'playing') room.match.forfeit(seat);
+    if (room.match && room.phase === 'playing') {
+      room.match.forfeit(seat);
+      // Co-op with an ally still in the battle: they play on alone; the room stays as it is.
+      if (room.match.coop && room.seats[1 - seat] && room.phase === 'playing') {
+        room.seats[seat] = null;
+        this.broadcastRoom(room);
+        this.roomsDirty = true;
+        return;
+      }
+    }
     room.seats[seat] = null;
     room.match = null;
     room.phase = 'waiting';
@@ -440,7 +473,7 @@ export class Lobby {
       if (!x) return null;
       return { name: this.nameIn(room, i), connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins, ping: x.session.rtt, trials: x.trials };
     };
-    return { code: room.code, phase: room.phase, seats: [seat(0), seat(1)] };
+    return { code: room.code, phase: room.phase, seats: [seat(0), seat(1)], coop: room.coop };
   }
 
   /** A seat's name as shown in its room: "Ada" vs "Ada" becomes "Ada" vs "Ada (2)". */

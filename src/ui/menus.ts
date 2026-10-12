@@ -20,6 +20,8 @@ import type { EndReason } from '../net/protocol.ts';
 /** Results of a battle against another player (instead of an AI difficulty). */
 export interface OnlineResult {
   foe: string;
+  /** Co-op: the ally who fought alongside ('' in a versus battle). */
+  ally?: string;
   reason: EndReason;
   /** Wins in this room so far: [mine, theirs]. */
   score: [number, number] | null;
@@ -799,12 +801,17 @@ function starsRow(parts: { label: string; got: boolean }[]): HTMLElement {
 }
 
 function verdictLine(won: boolean, online?: OnlineResult): string {
+  if (online?.ally) {
+    if (online.reason !== 'citadel') return won ? 'The battle is yours.' : 'You and your ally were away too long.';
+    return won ? `You and ${online.ally} toppled the ${online.foe}!` : `The ${online.foe} broke your shared citadel.`;
+  }
   if (online?.reason === 'forfeit') return won ? `${online.foe} left the battle.` : 'You left the battle.';
   if (online?.reason === 'timeout') return won ? `${online.foe} didn’t come back in time.` : 'You were away too long.';
   return won ? 'The enemy citadel has fallen.' : 'Your citadel lies in ruins.';
 }
 
 function scoreLine(o: OnlineResult): string {
+  if (o.ally) return o.score && o.score[0] ? `Victories together in this room: ${o.score[0]}` : 'Well fought, together!';
   if (!o.score) return 'Well fought!';
   const [a, b] = o.score;
   return `Score in this room: you ${a} – ${b} ${o.foe}`;

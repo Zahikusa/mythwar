@@ -6,6 +6,8 @@ import { h, onTap, setText, toggle } from './dom.ts';
 import { ICONS } from './icons.ts';
 import { TRIALS, TRIAL_ORDER } from '../sim/data.ts';
 import type { TrialId } from '../sim/data.ts';
+import { AI_PROFILES, DIFFICULTIES } from '../ai/ai.ts';
+import type { Difficulty } from '../ai/ai.ts';
 
 export interface MpMenuCallbacks {
   sound(kind: string): void;
@@ -17,6 +19,8 @@ export interface MpMenuCallbacks {
   ready(ready: boolean): void;
   /** This player's own handicaps for the next battle. */
   trials(trials: TrialId[]): void;
+  /** Versus (null) or co-op against an AI of this difficulty. */
+  coop(coop: Difficulty | null): void;
   leaveRoom(): void;
 }
 
@@ -52,6 +56,9 @@ export class MpScreens {
   /** My handicap chips in the room, and the trials they currently show. */
   private trialChips: { id: TrialId; el: HTMLButtonElement }[] = [];
   private myTrials: TrialId[] = [];
+  /** Battle mode chips (versus / co-op against each AI) and the seats' "VS" / "&". */
+  private modeChips: { coop: Difficulty | null; el: HTMLButtonElement }[] = [];
+  private vs: HTMLElement | null = null;
   private mySeat = -1;
   private readyBtn!: HTMLButtonElement;
   private roomNote!: HTMLElement;
@@ -251,9 +258,26 @@ export class MpScreens {
       const el = h('div', { class: 'rseat' }, name, edit, side, state, wins, trials);
       this.seats.push({ el, name, side, state, wins, edit, trials });
       seatsBox.appendChild(el);
-      if (i === 0) seatsBox.appendChild(h('div', { class: 'rvs', text: 'VS' }));
+      if (i === 0) {
+        this.vs = h('div', { class: 'rvs', text: 'VS' });
+        seatsBox.appendChild(this.vs);
+      }
     }
     this.readyBtn = this.button('Ready', 'primary big', () => this.cb.ready(!this.iAmReady), ICONS.swords);
+    // Battle mode: against each other, or together against an AI.
+    const mode = h('div', { class: 'trials rmode' }, h('span', { class: 'tlabel', text: 'Battle:' }));
+    const modeChip = (label: string, coop: Difficulty | null, title: string) => {
+      const chip = h('button', { class: 'trial', title, 'aria-pressed': 'false' }, label) as HTMLButtonElement;
+      onTap(chip, () => {
+        this.cb.sound('select');
+        this.cb.coop(coop);
+      });
+      this.modeChips.push({ coop, el: chip });
+      mode.appendChild(chip);
+    };
+    modeChip('Versus', null, 'The two of you fight each other');
+    mode.appendChild(h('span', { class: 'tlabel', text: 'Together vs' }));
+    for (const d of DIFFICULTIES) modeChip(AI_PROFILES[d].name, d, `Co-op: share one citadel and its gold against the ${AI_PROFILES[d].name} AI`);
     // Handicaps: the stronger friend can take trials so the other has a real chance.
     const handicap = h('div', { class: 'trials rtrials' }, h('span', { class: 'tlabel', text: 'Your handicap:' }));
     for (const id of TRIAL_ORDER) {
@@ -276,6 +300,7 @@ export class MpScreens {
       h('div', { class: 'rhead' }, h('h2', { text: 'Battle room' }), h('div', { class: 'rcodebox' }, h('span', { text: 'Room code' }), this.roomCode)),
       this.invite,
       seatsBox,
+      mode,
       handicap,
       this.makeFlash(),
       this.roomNote,
@@ -339,6 +364,12 @@ export class MpScreens {
     }
     this.mySeat = me;
     room.seats.forEach((s, i) => this.renderSeat(i, s, i === me));
+    for (const m of this.modeChips) {
+      const on = m.coop === room.coop;
+      m.el.classList.toggle('on', on);
+      m.el.setAttribute('aria-pressed', String(on));
+    }
+    if (this.vs) setText(this.vs, room.coop ? '&' : 'VS');
     // Your all-time record against this opponent (by name), under their seat.
     if (foe) {
       const r = record(foe.name);
@@ -358,7 +389,7 @@ export class MpScreens {
     else if (this.iAmReady && foe.ready) note = 'Starting…';
     else if (this.iAmReady) note = `Waiting for ${foe.name} to get ready…`;
     else if (foe.ready) note = `${foe.name} is ready — press Ready to begin!`;
-    else note = 'The battle starts when both players are ready.';
+    else note = room.coop ? `Together against the ${AI_PROFILES[room.coop].name} AI: one citadel, one purse — the battle starts when both are ready.` : 'The battle starts when both players are ready.';
     setText(this.roomNote, note);
     toggle(this.roomNote, 'hot', !!foe?.ready && !this.iAmReady);
   }

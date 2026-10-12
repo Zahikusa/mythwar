@@ -11,10 +11,13 @@
 import type { Command, Team } from '../sim/types.ts';
 import { TRIAL_ORDER } from '../sim/data.ts';
 import type { TrialId } from '../sim/data.ts';
+import type { Difficulty } from '../ai/ai.ts';
+import { AI_PROFILES } from '../ai/ai.ts';
+import { World } from '../sim/world.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 7;
+export const PROTOCOL_VERSION = 8;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -55,6 +58,8 @@ export interface ScheduledCommand {
   cmd: NetCommand;
   /** The sender's sequence number (lets the sender match results to its own commands). */
   seq: number;
+  /** The sender's seat (co-op: both seats command team 0); absent for the AI's orders. */
+  seat?: Team;
 }
 
 export interface SeatInfo {
@@ -77,8 +82,10 @@ export type RoomPhase = 'waiting' | 'playing' | 'over';
 export interface RoomInfo {
   code: string;
   phase: RoomPhase;
-  /** Seat 0 is the left side (team 0), seat 1 the right side (team 1). */
+  /** Seat 0 is the left side (team 0), seat 1 the right side (team 1) — or, co-op, both left. */
   seats: [SeatInfo | null, SeatInfo | null];
+  /** Co-op: both players share the left side against this AI (null = against each other). */
+  coop: Difficulty | null;
 }
 
 /** An open room in the lobby list. */
@@ -139,6 +146,8 @@ export type ClientMsg =
   | { type: 'ready'; ready: boolean }
   /** This player's own handicaps for the next battle (between battles only). */
   | { type: 'trials'; trials: TrialId[] }
+  /** Versus (null) or co-op against an AI of this difficulty (between battles only). */
+  | { type: 'coop'; coop: Difficulty | null }
   | { type: 'leave' }
   | { type: 'cmd'; seq: number; cmd: NetCommand }
   | { type: 'pause' }
@@ -172,7 +181,7 @@ export type ServerMsg =
   | { type: 'rooms'; rooms: OpenRoom[] }
   | { type: 'room'; room: RoomInfo; seat: Team }
   | { type: 'left' }
-  | { type: 'start'; seed: number; seat: Team; names: [string, string]; countdown: number; trials: [TrialId[], TrialId[]] }
+  | { type: 'start'; seed: number; seat: Team; names: [string, string]; countdown: number; trials: [TrialId[], TrialId[]]; coop: Difficulty | null }
   | { type: 'turn'; tick: number; cmds?: ScheduledCommand[]; hash?: [number, number] }
   | {
       type: 'snapshot';
@@ -180,6 +189,8 @@ export type ServerMsg =
       world: WorldSnapshot;
       seat: Team;
       names: [string, string];
+      /** Co-op: the AI the two players face together. */
+      coop?: Difficulty | null;
       paused: PauseState | null;
       /** Seconds left of a start / resume countdown (0 = none). */
       countdown?: number;
@@ -196,6 +207,25 @@ export type ServerMsg =
   | { type: 'emote'; seat: Team; id: EmoteId };
 
 export type ErrorCode = 'version' | 'no-room' | 'room-full' | 'bad-request' | 'not-in-room' | 'rate';
+
+/**
+ * The trials each side fights under, from the seats' handicaps: in co-op both allies' handicaps
+ * apply to the shared left side (server and every replica must agree on this exactly).
+ */
+export function sideTrials(trials: [TrialId[], TrialId[]] | undefined, coop: Difficulty | null | undefined): [TrialId[], TrialId[]] | undefined {
+  if (!trials) return undefined;
+  return coop ? [cleanTrials([...trials[0], ...trials[1]]), []] : trials;
+}
+
+/**
+ * The world a new online battle starts from — built the same way by the server and by every
+ * replica: the seats' handicaps, and in co-op the AI's income handicap on the right side.
+ */
+export function battleWorld(seed: number, trials: [TrialId[], TrialId[]] | undefined, coop: Difficulty | null | undefined): World {
+  const w = new World({ seed, trials: sideTrials(trials, coop) });
+  if (coop) w.players[1].incomeMult = AI_PROFILES[coop].incomeMult;
+  return w;
+}
 
 /** Keeps only known trials, once each, in their usual order. */
 export function cleanTrials(raw: unknown): TrialId[] {

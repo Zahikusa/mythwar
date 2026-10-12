@@ -67,7 +67,7 @@ complete; its log follows below the lens plan.
 - [x] #34 Skill vs. Chance — Wrath of Zeus strikes the foes nearest your citadel first (was random)
 - [x] #35 Head and Hands — head game, hands need efficiency: mouse wheel steps the selected lane
 - [x] #36 Competition — novices couldn't compete with expert friends: per-player handicaps (trials) in the battle room (protocol v7)
-- [ ] #37 Cooperation — cooperative element
+- [x] #37 Cooperation — co-op rooms: two friends share one side against a server-run AI (lockstep, protocol v8)
 - [ ] #38 Competition vs. Cooperation — balance of the two
 - [ ] #39 Time — PACING: designcheck median of even AI battles ~20.5 min (red); bottleneck = reaching a defended Celestial citadel in Ragnarök (see #34 notes)
 - [ ] #40 Reward — rewards: unlocks / celebrations

@@ -155,6 +155,7 @@ export class App {
           this.mp?.ready(on);
         },
         trials: (t) => this.mp?.setTrials(t),
+        coop: (c) => this.mp?.setCoop(c),
         leaveRoom: () => this.leaveRoom(),
       },
     });
@@ -586,11 +587,12 @@ export class App {
     const g = this.game!;
     const won = g.world.winner === g.playerTeam;
     // (A battle abandoned by a server restart has no result: no feats for it either.)
-    if (!(g instanceof NetGame) || g.result) this.feats?.onEnd(g.world, g instanceof NetGame ? null : this.difficulty);
+    if (!(g instanceof NetGame) || g.result) this.feats?.onEnd(g.world, g instanceof NetGame ? null : this.difficulty, g instanceof NetGame && !!g.coop);
     this.menus.featsEarned = this.feats?.earned ?? [];
     if (g instanceof NetGame) {
       // (A battle abandoned by the server restarting has no result to count.)
-      if (g.result) recordOnline(this.settings, g.foeName.replace(/ \(2\)$/, ''), won);
+      // (Co-op battles are against the AI: no head-to-head tally.)
+      if (g.result && !g.coop) recordOnline(this.settings, g.foeName.replace(/ \(2\)$/, ''), won);
       this.audio.ui(won ? 'victory' : 'defeat');
       this.overTimer = 2.6;
       this.hud.cancelTargeting();
@@ -658,6 +660,7 @@ export class App {
             const seats = this.mp?.room?.seats;
             this.menus.showResults(g.world, g.playerTeam, this.difficulty, g.history, g.ageUps, {
               foe: g.foeName,
+              ally: g.allyName,
               reason: g.result?.reason ?? 'citadel',
               // (Once the other player has left the room, there's no running score.)
               score: seats?.[g.seat === 0 ? 1 : 0] ? [seats?.[g.seat]?.wins ?? 0, seats[g.seat === 0 ? 1 : 0]!.wins] : null,
@@ -668,7 +671,7 @@ export class App {
       }
       if (g instanceof NetGame) {
         this.syncNetPause(g);
-        this.hud.setNet(g.foeName, this.mp?.conn.rtt ?? 0, g.online, g.bufferMs);
+        this.hud.setNet(g.foeName, this.mp?.conn.rtt ?? 0, g.online, g.bufferMs, g.allyName);
       }
     }
     this.netOverlay.update(g instanceof NetGame && this.state !== 'title' ? g : null, performance.now());

@@ -1,6 +1,7 @@
 import { simFingerprint } from '../sim/fingerprint.ts';
 import type { Team } from '../sim/types.ts';
 import type { TrialId } from '../sim/data.ts';
+import type { Difficulty } from '../ai/ai.ts';
 import { Connection } from './connection.ts';
 import type { ConnState, SocketLike } from './connection.ts';
 import { NetGame } from './netgame.ts';
@@ -183,6 +184,15 @@ export class MpClient {
     }
   }
 
+  /** Versus (null) or co-op against an AI of this difficulty. */
+  setCoop(coop: Difficulty | null): void {
+    if (!this.conn.send({ type: 'coop', coop })) return;
+    if (this.room) {
+      this.room.coop = coop;
+      this.emit((l) => l.changed?.());
+    }
+  }
+
   leave(): void {
     // Offline: the server still seats us; say it as soon as we're back.
     this.leaving = !this.conn.send({ type: 'leave' });
@@ -255,7 +265,7 @@ export class MpClient {
         break;
       case 'start':
         if (this.leaving) return;
-        this.startGame(new NetGame({ seat: msg.seat, names: msg.names, seed: msg.seed, countdown: msg.countdown, trials: msg.trials, send: (m) => this.conn.send(m), now: this.now }));
+        this.startGame(new NetGame({ seat: msg.seat, names: msg.names, seed: msg.seed, countdown: msg.countdown, trials: msg.trials, coop: msg.coop, send: (m) => this.conn.send(m), now: this.now }));
         return;
       case 'snapshot':
         if (this.leaving) return;

@@ -17,6 +17,7 @@ export const FEATS: Feat[] = [
   { id: 'master', name: 'General Outwitted', desc: 'Defeat the Master.' },
   { id: 'mythic', name: 'Godslayer', desc: 'Defeat the Mythic god of war.' },
   { id: 'online', name: 'Worthy Rival', desc: 'Win a battle against another player.' },
+  { id: 'coop', name: 'Shoulder to Shoulder', desc: 'Win a co-op battle together with a friend.' },
   { id: 'celestial', name: 'Among the Gods', desc: 'Ascend to the Celestial age.' },
   { id: 'dragon', name: 'Wyrmcaller', desc: 'Summon the Elder Dragon.' },
   { id: 'annihilation', name: 'Annihilation', desc: 'Fell nine foes in one lane within a few seconds.' },
@@ -83,14 +84,14 @@ export class FeatTracker {
     this.lowest = Math.min(this.lowest, p.baseHp / p.baseMaxHp);
   }
 
-  /** The battle is over: victory feats. `difficulty` is null online. */
-  onEnd(world: World, difficulty: Difficulty | null): void {
+  /** The battle is over: victory feats. `difficulty` is null online; `coop`: allies vs the AI. */
+  onEnd(world: World, difficulty: Difficulty | null, coop = false): void {
     const me = this.me;
     if (world.winner !== me) return;
     const p = world.players[me];
     this.give('first');
     if (difficulty) this.give(difficulty);
-    else this.give('online');
+    else this.give(coop ? 'coop' : 'online');
     const hard = difficulty !== null && difficulty !== 'novice';
     if (hard && world.time < 8 * 60) this.give('swift');
     if (hard && p.baseHp / p.baseMaxHp > 0.75) this.give('unbreached');

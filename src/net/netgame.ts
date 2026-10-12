@@ -5,6 +5,9 @@ import { hashWorld } from '../sim/hash.ts';
 import type { Command, CommandResult, Team } from '../sim/types.ts';
 import { World } from '../sim/world.ts';
 import type { ClientMsg, EndReason, NetCommand, PauseState, ScheduledCommand, ServerMsg } from './protocol.ts';
+import { battleWorld } from './protocol.ts';
+import { AI_PROFILES } from '../ai/ai.ts';
+import type { Difficulty } from '../ai/ai.ts';
 
 const TICK_MS = TICK * 1000;
 /** Turn-arrival history used to size the jitter buffer. */
@@ -28,6 +31,8 @@ export interface NetGameInit {
   countdown?: number;
   /** Handicaps per seat (new battles). */
   trials?: [TrialId[], TrialId[]];
+  /** Co-op: both players on the left side against this AI. */
+  coop?: Difficulty | null;
   send: (msg: ClientMsg) => boolean;
   now?: () => number;
 }
@@ -40,7 +45,11 @@ export interface NetGameInit {
  */
 export class NetGame extends Game {
   readonly seat: Team;
+  /** The side this player commands (co-op: both allies command the left side). */
+  readonly team: Team;
   readonly names: [string, string];
+  /** Co-op: the AI both allies face (null in a versus battle). */
+  readonly coop: Difficulty | null;
   /** The server's verdict once the battle is decided. */
   result: { winner: Team; reason: EndReason } | null = null;
   /** Set while the server holds the battle (a player paused or is away). */
@@ -75,9 +84,12 @@ export class NetGame extends Game {
   private playOffset: number | null = null;
 
   constructor(init: NetGameInit) {
-    const world = init.snapshot ? World.deserialize(init.snapshot.world) : new World({ seed: init.seed ?? 1, trials: init.trials });
-    super({ difficulty: 'adept', online: true, team: init.seat }, world);
+    const coop = init.snapshot?.coop ?? init.coop ?? null;
+    const world = init.snapshot ? World.deserialize(init.snapshot.world) : battleWorld(init.seed ?? 1, init.trials, coop);
+    super({ difficulty: coop ?? 'adept', online: true, team: coop ? 0 : init.seat }, world);
     this.seat = init.seat;
+    this.team = coop ? 0 : init.seat;
+    this.coop = coop;
     this.names = init.names;
     this.send = init.send;
     this.now = init.now ?? (() => performance.now());
@@ -87,9 +99,14 @@ export class NetGame extends Game {
     this.syncPaused();
   }
 
-  /** The other player's name. */
+  /** Who we fight: the other player — or, co-op, the AI. */
   get foeName(): string {
-    return this.names[this.seat === 0 ? 1 : 0];
+    return this.coop ? AI_PROFILES[this.coop].name : this.names[this.seat === 0 ? 1 : 0];
+  }
+
+  /** Co-op: the ally's name ('' in a versus battle). */
+  get allyName(): string {
+    return this.coop ? this.names[this.seat === 0 ? 1 : 0] : '';
   }
 
   /** How far the replica trails the newest tick the server has sent (ms). */
@@ -194,7 +211,8 @@ export class NetGame extends Game {
       this.cmds.delete(tick);
       for (const c of list) {
         const r = w.apply({ ...c.cmd, team: c.team } as Command);
-        if (c.team === this.seat && this.mine.delete(c.seq) && !r.ok) this.onReject(r.reason);
+        // (Our own orders carry our seat; the co-op AI's carry none.)
+        if (c.seat === this.seat && this.mine.delete(c.seq) && !r.ok) this.onReject(r.reason);
       }
     }
     w.step();
@@ -332,12 +350,12 @@ export class NetGame extends Game {
 
   /** Gold as the player should see it: minus orders on their way to the server. */
   override displayGold(): number {
-    return Math.max(0, this.world.players[this.seat].gold - this.inflight().spend);
+    return Math.max(0, this.world.players[this.team].gold - this.inflight().spend);
   }
 
   /** What our orders still in flight will cost / take up once the server applies them. */
   private inflight(): { spend: number; trains: number; ascending: boolean; casting: boolean; blessRanks: Record<string, number> } {
-    const p = this.world.players[this.seat];
+    const p = this.world.players[this.team];
     let spend = 0;
     let trains = 0;
     let ascending = false;
@@ -355,7 +373,7 @@ export class NetGame extends Game {
         spend += UNITS[c.unitId]?.cost ?? 0;
         trains++;
       } else if (c.type === 'ageUp') {
-        spend += p.age < AGES.length - 1 ? this.world.ascendCost(this.seat) : 0;
+        spend += p.age < AGES.length - 1 ? this.world.ascendCost(this.team) : 0;
         ascending = true;
       } else if (c.type === 'bless') {
         const rank = p.blessings[c.blessing] + (blessRanks[c.blessing] ?? 0);
@@ -371,7 +389,7 @@ export class NetGame extends Game {
 
   private blocker(cmd: Command): string | null {
     const w = this.world;
-    const team = this.seat;
+    const team = this.team;
     if (cmd.team !== team) return 'Not your side';
     const p = w.players[team];
     const { spend, trains, ascending, casting, blessRanks } = this.inflight();

@@ -14,6 +14,7 @@ import type { Difficulty } from '../src/ai/ai.ts';
 import { MpClient } from '../src/net/client.ts';
 import type { NetGame } from '../src/net/netgame.ts';
 import type { ScheduledCommand } from '../src/net/protocol.ts';
+import { battleWorld } from '../src/net/protocol.ts';
 import { hashWorld } from '../src/sim/hash.ts';
 import type { Command } from '../src/sim/types.ts';
 import { World } from '../src/sim/world.ts';
@@ -86,7 +87,7 @@ function bot(name: string, join?: string, onRoom?: (code: string) => void): MpCl
     const orig = mp.conn.onMessage;
     mp.conn.onMessage = (m, at) => {
       if (m.type === 'start') {
-        base = new World({ seed: m.seed });
+        base = battleWorld(m.seed, m.trials, m.coop);
         cmds = [];
       } else if (m.type === 'snapshot') {
         base = World.deserialize(m.world);
