@@ -382,3 +382,21 @@ discrete or continuous? How many dimensions? What are its boundaries? Are there 
   them — where fights are fair — is readable at a glance. The ward coach tip points at it.
 - Checked: screenshots in Fae Wilds and Asgard (subtle while idle, bright with a foe inside);
   `perfcheck` 0.94 ms (unchanged budget); full verify.
+
+## #22 The Lens of Dynamic State
+*What information is known by all players? By some or only one? By the game only? Would the
+game be better if more or less were known? Can information change state during play?*
+- Public: every creature, citadel health, ages, shrines, turrets, blessings (listed in the
+  blessing panel), the foe's power readiness, and since #2 the surges. Known only to its owner:
+  gold, XP (the foe's age badge pulses when they can ascend — a deliberate partial reveal),
+  and the **summoning queue** — the foe's plan. The game reveals the queue only at the last
+  moment (a portal flare 1.2 s before a creature steps out).
+- Hidden plans are good — they make reading the foe a skill. But the information never
+  *changed hands*: nothing in the game let you earn a better view of the foe's intentions.
+- Change: **ley sight.** While you hold a lane's Ley Shrine, the foe's summons queued for that
+  lane appear as small portraits above their gate, the one in training with a progress ring in
+  the foe's colour. Information becomes part of what a shrine is worth, and it changes state
+  with the shrine's owner — fight for the middle, and you see what is coming down it. Pure
+  presentation (no simulation change), so online battles stay in sync; a coach tip explains it.
+- Checked: screenshot with all three shrines held and a five-deep foe queue (one to three
+  portraits per lane, training ring on the next); full verify.

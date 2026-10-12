@@ -52,6 +52,8 @@ green, marble gold, glacier blue, lacquer vermilion, starlight).
 - Creatures only fight creatures in the same lane. Any lane can reach the citadel.
 - Each lane has a **Ley Shrine** at its centre. Only your creatures near it ⇒ you
   capture it over a few seconds. Each held shrine adds gold income.
+- **Ley sight:** holding a lane's shrine shows the foe's summons waiting for that lane (portraits
+  above their gate, the one in training with a progress ring) — information is part of the prize.
 - **Ley Surges** (seeded surprise): from ~2 minutes in, every 2–3 minutes the ley lines flare under
   one shrine (never the same lane twice in a row). A 10 s omen (flickering shrine, toast, hum),
   then for 20 s its holder draws 1.5× their passive age income on top. Both sides see the same

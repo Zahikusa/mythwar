@@ -897,6 +897,7 @@ export class Renderer {
       this.drawProjectiles(ctx, world, lane, alpha);
       this.fx.drawParticles(ctx, lane);
       this.drawPowers(ctx, world, lane);
+      if (!this.skip.has('leysight')) this.drawLeySight(ctx, world, lane, view);
     }
 
     // Forget visuals of projectiles that no longer exist.
@@ -1153,6 +1154,54 @@ export class Renderer {
       ctx.lineTo(x, g.y + half);
       ctx.stroke();
       ctx.restore();
+    }
+  }
+
+  /**
+   * Ley sight: holding a lane's shrine shows the foe's summons waiting for that lane — small
+   * portraits above their gate, the one in training with a progress ring. Information is part of
+   * what the shrine is worth.
+   */
+  private drawLeySight(ctx: CanvasRenderingContext2D, world: World, lane: number, view: ViewState): void {
+    const me = view.playerTeam;
+    if (view.playerTeam < 0 || world.shrines[lane].owner !== me) return;
+    const foe: Team = me === 0 ? 1 : 0;
+    const p = world.players[foe];
+    const training = world.trainingIndex(foe);
+    const gate = this.gateScreen(foe, lane);
+    const toField = foe === 0 ? 1 : -1;
+    const r = 15 * gate.s;
+    let k = 0;
+    for (let i = 0; i < p.queue.length && k < 3; i++) {
+      const q = p.queue[i];
+      if (q.lane !== lane) continue;
+      const def = UNITS[q.unitId];
+      const x = gate.x + toField * (34 + k * 2.3 * r) * gate.s;
+      const y = gate.y - 40 * gate.s;
+      ctx.save();
+      ctx.globalAlpha = 0.9;
+      circle(ctx, x, y, r, 'rgba(18, 10, 32, 0.8)');
+      ctx.lineWidth = Math.max(1.5, 2 * gate.s);
+      ctx.strokeStyle = 'rgba(255, 215, 106, 0.85)';
+      ctx.stroke();
+      if (i === training) {
+        ctx.strokeStyle = TEAM_COLORS[foe].main;
+        ctx.lineWidth = Math.max(2, 3 * gate.s);
+        ctx.beginPath();
+        ctx.arc(x, y, r + 2.5 * gate.s, -Math.PI / 2, -Math.PI / 2 + (p.trainProgress / def.trainTime) * TAU);
+        ctx.stroke();
+      }
+      // The creature itself (facing the player's side, whichever way the field is drawn).
+      ctx.beginPath();
+      ctx.arc(x, y, r - 1, 0, TAU);
+      ctx.clip();
+      const art = artFor(def.id);
+      const sc = (r * 1.6) / Math.max(36, art.height + 6);
+      ctx.translate(x, y + r * 0.75);
+      ctx.scale(foe === 1 ? -sc : sc, sc);
+      art.draw(ctx, { t: this.time, walk: 0, moving: false, attack: -1, hit: 0.5, tc: TEAM_COLORS[foe], seed: 0.3, enraged: false, charged: false });
+      ctx.restore();
+      k++;
     }
   }
 

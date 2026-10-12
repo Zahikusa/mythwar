@@ -77,6 +77,15 @@ const TIPS: Tip[] = [
     done: (_g, t, s) => t - s > 8,
   },
   {
+    id: 'leysight',
+    text: 'Ley sight: while you hold a lane’s shrine, you can see the enemy’s next summons for that lane above their gate.',
+    when: (g) => {
+      const foe = g.playerTeam === 0 ? 1 : 0;
+      return g.world.shrines.some((s) => s.owner === g.playerTeam && g.world.players[foe].queue.some((q) => q.lane === s.lane));
+    },
+    done: (_g, t, s) => t - s > 9,
+  },
+  {
     id: 'surge',
     text: 'A Ley Surge! For a short while, whoever holds the glowing shrine earns a flood of gold. March creatures there — the enemy will too.',
     when: (g) => !!g.world.surge,
