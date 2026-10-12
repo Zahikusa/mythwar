@@ -26,6 +26,7 @@ export const FEATS: Feat[] = [
   { id: 'swift', name: 'Swift Conquest', desc: 'Defeat the Adept or harder in under 8 minutes.' },
   { id: 'unbreached', name: 'Unbreached', desc: 'Defeat the Adept or harder with your citadel above 75% health.' },
   { id: 'comeback', name: 'Back from the Brink', desc: 'Win after your citadel fell below 15% health.' },
+  { id: 'trials', name: 'Trial by Fire', desc: 'Defeat the Adept or harder under all three trials.' },
 ];
 
 /**
@@ -94,5 +95,6 @@ export class FeatTracker {
     if (hard && world.time < 8 * 60) this.give('swift');
     if (hard && p.baseHp / p.baseMaxHp > 0.75) this.give('unbreached');
     if (this.lowest < 0.15) this.give('comeback');
+    if (hard && p.trials.length >= 3) this.give('trials');
   }
 }

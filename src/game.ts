@@ -1,6 +1,7 @@
 import { AI_PROFILES, AiController, DIFFICULTIES } from './ai/ai.ts';
 import type { Difficulty } from './ai/ai.ts';
 import { TICK } from './sim/data.ts';
+import type { TrialId } from './sim/data.ts';
 import type { Command, CommandResult, SimEvent, Team } from './sim/types.ts';
 import { World } from './sim/world.ts';
 import type { WorldSnapshot } from './sim/world.ts';
@@ -17,6 +18,8 @@ export interface GameOptions {
   /** A toy, not a battle: no foe AI, endless gold, unbreakable citadels; the player can summon
    *  for either side (`sandboxFoe`). Both sides always share an age. */
   sandbox?: boolean;
+  /** Trials the (single) player chose: handicaps for a harder battle. */
+  trials?: TrialId[];
 }
 
 export type GameListener = (events: SimEvent[]) => void;
@@ -67,7 +70,7 @@ export class Game {
   constructor(opts: GameOptions, world?: World) {
     this.options = opts;
     const seed = opts.seed ?? (Math.random() * 1e9) | 0;
-    this.world = world ?? new World({ seed });
+    this.world = world ?? new World({ seed, trials: [opts.trials ?? [], []] });
     this.world.endless = !!opts.sandbox;
     this.playerTeam = opts.online ? (opts.team ?? 0) : 0;
     this.ai = opts.online || opts.sandbox ? null : new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);

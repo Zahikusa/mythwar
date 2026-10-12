@@ -1079,7 +1079,11 @@ export class Hud {
     const cdFrac = me.powerCooldown > 0 ? me.powerCooldown / power.cooldown : 0;
     setStyle(E.powerCd, '--cd', `${(Math.min(1, cdFrac) * 360).toFixed(1)}deg`);
     setText(E.powerTime, me.powerCooldown > 0 ? String(Math.ceil(me.powerCooldown)) : '');
-    toggle(E.power, 'ready', me.powerCooldown <= 0);
+    // Trials can take powers or turrets away: their buttons show it.
+    const godless = me.trials.includes('godless');
+    toggle(E.power, 'ready', me.powerCooldown <= 0 && !godless);
+    toggle(E.power, 'locked', godless);
+    toggle(E.turretBtn, 'locked', me.trials.includes('nowalls'));
     toggle(E.power, 'targeting', g.view.targeting === 'power');
 
     // Ascend

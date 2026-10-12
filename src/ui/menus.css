@@ -1003,6 +1003,41 @@
   display: none;
 }
 
+.trials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.trials .tlabel {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.trial {
+  padding: 4px 12px;
+  border-radius: 12px;
+  background: rgb(24, 16, 42);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.trial.on {
+  border-color: #ff8a5c;
+  color: #ffd0bd;
+  background: rgba(120, 40, 30, 0.6);
+  box-shadow: 0 0 10px rgba(255, 120, 80, 0.4);
+}
+
+.vtrials {
+  color: #ffb08a;
+  font-size: 13px;
+}
+
 .vstars {
   display: flex;
   gap: 14px;

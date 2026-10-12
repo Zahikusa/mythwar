@@ -1124,6 +1124,10 @@ svg {
   pointer-events: none;
 }
 
+.act.locked {
+  filter: grayscale(1) brightness(0.55);
+}
+
 .act.power.ready {
   border-color: var(--gold);
   animation: readyglow 1.2s ease-in-out infinite alternate;

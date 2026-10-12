@@ -573,3 +573,26 @@ challenge, that players feel they have a chance, or that they see it as fair?*
   The results header now says it beside the foe's name — "Adept · 90% income" (with a tooltip:
   gold over time and from shrines; kill gold is the same) — so the gold rows read fairly.
 - Checked: the new mirrored test; results screenshot (phone); full verify.
+
+## #31 The Lens of Challenge
+*What are the challenges in my game? Are they too easy, too hard, or just right? Can my
+challenges accommodate a wide variety of skill levels? How does the level of challenge increase
+as the player succeeds? Is there enough variety in the challenges? What is the maximum level of
+challenge?*
+- The challenge axis was one-dimensional: four foes of rising skill and income (Novice …
+  Mythic; scripted smart player 100/73/30/7%). That accommodates many skill levels and climbs
+  with success (#16, #18), but the variety is thin — every battle is "the same battle, against
+  a better general" — and the maximum is reached at Mythic. A player who has beaten Master
+  but finds Mythic's +20% income a wall had nothing in between; one who beat Mythic had nothing
+  after it.
+- Change: **Trials** — three optional handicaps on the foe screen (chips under the cards,
+  remembered between battles), enforced by the simulation (`PlayerState.trials`, kept in saves):
+  **Glass Citadel** (your citadel has half its health in every age), **Godless** (no god powers),
+  **No Walls** (no turrets). Each removes a crutch and changes *how* a battle must be won (no
+  emergency power, no turret to hold a lane, no margin for leaks), and they combine with any
+  foe: Adept + Godless is a different puzzle from Master, and Mythic + all three is the new
+  ceiling. Their buttons grey out in battle, the coach skips tips for what's switched off, the
+  results list the trials fought under, and **Trial by Fire** (feat #16) rewards beating Adept
+  or harder under all three.
+- Checked: unit tests (half citadel before and after ascending, power and turret refused, kept
+  by save/load; the feat); foe screen on desktop and a 667×375 phone; full verify.

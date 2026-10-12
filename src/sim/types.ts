@@ -1,4 +1,4 @@
-import type { BlessingId, PowerKind, ProjectileKind, TurretDef, UnitClass, UnitDef } from './data.ts';
+import type { BlessingId, PowerKind, ProjectileKind, TrialId, TurretDef, UnitClass, UnitDef } from './data.ts';
 
 /** 0 = left side (the human player in single player), 1 = right side. */
 export type Team = 0 | 1;
@@ -114,6 +114,8 @@ export interface PlayerState {
   lastBaseHit: number;
   /** Per lane: hold the line at the shrine instead of marching on (the lane's stance). */
   hold: boolean[];
+  /** Trials the player chose to fight under (single player): see TRIALS in data.ts. */
+  trials: TrialId[];
 }
 
 export interface Shrine {

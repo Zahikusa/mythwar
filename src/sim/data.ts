@@ -632,3 +632,18 @@ for (const age of AGES) {
 }
 
 export const MAX_AGE = AGES.length - 1;
+
+// ---------------------------------------------------------------------------
+// Trials — handicaps a player may choose for a harder battle (single player)
+// ---------------------------------------------------------------------------
+
+export type TrialId = 'glass' | 'godless' | 'nowalls';
+
+export const TRIALS: Record<TrialId, { id: TrialId; name: string; blurb: string }> = {
+  glass: { id: 'glass', name: 'Glass Citadel', blurb: 'Your citadel has half its health, in every age.' },
+  godless: { id: 'godless', name: 'Godless', blurb: 'The gods are silent: you cannot cast god powers.' },
+  nowalls: { id: 'nowalls', name: 'No Walls', blurb: 'You cannot mount turrets.' },
+};
+export const TRIAL_ORDER: TrialId[] = ['glass', 'godless', 'nowalls'];
+/** Citadel health under the Glass Citadel trial. */
+export const GLASS_CITADEL = 0.5;

@@ -41,6 +41,16 @@ describe('feats', () => {
     expect(t.earned.map((f) => f.id)).toEqual(got);
   });
 
+  it('all three trials against the Adept or harder: Trial by Fire', () => {
+    const w = new World({ trials: [['glass', 'godless', 'nowalls'], []] });
+    w.winner = 0;
+    w.time = 15 * 60;
+    const { t, got } = tracker(['first', 'adept']);
+    t.start(w, 0);
+    t.onEnd(w, 'adept');
+    expect(got).toContain('trials');
+  });
+
   it('nothing for a defeat; an online win is a Worthy Rival', () => {
     const w = new World();
     w.winner = 1;

@@ -61,7 +61,7 @@ complete; its log follows below the lens plan.
 - [x] #28 Expected Value — blessings show their next rank's worth in concrete numbers (dps for your army, health, citadel)
 - [x] #29 Chance — Starfall's meteors weighted toward crowds (was uniform per foe: stragglers soaked stars)
 - [x] #30 Fairness — mirrored side-bias test for the phase-2 mechanics; the AI's income handicap shown by its name on the results
-- [ ] #31 Challenge — challenge modifiers
+- [x] #31 Challenge — Trials: Glass Citadel, Godless, No Walls (any foe; feat for all three)
 - [ ] #32 Meaningful Choices — make an existing choice more meaningful
 - [ ] #33 Triangularity — a risky high-reward option
 - [ ] #34 Skill vs. Chance — balance check

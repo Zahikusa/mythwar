@@ -337,7 +337,8 @@ export class App {
   }
 
   private startGame(difficulty: Difficulty, seed: number | undefined, demo: boolean, sandbox = false): Game {
-    return this.hookGame(new Game({ difficulty, seed, demo, sandbox }), demo);
+    const trials = demo || sandbox ? [] : this.settings.trials;
+    return this.hookGame(new Game({ difficulty, seed, demo, sandbox, trials }), demo);
   }
 
   /** Makes `game` the active game: resets visuals and routes its events. */

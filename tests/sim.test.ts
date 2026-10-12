@@ -292,6 +292,25 @@ describe('shrines', () => {
   });
 });
 
+describe('trials', () => {
+  it('Glass Citadel halves the citadel in every age; Godless and No Walls take powers and turrets away', () => {
+    const w = new World({ trials: [['glass', 'godless', 'nowalls'], []] });
+    expect(w.players[0].baseMaxHp).toBe(AGES[0].baseHp / 2);
+    expect(w.players[0].baseHp).toBe(AGES[0].baseHp / 2);
+    expect(w.players[1].baseMaxHp).toBe(AGES[0].baseHp);
+    w.players[0].gold = 1e6;
+    w.players[0].xp = 1e6;
+    w.players[0].powerCooldown = 0;
+    expect(w.apply({ type: 'power', team: 0, lane: 1 }).ok).toBe(false);
+    expect(w.apply({ type: 'buildTurret', team: 0, lane: 1, turretId: 'thornspitter' }).ok).toBe(false);
+    expect(w.apply({ type: 'ageUp', team: 0 }).ok).toBe(true);
+    expect(w.players[0].baseMaxHp).toBe(AGES[1].baseHp / 2);
+    const copy = World.deserialize(w.serialize());
+    expect(copy.players[0].trials).toEqual(['glass', 'godless', 'nowalls']);
+    expect(copy.players[1].trials).toEqual([]);
+  });
+});
+
 describe('lane stance', () => {
   it('a lane told to hold stops just past the shrine, and marches on when released', () => {
     const w = new World();

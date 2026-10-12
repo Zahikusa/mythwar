@@ -1,6 +1,6 @@
 import { AI_PROFILES, DIFFICULTIES } from '../ai/ai.ts';
 import type { Difficulty } from '../ai/ai.ts';
-import { AGES, AGE_UNITS, POWERS } from '../sim/data.ts';
+import { AGES, AGE_UNITS, POWERS, TRIALS, TRIAL_ORDER } from '../sim/data.ts';
 import type { World } from '../sim/world.ts';
 import type { Team } from '../sim/types.ts';
 import { h, fmt, fmtTime, onTap } from './dom.ts';
@@ -312,7 +312,30 @@ export class Menus {
     const sandbox = this.button('Sandbox', 'ghost', () => this.cb.sandbox());
     sandbox.title = 'No foe, endless gold: summon for either side and watch any match-up';
     this.saveNote = h('div', { class: 'dnote hidden', text: 'A new battle replaces your saved one (after its first minute, that counts as a defeat).' });
-    return h('div', { class: 'screen difficulty' }, h('h2', { text: 'Choose your foe' }), grid, this.saveNote, h('div', { class: 'mrow' }, back, sandbox, begin));
+    // Trials: optional handicaps for players who want a harder fight.
+    const trials = h('div', { class: 'trials' }, h('span', { class: 'tlabel', text: 'Trials:' }));
+    for (const id of TRIAL_ORDER) {
+      const t = TRIALS[id];
+      const chip = h('button', { class: 'trial', title: t.blurb, 'aria-pressed': 'false' }, t.name) as HTMLButtonElement;
+      const sync = () => {
+        const on = this.settings.trials.includes(id);
+        chip.classList.toggle('on', on);
+        chip.setAttribute('aria-pressed', String(on));
+      };
+      sync();
+      this.syncers.push(sync);
+      onTap(chip, () => {
+        const set = new Set(this.settings.trials);
+        if (set.has(id)) set.delete(id);
+        else set.add(id);
+        this.settings.trials = TRIAL_ORDER.filter((x) => set.has(x));
+        this.cb.settingsChanged(this.settings);
+        this.cb.sound('select');
+        sync();
+      });
+      trials.appendChild(chip);
+    }
+    return h('div', { class: 'screen difficulty' }, h('h2', { text: 'Choose your foe' }), grid, trials, this.saveNote, h('div', { class: 'mrow' }, back, sandbox, begin));
   }
 
   /** Start a battle — first-timers see the five-page how-to first (skippable). */
@@ -677,7 +700,13 @@ export class Menus {
         h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: verdictLine(won, online) })),
         h('div', { class: 'vportrait' }, portrait(champion.id, 96, 0, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
       ),
-      h('div', { class: 'vtime' }, h('span', { text: `Battle length ${fmtTime(world.time)}` }), online ? null : starsRow(battleStars(won, P.baseHp / P.baseMaxHp, world.time, difficulty).parts)),
+      h(
+        'div',
+        { class: 'vtime' },
+        h('span', { text: `Battle length ${fmtTime(world.time)}` }),
+        online ? null : starsRow(battleStars(won, P.baseHp / P.baseMaxHp, world.time, difficulty).parts),
+        P.trials?.length ? h('span', { class: 'vtrials', text: `Trials: ${P.trials.map((t) => TRIALS[t].name).join(', ')}` }) : null,
+      ),
       ...(this.featsEarned.length ? [h('div', { class: 'vfeats' }, h('i', { html: ICONS.xp }), `New feat${this.featsEarned.length > 1 ? 's' : ''}: ${this.featsEarned.map((f) => f.name).join(', ')}`)] : []),
       h(
         'div',

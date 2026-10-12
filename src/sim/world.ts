@@ -4,6 +4,7 @@ import {
   BLESSING_MAX_RANK,
   BASE_DAMAGE_XP,
   BRITTLE_MULT,
+  GLASS_CITADEL,
   KILL_GOLD_MULT,
   KILL_XP_MULT,
   LANE_COUNT,
@@ -37,7 +38,7 @@ import {
   blessingCost,
   counterMultiplier,
 } from './data.ts';
-import type { BlessingId, Trait, TraitKind, UnitClass, UnitDef } from './data.ts';
+import type { BlessingId, Trait, TraitKind, TrialId, UnitClass, UnitDef } from './data.ts';
 import { Rng } from './rng.ts';
 import { castPower, updatePowers } from './powers.ts';
 import { BASE_TARGET, NO_TARGET } from './types.ts';
@@ -74,6 +75,8 @@ function nearer(d: number, e: Unit, bestD: number, best: Unit | null): boolean {
 export interface WorldOptions {
   seed?: number;
   incomeMult?: [number, number];
+  /** Trials per side (single player: the human's handicaps). */
+  trials?: [TrialId[], TrialId[]];
 }
 
 export function trait<K extends TraitKind>(def: UnitDef, kind: K): Extract<Trait, { kind: K }> | undefined {
@@ -154,6 +157,12 @@ export class World {
     this.nextSurgeAt = this.surgeRng.range(SURGE_FIRST[0], SURGE_FIRST[1]);
     const mult = opts.incomeMult ?? [1, 1];
     this.players = [this.makePlayer(0, mult[0]), this.makePlayer(1, mult[1])];
+    if (opts.trials) {
+      for (const p of this.players) {
+        p.trials = [...opts.trials[p.team]];
+        p.baseHp = p.baseMaxHp = this.baseMaxHpFor(p.team);
+      }
+    }
     for (let i = 0; i < LANE_COUNT; i++) {
       this.lanes.push([]);
       this.shrines.push({ lane: i, capture: 0, owner: -1, contested: false });
@@ -178,6 +187,7 @@ export class World {
       stats: { summoned: 0, summonedBy: {}, kills: 0, killsByLane: [0, 0, 0], losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0, surgeGold: 0, classDamage: [0, 0, 0] },
       lastBaseHit: -10,
       hold: [false, false, false],
+      trials: [],
     };
   }
 
@@ -234,6 +244,7 @@ export class World {
       p.stats.surgeGold ??= 0;
       p.stats.classDamage ??= [0, 0, 0];
       p.hold ??= [false, false, false];
+      p.trials ??= [];
       w.players[i] = {
         ...p,
         turrets: p.turrets.map((t) => {
@@ -380,6 +391,7 @@ export class World {
     if (!def) return 'Unknown turret';
     if (lane < 0 || lane >= LANE_COUNT) return 'Invalid lane';
     if (def.age > p.age) return 'Not available yet';
+    if (p.trials.includes('nowalls')) return 'No turrets (No Walls trial)';
     const cur = p.turrets[lane].def;
     if (cur && cur.id === turretId) return 'Already built';
     const refund = cur ? Math.floor(cur.cost * SELL_REFUND) : 0;
@@ -389,6 +401,7 @@ export class World {
 
   powerBlocker(team: Team): string | null {
     const p = this.players[team];
+    if (p.trials.includes('godless')) return 'The gods are silent (Godless trial)';
     if (p.powerCooldown > 0) return 'God power is recharging';
     return null;
   }
@@ -421,7 +434,8 @@ export class World {
 
   /** Citadel max HP for a team at its current age and Bastion rank. */
   baseMaxHpFor(team: Team): number {
-    return AGES[this.players[team].age].baseHp * this.bastionMult(team);
+    const p = this.players[team];
+    return AGES[p.age].baseHp * this.bastionMult(team) * (p.trials.includes('glass') ? GLASS_CITADEL : 1);
   }
 
   apply(cmd: Command): CommandResult {

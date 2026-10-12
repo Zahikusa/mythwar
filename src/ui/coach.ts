@@ -67,7 +67,7 @@ const TIPS: Tip[] = [
     id: 'power',
     text: 'Your god power is ready! Tap it, then choose a lane to unleash it.',
     anchor: '.act.power',
-    when: (g) => g.world.players[g.playerTeam].powerCooldown <= 0,
+    when: (g) => g.world.players[g.playerTeam].powerCooldown <= 0 && !g.world.players[g.playerTeam].trials.includes('godless'),
     done: (g) => g.world.players[g.playerTeam].stats.powersCast > 0 || g.world.players[g.playerTeam].powerCooldown > 0,
   },
   {
@@ -125,7 +125,7 @@ const TIPS: Tip[] = [
     id: 'turret',
     text: 'Spare gold? Mount a turret on a gate to guard that lane.',
     anchor: '.turretbtn',
-    when: (g, t) => t > 70 && g.world.players[g.playerTeam].gold > 200 && g.world.players[g.playerTeam].turrets.every((s) => !s.def),
+    when: (g, t) => t > 70 && g.world.players[g.playerTeam].gold > 200 && g.world.players[g.playerTeam].turrets.every((s) => !s.def) && !g.world.players[g.playerTeam].trials.includes('nowalls'),
     done: (g, t, s) => g.world.players[g.playerTeam].turrets.some((s) => !!s.def) || t - s > 10,
   },
   {

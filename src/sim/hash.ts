@@ -24,6 +24,7 @@ export function hashWorld(w: World): number {
     h.num(p.incomeMult);
     h.num(p.lastBaseHit);
     for (const held of p.hold) h.num(held ? 1 : 0);
+    for (const t of p.trials) h.str(t);
     for (const q of p.queue) {
       h.str(q.unitId);
       h.num(q.lane);

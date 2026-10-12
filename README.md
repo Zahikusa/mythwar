@@ -81,7 +81,9 @@ Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](doc
 
 - **Sandbox:** on the "Choose your foe" screen — no foe, endless gold, citadels that can't fall.
   Summon for either side (the "For:" button or X) and watch any match-up play out.
-- **Feats:** fifteen deeds to be proud of (beat each foe, summon the Elder Dragon, hold all three
+- **Trials:** on the "Choose your foe" screen — Glass Citadel (half health), Godless (no god
+  powers), No Walls (no turrets) — for a harder battle; winning under all three is a feat.
+- **Feats:** sixteen deeds to be proud of (beat each foe, summon the Elder Dragon, hold all three
   shrines, win from below 15%…) — the chip above the title menu lists them.
 - **Bestiary:** the title screen and the pause menu open a bestiary of every creature, god power
   and turret, with the myths behind them. Ages you have never reached stay hidden until you do.
