@@ -47,6 +47,12 @@ green, marble gold, glacier blue, lacquer vermilion, starlight).
   new creatures, a new god power, new turrets, more citadel HP.
 - Destroy the enemy citadel (shared HP across all lanes) to win.
 
+## Rushing an age (triangularity)
+With three quarters of the XP an age needs, a side may ascend anyway for a **double tithe**:
+the safe path is to wait for the XP and pay the normal price; the risky one buys the next age's
+creatures and citadel a minute or two early, with gold that would have been an army. The Ascend
+button shows "Rush · 300g (×2)" with a dashed border — and never chimes for it.
+
 ## Lanes
 - Three horizontal lanes (far / middle / near), drawn in soft 2.5D perspective.
 - Creatures only fight creatures in the same lane. Any lane can reach the citadel.

@@ -63,7 +63,7 @@ complete; its log follows below the lens plan.
 - [x] #30 Fairness — mirrored side-bias test for the phase-2 mechanics; the AI's income handicap shown by its name on the results
 - [x] #31 Challenge — Trials: Glass Citadel, Godless, No Walls (any foe; feat for all three)
 - [x] #32 Meaningful Choices — the dragon is a real choice (equal-gold tests) the AI never made; able AIs now save for it in calm moments
-- [ ] #33 Triangularity — a risky high-reward option
+- [x] #33 Triangularity — rush an age with 75% of the XP for a double tithe (risky early age vs safe wait)
 - [ ] #34 Skill vs. Chance — balance check
 - [ ] #35 Head and Hands — dexterity vs thought: input convenience
 - [ ] #36 Competition — competitive comparison (stats on results)

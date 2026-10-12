@@ -633,6 +633,13 @@ for (const age of AGES) {
 
 export const MAX_AGE = AGES.length - 1;
 
+/**
+ * Rushing an age: with RUSH_XP of the XP an age needs, a side may ascend anyway for RUSH_COST
+ * times the tithe — the next age sooner, at the price of the army that gold would have been.
+ */
+export const RUSH_XP = 0.75;
+export const RUSH_COST = 2;
+
 // ---------------------------------------------------------------------------
 // Trials — handicaps a player may choose for a harder battle (single player)
 // ---------------------------------------------------------------------------

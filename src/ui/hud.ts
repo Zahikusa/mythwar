@@ -11,6 +11,8 @@ import {
   POWERS,
   QUEUE_MAX,
   RAGNAROK_CRUMBLE_AFTER,
+  RUSH_COST,
+  RUSH_XP,
   SELL_REFUND,
   TURRETS,
   UNITS,
@@ -842,7 +844,7 @@ export class Hud {
     tt.append(
       row,
       h('div', { class: 'tttrait', text: `God power: ${known ? POWERS[next.power].name : '???'} · Citadel ${fmt(next.baseHp)} health` }),
-      h('div', { class: 'ttsub', text: `Needs ${fmt(next.xpRequired)} XP and a tithe of ${fmt(next.ascendCost)} gold${this.layoutInfo?.mode === 'mobile' ? '' : ' (U)'}` }),
+      h('div', { class: 'ttsub', text: `Needs ${fmt(next.xpRequired)} XP and a tithe of ${fmt(next.ascendCost)} gold${this.layoutInfo?.mode === 'mobile' ? '' : ' (U)'} — or rush it with ${Math.round(RUSH_XP * 100)}% of the XP for a double tithe.` }),
     );
     this.placeTooltip(anchor);
   }
@@ -1100,14 +1102,19 @@ export class Hud {
       const compact = this.layoutInfo?.mode === 'mobile';
       const needLine = compact ? `need ${fmt(short)}g` : `${next.name} · need ${fmt(short)}g`;
       const costLine = compact ? `${fmt(next.ascendCost)}g` : `${next.name} · ${fmt(next.ascendCost)}g`;
-      setText(E.ascSub, me.xp >= next.xpRequired && short > 0 ? needLine : costLine);
+      // Short of the XP but past the rush mark: the age can be rushed for a double tithe.
+      const rushing = me.xp < next.xpRequired && me.xp >= next.xpRequired * RUSH_XP;
+      const rushLine = compact ? `Rush ${fmt(next.ascendCost * RUSH_COST)}g` : `Rush · ${fmt(next.ascendCost * RUSH_COST)}g (×${RUSH_COST})`;
+      setText(E.ascSub, rushing ? rushLine : me.xp >= next.xpRequired && short > 0 ? needLine : costLine);
       // Chime when ascending becomes possible (XP and gold both there) — not again within 20 s if
-      // the gold hovers around the tithe.
-      if (!why && !E.ascend.classList.contains('ready') && g.world.time > 1 && g.world.time - this.readyChimeAt > 20) {
+      // the gold hovers around the tithe. (A rush is possible but never chimed: it's a gamble.)
+      const ready = !why && !rushing;
+      if (ready && !E.ascend.classList.contains('ready') && g.world.time > 1 && g.world.time - this.readyChimeAt > 20) {
         this.readyChimeAt = g.world.time;
         this.cb.sound('ready');
       }
-      toggle(E.ascend, 'ready', !why);
+      toggle(E.ascend, 'ready', ready);
+      toggle(E.ascend, 'rush', rushing && !why);
       toggle(E.ascend, 'xpready', me.xp >= next.xpRequired && !!why);
       // (The hover preview shows the details; screen readers get them from the label.)
       const label = `Ascend to ${next.name} (U): needs ${fmt(next.xpRequired)} XP and ${fmt(next.ascendCost)} gold. New creatures, turrets, god power and a stronger citadel.`;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AGES, AGE_UNITS, BLESSINGS, BLESSING_PRICE_FLOOR_AGE, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_CRUMBLE, RAGNAROK_CRUMBLE_AFTER, RAGNAROK_TIME, SHRINE_X, HOLD_PAST_SHRINE, SURGE_FIRST, SURGE_INCOME, SURGE_OMEN, SURGE_TIME, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
+import { AGES, AGE_UNITS, BLESSINGS, BLESSING_PRICE_FLOOR_AGE, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_CRUMBLE, RAGNAROK_CRUMBLE_AFTER, RAGNAROK_TIME, RUSH_COST, SHRINE_X, HOLD_PAST_SHRINE, SURGE_FIRST, SURGE_INCOME, SURGE_OMEN, SURGE_TIME, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
 import { World } from '../src/sim/world.ts';
 import type { Team } from '../src/sim/types.ts';
 
@@ -289,6 +289,30 @@ describe('shrines', () => {
     run(w, 6);
     expect(w.shrines[2].owner).toBe(-1);
     expect(w.shrines[2].contested).toBe(true);
+  });
+});
+
+describe('rushing an age', () => {
+  it('with 75% of the XP an age can be rushed for a double tithe; below that it cannot', () => {
+    const w = new World();
+    const p = w.players[0];
+    const next = AGES[1];
+    p.gold = next.ascendCost * 2;
+    p.xp = next.xpRequired * 0.7;
+    expect(w.apply({ type: 'ageUp', team: 0 })).toEqual({ ok: false, reason: 'Not enough XP' });
+    p.xp = next.xpRequired * 0.8;
+    expect(w.ascendCost(0)).toBe(next.ascendCost * RUSH_COST);
+    p.gold = next.ascendCost * 2 - 1;
+    expect(w.apply({ type: 'ageUp', team: 0 }).ok).toBe(false);
+    p.gold = next.ascendCost * 2;
+    expect(w.apply({ type: 'ageUp', team: 0 }).ok).toBe(true);
+    expect(p.age).toBe(1);
+    expect(p.gold).toBe(0);
+    // With the full XP, the plain tithe.
+    p.xp = AGES[2].xpRequired;
+    p.gold = AGES[2].ascendCost;
+    expect(w.apply({ type: 'ageUp', team: 0 }).ok).toBe(true);
+    expect(p.gold).toBe(0);
   });
 });
 

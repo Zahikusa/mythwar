@@ -352,7 +352,7 @@ export class NetGame extends Game {
         spend += UNITS[c.unitId]?.cost ?? 0;
         trains++;
       } else if (c.type === 'ageUp') {
-        spend += AGES[p.age + 1]?.ascendCost ?? 0;
+        spend += p.age < AGES.length - 1 ? this.world.ascendCost(this.seat) : 0;
         ascending = true;
       } else if (c.type === 'bless') {
         const rank = p.blessings[c.blessing] + (blessRanks[c.blessing] ?? 0);
@@ -385,7 +385,7 @@ export class NetGame extends Game {
         if (ascending) return 'Ascending…';
         const why = w.ageUpBlocker(team);
         if (why) return why;
-        return gold < AGES[p.age + 1].ascendCost ? 'Not enough gold' : null;
+        return gold < w.ascendCost(team) ? 'Not enough gold' : null;
       }
       case 'bless': {
         const why = w.blessingBlocker(team, cmd.blessing);

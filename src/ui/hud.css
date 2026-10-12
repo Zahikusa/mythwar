@@ -1124,6 +1124,15 @@ svg {
   pointer-events: none;
 }
 
+.act.ascend.rush {
+  border-style: dashed;
+  border-color: #ffb08a;
+}
+
+.act.ascend.rush .asub {
+  color: #ffd0bd;
+}
+
 .act.locked {
   filter: grayscale(1) brightness(0.55);
 }

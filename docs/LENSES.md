@@ -618,3 +618,23 @@ the right number of choices? Are there any dominant strategies?*
 - Result: against the scripted smart player, Master now summons the dragon in 9 of 20 battles
   (16 reached the final age), Mythic in 8 of 20, Adept 1. `designcheck`: all pass (ladder
   100/77/17/3%, pacing 18.6 min, sides 47%). Full verify.
+
+## #33 The Lens of Triangularity
+*Do I have triangularity now — a safe option with a low reward and a risky one with a high
+reward? If not, how can I get it? Is my attempt balanced — are the rewards commensurate with the
+risks?*
+- Existing triangles: the Elder Dragon (one big unit vs a steady stream), holding a lane (#24:
+  a bigger wave later vs constant pressure), Godless/No Walls/Glass trials (#31) for the
+  ambitious. The *central* decision of the game — when to ascend — had none: the age opened at a
+  fixed XP mark, and the only choice was how fast to save the tithe.
+- Change: **rushing an age.** From 75% of the required XP, a side may ascend for a double tithe
+  (`RUSH_XP`, `RUSH_COST`, `World.ascendCost`). Safe: wait for the XP, pay the normal tithe.
+  Risky: the next age's creatures and stronger citadel a minute or two early, paid for with the
+  army that gold would have bought — strong when the lanes are quiet or the foe is about to
+  out-tier you, ruinous when it leaves a lane open. The Ascend button shows the rush price with
+  a dashed border and never chimes for it (the chime is for a normal ascension); the age preview,
+  the how-to and the README explain it. Online, the in-flight gold check uses the real price.
+- Balance: the AIs never rush (they ascend at full XP only) and the scripted players were made
+  to as well, so calibration is unchanged; `designcheck` all pass.
+- Checked: unit test (70% refused, 80% at double price, full XP at the normal price); Ascend
+  button screenshot; full verify.

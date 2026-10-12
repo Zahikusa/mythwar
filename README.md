@@ -72,8 +72,10 @@ Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](doc
   shrine also gives *ley sight*: you see the enemy's next summons for that lane above their gate.
 - **Read the enemy:** a gate's portal flares just before a creature steps out — watch the enemy
   gates to see which lane their next creature is coming down.
-- **Ascend:** XP comes from kills, blows against the enemy citadel and time; with enough XP and a gold tithe you advance to the next age (new
-  creatures, turrets, god power, stronger citadel). The final age adds the Elder Dragon.
+- **Ascend:** XP comes from kills, blows against the enemy citadel and time; with enough XP and a
+  gold tithe you advance to the next age (new creatures, turrets, god power, stronger citadel).
+  With three quarters of the XP you can *rush* it for a double tithe. The final age adds the
+  Elder Dragon.
 - **God powers:** one per age, recharging. Tap it, then a lane.
 - **Turrets & blessings:** a turret per lane on your gates; blessings are permanent upgrades.
 - **Ragnarök:** at 18:00 (or 3 minutes after both sides reach the final age) the gate wards fall

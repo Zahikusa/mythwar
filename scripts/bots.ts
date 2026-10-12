@@ -35,7 +35,8 @@ export class Bot {
     this.timer = 1.5 + this.rng.next();
     const w = this.world;
     const me = w.players[this.team];
-    if (me.age < AGES.length - 1 && w.ageUpBlocker(this.team) === null) w.apply({ type: 'ageUp', team: this.team });
+    // (Full XP only: the scripted players never rush an age.)
+    if (me.age < AGES.length - 1 && me.xp >= AGES[me.age + 1].xpRequired && w.ageUpBlocker(this.team) === null) w.apply({ type: 'ageUp', team: this.team });
     if (me.powerCooldown <= 0) {
       let lane = 1;
       if (this.kind !== 'focus') {

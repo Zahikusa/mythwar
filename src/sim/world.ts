@@ -4,6 +4,8 @@ import {
   BLESSING_MAX_RANK,
   BASE_DAMAGE_XP,
   BRITTLE_MULT,
+  RUSH_COST,
+  RUSH_XP,
   GLASS_CITADEL,
   KILL_GOLD_MULT,
   KILL_XP_MULT,
@@ -380,9 +382,16 @@ export class World {
     const p = this.players[team];
     if (p.age >= MAX_AGE) return 'Already in the final age';
     const next = AGES[p.age + 1];
-    if (p.xp < next.xpRequired) return 'Not enough XP';
-    if (p.gold < next.ascendCost) return 'Not enough gold';
+    if (p.xp < next.xpRequired * RUSH_XP) return 'Not enough XP';
+    if (p.gold < this.ascendCost(team)) return 'Not enough gold';
     return null;
+  }
+
+  /** The tithe to ascend now: the age's tithe, doubled when rushing (XP short of the mark). */
+  ascendCost(team: Team): number {
+    const p = this.players[team];
+    const next = AGES[Math.min(MAX_AGE, p.age + 1)];
+    return p.xp >= next.xpRequired ? next.ascendCost : next.ascendCost * RUSH_COST;
   }
 
   turretBlocker(team: Team, lane: number, turretId: string): string | null {
@@ -474,9 +483,9 @@ export class World {
       case 'ageUp': {
         const why = this.ageUpBlocker(cmd.team);
         if (why) return { ok: false, reason: why };
-        const next = AGES[p.age + 1];
-        p.gold -= next.ascendCost;
-        p.stats.goldSpent += next.ascendCost;
+        const tithe = this.ascendCost(cmd.team);
+        p.gold -= tithe;
+        p.stats.goldSpent += tithe;
         p.age += 1;
         const newMax = this.baseMaxHpFor(cmd.team);
         const gained = newMax - p.baseMaxHp;
