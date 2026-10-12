@@ -25,7 +25,7 @@ complete; its log follows below the lens plan.
 - [x] #4 Curiosity — Ascend preview of the next age; never-reached ages are glowing silhouettes and "???"
 - [x] #5 Endogenous Value — unaffordable cards show a savings bar and "in Ns" from your current income
 - [x] #6 Problem Solving — setting to switch off the "Counter!" advice so experts solve the counter puzzle themselves
-- [ ] #7 The Elemental Tetrad — story is the weakest element: lore line per age on ascension
+- [x] #7 The Elemental Tetrad — story was the weak element: a lore line per age under the opening and ascension banners
 - [ ] #8 Holographic Design — whole-game pass: fix the most jarring inconsistency found
 - [ ] #9 Unification — one theme everywhere (copy, names, AI foes)
 - [ ] #10 Resonance — what resonates (gods/myths) → amplify

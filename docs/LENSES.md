@@ -102,3 +102,21 @@ part of gameplay? How can my game generate new problems so that players keep com
   at it, the compact (phone / short window) settings layout puts the about note under the
   sliders, so the longer toggle list doesn't push the panel under the sticky buttons.
 - Checked: desktop + phone settings screenshots; full verify.
+
+## #7 The Lens of the Elemental Tetrad
+*Is the game designed with all four elements — mechanics, story, aesthetics, technology — in
+mind? Could any element be improved to enhance the others? Are they in harmony?*
+- Mechanics (counter triangle, lanes, ages, surges), aesthetics (procedural art, synthesized
+  music per age) and technology (deterministic sim, lockstep multiplayer, offline PWA) are
+  strong. **Story** was nearly absent: five age names with subtitles and creature blurbs in
+  tooltips. Yet the ages *are* a story — a war escalating from a fae skirmish to a clash of gods
+  — and the mechanics already climb it.
+- Change: each age has a line of the war's story (`AgeDef.lore` in `src/sim/data.ts`), told
+  where the escalation happens: under the opening banner ("In a moonlit wood the ley lines wake…
+  two citadels claim the same crossing") and under each ascension banner ("The skalds begin to
+  sing of this war…"); lore banners stay up 4.5 s instead of 2.8 s. The next-age preview shows the
+  lore of ages already reached. The thread ties shrines/ley lines (mechanics) to the setting.
+  On phones the banner now hangs below the resource pill and grows downward (the taller banner
+  had covered the gold counter).
+- Checked: opening-banner screenshots on desktop, landscape phone and upright phone; full
+  verify.

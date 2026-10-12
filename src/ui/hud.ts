@@ -248,7 +248,7 @@ export class Hud {
 
     // Screen readers announce event toasts and banners (ascensions, Ragnarök, the verdict).
     E.toast = h('div', { class: 'toast', role: 'status', 'aria-live': 'polite' });
-    E.banner = h('div', { class: 'banner', role: 'status', 'aria-live': 'polite' }, h('div', { class: 'btitle' }), h('div', { class: 'bsub' }));
+    E.banner = h('div', { class: 'banner', role: 'status', 'aria-live': 'polite' }, h('div', { class: 'btitle' }), h('div', { class: 'bsub' }), h('div', { class: 'blore' }));
     E.hint = h('div', { class: 'hint' });
     E.tooltip = h('div', { class: 'tooltip hidden' });
 
@@ -647,14 +647,16 @@ export class Hud {
     this.toastTimer = this.toastQueue.length ? 1.4 : 1.8;
   }
 
-  banner(title: string, sub: string, kind = ''): void {
+  /** A centre-screen banner; `lore` adds a line of story (and keeps it up long enough to read). */
+  banner(title: string, sub: string, kind = '', lore = ''): void {
     const b = this.el.banner;
     setText(b.querySelector('.btitle')!, title);
     setText(b.querySelector('.bsub')!, sub);
+    setText(b.querySelector('.blore')!, lore);
     b.className = `banner ${kind}`;
     void b.offsetWidth;
     b.classList.add('show');
-    this.bannerTimer = 2.8;
+    this.bannerTimer = lore ? 4.5 : 2.8;
   }
 
   /** The battle begins: who you face and what you must do (the game's essential experience). */
@@ -662,7 +664,7 @@ export class Hud {
     const g = this.game;
     if (!g) return;
     const age = AGES[g.world.players[g.playerTeam].age];
-    this.banner('Topple their citadel', `vs ${foe} · ${age.name}`, 'gold');
+    this.banner('Topple their citadel', `vs ${foe} · ${age.name}`, 'gold', age.lore);
     this.cb.sound('horn');
   }
 
@@ -792,7 +794,7 @@ export class Hud {
     const tt = this.el.tooltip;
     tt.innerHTML = `
       <div class="tth"><b>${next.name}</b><span class="ttage-sub">${next.subtitle}</span></div>
-      <div class="ttsub">${known ? 'Ascend to summon:' : 'Who waits in the next age? Ascend to find out.'}</div>`;
+      <div class="ttsub">${known ? next.lore : 'Who waits in the next age? Ascend to find out.'}</div>`;
     const row = h('div', { class: 'ttages' });
     for (const def of AGE_UNITS[next.index]) {
       row.appendChild(h('div', { class: `ttage${known ? '' : ' unknown'}` }, portrait(def.id, 50, 0, 0.4, false, this.zoom), h('span', { text: known ? def.name : '???' })));
@@ -850,7 +852,7 @@ export class Hud {
     for (const e of events) {
       if (e.type === 'ageUp') {
         const age = AGES[e.age];
-        if (e.team === me) this.banner(age.subtitle, `You ascend to ${age.name}`, 'gold');
+        if (e.team === me) this.banner(age.subtitle, `You ascend to ${age.name}`, 'gold', age.lore);
         else this.toast(`The enemy ascends to ${age.name}!`, 'bad');
       } else if (e.type === 'shrine') {
         const pip = this.el.shrines.children[e.lane] as HTMLElement | undefined;

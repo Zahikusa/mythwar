@@ -123,6 +123,8 @@ export interface AgeDef {
   id: string;
   name: string;
   subtitle: string;
+  /** One line of the war's story, told when a side reaches this age. */
+  lore: string;
   units: string[]; // unit ids available in this age (card order)
   turrets: string[]; // [bolt, blast]
   power: PowerKind;
@@ -614,11 +616,11 @@ export function blessingCost(rank: number, age: number): number {
 // ---------------------------------------------------------------------------
 
 export const AGES: AgeDef[] = [
-  { index: 0, id: 'fae', name: 'Fae Wilds', subtitle: 'Age of Whispers', units: [], turrets: [], power: 'briar', xpRequired: 0, ascendCost: 0, baseHp: 2500, income: 3, shrineIncome: 0.6 },
-  { index: 1, id: 'olympus', name: 'Olympus', subtitle: 'Age of Heroes', units: [], turrets: [], power: 'zeus', xpRequired: 800, ascendCost: 150, baseHp: 4000, income: 5.5, shrineIncome: 1.1 },
-  { index: 2, id: 'asgard', name: 'Asgard', subtitle: 'Age of Sagas', units: [], turrets: [], power: 'fimbul', xpRequired: 2800, ascendCost: 400, baseHp: 6500, income: 10, shrineIncome: 2 },
-  { index: 3, id: 'jade', name: 'Jade Empire', subtitle: 'Age of Dynasties', units: [], turrets: [], power: 'spiritdragon', xpRequired: 8000, ascendCost: 1000, baseHp: 10500, income: 19, shrineIncome: 3.8 },
-  { index: 4, id: 'celestial', name: 'Celestial', subtitle: 'Age of Gods', units: [], turrets: [], power: 'starfall', xpRequired: 20000, ascendCost: 2400, baseHp: 17000, income: 36, shrineIncome: 7.2 },
+  { index: 0, id: 'fae', name: 'Fae Wilds', subtitle: 'Age of Whispers', lore: 'In a moonlit wood the ley lines wake. Oaks walk, goblins grin — and two citadels claim the same crossing.', units: [], turrets: [], power: 'briar', xpRequired: 0, ascendCost: 0, baseHp: 2500, income: 3, shrineIncome: 0.6 },
+  { index: 1, id: 'olympus', name: 'Olympus', subtitle: 'Age of Heroes', lore: 'The gods of the mountain take notice. Minotaurs, centaurs and gorgons answer your call.', units: [], turrets: [], power: 'zeus', xpRequired: 800, ascendCost: 150, baseHp: 4000, income: 5.5, shrineIncome: 1.1 },
+  { index: 2, id: 'asgard', name: 'Asgard', subtitle: 'Age of Sagas', lore: 'The skalds begin to sing of this war. Frost giants stride from the north, wolves at their heels.', units: [], turrets: [], power: 'fimbul', xpRequired: 2800, ascendCost: 400, baseHp: 6500, income: 10, shrineIncome: 2 },
+  { index: 3, id: 'jade', name: 'Jade Empire', subtitle: 'Age of Dynasties', lore: 'Spirits of the East join the struggle: demons with iron clubs, tigers of the wind, nine-tailed foxes.', units: [], turrets: [], power: 'spiritdragon', xpRequired: 8000, ascendCost: 1000, baseHp: 10500, income: 19, shrineIncome: 3.8 },
+  { index: 4, id: 'celestial', name: 'Celestial', subtitle: 'Age of Gods', lore: 'Titans wake and firebirds descend. No legend is left to call on — only the gods themselves.', units: [], turrets: [], power: 'starfall', xpRequired: 20000, ascendCost: 2400, baseHp: 17000, income: 36, shrineIncome: 7.2 },
 ];
 for (const age of AGES) {
   age.units = AGE_UNITS[age.index].map((u) => u.id);

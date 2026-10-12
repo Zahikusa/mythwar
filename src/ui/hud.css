@@ -1630,6 +1630,21 @@ svg {
   text-shadow: 0 0 30px rgba(255, 60, 30, 0.9), 0 3px 8px rgba(0, 0, 0, 0.9);
 }
 
+.banner .blore {
+  max-width: min(560px, 80vw);
+  margin: 8px auto 0;
+  font-size: calc(15px * var(--ui));
+  font-style: italic;
+  line-height: 1.35;
+  color: #f1e6c8;
+  text-shadow: 0 1px 4px #000, 0 0 12px rgba(0, 0, 0, 0.8);
+  white-space: normal;
+}
+
+.banner .blore:empty {
+  display: none;
+}
+
 .banner .bsub {
   font-size: calc(18px * var(--ui));
   letter-spacing: 0.12em;
@@ -2171,12 +2186,27 @@ svg {
   font-size: 12px;
 }
 
+/* On phones the banner hangs below the resource pill (it grows downward, never over it). */
+.hud.mobile .banner {
+  top: 22%;
+  transform: translate(-50%, 0) scale(0.9);
+}
+
+.hud.mobile .banner.show {
+  transform: translate(-50%, 0) scale(1);
+}
+
 .hud.mobile .banner .btitle {
   font-size: 34px;
 }
 
 .hud.mobile .banner .bsub {
   font-size: 12px;
+}
+
+.hud.mobile .banner .blore {
+  font-size: 12px;
+  max-width: 62vw;
 }
 
 .hud.mobile .lanetab {
