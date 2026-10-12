@@ -631,6 +631,41 @@ describe('fairness between the sides', () => {
     }
   });
 
+  it('phase-2 mechanics favour no side: mirrored holds, charges and frozen (brittle) armies end even', () => {
+    for (const id of ['treant', 'redcap', 'pixie', 'jotunn', 'fenrir', 'valkyrie', 'griffin']) {
+      for (const frozen of [false, true]) {
+        const w = new World();
+        for (const team of [0, 1] as Team[]) w.apply({ type: 'stance', team, lane: 1, hold: true });
+        for (let i = 0; i < 4; i++) {
+          w.spawnUnit(0, 1, UNITS[id], 200 - i * 30);
+          w.spawnUnit(1, 1, UNITS[id], LANE_LENGTH - 200 + i * 30);
+        }
+        run(w, 25);
+        // Both waves wait at mirrored spots on their side of the shrine…
+        const xs = (t: Team) => w.lanes[1].filter((u) => u.alive && u.team === t).map((u) => (t === 0 ? u.x : LANE_LENGTH - u.x)).sort((a, b) => a - b);
+        const [left, right] = [xs(0), xs(1)];
+        expect(left.length, id).toBe(right.length);
+        left.forEach((x, i) => expect(x, id).toBeCloseTo(right[i], 6));
+        // …then charge together (optionally frozen mid-fight, so blows land on brittle foes).
+        for (const team of [0, 1] as Team[]) w.apply({ type: 'stance', team, lane: 1, hold: false });
+        let froze = false;
+        let result: Team | null | 'none' = 'none';
+        for (let t = 0; t < 120 && result === 'none'; t += TICK) {
+          w.step();
+          const alive = w.lanes[1].filter((u) => u.alive);
+          if (frozen && !froze && alive.some((u) => u.hp < u.maxHp)) {
+            froze = true;
+            for (const u of alive) u.freezeTimer = 1;
+          }
+          const a0 = alive.some((u) => u.team === 0);
+          const a1 = alive.some((u) => u.team === 1);
+          if (!a0 || !a1) result = a0 ? 0 : a1 ? 1 : null;
+        }
+        expect(result, `${id}${frozen ? ' frozen' : ''}`).toBeNull();
+      }
+    }
+  });
+
   it('a dead heat when both citadels fall is a coin toss, not a win for team 0', () => {
     const winners = new Set<Team | null>();
     for (let seed = 1; seed <= 12; seed++) {

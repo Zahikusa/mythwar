@@ -624,7 +624,18 @@ export class Menus {
     const table = h(
       'table',
       { class: 'stats' },
-      h('thead', null, h('tr', null, h('td', { class: 'you', text: 'You' }), h('th'), h('td', { class: 'foe', text: foeName }))),
+      // Against the AI, its income handicap stands by its name — the gold rows read fairly.
+      h(
+        'thead',
+        null,
+        h(
+          'tr',
+          null,
+          h('td', { class: 'you', text: 'You' }),
+          h('th'),
+          h('td', { class: 'foe', title: online ? '' : 'Its gold over time and from shrines, compared with yours (gold from kills is the same)' }, foeName, online || AI_PROFILES[difficulty].incomeMult === 1 ? null : h('small', { text: ` · ${Math.round(AI_PROFILES[difficulty].incomeMult * 100)}% income` })),
+        ),
+      ),
       h(
         'tbody',
         null,

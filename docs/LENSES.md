@@ -552,3 +552,24 @@ improve my game? Do players have the opportunity to take interesting risks?*
   drifted over the line (even AI battles 20–21 min median after #23/#29 strengthened defence and
   late powers). Measured options over 30 battles: Ragnarök at 16:00 → 19.8 min; siege ramp
   +200%/min → 18.3; **+150%/min → 18.8** (chosen, the gentler fix). DESIGN.md updated.
+
+## #30 The Lens of Fairness
+*Should my game be symmetrical? Asymmetrical? What is more important: that it is a meaningful
+challenge, that players feel they have a chance, or that they see it as fair?*
+- Mythwar is symmetrical by design — same rules, same rosters; the only asymmetry is the AI's
+  income handicap (Novice 50% … Mythic 120%), a deliberate *challenge* lever shown on the foe
+  cards. Online, both players see themselves on the left in blue; the simulation is checked for
+  side bias (mirror duels, swapped duels, mirrored armies of every creature, dead heats) and
+  `designcheck` measures side wins in AI battles.
+- Gap 1 — the guarantee had fallen behind the mechanics: four phase-2 systems (hold the line,
+  brittle frost, surges, crowd-weighted meteors) were never checked for side bias, and the
+  movement code for holding and the update order of frozen units are exactly where "team 0 is
+  updated first" bugs hide. Added a mirrored test for seven creatures (pack hunters, flyers,
+  cleavers, ranged): both sides hold the middle lane, must wait at mirrored spots, then charge
+  together — with and without freezing everyone mid-fight — and must end in mutual destruction.
+  It passes.
+- Gap 2 — perceived fairness at the moment of judgment: after losing to Master, players look at
+  "Gold earned 4,120 vs 5,300" and feel cheated or not; the handicap was only on the foe card.
+  The results header now says it beside the foe's name — "Adept · 90% income" (with a tooltip:
+  gold over time and from shrines; kill gold is the same) — so the gold rows read fairly.
+- Checked: the new mirrored test; results screenshot (phone); full verify.
