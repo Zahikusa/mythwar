@@ -9,6 +9,7 @@ import { artFor } from './creatures/index.ts';
 import type { CreatureArt, Pose } from './creatures/types.ts';
 import { TAU, circle, drawGlow, ellipse, setLineWidth } from './draw.ts';
 import { Fx } from './fx.ts';
+import type { FloatText } from './fx.ts';
 import { artScaleOf, computeLayout, laneX } from './layout.ts';
 import type { LaneGeom, Layout, LayoutMode } from './layout.ts';
 import { drawProjectile, projectileImpact } from './projectiles.ts';
@@ -133,6 +134,10 @@ export class Renderer {
   private shrineGlint = [0, 0, 0];
   /** Last golden mote shed by a surging shrine. */
   private surgeMote = [0, 0, 0];
+  /** The local player's recent kills per lane (sim time), for "Rout!" callouts. */
+  private routs: { times: number[]; xs: number[]; text: FloatText | null }[] = [0, 1, 2].map(() => ({ times: [], xs: [], text: null }));
+  /** Called when the player's kills in one lane reach a rout tier (4, 6, 9 within a few seconds). */
+  onRout: ((count: number) => void) | null = null;
   private winner: Team | null = null;
   private embers: { x: number; y: number; vx: number; vy: number; life: number }[] = [];
   private hover: { unit: Unit; x: number; top: number; d: number } | null = null;
@@ -209,6 +214,11 @@ export class Renderer {
   }
 
   reset(): void {
+    for (const r of this.routs) {
+      r.times = [];
+      r.xs = [];
+      r.text = null;
+    }
     this.vis.clear();
     this.ghosts = [];
     this.projVis.clear();
@@ -219,6 +229,37 @@ export class Renderer {
     this.collapse = [-1, -1];
     this.laneAlert = [0, 0, 0];
     this.embers = [];
+  }
+
+  /**
+   * Many foes falling in one lane within a few seconds (a god power, a counter crushing a wave)
+   * earns a callout that grows with the tally: Rout! → Slaughter! → Annihilation!
+   */
+  private countRout(lane: number, now: number, x: number, y: number): void {
+    const WINDOW = 2.5;
+    const r = this.routs[lane];
+    while (r.times.length && now - r.times[0] > WINDOW) {
+      r.times.shift();
+      r.xs.shift();
+    }
+    r.times.push(now);
+    r.xs.push(x);
+    const n = r.times.length;
+    if (n < 4) return;
+    const label = `${n >= 9 ? 'Annihilation!' : n >= 6 ? 'Slaughter!' : 'Rout!'} ×${n}`;
+    const cx = r.xs.reduce((a, b) => a + b, 0) / n;
+    const size = 22 + Math.min(12, (n - 4) * 2);
+    if (r.text && r.text.life > 0 && this.fx.texts.includes(r.text)) {
+      r.text.text = label;
+      r.text.size = size;
+      r.text.life = r.text.max;
+    } else {
+      this.fx.text(cx, y, label, '#ffe08a', size);
+      r.text = this.fx.texts[this.fx.texts.length - 1];
+      r.text.life = r.text.max = 1.9;
+      r.text.vy = -22;
+    }
+    if (n === 4 || n === 6 || n === 9) this.onRout?.(n);
   }
 
   private background(index: number): HTMLCanvasElement {
@@ -468,6 +509,7 @@ export class Renderer {
           this.fx.burst(x, y - 4, { count: 8, color: 'rgba(60,45,40,0.6)', speed: 40, life: 0.8, size: 4 * s + 2, shape: 'smoke', layer: e.lane, gravity: -10 });
           this.deathFlourish(e.defId, x, by, e.lane, s);
           if (e.team !== view.playerTeam) {
+            this.countRout(e.lane, world.time, x, g.y - 70 * this.bodyScale(g));
             this.fx.gold(x, by - art.height * 0.5 * s, e.gold, '#ffd76a', 15, 70 * this.bodyScale(g));
             // A coin flies to the gold counter (capped so big fights don't flood the screen).
             const target = this.coinTarget;

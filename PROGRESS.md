@@ -21,7 +21,7 @@ complete; its log follows below the lens plan.
 ## Phase 2 — lens checklist (tentative idea → result)
 - [x] #1 Essential Experience — essence written in DESIGN.md; every battle opens with "Topple their citadel — vs <foe>" + war horn
 - [x] #2 Surprise — Ley Surges: a foretold, seeded shrine surge every 2–3 min (race for a flood of gold)
-- [ ] #3 Fun — celebrate the fun moments (multi-kill callouts for powers / dragon)
+- [x] #3 Fun — "Rout! / Slaughter! / Annihilation! ×N" callouts + brass stab when 4+ foes fall in a lane within 2.5 s
 - [ ] #4 Curiosity — peek at the next age (creatures/power) from the Ascend button
 - [ ] #5 Endogenous Value — make gold/XP value felt (kill gold popups, bounty)
 - [ ] #6 Problem Solving — surface the problem: enemy lane composition at your gate

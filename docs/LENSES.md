@@ -42,3 +42,18 @@ other — and themselves?*
 - Checked: 3 new unit tests (omen → start → end, payout = 1.5× income × 20 s, lane never
   repeats, survives save/load, none in Ragnarök); scripted smart bot vs Master 23/100 (documented
   25%) — calibration intact; screenshot of an active surge (`?demo&ff=120&seed=5`); full verify.
+  Also vs Adept 59/100 (documented 67%; the scripted bot ignores surges, the Adept AI doesn't)
+  and vs Mythic 7/100 (5%).
+
+## #3 The Lens of Fun
+*What parts of my game are fun? Why? What parts need to be more fun?*
+- The most fun moments are the reversals: a god power landing on a packed lane, the right
+  counter shredding a wave, the dragon breathing over a column. They were acknowledged only by
+  the individual "+N gold" popups (merged when close together) — the game didn't *notice* that
+  something great just happened.
+- Change: **rout callouts.** When the player's side fells 4+ foes in one lane within 2.5 s the
+  lane shows "Rout! ×4", growing as the tally climbs ("Slaughter! ×6", "Annihilation! ×9"),
+  with a rising brass stab (higher and fuller per tier) and a vibration pattern on phones. One
+  callout per lane updates in place instead of stacking. Not in attract mode.
+- Checked: new screenshot scenario `node scripts/shoot.ts rout` (Wrath of Zeus on a packed lane →
+  "Annihilation! ×9" centred over the fallen); full verify.

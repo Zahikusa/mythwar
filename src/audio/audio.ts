@@ -220,6 +220,16 @@ export class Audio {
       case 'power':
         this.tone({ freq: 300, to: 900, dur: 0.3, vol: 0.12, type: 'sawtooth' });
         break;
+      case 'rout':
+      case 'rout6':
+      case 'rout9': {
+        // A rising brass stab: higher and fuller for a bigger tally.
+        const up = kind === 'rout9' ? 7 : kind === 'rout6' ? 4 : 0;
+        const notes = kind === 'rout' ? [0, 7, 12] : [0, 4, 7, 12];
+        notes.forEach((n, i) => this.tone({ freq: midi(60 + up + n), dur: 0.45, vol: 0.07, type: 'sawtooth', attack: 0.02, delay: i * 0.04 }));
+        this.noiseBurst({ dur: 0.25, vol: 0.2, freq: 180, type: 'lowpass' });
+        break;
+      }
       case 'horn':
         // The battle begins: two war-horn calls, a fifth apart, over a low drum.
         this.noiseBurst({ dur: 0.35, vol: 0.35, freq: 140, type: 'lowpass' });

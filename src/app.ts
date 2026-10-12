@@ -82,6 +82,11 @@ export class App {
     this.canvas = document.createElement('canvas');
     this.stage.appendChild(this.canvas);
     this.renderer = new Renderer(this.canvas);
+    this.renderer.onRout = (n) => {
+      if (this.state !== 'playing' || this.game?.options.demo) return;
+      this.audio.ui(n >= 9 ? 'rout9' : n >= 6 ? 'rout6' : 'rout');
+      this.buzz(n >= 6 ? [20, 30, 20, 30, 40] : [20, 30, 30]);
+    };
     this.hud = new Hud(this.stage, {
       pause: () => this.pause(),
       sound: (k) => {
