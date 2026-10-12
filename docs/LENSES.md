@@ -325,3 +325,24 @@ steady stream of challenges, at the right level, accounting for the player's gro
   caught that the results → foe screen → back path disappeared, so the nudge moved into the tip.
 - Checked: unit tests for the suggestion and the streak bookkeeping; results screenshots
   (phone, desktop); full verify.
+
+## #19 The Lens of Needs
+*On what levels of Maslow's hierarchy is my game operating? How can I make it fulfill more
+basic needs? On the levels it is already operating, how can it fulfill those needs better?*
+- Self-actualization: mastering the triangle, ages and timing (four foes, `designcheck`).
+  Esteem: records, laurels, feats (#17), the flow nudge (#18). Belonging: battles with friends on
+  the same Wi-Fi, quick messages, per-opponent tallies.
+- The level underneath was missing — **safety**: everything a player earns lives in one
+  browser's storage. Clearing site data, a new phone, or simply switching from the PC (where
+  the friend battle happened) to the phone (where the commute happens) — and the records, feats
+  and discovered ages are gone or split. For a game whose promise is "PC ↔ phone", progress that
+  can't cross devices undermines the rest of the pyramid.
+- Change: **progress codes** (Settings → "Play on another device too?"). "Copy my code" puts the
+  records, feats, discovered ages and online tallies on the clipboard as one `MW1:…` line (on a
+  plain-http LAN page, where the clipboard API is unavailable, it shows the code ready to copy);
+  pasting it on the other device and pressing "Load" **merges** — wins/losses keep the larger
+  count, best times the faster, feats and ages are united, and loading the same code twice
+  changes nothing. Nothing leaves the device unless the player copies it.
+- Checked: unit tests (round trip + merge rules + idempotence; garbage, wrong prefix, non-JSON
+  and non-object payloads rejected without side effects); settings screenshots (desktop, phone);
+  full verify.

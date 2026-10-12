@@ -11,6 +11,7 @@ import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
 import { Bestiary } from './bestiary.ts';
 import { FEATS } from './feats.ts';
+import { exportProgress, importProgress } from './progress.ts';
 import type { Feat } from './feats.ts';
 import type { MpMenuCallbacks } from './mpmenus.ts';
 import type { EndReason } from '../net/protocol.ts';
@@ -502,8 +503,38 @@ export class Menus {
       resetTips.querySelector('span')!.textContent = 'Tips will show again';
       for (const f of this.syncers) f();
     });
+    // Progress codes: carry records and feats to another device (or keep a backup).
+    const progStatus = h('span', { class: 'sprogstatus', role: 'status' });
+    const progInput = h('input', { class: 'sproginput', type: 'text', placeholder: 'Paste a progress code', spellcheck: 'false', autocomplete: 'off', 'aria-label': 'Progress code' }) as HTMLInputElement;
+    progInput.addEventListener('keydown', (e) => e.stopPropagation());
+    const copyProg = this.button('Copy my code', 'ghost small', () => {
+      const code = exportProgress(s);
+      const fallback = () => {
+        progInput.value = code;
+        progInput.select();
+        progStatus.textContent = 'Copy the code above, then paste it on the other device.';
+      };
+      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(code).then(() => (progStatus.textContent = 'Copied — paste it into Settings on the other device.'), fallback);
+      else fallback();
+    });
+    const loadProg = this.button('Load', 'ghost small', () => {
+      if (!progInput.value.trim() || progInput.value.trim() === exportProgress(s)) {
+        progStatus.textContent = 'Paste a code from your other device first.';
+        return;
+      }
+      if (!importProgress(s, progInput.value)) {
+        progStatus.textContent = 'That isn’t a Mythwar progress code.';
+        return;
+      }
+      this.cb.settingsChanged(s);
+      progInput.value = '';
+      progStatus.textContent = `Progress merged: ${s.feats.length} feats, ${Object.values(s.records).reduce((n, r) => n + (r?.wins ?? 0), 0)} wins.`;
+    });
+    const progress = h('div', { class: 'sprog' }, h('span', { class: 'sproglabel', text: 'Play on another device too? Carry your records and feats over:' }), h('div', { class: 'sprogrow' }, copyProg, progInput, loadProg), progStatus);
     // Each visit starts fresh: no half-armed "erase records" left over from last time.
     this.settingsOpened = () => {
+      progStatus.textContent = '';
+      progInput.value = '';
       resetRecords.dataset.armed = '';
       resetRecords.querySelector('span')!.textContent = 'Reset records';
       resetTips.querySelector('span')!.textContent = 'Show tips again';
@@ -524,6 +555,7 @@ export class Menus {
         toggleRow('Battery saver (lower quality)', 'lowQuality'),
         toggleRow('Fullscreen on phones', 'fullscreen'),
         toggleRow('Opponent’s quick messages', 'emotes'),
+        progress,
         h(
           'div',
           { class: 'about' },
