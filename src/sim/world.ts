@@ -121,6 +121,8 @@ export interface WorldSnapshot {
   lastSurgeLane?: number;
   /** A quick battle (absent in older saves: a standard one). */
   quick?: boolean;
+  /** The battle's seed (names the battlefield; absent in older saves). */
+  seed?: number;
   players: (Omit<PlayerState, 'turrets'> & { turrets: (Omit<TurretSlot, 'def'> & { def: string | null })[] })[];
   lanes: (Omit<Unit, 'def'> & { def: string })[][];
   shrines: Shrine[];
@@ -132,6 +134,8 @@ export class World {
   time = 0;
   tick = 0;
   readonly rng: Rng;
+  /** The seed the battle began with (only names the battlefield; never read by the rules). */
+  seed: number;
   readonly players: [PlayerState, PlayerState];
   readonly lanes: Unit[][] = [];
   readonly shrines: Shrine[] = [];
@@ -161,7 +165,8 @@ export class World {
   private heals: { u: Unit; amount: number }[] = [];
 
   constructor(opts: WorldOptions = {}) {
-    this.rng = new Rng(opts.seed ?? 12345);
+    this.seed = opts.seed ?? 12345;
+    this.rng = new Rng(this.seed);
     this.surgeRng = new Rng(((opts.seed ?? 12345) ^ 0x51ed2705) >>> 0);
     this.nextSurgeAt = this.surgeRng.range(SURGE_FIRST[0], SURGE_FIRST[1]);
     const mult = opts.incomeMult ?? [1, 1];
@@ -222,6 +227,7 @@ export class World {
       surgeRng: this.surgeRng.state,
       lastSurgeLane: this.lastSurgeLane,
       quick: this.quick,
+      seed: this.seed,
       players: this.players.map((p) => ({ ...p, turrets: p.turrets.map((t) => ({ ...t, def: t.def ? t.def.id : null })) })),
       lanes: this.lanes.map((l) => l.filter((u) => u.alive).map((u) => ({ ...u, def: u.def.id }))),
       shrines: this.shrines,
@@ -246,6 +252,7 @@ export class World {
     w.ragnarokStarted = snap.ragnarokStarted;
     w.finalAgeAt = snap.finalAgeAt;
     w.quick = !!snap.quick;
+    w.seed = snap.seed ?? 0;
     if (typeof snap.nextSurgeAt === 'number') {
       w.surge = snap.surge ?? null;
       w.nextSurgeAt = snap.nextSurgeAt;

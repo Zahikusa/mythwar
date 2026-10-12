@@ -26,6 +26,7 @@ import type { Layout } from '../render/layout.ts';
 import { h, fmt, fmtTime, onTap, setStyle, setText, toggle } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, CLASS_NAME, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
+import { battleName } from './places.ts';
 import { COOP_EMOTES, EMOTES, VERSUS_EMOTES } from '../net/protocol.ts';
 import type { EmoteId } from '../net/protocol.ts';
 
@@ -256,7 +257,7 @@ export class Hud {
 
     // Screen readers announce event toasts and banners (ascensions, Ragnarök, the verdict).
     E.toast = h('div', { class: 'toast', role: 'status', 'aria-live': 'polite' });
-    E.banner = h('div', { class: 'banner', role: 'status', 'aria-live': 'polite' }, h('div', { class: 'btitle' }), h('div', { class: 'bsub' }), h('div', { class: 'blore' }));
+    E.banner = h('div', { class: 'banner', role: 'status', 'aria-live': 'polite' }, h('div', { class: 'bkick' }), h('div', { class: 'btitle' }), h('div', { class: 'bsub' }), h('div', { class: 'blore' }));
     E.hint = h('div', { class: 'hint' });
     E.tooltip = h('div', { class: 'tooltip hidden' });
 
@@ -710,9 +711,13 @@ export class Hud {
     this.toastTimer = kind === 'feat' ? 3.2 : this.toastQueue.length ? 1.4 : 1.8;
   }
 
-  /** A centre-screen banner; `lore` adds a line of story (and keeps it up long enough to read). */
-  banner(title: string, sub: string, kind = '', lore = ''): void {
+  /**
+   * A centre-screen banner; `lore` adds a line of story (and keeps it up long enough to read),
+   * `kicker` a small heading above the title.
+   */
+  banner(title: string, sub: string, kind = '', lore = '', kicker = ''): void {
     const b = this.el.banner;
+    setText(b.querySelector('.bkick')!, kicker);
     setText(b.querySelector('.btitle')!, title);
     setText(b.querySelector('.bsub')!, sub);
     setText(b.querySelector('.blore')!, lore);
@@ -722,12 +727,15 @@ export class Hud {
     this.bannerTimer = lore ? 4.5 : 2.8;
   }
 
-  /** The battle begins: who you face and what you must do (the game's essential experience). */
+  /**
+   * The battle begins: who you face and what you must do (the game's essential experience), and
+   * where — the battlefield's name.
+   */
   opening(foe: string): void {
     const g = this.game;
     if (!g) return;
     const age = AGES[g.world.players[g.playerTeam].age];
-    this.banner('Topple their citadel', `vs ${foe} · ${age.name}`, 'gold', age.lore);
+    this.banner('Topple their citadel', `vs ${foe} · ${age.name}`, 'gold', age.lore, battleName(g.world.seed));
     this.cb.sound('horn');
   }
 

@@ -1747,6 +1747,20 @@ svg {
   display: none;
 }
 
+.banner .bkick {
+  font-family: var(--title-font);
+  font-size: calc(17px * var(--ui));
+  letter-spacing: 0.2em;
+  font-variant: small-caps;
+  color: #f1e6c8;
+  text-shadow: 0 1px 4px #000, 0 0 12px rgba(0, 0, 0, 0.8);
+  margin-bottom: 2px;
+}
+
+.banner .bkick:empty {
+  display: none;
+}
+
 .banner .bsub {
   font-size: calc(18px * var(--ui));
   letter-spacing: 0.12em;
@@ -2303,6 +2317,10 @@ svg {
 }
 
 .hud.mobile .banner .bsub {
+  font-size: 12px;
+}
+
+.hud.mobile .banner .bkick {
   font-size: 12px;
 }
 

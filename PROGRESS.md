@@ -91,7 +91,7 @@ complete; its log follows below the lens plan.
 - [x] #42 Simplicity/Complexity — progressive disclosure: newcomers see the hold shields when the coach introduces them (2:30)
 - [x] #43 Elegance — results tip and next-foe button no longer say the same thing: the tip points at the missing star
 - [x] #44 Character — the AI difficulties are generals with a voice: Puck, Hippolyta, Odin, Ares (taunts at key moments)
-- [ ] #45 Imagination — leave room for imagination (lore lines)
+- [x] #45 Imagination — every battle is fought at a named place from its seed ("The Battle of Weeping Ford"): banner, pause, results, shared result
 - [ ] #46 Economy — economy analysis & fix
 - [ ] #47 Balance — per-creature balance from sims
 - [ ] #48 Accessibility — colour-blind friendly team/class cues, text size

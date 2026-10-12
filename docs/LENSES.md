@@ -866,3 +866,23 @@ there characters players can identify with?*
 - Fixed on the way: speech bubbles never wrapped (long text overflowed the screen edge); on
   phones they now sit under the resource pill instead of over it.
 - Checked: screenshots (desktop bubble, phone bubble, foe cards on a small phone); full verify.
+
+## #45 The Lens of Imagination
+*What must the players understand to play? Can imagination help them understand? What details
+can I provide — and which would be inadequate, better left to the player? Can I give details
+the player can use again and again for their imagination?*
+- What must be understood is all shown, not imagined (lanes, counters, ages); imagination is
+  where the *meaning* lives: the creatures carry their myths (#11), the ages a line of lore (#7),
+  the generals a voice (#44). What was missing is the *where*. Every battle happened nowhere in
+  particular — "a crossing" in the opening lore, then the same field every time.
+- Drawing a dozen distinct battlefields would be the inadequate detail (more art, never as good
+  as what a player pictures). A **name** is the opposite: two words the player fills in alone.
+- Change: every battle is fought at a **named place** drawn from its seed (`src/ui/places.ts`):
+  "Weeping Ford", "Giant’s Glen", "the Vale of Ravens", "the Shore of Seven Stones" (~520
+  names). It heads the opening banner as a small-caps kicker ("The Battle of the Plain of
+  Antlers"), opens the pause summary, closes the results verdict ("Your citadel lies in ruins at
+  the Plain of Antlers.") and goes into the copied result. Online both players share the seed,
+  so they fought at the same place and can talk about "the Weeping Ford one" later. The world
+  keeps its seed in snapshots, so a save or a reconnect keeps the name (older saves get one too).
+- Checked: unit tests (stable per seed, varied, both name shapes, survives a snapshot);
+  screenshots of the banner (desktop, phone), pause (phone) and results; full verify.

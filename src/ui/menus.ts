@@ -12,6 +12,7 @@ import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
 import { Bestiary } from './bestiary.ts';
 import { PERSONAS } from './personas.ts';
+import { battleName, placeName } from './places.ts';
 import { FEATS } from './feats.ts';
 import { exportProgress, importProgress } from './progress.ts';
 import type { Feat } from './feats.ts';
@@ -140,7 +141,7 @@ export class Menus {
     const foe = online ? online.foe : `${PERSONAS[difficulty].name} (${AI_PROFILES[difficulty].name})`;
     this.pauseSummary.textContent = sandbox
       ? `Sandbox · ${fmtTime(world.time)} · ${AGES[P.age].name}`
-      : `vs ${foe} · ${fmtTime(world.time)} · ${AGES[P.age].name} vs ${AGES[E.age].name} · ${P.stats.kills} foes slain`;
+      : `${battleName(world.seed)} · vs ${foe} · ${fmtTime(world.time)} · ${AGES[P.age].name} vs ${AGES[E.age].name} · ${P.stats.kills} foes slain`;
     // Against the AI: the battle's star goals, while they can still be won.
     if (this.pauseGoals) this.pauseGoals.textContent = online || sandbox ? '' : starGoals(world, me, difficulty);
     // Online, either player may pause and either may resume; the battle can't restart.
@@ -703,7 +704,8 @@ export class Menus {
         }
       }
     }
-    const shareText = `Mythwar: ${won ? 'Victory' : 'Defeat'} vs ${foeName} in ${fmtTime(world.time)} — reached ${AGES[P.age].name}, ${P.stats.kills} foes slain.`;
+    const place = placeName(world.seed);
+    const shareText = `Mythwar: ${won ? 'Victory' : 'Defeat'} at ${place} vs ${foeName} in ${fmtTime(world.time)} — reached ${AGES[P.age].name}, ${P.stats.kills} foes slain.`;
     const share = this.button('Copy result', 'ghost', () => {
       const done = (ok: boolean) => (share.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed');
       try {
@@ -716,7 +718,7 @@ export class Menus {
       h(
         'div',
         { class: 'vhead' },
-        h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: verdictLine(won, online) })),
+        h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: verdictLine(won, online, place) })),
         h('div', { class: 'vportrait' }, portrait(champion.id, 96, 0, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
       ),
       h(
@@ -831,14 +833,15 @@ function starsRow(parts: { label: string; got: boolean }[]): HTMLElement {
   return h('div', { class: 'vstars', 'aria-label': `${parts.filter((p) => p.got).length} of 3 stars` }, ...parts.map((p) => h('span', { class: p.got ? 'got' : '' }, h('b', { text: p.got ? '★' : '☆' }), p.label)));
 }
 
-function verdictLine(won: boolean, online?: OnlineResult): string {
+function verdictLine(won: boolean, online?: OnlineResult, place = ''): string {
   if (online?.ally) {
     if (online.reason !== 'citadel') return won ? 'The battle is yours.' : 'You and your ally were away too long.';
     return won ? `You and ${online.ally} toppled the ${online.foe}!` : `The ${online.foe} broke your shared citadel.`;
   }
   if (online?.reason === 'forfeit') return won ? `${online.foe} left the battle.` : 'You left the battle.';
   if (online?.reason === 'timeout') return won ? `${online.foe} didn’t come back in time.` : 'You were away too long.';
-  return won ? 'The enemy citadel has fallen.' : 'Your citadel lies in ruins.';
+  const at = place ? ` at ${place}` : '';
+  return won ? `The enemy citadel has fallen${at}.` : `Your citadel lies in ruins${at}.`;
 }
 
 function scoreLine(o: OnlineResult): string {
