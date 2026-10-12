@@ -16,6 +16,16 @@ complete; its log follows below the lens plan.
 - Findings parked for later lenses: even AI battles run ~18 min (Ragnarök decides them, #39);
   the AI never summons the Elder Dragon (#46/#47).
 
+## Phase 2 — open issues found along the way
+- Intermittent (1 in ~7 smoke runs, not reproduced in 12 targeted runs): "IndexSizeError: arc
+  radius is negative" (-14.3 / -237.6) during the smoke's *rotated menus* flow (upright phone:
+  battle start, safe-area resize, world time jumped to 30 s). Every smoke page-error handler now
+  logs the first stack frames (`pageError`), so the next occurrence names the drawing call. The
+  ley-sight portraits (new in #22) clamp their radius defensively.
+- The smoke's "number key summons" check was timing-sensitive after #35 added a wheel step
+  before it (a creature could leave the queue between the two reads); it now counts queued +
+  summoned and tops up gold first.
+
 ## Phase 2 — how each iteration works
 - One iteration = one lens (numbering of the book's first edition / the 100-card deck).
   Ask the lens's questions about Mythwar, pick the **one most valuable concrete change** it

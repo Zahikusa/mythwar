@@ -1217,7 +1217,7 @@ export class Renderer {
     const training = world.trainingIndex(foe);
     const gate = this.gateScreen(foe, lane);
     const toField = foe === 0 ? 1 : -1;
-    const r = 15 * gate.s;
+    const r = Math.max(4, 15 * gate.s);
     let k = 0;
     for (let i = 0; i < p.queue.length && k < 3; i++) {
       const q = p.queue[i];

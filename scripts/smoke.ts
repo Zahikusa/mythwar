@@ -237,6 +237,12 @@ async function phoneMenusFit(page: Page): Promise<void> {
   }
 }
 
+/** A page error with where it was thrown (first stack frames), for errors that are hard to reproduce. */
+function pageError(label: string, e: unknown): string {
+  const frames = ((e as Error).stack ?? '').split('\n').slice(1, 4).map((f) => f.trim()).join(' / ');
+  return `${label}: ${String(e)}${frames ? ` @ ${frames}` : ''}`;
+}
+
 async function rotatedMenusFlow(page: Page): Promise<void> {
   console.log('== rotated portrait menus ==');
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
@@ -538,11 +544,15 @@ async function run(page: Page, label: string, viewport: { width: number; height:
       s = await state(page);
       check('mouse wheel steps the selected lane', up === Math.max(0, before - 1) && s.lane === Math.min(2, up + 1), JSON.stringify({ before, up, down: s.lane }));
     }
-    const q0 = s.queue;
+    // (Counted as queued + summoned: a creature may step out of the queue meanwhile.)
+    await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].gold = 1000));
+    s = await state(page);
+    const q0 = s.queue + s.summoned;
+    const full = s.queue >= 5;
     await page.keyboard.press('3');
     await sleep(50);
     s = await state(page);
-    check('number key summons', s.queue === Math.min(5, q0 + 1), `queue=${s.queue}`);
+    check('number key summons', full || s.queue + s.summoned === q0 + 1, `queued+summoned ${q0} → ${s.queue + s.summoned}`);
     await page.keyboard.press('m');
     await sleep(50);
     const muted = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.settings.muted);
@@ -814,7 +824,7 @@ async function main(): Promise<void> {
       { label: 'phone portrait (rotated)', width: 390, height: 844, mobile: true },
     ]) {
       const page = await browser.newPage();
-      page.on('pageerror', (e) => errors.push(`${vp.label}: ${String(e)}`));
+      page.on('pageerror', (e) => errors.push(pageError(vp.label, e)));
       page.on('console', (m) => {
         if (m.type() === 'error') errors.push(`${vp.label}: ${m.text()}`);
       });
@@ -822,27 +832,27 @@ async function main(): Promise<void> {
       await page.close();
     }
     const page = await browser.newPage();
-    page.on('pageerror', (e) => errors.push(`resume: ${String(e)}`));
+    page.on('pageerror', (e) => errors.push(pageError('resume', e)));
     await resumeFlow(page);
     await page.close();
     const page2 = await browser.newPage();
-    page2.on('pageerror', (e) => errors.push(`rotated menus: ${String(e)}`));
+    page2.on('pageerror', (e) => errors.push(pageError('rotated menus', e)));
     await rotatedMenusFlow(page2);
     await page2.close();
     const page6 = await browser.newPage();
-    page6.on('pageerror', (e) => errors.push(`phone menus: ${String(e)}`));
+    page6.on('pageerror', (e) => errors.push(pageError('phone menus', e)));
     await phoneMenusFit(page6);
     await page6.close();
     const page5 = await browser.newPage();
-    page5.on('pageerror', (e) => errors.push(`service worker: ${String(e)}`));
+    page5.on('pageerror', (e) => errors.push(pageError('service worker', e)));
     await serviceWorkerFlow(page5);
     await page5.close();
     const page4 = await browser.newPage();
-    page4.on('pageerror', (e) => errors.push(`tutorial: ${String(e)}`));
+    page4.on('pageerror', (e) => errors.push(pageError('tutorial', e)));
     await tutorialHandoffFlow(page4);
     await page4.close();
     const page3 = await browser.newPage();
-    page3.on('pageerror', (e) => errors.push(`large desktop: ${String(e)}`));
+    page3.on('pageerror', (e) => errors.push(pageError('large desktop', e)));
     page3.on('console', (m) => {
       if (m.type() === 'error') errors.push(`large desktop: ${m.text()}`);
     });
