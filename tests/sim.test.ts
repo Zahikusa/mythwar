@@ -415,6 +415,25 @@ describe('ley surges', () => {
 });
 
 describe('god powers', () => {
+  it('wrath of zeus strikes the foes nearest your citadel first, each once', () => {
+    for (const team of [0, 1] as Team[]) {
+      const w = new World({ seed: 7 });
+      setAge(w, 1);
+      w.players[team].powerCooldown = 0;
+      const foe: Team = team === 0 ? 1 : 0;
+      const xs = [700, 350, 900, 420, 610, 380, 820, 500, 300, 760];
+      for (const x of xs) {
+        const u = w.spawnUnit(foe, 2, UNITS.minotaur, team === 0 ? x : LANE_LENGTH - x);
+        u.def = { ...u.def, speed: 0, damage: 0 };
+        u.hp = u.maxHp = 1e9;
+      }
+      w.apply({ type: 'power', team, lane: 2 });
+      run(w, 3);
+      const struck = w.drainEvents().filter((e) => e.type === 'strike').map((e) => (e.type === 'strike' ? Math.round(team === 0 ? e.x : LANE_LENGTH - e.x) : 0));
+      expect(struck).toEqual([...xs].sort((a, b) => a - b).slice(0, 7));
+    }
+  });
+
   it('starfall rains where the enemy crowds, not on a lone straggler', () => {
     let crowd = 0;
     let straggler = 0;

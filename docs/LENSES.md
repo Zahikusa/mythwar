@@ -638,3 +638,28 @@ risks?*
   to as well, so calibration is unchanged; `designcheck` all pass.
 - Checked: unit test (70% refused, 80% at double price, full XP at the normal price); Ascend
   button screenshot; full verify.
+
+## #34 The Lens of Skill vs. Chance
+*Are my players here to be judged (skill) or to take risks (chance)? Skill-based games tend to
+be more serious than chance-based games: is my game serious or casual? Are parts of my game
+tedious? If so, does adding chance enliven them? Do parts feel too random? Will replacing chance
+elements with skill or strategy elements make them feel more controllable?*
+- Mythwar is a skill game played in a casual frame: the scripted "smart" player beats Novice
+  100% and Mythic ~3%, the gap between bots of different skill is huge, and chance only seasons
+  it. Where chance lives it should *enliven* (the Ley Surge's lane and timing, #2; where a
+  meteor lands in a crowd, #29) and never decide whether a decision was right.
+- Too random: **Wrath of Zeus** — its seven bolts picked random foes, so casting it while the
+  enemy front was at your gate might spend half the bolts on creatures still in midfield. The
+  player chose the moment and the lane; luck chose the outcome.
+- Change: each bolt strikes **the foe nearest your citadel that hasn't been struck yet** (then
+  starts over), so Zeus answers the most pressing threat and its value follows from the player's
+  timing. (Splash on neighbours as before.) Blurb updated.
+- Checked: unit test for both sides (ten immobile foes: the bolts hit the seven nearest, in
+  order); full verify.
+- Pacing investigation (for #39): `designcheck` now uses 30 even battles (15 swung the median by
+  ±1.5 min). Even AI battles sit at a 19.3–20.5-minute median, on the 20-minute line; 20 of 30
+  run into Ragnarök. Measured levers, none of which moved the median: Ragnarök at 16 or 17 min
+  (it already starts at ~15–16.5 via "3 min after both reach the final age"), 2 minutes instead
+  of 3, siege ramp ×2, crumble after 6 instead of 10 minutes. Per-battle traces show the
+  bottleneck is *reaching* a defended Celestial citadel, not damaging it. Left for #39 (Time),
+  with the pacing criterion red until then.

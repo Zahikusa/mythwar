@@ -79,14 +79,20 @@ function updateZeus(world: World, inst: PowerInstance): void {
   while (inst.fired < T.bolts && inst.t >= T.start + inst.fired * T.interval) {
     inst.fired++;
     const list = enemies(world, inst);
-    // Prefer targets that have not been struck yet.
+    // Each bolt strikes the foe nearest the caster's citadel that hasn't been struck yet (then
+    // starts over): Zeus answers the most pressing threat, so the cast rewards timing, not luck.
     const fresh = list.filter((u) => !inst.hit.includes(u.id));
     const pool = fresh.length > 0 ? fresh : list;
     if (pool.length === 0) {
       world.emit({ type: 'strike', team: inst.team, lane: inst.lane, x: randomEnemySideX(world, inst.team), kind: 'zeus', radius: T.radius });
       continue;
     }
-    const target = world.rng.pick(pool);
+    let target = pool[0];
+    for (const u of pool) {
+      const nearer = inst.team === 0 ? u.x < target.x : u.x > target.x;
+      if (nearer || (u.x === target.x && u.id < target.id)) target = u;
+    }
+    if (fresh.length === 0) inst.hit.length = 0;
     inst.hit.push(target.id);
     const x = target.x;
     world.emit({ type: 'strike', team: inst.team, lane: inst.lane, x, kind: 'zeus', radius: T.radius });

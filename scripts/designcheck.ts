@@ -32,7 +32,7 @@ check('each difficulty is harder than the one before', rates.every((r, i) => i =
 
 // 2. Pacing: evenly matched battles last long enough to climb the ages, short enough for a
 //    session on the sofa.
-const n = Math.max(10, Math.round(games / 2));
+const n = Math.max(20, games);
 const matches = Array.from({ length: n }, (_, i) => playMatch('master', 'master', 2000 + i));
 const mins = matches.map((m) => m.time / 60).sort((a, b) => a - b);
 const median = mins[Math.floor(mins.length / 2)];

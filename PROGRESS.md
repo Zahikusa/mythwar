@@ -64,12 +64,12 @@ complete; its log follows below the lens plan.
 - [x] #31 Challenge — Trials: Glass Citadel, Godless, No Walls (any foe; feat for all three)
 - [x] #32 Meaningful Choices — the dragon is a real choice (equal-gold tests) the AI never made; able AIs now save for it in calm moments
 - [x] #33 Triangularity — rush an age with 75% of the XP for a double tithe (risky early age vs safe wait)
-- [ ] #34 Skill vs. Chance — balance check
+- [x] #34 Skill vs. Chance — Wrath of Zeus strikes the foes nearest your citadel first (was random)
 - [ ] #35 Head and Hands — dexterity vs thought: input convenience
 - [ ] #36 Competition — competitive comparison (stats on results)
 - [ ] #37 Cooperation — cooperative element
 - [ ] #38 Competition vs. Cooperation — balance of the two
-- [ ] #39 Time — battle length options / pacing (Ragnarök ramp raised to +150%/min in #29's maintenance: even battles ~18.8 min)
+- [ ] #39 Time — PACING: designcheck median of even AI battles ~20.5 min (red); bottleneck = reaching a defended Celestial citadel in Ragnarök (see #34 notes)
 - [ ] #40 Reward — rewards: unlocks / celebrations
 - [ ] #41 Punishment — punishment & comeback
 - [ ] #42 Simplicity/Complexity — progressive disclosure

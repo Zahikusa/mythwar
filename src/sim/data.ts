@@ -554,7 +554,7 @@ export const POWERS: Record<PowerKind, PowerDef> = {
     age: 1,
     cooldown: 55,
     damage: 90 * POWER_SCALE[1],
-    blurb: 'Seven thunderbolts strike enemies in the lane.',
+    blurb: 'Seven thunderbolts strike the foes nearest your citadel, one after another.',
   },
   fimbul: {
     id: 'fimbul',
