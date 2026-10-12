@@ -9,6 +9,7 @@ import { portrait } from './portraits.ts';
 import type { Settings } from './settings.ts';
 import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
+import { Bestiary } from './bestiary.ts';
 import type { MpMenuCallbacks } from './mpmenus.ts';
 import type { EndReason } from '../net/protocol.ts';
 
@@ -36,7 +37,7 @@ export interface MenuCallbacks {
   toRoom(): void;
 }
 
-type Screen = 'none' | 'title' | 'difficulty' | 'howto' | 'settings' | 'pause' | 'over' | 'mp' | 'room';
+type Screen = 'none' | 'title' | 'difficulty' | 'howto' | 'settings' | 'bestiary' | 'pause' | 'over' | 'mp' | 'room';
 
 /** Full-screen menus: title, difficulty, how-to-play, settings, pause and results. */
 export class Menus {
@@ -71,6 +72,7 @@ export class Menus {
   private pauseTitle: HTMLElement | null = null;
   private rematchBtn: HTMLButtonElement | null = null;
   private rematchNote: HTMLElement | null = null;
+  private bestiary!: Bestiary;
 
   constructor(parent: HTMLElement, settings: Settings, cb: MenuCallbacks) {
     this.cb = cb;
@@ -82,6 +84,8 @@ export class Menus {
     this.screens.difficulty = this.buildDifficulty();
     this.screens.howto = this.buildHowto();
     this.screens.settings = this.buildSettings();
+    this.bestiary = new Bestiary(this.button('Back', 'primary', () => this.goBack()), (k) => this.cb.sound(k));
+    this.screens.bestiary = this.bestiary.el;
     this.screens.pause = this.buildPause();
     this.screens.over = h('div', { class: 'screen over' });
     this.mp = new MpScreens((label, cls, onClick, icon) => this.button(label, cls, onClick, icon), cb.mp);
@@ -92,6 +96,7 @@ export class Menus {
       difficulty: 'Choose your foe',
       howto: 'How to play',
       settings: 'Settings',
+      bestiary: 'Bestiary',
       pause: 'Paused',
       over: 'Battle results',
       mp: 'Multiplayer',
@@ -155,7 +160,7 @@ export class Menus {
 
   /** Return from how-to / settings / difficulty to whichever screen opened them. */
   goBack(): void {
-    if (this.screen === 'howto' || this.screen === 'settings') this.show(this.back);
+    if (this.screen === 'howto' || this.screen === 'settings' || this.screen === 'bestiary') this.show(this.back);
     else if (this.screen === 'difficulty') this.show(this.diffBack);
   }
 
@@ -163,8 +168,8 @@ export class Menus {
     // The first-run "how-to, then battle" hand-off only lasts while the how-to is showing
     // (Esc / Back out of it must not leave a pending battle start behind).
     if (this.screen === 'howto' && screen !== 'howto') this.afterHowto = null;
-    if (screen === 'howto' || screen === 'settings') {
-      if (this.screen !== 'howto' && this.screen !== 'settings') this.back = this.screen === 'none' ? 'title' : this.screen;
+    if (screen === 'howto' || screen === 'settings' || screen === 'bestiary') {
+      if (this.screen !== 'howto' && this.screen !== 'settings' && this.screen !== 'bestiary') this.back = this.screen === 'none' ? 'title' : this.screen;
     }
     if (screen === 'difficulty' && this.screen !== 'difficulty' && this.screen !== 'howto' && this.screen !== 'settings') {
       this.diffBack = this.screen === 'over' ? 'over' : 'title';
@@ -183,6 +188,7 @@ export class Menus {
       this.saveNote?.classList.toggle('hidden', !(this.hasSave && this.diffBack === 'title'));
     }
     if (screen === 'title') this.refreshLaurels();
+    if (screen === 'bestiary') this.bestiary.open(this.settings.ageSeen);
     if (screen === 'settings') for (const f of this.syncers) f();
   }
 
@@ -216,6 +222,7 @@ export class Menus {
       this.playBtn,
       this.button('Multiplayer', 'mpbtn', () => this.cb.multiplayer(), ICONS.versus),
       this.button('How to Play', '', () => this.show('howto'), ICONS.info),
+      this.button('Bestiary', '', () => this.show('bestiary'), ICONS.book),
       this.button('Settings', '', () => this.show('settings'), ICONS.sound),
     );
     const creatures = h('div', { class: 'title-creatures' });
@@ -487,6 +494,7 @@ export class Menus {
         { class: 'mbuttons' },
         this.button('Resume', 'primary big', () => this.cb.resume(), ICONS.play),
         this.button('How to Play', '', () => this.show('howto'), ICONS.info),
+        this.button('Bestiary', '', () => this.show('bestiary'), ICONS.book),
         this.button('Settings', '', () => this.show('settings'), ICONS.sound),
         this.restartBtn,
         this.button('Leave battle', 'ghost', () => this.cb.quit()),

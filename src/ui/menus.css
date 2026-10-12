@@ -567,6 +567,153 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Bestiary                                                            */
+/* ------------------------------------------------------------------ */
+.btabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: rgba(21, 14, 38, 0.9);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.btab b {
+  font-family: var(--title-font);
+  color: var(--gold);
+}
+
+.btab.on {
+  background: linear-gradient(180deg, rgba(90, 66, 140, 0.95), rgba(44, 30, 76, 0.95));
+  border-color: var(--gold);
+  color: var(--text);
+}
+
+.bpage {
+  width: min(860px, 94cqw);
+  padding: 14px 18px;
+  border-radius: 18px;
+  background: rgba(21, 14, 38, 0.94);
+  border: 1px solid var(--line);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bhead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+
+.bhead b {
+  font-family: var(--title-font);
+  font-size: 20px;
+  color: var(--gold-l);
+}
+
+.bhead i {
+  color: #e8dcc0;
+  font-size: 13px;
+}
+
+.bgrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+.bentry {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.bentry canvas {
+  flex: none;
+}
+
+.bentry.unknown canvas {
+  filter: brightness(0) drop-shadow(0 0 1px #d6bcff) drop-shadow(0 0 5px rgba(190, 160, 255, 0.7));
+}
+
+.btext {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.35;
+  min-width: 0;
+}
+
+.bname {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+}
+
+.bname b {
+  font-family: var(--title-font);
+}
+
+.bico {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.bmeta {
+  color: var(--muted);
+}
+
+.btrait {
+  color: var(--gold-l);
+}
+
+.bmyth {
+  color: #e4dcff;
+  font-style: italic;
+}
+
+.bextra {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 1.4;
+  color: #e4dcff;
+}
+
+.bextra b {
+  color: var(--gold-l);
+}
+
+@container stage (max-width: 620px) {
+  .bgrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Settings                                                            */
 /* ------------------------------------------------------------------ */
 .sbox {

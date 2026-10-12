@@ -35,6 +35,7 @@ export const ICONS = {
   shrine: svg('<path d="M12 2l3 5-3 5-3-5z" fill="currentColor"/><path d="M8 22l1.5-8h5L16 22z" fill="currentColor" opacity=".7"/>'),
   skull: svg('<path d="M12 3a8 8 0 00-8 8c0 2.6 1.3 4.4 3 5.5V20h10v-3.5c1.7-1.1 3-2.9 3-5.5a8 8 0 00-8-8z" fill="currentColor"/><circle cx="9" cy="11.5" r="2" fill="#1b1229"/><circle cx="15" cy="11.5" r="2" fill="#1b1229"/>'),
   info: svg('<circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 10.5v6M12 7.2v.6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>'),
+  book: svg('<path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 6.5v13" stroke="currentColor" stroke-width="2"/>'),
   sell: svg('<path d="M4 12h16M12 4v16" stroke="currentColor" stroke-width="0"/><path d="M5 7h14l-1.5 13h-11z" fill="currentColor" stroke="#1b1229" stroke-width="1.4" stroke-linejoin="round"/><path d="M9 7V5h6v2" stroke="#1b1229" stroke-width="1.6" fill="none"/>'),
 };
 

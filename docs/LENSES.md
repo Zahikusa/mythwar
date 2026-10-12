@@ -168,3 +168,19 @@ ideas get them really excited? What is driving my instincts about how it should 
   foe's cries are quieter and panned to their side.
 - Checked: all 16 cries played for both teams in Chrome without errors (ad-hoc puppeteer run);
   full verify.
+
+## #11 The Lens of Infinite Inspiration
+*What experience have I had that I want to share with others? In what way can I capture the
+essence of that experience and put it into my game?*
+- Mythwar's inspiration is twofold: the Flash classic *Age of War* (the tug-of-war through the
+  ages) and the world's myths — Celtic, Greek, Norse, Japanese and Chinese. The first is in the
+  mechanics; the second was only on the surface: names and one-line blurbs in hover tooltips.
+  The *experience* worth sharing is the delight of those stories — Ariadne's thread, Týr's hand,
+  the redcap's cap that must never dry.
+- Change: a **Bestiary** (title screen and pause menu; Esc/Back return to where it was opened):
+  a tab per age with its story line, every creature's portrait, class, range, cost and trait,
+  plus a short, accurate note on the myth behind it (`src/ui/bestiary.ts`), and the age's god
+  power and turrets. Ages the player has never reached (`settings.ageSeen`, from #4) are tabs
+  named "???" with silhouettes — discovered in battle, not read in advance.
+- Checked: screenshots `menu-bestiary`, `menu-bestiary-known` (Olympus tab), `mobile-bestiary`,
+  the title on phone (five buttons in a row) and upright phone, the phone pause menu; full verify.

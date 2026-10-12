@@ -29,7 +29,7 @@ complete; its log follows below the lens plan.
 - [x] #8 Holographic Design — seams between systems: results count Ley Surge gold, tip for lost surges, tip respects the advice setting
 - [x] #9 Unification — theme written down; the HUD (cards, action buttons) takes on each age’s accent colour
 - [x] #10 Resonance — the legends are the resonant core: each of the 16 creatures answers the summons with its own synthesized cry
-- [ ] #11 Infinite Inspiration — bestiary / codex with myth origins
+- [x] #11 Infinite Inspiration — a Bestiary (title + pause): every creature with the real myth behind it; unreached ages hidden
 - [ ] #12 The Problem Statement — problem statement in DESIGN.md + check features against it
 - [ ] #13 The Eight Filters — run the filters; fix the weakest
 - [ ] #14 Risk Mitigation — biggest risk → mitigate (real devices / network diagnostics)

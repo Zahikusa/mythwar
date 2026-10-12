@@ -78,6 +78,9 @@ Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](doc
 - **Ragnarök:** at 18:00 (or 3 minutes after both sides reach the final age) the gate wards fall
   silent and damage to citadels grows every minute.
 
+- **Bestiary:** the title screen and the pause menu open a bestiary of every creature, god power
+  and turret, with the myths behind them. Ages you have never reached stay hidden until you do.
+
 ### Controls (desktop)
 
 | Key | Action |

@@ -505,7 +505,7 @@ export class App {
     const m = this.menus.current;
     if (m === 'mp') this.closeMultiplayer();
     else if (m === 'room') return;
-    else if (m === 'howto' || m === 'settings' || m === 'difficulty') this.menus.goBack();
+    else if (m === 'howto' || m === 'settings' || m === 'bestiary' || m === 'difficulty') this.menus.goBack();
     else if (this.state !== 'playing') return;
     else if (this.game instanceof NetGame) {
       // Online the battle may be held for other reasons (countdown, someone away): Esc
@@ -854,7 +854,7 @@ export class App {
       this.hud.hideTooltip();
       if (this.hud.panelOpen) this.hud.togglePanel('none');
       this.menus.show('pause');
-    } else if (!want && !this.netMenuLocal && (cur === 'pause' || cur === 'howto' || cur === 'settings')) {
+    } else if (!want && !this.netMenuLocal && (cur === 'pause' || cur === 'howto' || cur === 'settings' || cur === 'bestiary')) {
       this.menus.show('none');
     }
   }
