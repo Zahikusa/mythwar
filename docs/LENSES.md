@@ -812,3 +812,20 @@ punishments as interesting as the rewards?*
   casting on two stragglers when a wave is about to arrive still costs the full cooldown.
 - Checked: unit test (refused on an empty lane, charge kept, cast on the lane with a foe); smoke
   updated to place foes before its casting checks; full verify.
+
+## #42 The Lens of Simplicity/Complexity
+*What elements of innate complexity do I have? Can it be turned into emergent complexity? Do
+elements of emergent complexity arise? Are there elements that are too simple?*
+- Innate complexity (rules to learn) grew in phase 2: surges, ley sight, brittle frost, hold the
+  line, rushing, trials, quick battles. Most of it is *passive* — it shows up on the field when it
+  matters (a flickering shrine, portraits over a gate, ice chips) and asks nothing of a newcomer.
+  Emergent complexity comes from how these combine (freeze a wave inside your turret's reach; hold
+  a shrine through a surge to keep its ley sight; rush an age while the foe is busy at a surge).
+- What is *not* passive is new UI: three shield buttons under the lane markers that a first-time
+  player sees in the opening second, before they have summoned anything — one more thing to
+  wonder about while learning the core loop (pick a lane, tap a card).
+- Change: **progressive disclosure** — in a newcomer's battles (tips on, the hold tip not yet
+  seen) the shields stay hidden until 2:30, when the coach introduces them ("Tap the shield under
+  a lane's ▶ marker to hold that lane…"); after that, or with tips off, they are always there.
+  The key G works throughout, and the how-to's Tactics page documents it for anyone reading ahead.
+- Checked: full verify (fresh profiles in the smoke tests never needed the shields early).

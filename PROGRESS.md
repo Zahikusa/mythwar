@@ -88,7 +88,7 @@ complete; its log follows below the lens plan.
 - [x] #39 Time — turrets fire at half rate in Ragnarök (pacing back to 19.2 min); Quick battle option (~10 min)
 - [x] #40 Reward — "New best vs <foe>: ★★★" on the results; title laurels show each foe's best stars
 - [x] #41 Punishment — a power cast into an empty lane is refused (charge kept) instead of silently wasted
-- [ ] #42 Simplicity/Complexity — progressive disclosure
+- [x] #42 Simplicity/Complexity — progressive disclosure: newcomers see the hold shields when the coach introduces them (2:30)
 - [ ] #43 Elegance — remove a wart
 - [ ] #44 Character — AI foes as characters (personas, taunts)
 - [ ] #45 Imagination — leave room for imagination (lore lines)

@@ -426,6 +426,7 @@ export class App {
     this.audio.ambience = 1;
     this.audio.startMusic(game.world.players[game.playerTeam].age);
     this.hud.ageSeen = this.settings.ageSeen;
+    this.hud.holdKnown = !this.settings.hints || this.settings.hintsSeen.includes('hold');
     this.hud.attach(game);
     this.input.attach(game);
     // (The sandbox is a toy: battle tips would only be used up there.)

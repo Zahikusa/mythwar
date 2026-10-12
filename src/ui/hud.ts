@@ -72,6 +72,8 @@ export class Hud {
   ageSeen = 0;
   /** Mark the card that counters the selected lane (a setting: experts may prefer to read lanes themselves). */
   advice = true;
+  /** The hold-the-line shields are known to this player (tip seen / tips off): shown from the start. */
+  holdKnown = true;
   private cb: HudCallbacks;
   private layoutInfo: Layout | null = null;
   private cards: CardEl[] = [];
@@ -1061,6 +1063,8 @@ export class Hud {
       toggle(tab, 'sel', g.view.selectedLane === i);
       const holding = me.hold[i];
       const hb = this.holdBtns[i];
+      // Progressive disclosure: in a newcomer's battles the shields appear with their tip (2:30).
+      toggle(hb, 'hidden', !this.holdKnown && w.time < 150 && !me.hold.some(Boolean));
       if (hb.classList.contains('on') !== holding) {
         toggle(hb, 'on', holding);
         hb.setAttribute('aria-pressed', String(holding));
