@@ -44,3 +44,13 @@ describe('results tip with older saves', () => {
     expect(battleTip(w, 0, 'adept', [{ t: 300, team: 1, age: 1 }])).not.toMatch(/never did/);
   });
 });
+
+describe('recommended foe', () => {
+  it('is the easiest difficulty not beaten yet', async () => {
+    const { recommendedDifficulty } = await import('../src/ui/menus.ts');
+    expect(recommendedDifficulty({})).toBe('novice');
+    expect(recommendedDifficulty({ novice: { wins: 0, losses: 3, best: 0 } })).toBe('novice');
+    expect(recommendedDifficulty({ novice: { wins: 2, losses: 0, best: 300 } })).toBe('adept');
+    expect(recommendedDifficulty({ novice: { wins: 1, losses: 0, best: 300 }, adept: { wins: 1, losses: 0, best: 300 }, master: { wins: 1, losses: 0, best: 300 }, mythic: { wins: 1, losses: 0, best: 300 } })).toBe('mythic');
+  });
+});

@@ -265,3 +265,23 @@ my game, do they want to start interacting with it, even before they know what t
 - Checked: 2 unit tests (no AI, endless gold, unbreakable citadel even against a huge single
   blow; orders for either side; shared ascension); screenshots on desktop and phone (`sandbox`,
   `mobile-sandbox`), the difficulty screen with the new button on a small phone; full verify.
+
+## #16 The Lens of the Player
+*In general, what does my player like? What don't they like? What would they expect to see in
+a game? If I were in their place, what would I want to see? What would they like or dislike
+about my game in particular?*
+- The players: people with a phone or a PC and a few spare minutes, most of whom know Age of
+  War or lane games vaguely, some of them playing with a friend on the same Wi-Fi. They like
+  quick starts, fair fights, seeing themselves improve; they dislike walls of text, being
+  crushed without knowing why, and choices they can't judge.
+- Already served: skippable how-to, coach tips, a battle autosave, upright phones (the game
+  rotates; text entry asks to turn the phone), tips after a defeat that name the mistake.
+- Gap: the first real choice — "Choose your foe" — is one a new player can't judge. Four cards
+  with skulls and adjectives; nothing says which is *for them*, and players who misjudge it either
+  get crushed by Master or sleepwalk through Novice for weeks.
+- Change: a ribbon on the right card — **"Start here"** on Novice until the first win anywhere,
+  then **"Next challenge"** on the easiest difficulty not beaten yet (`recommendedDifficulty`),
+  staying on Mythic once everything has fallen. It suggests, it doesn't select — the player's
+  last choice stays selected.
+- Checked: unit test for the recommendation; difficulty screenshots (desktop, QHD, small phone);
+  full verify.

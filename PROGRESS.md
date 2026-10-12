@@ -34,7 +34,7 @@ complete; its log follows below the lens plan.
 - [x] #13 The Eight Filters — weak filter = audience: newcomers never saw the ages; Novice now follows the player up the ages
 - [x] #14 Risk Mitigation — risk register; `npm run perfcheck` guards the per-frame JS budget (0.93 of 3 ms) as effects are added
 - [x] #15 The Toy — Sandbox: no foe, endless gold, unbreakable citadels, summon for either side (X)
-- [ ] #16 The Player — who plays; first-run defaults / recommendations
+- [x] #16 The Player — "Start here" / "Next challenge" ribbon on the easiest foe not beaten yet
 - [ ] #17 Pleasure — completion pleasure: feats/achievements
 - [ ] #18 Flow — suggest the right next difficulty
 - [ ] #19 Needs — esteem: ranks/titles

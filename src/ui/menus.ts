@@ -265,7 +265,7 @@ export class Menus {
         h('span', { title: 'How often it summons the right counter' }, h('b', { text: 'Counters' }), counters),
         h('span', { title: 'Its gold over time and from shrines, compared with yours (gold from kills is the same)' }, h('b', { text: 'Income' }), `${Math.round(p.incomeMult * 100)}%`),
       );
-      const card = h('button', { class: `diff d-${d}` }, h('div', { class: 'dname', text: p.name }), skulls, h('div', { class: 'dblurb', text: p.blurb }), chips, rec);
+      const card = h('button', { class: `diff d-${d}` }, h('div', { class: 'ribbon' }), h('div', { class: 'dname', text: p.name }), skulls, h('div', { class: 'dblurb', text: p.blurb }), chips, rec);
       onTap(card, (e) => {
         // Enter / Space on the card already chosen (a keyboard click: onTap only passes clicks
         // without a pointer) begins the battle, as a double-click does.
@@ -304,8 +304,14 @@ export class Menus {
 
   private refreshDifficulty(): void {
     const rec = this.settings.records;
+    const next = recommendedDifficulty(rec);
+    const fresh = DIFFICULTIES.every((d) => !rec[d]?.wins);
     for (const d of DIFFICULTIES) {
       this.diffCards[d].classList.toggle('sel', d === this.selected);
+      // Which foe is for me? The first one not beaten yet.
+      const ribbon = d === next ? (fresh ? 'Start here' : 'Next challenge') : '';
+      const rb = this.diffCards[d].querySelector('.ribbon')!;
+      if (rb.textContent !== ribbon) rb.textContent = ribbon;
       const r = rec[d];
       this.recordEls[d].textContent = r && (r.wins || r.losses) ? `${r.wins}W · ${r.losses}L${r.best ? ` · best ${fmtTime(r.best)}` : ''}` : '';
     }
@@ -629,6 +635,11 @@ function scoreLine(o: OnlineResult): string {
 }
 
 /** One concrete lesson from the battle just played (or, after a win, what to try next). */
+/** The foe to suggest: the easiest difficulty the player hasn't beaten yet (Mythic once all are). */
+export function recommendedDifficulty(records: Settings['records']): Difficulty {
+  return DIFFICULTIES.find((d) => !records[d]?.wins) ?? 'mythic';
+}
+
 export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps: { t: number; team: Team; age: number }[], advice = true): string {
   const foe: Team = me === 0 ? 1 : 0;
   const P = world.players[me];
