@@ -68,7 +68,7 @@ complete; its log follows below the lens plan.
 - [x] #35 Head and Hands — head game, hands need efficiency: mouse wheel steps the selected lane
 - [x] #36 Competition — novices couldn't compete with expert friends: per-player handicaps (trials) in the battle room (protocol v7)
 - [x] #37 Cooperation — co-op rooms: two friends share one side against a server-run AI (lockstep, protocol v8)
-- [ ] #38 Competition vs. Cooperation — balance of the two
+- [x] #38 Competition vs. Cooperation — both ends of the scale now; co-op gets tactical calls ("Help top!" lights the lane on the ally's screen)
 - [ ] #39 Time — PACING: designcheck median of even AI battles ~20.5 min (red); bottleneck = reaching a defended Celestial citadel in Ragnarök (see #34 notes)
 - [ ] #40 Reward — rewards: unlocks / celebrations
 - [ ] #41 Punishment — punishment & comeback

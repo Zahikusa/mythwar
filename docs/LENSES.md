@@ -732,3 +732,24 @@ need to? Can they build trust? Is there synergy? Are there different roles?*
   orders reach both, every hash matches, an ally leaving neither ends nor pauses the battle);
   multiplayer smoke extended with a co-op battle in two browsers (allies unmirrored on the left,
   shared orders, 0 desyncs, HUD ally name, the ally plays on alone); full verify. Protocol v8.
+
+## #38 The Lens of Competition vs. Cooperation
+*If 1 is pure competition and 10 pure cooperation, what number should my game be? Can I give
+players a choice? Does my audience prefer competition, cooperation, or a mix? Is team
+competition right for my game?*
+- With #37 Mythwar spans the scale: versus (1), co-op against the AI (9), single player against
+  the AI. The choice is the players' — a chip row in the room — and it can change between battles.
+  (2-vs-AI team competition, or 2-vs-2, would need four devices and a much bigger field; not for a
+  same-Wi-Fi pair.)
+- What had *not* moved along the scale was the communication layer: the quick messages were
+  versus pleasantries ("Good luck!", "Well played!", "Oops!") — useless to allies who need to say
+  *where*. Cooperation without voice (phones in a noisy room, a PC across the flat) needs a few
+  sharp, tactical words.
+- Change: **co-op calls.** Between allies the quick-message menu offers "Help top!", "Help
+  middle!", "Help bottom!", "Saving gold!", "Push now!" and "Thanks!"; versus keeps the
+  pleasantries. An ally's call appears by your own side with their name ("Bo: Help middle!") with
+  a chime, and **a lane call lights that lane** with a golden pulse — on the ally's screen and the
+  caller's — so the request is read at a glance. The server relays the new phrases like the old
+  (fixed phrases, rate-limited); "Opponent's quick messages" in Settings still silences them.
+- Checked: multiplayer smoke (co-op menu offers the calls, not the pleasantries; A's "Help
+  middle!" reaches B with A's name and lights B's middle lane); full verify.

@@ -41,8 +41,21 @@ export const EMOTES = {
   wow: 'Wow!',
   oops: 'Oops!',
   thx: 'Thanks!',
+  // Co-op calls between allies (a lane call also flashes that lane on the ally's screen).
+  help0: 'Help top!',
+  help1: 'Help middle!',
+  help2: 'Help bottom!',
+  save: 'Saving gold!',
+  push: 'Push now!',
 } as const;
 export type EmoteId = keyof typeof EMOTES;
+/** The quick messages offered in a versus battle and between co-op allies. */
+export const VERSUS_EMOTES: EmoteId[] = ['gl', 'wp', 'wow', 'oops', 'thx'];
+export const COOP_EMOTES: EmoteId[] = ['help0', 'help1', 'help2', 'save', 'push', 'thx'];
+/** The lane a co-op lane call points at (-1 for other messages). */
+export function emoteLane(id: EmoteId): number {
+  return id === 'help0' ? 0 : id === 'help1' ? 1 : id === 'help2' ? 2 : -1;
+}
 /** Room code alphabet: no 0/O, 1/I/L, 5/S, 2/Z look-alikes. */
 export const CODE_ALPHABET = 'ABCDEFGHJKMNPQRTUVWXY346789';
 export const CODE_LENGTH = 4;

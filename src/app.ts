@@ -17,7 +17,7 @@ import type { Settings } from './ui/settings.ts';
 import { MpClient, hasStoredSession } from './net/client.ts';
 import { hasMpServer } from './net/connection.ts';
 import { NetGame } from './net/netgame.ts';
-import { EMOTES, cleanCode, cleanName } from './net/protocol.ts';
+import { EMOTES, cleanCode, cleanName, emoteLane } from './net/protocol.ts';
 import { randomName } from './ui/mpmenus.ts';
 import { FeatTracker } from './ui/feats.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
@@ -106,7 +106,12 @@ export class App {
         return this.settings.muted;
       },
       isMuted: () => this.settings.muted,
-      emote: (id) => this.mp?.emote(id) ?? false,
+      emote: (id) => {
+        if (!this.mp?.emote(id)) return false;
+        // A lane call flashes that lane here too, so the caller sees what they pointed at.
+        if (emoteLane(id) >= 0) this.renderer.pingLane(emoteLane(id));
+        return true;
+      },
       speedChanged: (speed) => {
         this.settings.speed = speed;
         saveSettings(this.settings);
@@ -708,6 +713,13 @@ export class App {
         emote: (seat, id) => {
           const g = this.game;
           if (!(g instanceof NetGame) || seat === g.seat || this.state === 'title' || !this.settings.emotes) return;
+          if (g.coop) {
+            // An ally's call: by our own side, with their name — and a lane call lights the lane.
+            this.hud.showEmote('mine', `${g.allyName}: ${EMOTES[id] ?? ''}`);
+            if (emoteLane(id) >= 0) this.renderer.pingLane(emoteLane(id));
+            this.audio.ui('ready');
+            return;
+          }
           this.hud.showEmote('theirs', EMOTES[id] ?? '');
           this.audio.ui('select');
         },

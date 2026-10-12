@@ -131,6 +131,8 @@ export class Renderer {
   private shrinePulse = [0, 0, 0];
   private gateChips = [-1, -1, -1, -1, -1, -1];
   private laneAlert = [0, 0, 0];
+  /** An ally's lane call (co-op): a golden pulse over the lane, fading. */
+  private lanePingT = [0, 0, 0];
   private shrineGlint = [0, 0, 0];
   /** Last golden mote shed by a surging shrine. */
   private surgeMote = [0, 0, 0];
@@ -788,6 +790,7 @@ export class Renderer {
     for (let i = 0; i < 3; i++) {
       this.shrinePulse[i] = Math.max(0, this.shrinePulse[i] - dt * 1.5);
       this.laneAlert[i] = Math.max(0, this.laneAlert[i] - dt * 0.7);
+      this.lanePingT[i] = Math.max(0, this.lanePingT[i] - dt * 0.35);
     }
     this.ragnarok += ((world.ragnarokStarted ? 1 : 0) - this.ragnarok) * Math.min(1, dt * 0.8);
     this.winner = world.winner;
@@ -1061,7 +1064,23 @@ export class Renderer {
     if (!fading && current < this.ambient.length) this.ambient = this.ambient.filter((a) => a.th === this.theme);
   }
 
+  /** Co-op: an ally called for help in this lane. */
+  pingLane(lane: number): void {
+    if (lane >= 0 && lane < this.lanePingT.length) this.lanePingT[lane] = 1;
+  }
+
   private drawLaneHighlight(ctx: CanvasRenderingContext2D, g: LaneGeom, view: ViewState): void {
+    const ping = this.lanePingT[g.index];
+    if (ping > 0) {
+      const a = ping * (0.2 + 0.18 * Math.sin(this.time * 10));
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = `rgba(255, 210, 90, ${Math.max(0, a).toFixed(3)})`;
+      ctx.beginPath();
+      ctx.roundRect(g.x0 - g.band, g.y - g.band * 0.5, g.x1 - g.x0 + g.band * 2, g.band * 1.05, g.band * 0.5);
+      ctx.fill();
+      ctx.restore();
+    }
     const alert = this.laneAlert[g.index];
     if (alert > 0) {
       // Pulsing red band over a lane targeted by an enemy god power.

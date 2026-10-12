@@ -27,7 +27,7 @@ import type { Layout } from '../render/layout.ts';
 import { h, fmt, fmtTime, onTap, setStyle, setText, toggle } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, CLASS_NAME, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
-import { EMOTES } from '../net/protocol.ts';
+import { COOP_EMOTES, EMOTES, VERSUS_EMOTES } from '../net/protocol.ts';
 import type { EmoteId } from '../net/protocol.ts';
 
 export const LANE_NAMES = ['Top', 'Middle', 'Bottom'];
@@ -153,11 +153,7 @@ export class Hud {
     E.emoteBtn = h('button', { class: 'sysbtn emotebtn hidden', title: 'Quick message', 'aria-label': 'Send a quick message', html: ICONS.chat });
     onTap(E.emoteBtn, () => toggle(E.emotes, 'hidden', !E.emotes.classList.contains('hidden')));
     E.emotes = h('div', { class: 'emotes hidden', role: 'menu' });
-    for (const [id, text] of Object.entries(EMOTES) as [EmoteId, string][]) {
-      const b = h('button', { class: 'emote', role: 'menuitem', text });
-      onTap(b, () => this.sendEmote(id));
-      E.emotes.appendChild(b);
-    }
+    this.buildEmotes(VERSUS_EMOTES);
     E.bubbleMine = h('div', { class: 'ebubble mine', 'aria-live': 'polite' });
     E.bubbleTheirs = h('div', { class: 'ebubble theirs', 'aria-live': 'polite' });
     onTap(E.speed, () => this.toggleSpeed());
@@ -346,6 +342,7 @@ export class Hud {
     toggle(this.el.speed, 'hidden', !!game.options.online);
     toggle(this.el.net, 'hidden', !game.options.online);
     toggle(this.el.emoteBtn, 'hidden', !game.options.online);
+    this.buildEmotes((game as { coop?: unknown }).coop ? COOP_EMOTES : VERSUS_EMOTES);
     toggle(this.el.side, 'hidden', !game.options.sandbox);
     setText(this.el.side, 'For: You');
     toggle(this.el.side, 'foe', false);
@@ -570,6 +567,19 @@ export class Hud {
   }
 
   private lastEmote = -Infinity;
+
+  /** The quick-message menu: pleasantries against a rival, tactical calls between co-op allies. */
+  private buildEmotes(ids: EmoteId[]): void {
+    const box = this.el.emotes;
+    if (box.dataset.set === ids.join()) return;
+    box.dataset.set = ids.join();
+    box.innerHTML = '';
+    for (const id of ids) {
+      const b = h('button', { class: 'emote', role: 'menuitem', text: EMOTES[id] });
+      onTap(b, () => this.sendEmote(id));
+      box.appendChild(b);
+    }
+  }
 
   private sendEmote(id: EmoteId): void {
     toggle(this.el.emotes, 'hidden', true);

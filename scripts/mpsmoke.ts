@@ -379,6 +379,13 @@ async function main(): Promise<void> {
     check('co-op: no desyncs with the server-run AI', ca.desyncs === 0 && cb2.desyncs === 0, `${ca.desyncs} / ${cb2.desyncs}`);
     const ally = await b.evaluate(() => document.querySelector('.hud .agerow.left .agename')?.textContent ?? document.querySelector('.hud .agerow.left')?.textContent ?? '');
     check('co-op: the HUD names the ally', ally.includes('You &'), ally);
+    // Allies call lanes: A asks for help in the middle; B sees the call and the lane lights up.
+    const menu = await a.evaluate(() => [...document.querySelectorAll('.hud .emotes .emote')].map((e) => e.textContent).join('|'));
+    check('co-op: quick messages are tactical calls', menu.includes('Help middle!') && !menu.includes('Good luck!'), menu);
+    await a.evaluate(() => (window as any).__mythwar.hud.sendEmote('help1'));
+    await waitFor(b, 'B hears the lane call', () => (document.querySelector('.hud .ebubble.mine')?.textContent ?? '').includes('Help middle!'), 4000);
+    const lit = await b.evaluate(() => (window as any).__mythwar.renderer.lanePingT[1] > 0);
+    check('co-op: a lane call lights that lane for the ally', lit);
     // A steps out of the battle: B fights on alone.
     await a.evaluate(() => (window as any).__mythwar.leaveRoom());
     await sleep(1500);
