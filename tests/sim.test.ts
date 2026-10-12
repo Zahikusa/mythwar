@@ -430,6 +430,15 @@ describe('ley surges', () => {
 });
 
 describe('god powers', () => {
+  it('are refused on a lane without foes, keeping their charge', () => {
+    const w = new World();
+    w.players[0].powerCooldown = 0;
+    w.spawnUnit(1, 2, UNITS.redcap, 700);
+    expect(w.apply({ type: 'power', team: 0, lane: 0 })).toEqual({ ok: false, reason: 'No foes in that lane' });
+    expect(w.players[0].powerCooldown).toBe(0);
+    expect(w.apply({ type: 'power', team: 0, lane: 2 }).ok).toBe(true);
+  });
+
   it('wrath of zeus strikes the foes nearest your citadel first, each once', () => {
     for (const team of [0, 1] as Team[]) {
       const w = new World({ seed: 7 });

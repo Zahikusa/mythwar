@@ -421,7 +421,7 @@ export class NetGame extends Game {
         return gold + (cur ? Math.floor(cur.cost * SELL_REFUND) : 0) < TURRETS[cmd.turretId].cost ? 'Not enough gold' : null;
       }
       case 'power':
-        return casting ? 'God power is recharging' : w.powerBlocker(team);
+        return casting ? 'God power is recharging' : w.powerBlocker(team, cmd.lane);
       case 'sellTurret':
         return p.turrets[cmd.lane]?.def ? null : 'No turret there';
       case 'cancel':

@@ -636,8 +636,17 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   s = await state(page);
   check('buying a turret mounts it', s.turrets[1] !== null, JSON.stringify(s.turrets));
 
-  // God power: make it ready, press it, choose a lane
-  await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].powerCooldown = 0));
+  // God power: make it ready, press it, choose a lane (with foes in every lane: a power is
+  // refused on an empty one).
+  await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    const w = app.game.world;
+    w.players[0].powerCooldown = 0;
+    for (let lane = 0; lane < 3; lane++) {
+      const u = w.spawnUnit(1, lane, (window as unknown as { __mythwarData: any }).__mythwarData.UNITS.treant, 780);
+      u.hp = u.maxHp = 1e6;
+    }
+  });
   await sleep(50);
   const pw = await center(page, '.act.power');
   if (viewport.mobile) await page.touchscreen.tap(pw.x, pw.y);

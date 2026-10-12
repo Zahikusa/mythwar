@@ -793,3 +793,22 @@ building up?*
   stays one line (a separate one pushed the results buttons below a 900-px fold — the smoke test
   caught it).
 - Checked: results screenshot (feats + new best on one line), title laurels; full verify.
+
+## #41 The Lens of Punishment
+*What are the punishments in my game? Why? Do players see them as fair? Why or why not? Can they
+be turned into rewards? Is there a strong enough punishment to make for high stakes? Are the
+punishments as interesting as the rewards?*
+- Punishments: lost creatures and their gold, lost shrines (income, ley sight), citadel damage,
+  falling an age behind, defeat; leaving or restarting after the first minute counts as a defeat
+  (said on the pause screen); a 50% turret refund. High stakes come from the shared citadel. All
+  of these follow from decisions and are visible — fair.
+- One wasn't: **a god power cast into a lane with no foes was simply wasted** — 50 to 65 seconds
+  of the most powerful action in the game gone, with no effect and no explanation, almost always
+  because of a slip (a tap on the wrong lane while targeting, Space with the wrong lane selected).
+  A punishment for a fumble rather than for a decision teaches nothing and feels unfair.
+- Change: the simulation **refuses a power on a lane without foes** ("No foes in that lane"; the
+  charge is kept) — in single player, online (the in-flight check uses the same rule) and in the
+  sandbox. The AI never cast into empty lanes anyway. Real decisions keep their consequences:
+  casting on two stragglers when a wave is about to arrive still costs the full cooldown.
+- Checked: unit test (refused on an empty lane, charge kept, cast on the lane with a foe); smoke
+  updated to place foes before its casting checks; full verify.

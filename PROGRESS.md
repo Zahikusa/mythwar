@@ -87,7 +87,7 @@ complete; its log follows below the lens plan.
 - [x] #38 Competition vs. Cooperation — both ends of the scale now; co-op gets tactical calls ("Help top!" lights the lane on the ally's screen)
 - [x] #39 Time — turrets fire at half rate in Ragnarök (pacing back to 19.2 min); Quick battle option (~10 min)
 - [x] #40 Reward — "New best vs <foe>: ★★★" on the results; title laurels show each foe's best stars
-- [ ] #41 Punishment — punishment & comeback
+- [x] #41 Punishment — a power cast into an empty lane is refused (charge kept) instead of silently wasted
 - [ ] #42 Simplicity/Complexity — progressive disclosure
 - [ ] #43 Elegance — remove a wart
 - [ ] #44 Character — AI foes as characters (personas, taunts)

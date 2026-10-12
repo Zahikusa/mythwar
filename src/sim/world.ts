@@ -432,10 +432,13 @@ export class World {
     return null;
   }
 
-  powerBlocker(team: Team): string | null {
+  /** Why a god power can't be cast now (in `lane`, when given), or null. */
+  powerBlocker(team: Team, lane = -1): string | null {
     const p = this.players[team];
     if (p.trials.includes('godless')) return 'The gods are silent (Godless trial)';
     if (p.powerCooldown > 0) return 'God power is recharging';
+    // A power cast on an empty lane would be wasted (usually a slip): refuse it, keep the charge.
+    if (lane >= 0 && lane < LANE_COUNT && !this.lanes[lane].some((u) => u.alive && u.team !== team)) return 'No foes in that lane';
     return null;
   }
 
@@ -563,7 +566,7 @@ export class World {
       }
       case 'power': {
         if (cmd.lane < 0 || cmd.lane >= LANE_COUNT) return { ok: false, reason: 'Invalid lane' };
-        const why = this.powerBlocker(cmd.team);
+        const why = this.powerBlocker(cmd.team, cmd.lane);
         if (why) return { ok: false, reason: why };
         const def = POWERS[AGES[p.age].power];
         p.powerCooldown = def.cooldown;
