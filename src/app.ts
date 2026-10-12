@@ -9,7 +9,7 @@ import { Renderer } from './render/renderer.ts';
 import { Coach } from './ui/coach.ts';
 import { Hud } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
-import { PAR_TIME, battleStars, loadSettings, recordOnline, recordResult, saveSettings } from './ui/settings.ts';
+import { battleStars, loadSettings, parTime, recordOnline, recordResult, saveSettings } from './ui/settings.ts';
 import { clearBattle, loadBattle, saveBattle } from './save.ts';
 import { AGES } from './sim/data.ts';
 import { fmtTime } from './ui/dom.ts';
@@ -345,7 +345,8 @@ export class App {
 
   private startGame(difficulty: Difficulty, seed: number | undefined, demo: boolean, sandbox = false): Game {
     const trials = demo || sandbox ? [] : this.settings.trials;
-    return this.hookGame(new Game({ difficulty, seed, demo, sandbox, trials }), demo);
+    const quick = !demo && !sandbox && this.settings.quick;
+    return this.hookGame(new Game({ difficulty, seed, demo, sandbox, trials, quick }), demo);
   }
 
   /** Makes `game` the active game: resets visuals and routes its events. */
@@ -416,7 +417,7 @@ export class App {
       this.audio.ui('bless');
     });
     this.feats.start(game.world, game.playerTeam);
-    this.starWarned = { half: false, par: game.world.time > PAR_TIME[this.difficulty] };
+    this.starWarned = { half: false, par: game.world.time > parTime(this.difficulty, game.world.quick) };
     this.immersive();
     this.state = 'playing';
     this.overTimer = -1;
@@ -610,7 +611,8 @@ export class App {
       return;
     }
     const P = g.world.players[g.playerTeam];
-    recordResult(this.settings, this.difficulty, won, g.world.time, battleStars(won, P.baseHp / P.baseMaxHp, g.world.time, this.difficulty).stars);
+    const quick = g.world.quick;
+    recordResult(this.settings, this.difficulty, won, g.world.time, battleStars(won, P.baseHp / P.baseMaxHp, g.world.time, this.difficulty, quick).stars, quick);
     clearBattle();
     this.audio.ui(won ? 'victory' : 'defeat');
     this.overTimer = 2.6;
@@ -945,7 +947,7 @@ export class App {
       this.starWarned.half = true;
       this.hud.toast('Citadel below half — win back its health (ascend, Bastion) to keep the second star', 'bad');
     } else if (this.starWarned.half && frac > 0.55) this.starWarned.half = false;
-    const par = PAR_TIME[this.difficulty];
+    const par = parTime(this.difficulty, g.world.quick);
     if (!this.starWarned.par && g.world.time > par) {
       this.starWarned.par = true;
       this.hud.toast(`${Math.round(par / 60)} minutes have passed — the third star is out of reach`, 'info');

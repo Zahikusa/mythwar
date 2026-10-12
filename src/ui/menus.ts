@@ -7,7 +7,7 @@ import { h, fmt, fmtTime, onTap } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 import type { Settings } from './settings.ts';
-import { PAR_TIME, battleStars } from './settings.ts';
+import { battleStars, parTime } from './settings.ts';
 import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
 import { Bestiary } from './bestiary.ts';
@@ -314,8 +314,21 @@ export class Menus {
     const sandbox = this.button('Sandbox', 'ghost', () => this.cb.sandbox());
     sandbox.title = 'No foe, endless gold: summon for either side and watch any match-up';
     this.saveNote = h('div', { class: 'dnote hidden', text: 'A new battle replaces your saved one (after its first minute, that counts as a defeat).' });
-    // Trials: optional handicaps for players who want a harder fight.
-    const trials = h('div', { class: 'trials' }, h('span', { class: 'tlabel', text: 'Trials:' }));
+    // Battle length, then trials: optional handicaps for players who want a harder fight.
+    const trials = h('div', { class: 'trials' });
+    const quick = h('button', { class: 'trial quickchip', title: 'Quick battle: faster ages, more starting gold, an earlier Ragnarök — about two thirds of the time', 'aria-pressed': 'false' }, 'Quick battle') as HTMLButtonElement;
+    const syncQuick = () => {
+      quick.classList.toggle('on', this.settings.quick);
+      quick.setAttribute('aria-pressed', String(this.settings.quick));
+    };
+    syncQuick();
+    onTap(quick, () => {
+      this.settings.quick = !this.settings.quick;
+      this.cb.settingsChanged(this.settings);
+      this.cb.sound('select');
+      syncQuick();
+    });
+    trials.append(quick, h('span', { class: 'tlabel', text: 'Trials:' }));
     for (const id of TRIAL_ORDER) {
       const t = TRIALS[id];
       const chip = h('button', { class: 'trial', title: t.blurb, 'aria-pressed': 'false' }, t.name) as HTMLButtonElement;
@@ -706,7 +719,8 @@ export class Menus {
         'div',
         { class: 'vtime' },
         h('span', { text: `Battle length ${fmtTime(world.time)}` }),
-        online ? null : starsRow(battleStars(won, P.baseHp / P.baseMaxHp, world.time, difficulty).parts),
+        online ? null : starsRow(battleStars(won, P.baseHp / P.baseMaxHp, world.time, difficulty, world.quick).parts),
+        world.quick ? h('span', { class: 'vtrials', text: 'Quick battle' }) : null,
         P.trials?.length ? h('span', { class: 'vtrials', text: `Trials: ${P.trials.map((t) => TRIALS[t].name).join(', ')}` }) : null,
       ),
       ...(this.featsEarned.length ? [h('div', { class: 'vfeats' }, h('i', { html: ICONS.xp }), `New feat${this.featsEarned.length > 1 ? 's' : ''}: ${this.featsEarned.map((f) => f.name).join(', ')}`)] : []),
@@ -786,7 +800,7 @@ function counterShare(cd: [number, number, number] | undefined): string {
 export function starGoals(world: World, me: Team, difficulty: Difficulty): string {
   const P = world.players[me];
   const frac = P.baseHp / P.baseMaxHp;
-  const par = PAR_TIME[difficulty];
+  const par = parTime(difficulty, world.quick);
   const left = par - world.time;
   return [
     'Stars to win: ★ Victory',

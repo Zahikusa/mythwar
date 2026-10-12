@@ -10,7 +10,6 @@ import {
   MAX_AGE,
   POWERS,
   QUEUE_MAX,
-  RAGNAROK_CRUMBLE_AFTER,
   RUSH_COST,
   RUSH_XP,
   SELL_REFUND,
@@ -988,7 +987,7 @@ export class Hud {
       toggle(pip, 'surge', w.surge?.lane === i && w.time >= w.surge.start);
     }
     if (w.ragnarokStarted) {
-      const crumbleIn = w.ragnarokAt + RAGNAROK_CRUMBLE_AFTER - w.time;
+      const crumbleIn = w.ragnarokAt + w.crumbleAfter - w.time;
       setText(E.rag, crumbleIn <= 0 ? 'CITADELS CRUMBLE' : crumbleIn < 120 ? `Citadels crumble in ${fmtTime(crumbleIn)}` : 'RAGNARÖK');
     }
     else if (w.ragnarokAt - w.time < 120) setText(E.rag, `Ragnarök in ${fmtTime(w.ragnarokAt - w.time)}`);

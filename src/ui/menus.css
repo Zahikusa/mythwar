@@ -1033,6 +1033,13 @@
   box-shadow: 0 0 10px rgba(255, 120, 80, 0.4);
 }
 
+.trial.quickchip.on {
+  border-color: var(--blue);
+  color: #cdeeff;
+  background: rgba(30, 80, 120, 0.6);
+  box-shadow: 0 0 10px rgba(63, 184, 255, 0.4);
+}
+
 .vtrials {
   color: #ffb08a;
   font-size: 13px;

@@ -47,6 +47,13 @@ green, marble gold, glacier blue, lacquer vermilion, starlight).
   new creatures, a new god power, new turrets, more citadel HP.
 - Destroy the enemy citadel (shared HP across all lanes) to win.
 
+## Battle length
+Standard battles against Adept/Master take ~14–16 minutes for a competent player (even AI
+battles ~19). **Quick battles** (an option on the foe screen, single player): XP ×2.2, 300
+starting gold, Ragnarök at 10:00 (90 s after both reach the final age), a ×3 siege ramp and
+crumbling after 4 minutes of Ragnarök — ~10–11 minutes, all five ages. Par times for the third
+star are two thirds of the standard ones; best times are kept for standard battles only.
+
 ## Rushing an age (triangularity)
 With three quarters of the XP an age needs, a side may ascend anyway for a **double tithe**:
 the safe path is to wait for the XP and pay the normal price; the risky one buys the next age's

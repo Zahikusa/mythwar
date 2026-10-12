@@ -90,6 +90,11 @@ describe('battle stars', () => {
     recordResult(s, 'adept', true, 300, 2);
     recordResult(s, 'adept', true, 300, 1);
     expect(s.records.adept!.stars).toBe(2);
+    // Quick battles: a par of two thirds, and no best time.
+    expect(battleStars(true, 0.9, 9 * 60, 'adept', true).stars).toBe(2);
+    expect(battleStars(true, 0.9, 7 * 60, 'adept', true).stars).toBe(3);
+    recordResult(s, 'adept', true, 100, 3, true);
+    expect(s.records.adept!.best).toBe(300);
   });
 });
 

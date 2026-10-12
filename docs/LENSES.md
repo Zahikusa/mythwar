@@ -753,3 +753,25 @@ competition right for my game?*
   (fixed phrases, rate-limited); "Opponent's quick messages" in Settings still silences them.
 - Checked: multiplayer smoke (co-op menu offers the calls, not the pleasantries; A's "Help
   middle!" reaches B with A's name and lights B's middle lane); full verify.
+
+## #39 The Lens of Time
+*Are my games too short? Too long? Can I give players a choice about this? Are there long
+periods of downtime? Is the rhythm right?*
+- Measured: a competent player's battle against Adept or Master takes 14–16 minutes; even AI
+  battles had drifted to a 20.5-minute median (#34's investigation: 2 of 3 run into Ragnarök and
+  then grind against a defended Celestial gate — the ward-silence alone didn't break it). For a
+  game played on phones in short sessions, a quarter of an hour is long, and *every* battle being
+  that long leaves no choice.
+- Change 1 — **Ragnarök breaks stalemates:** the gate turrets fire at half their rate once it
+  comes (the wards already fall silent). Even AI battles: median 20.5 → 19.2 min, p75 22.0 →
+  20.2; the turrets players paid for keep half their bite. Banner, how-to, DESIGN updated.
+- Change 2 — **Quick battles** (a chip on the foe screen, remembered): XP ×2.2, both sides start
+  with 300 gold, Ragnarök at 10:00 (or 90 s after both reach the final age), siege ramp ×3,
+  crumbling after 4 minutes of it (`QUICK` in data.ts; a world option kept in saves and the
+  hash). Tuned over three rounds of measurement: smart player vs Adept 14.4 → 10.9 min, vs Master
+  16.2 → 9.8 min, still climbing ~3 ages; vs Novice unchanged (those end early anyway). The par
+  for the third star is two thirds of the standard one; best times count standard battles only;
+  the results say "Quick battle".
+- Checked: unit tests (quick: richer start, faster XP, earlier Ragnarök, kept by saves; turret
+  half-rate in Ragnarök; quick par/best rules); `designcheck` all pass (pacing 19.2); foe-screen
+  screenshot; full verify.

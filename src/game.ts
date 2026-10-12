@@ -20,6 +20,8 @@ export interface GameOptions {
   sandbox?: boolean;
   /** Trials the (single) player chose: handicaps for a harder battle. */
   trials?: TrialId[];
+  /** A quick battle (faster XP, more gold, earlier Ragnarök). */
+  quick?: boolean;
 }
 
 export type GameListener = (events: SimEvent[]) => void;
@@ -70,7 +72,7 @@ export class Game {
   constructor(opts: GameOptions, world?: World) {
     this.options = opts;
     const seed = opts.seed ?? (Math.random() * 1e9) | 0;
-    this.world = world ?? new World({ seed, trials: [opts.trials ?? [], []] });
+    this.world = world ?? new World({ seed, trials: [opts.trials ?? [], []], quick: opts.quick });
     this.world.endless = !!opts.sandbox;
     this.playerTeam = opts.online ? (opts.team ?? 0) : 0;
     this.ai = opts.online || opts.sandbox ? null : new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);

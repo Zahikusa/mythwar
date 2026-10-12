@@ -18,6 +18,7 @@ import {
   RAGNAROK_CRUMBLE_AFTER,
   RAGNAROK_RAMP,
   RAGNAROK_TIME,
+  QUICK,
   POWER_SCALE,
   POWERS,
   QUEUE_MAX,
@@ -79,6 +80,8 @@ export interface WorldOptions {
   incomeMult?: [number, number];
   /** Trials per side (single player: the human's handicaps). */
   trials?: [TrialId[], TrialId[]];
+  /** A quick battle (see QUICK). */
+  quick?: boolean;
 }
 
 export function trait<K extends TraitKind>(def: UnitDef, kind: K): Extract<Trait, { kind: K }> | undefined {
@@ -116,6 +119,8 @@ export interface WorldSnapshot {
   nextSurgeAt?: number;
   surgeRng?: number;
   lastSurgeLane?: number;
+  /** A quick battle (absent in older saves: a standard one). */
+  quick?: boolean;
   players: (Omit<PlayerState, 'turrets'> & { turrets: (Omit<TurretSlot, 'def'> & { def: string | null })[] })[];
   lanes: (Omit<Unit, 'def'> & { def: string })[][];
   shrines: Shrine[];
@@ -134,6 +139,8 @@ export class World {
   readonly powers: PowerInstance[] = [];
   readonly unitById = new Map<number, Unit>();
   winner: Team | null = null;
+  /** A quick battle: faster XP, more starting gold, an earlier Ragnarök (QUICK). */
+  quick = false;
   /** Sandbox (single player only): citadels can't fall, the battle never ends. */
   endless = false;
   /** Sim time at which Ragnarök begins (may move earlier once both sides reach the final age). */
@@ -159,6 +166,11 @@ export class World {
     this.nextSurgeAt = this.surgeRng.range(SURGE_FIRST[0], SURGE_FIRST[1]);
     const mult = opts.incomeMult ?? [1, 1];
     this.players = [this.makePlayer(0, mult[0]), this.makePlayer(1, mult[1])];
+    if (opts.quick) {
+      this.quick = true;
+      this.ragnarokAt = QUICK.ragnarok;
+      for (const p of this.players) p.gold = QUICK.gold;
+    }
     if (opts.trials) {
       for (const p of this.players) {
         p.trials = [...opts.trials[p.team]];
@@ -209,6 +221,7 @@ export class World {
       nextSurgeAt: this.nextSurgeAt,
       surgeRng: this.surgeRng.state,
       lastSurgeLane: this.lastSurgeLane,
+      quick: this.quick,
       players: this.players.map((p) => ({ ...p, turrets: p.turrets.map((t) => ({ ...t, def: t.def ? t.def.id : null })) })),
       lanes: this.lanes.map((l) => l.filter((u) => u.alive).map((u) => ({ ...u, def: u.def.id }))),
       shrines: this.shrines,
@@ -232,6 +245,7 @@ export class World {
     w.ragnarokAt = snap.ragnarokAt;
     w.ragnarokStarted = snap.ragnarokStarted;
     w.finalAgeAt = snap.finalAgeAt;
+    w.quick = !!snap.quick;
     if (typeof snap.nextSurgeAt === 'number') {
       w.surge = snap.surge ?? null;
       w.nextSurgeAt = snap.nextSurgeAt;
@@ -327,10 +341,20 @@ export class World {
     return AGES[p.age].income * SURGE_INCOME * p.incomeMult;
   }
 
+  /** Seconds into Ragnarök after which both citadels crumble. */
+  get crumbleAfter(): number {
+    return this.quick ? QUICK.crumbleAfter : RAGNAROK_CRUMBLE_AFTER;
+  }
+
+  /** XP comes this much faster (quick battles). */
+  get xpMult(): number {
+    return this.quick ? QUICK.xp : 1;
+  }
+
   /** Multiplier on damage dealt to citadels (1 before Ragnarök). */
   siegeMult(): number {
     if (!this.ragnarokStarted) return 1;
-    return 1 + ((this.time - this.ragnarokAt) / 60) * RAGNAROK_RAMP;
+    return 1 + ((this.time - this.ragnarokAt) / 60) * (this.quick ? QUICK.ramp : RAGNAROK_RAMP);
   }
 
   incomeOf(team: Team): number {
@@ -576,13 +600,14 @@ export class World {
     if (this.ragnarokStarted) {
       // Long into Ragnarök both citadels crumble, so every battle ends (healthier one wins).
       const into = this.time - this.ragnarokAt;
-      if (into < RAGNAROK_CRUMBLE_AFTER) return;
-      if (into - dt < RAGNAROK_CRUMBLE_AFTER) this.emit({ type: 'crumble' });
+      const after = this.crumbleAfter;
+      if (into < after) return;
+      if (into - dt < after) this.emit({ type: 'crumble' });
       for (const p of this.players) p.baseHp = Math.max(0, p.baseHp - p.baseMaxHp * RAGNAROK_CRUMBLE * dt);
       return;
     }
     if (this.players[0].age === MAX_AGE && this.players[1].age === MAX_AGE) {
-      this.ragnarokAt = Math.min(this.ragnarokAt, Math.max(this.time, this.finalAgeAt ?? this.time) + RAGNAROK_AFTER_FINAL);
+      this.ragnarokAt = Math.min(this.ragnarokAt, Math.max(this.time, this.finalAgeAt ?? this.time) + (this.quick ? QUICK.afterFinal : RAGNAROK_AFTER_FINAL));
       this.finalAgeAt ??= this.time;
     }
     if (this.time >= this.ragnarokAt) {
@@ -625,7 +650,7 @@ export class World {
     const income = this.incomeOf(p.team) * dt;
     p.gold += income;
     p.stats.goldEarned += income;
-    p.xp += PASSIVE_XP * dt;
+    p.xp += PASSIVE_XP * dt * this.xpMult;
     if (p.powerCooldown > 0) p.powerCooldown = Math.max(0, p.powerCooldown - dt);
 
     // Trained creatures waiting for room at a jammed gate step out as soon as it clears.
@@ -1183,7 +1208,7 @@ export class World {
     const killer = this.players[other(u.team)];
     const gold = Math.round(u.def.cost * KILL_GOLD_MULT);
     killer.gold += gold;
-    killer.xp += u.def.cost * KILL_XP_MULT;
+    killer.xp += u.def.cost * KILL_XP_MULT * this.xpMult;
     killer.stats.kills++;
     killer.stats.killsByLane[u.lane]++;
     killer.stats.goldEarned += gold;
@@ -1200,7 +1225,7 @@ export class World {
     p.lastBaseHit = this.time;
     const att = this.players[attackerTeam];
     att.stats.damageToBase += amount;
-    att.xp += (amount * BASE_DAMAGE_XP) / POWER_SCALE[att.age];
+    att.xp += ((amount * BASE_DAMAGE_XP) / POWER_SCALE[att.age]) * this.xpMult;
     this.emit({ type: 'baseHit', team, lane, amount });
   }
 

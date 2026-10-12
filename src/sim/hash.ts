@@ -13,6 +13,7 @@ export function hashWorld(w: World): number {
   h.num(w.winner ?? -1);
   h.num(w.ragnarokAt);
   h.num(w.ragnarokStarted ? 1 : 0);
+  h.num(w.quick ? 1 : 0);
   for (const p of w.players) {
     h.num(p.gold);
     h.num(p.xp);

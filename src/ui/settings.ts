@@ -43,6 +43,8 @@ export interface Settings {
   feats: string[];
   /** Trials chosen on the foe screen for the next battles. */
   trials: TrialId[];
+  /** Quick battles (chosen on the foe screen). */
+  quick: boolean;
 }
 
 const KEY = 'mythwar.settings.v1';
@@ -68,6 +70,7 @@ const DEFAULTS: Settings = {
   ageSeen: 0,
   feats: [],
   trials: [],
+  quick: false,
 };
 
 export function loadSettings(): Settings {
@@ -114,6 +117,7 @@ function sanitize(s: Settings): Settings {
     emotes: bool(s.emotes, true),
     advice: bool(s.advice, true),
     ageSeen: Math.max(0, Math.min(4, Math.floor(Number(s.ageSeen) || 0))),
+    quick: bool(s.quick, false),
     trials: Array.isArray(s.trials) ? TRIAL_ORDER.filter((t) => s.trials.includes(t)) : [],
     feats: Array.isArray(s.feats) ? [...new Set(s.feats.filter((x): x is string => typeof x === 'string'))].slice(0, 100) : [],
   };
@@ -153,24 +157,31 @@ export function saveSettings(s: Settings): void {
 /** Par time per foe for the third star (a little slower than a strong player's typical win). */
 export const PAR_TIME: Record<Difficulty, number> = { novice: 8 * 60, adept: 12 * 60, master: 14 * 60, mythic: 16 * 60 };
 
+/** The par time for the third star: quick battles are about a third shorter. */
+export function parTime(d: Difficulty, quick = false): number {
+  return quick ? Math.round((PAR_TIME[d] * 2) / 3 / 60) * 60 : PAR_TIME[d];
+}
+
 /**
  * The battle's rating: one star each for the victory, for keeping the citadel above half health,
  * and for winning within the foe's par time. (The last two only count with the first.)
  */
-export function battleStars(won: boolean, citadelFrac: number, time: number, d: Difficulty): { stars: number; parts: { label: string; got: boolean }[] } {
+export function battleStars(won: boolean, citadelFrac: number, time: number, d: Difficulty, quick = false): { stars: number; parts: { label: string; got: boolean }[] } {
+  const par = parTime(d, quick);
   const parts = [
     { label: 'Victory', got: won },
     { label: 'Citadel above half', got: won && citadelFrac > 0.5 },
-    { label: `Within ${Math.round(PAR_TIME[d] / 60)} minutes`, got: won && time <= PAR_TIME[d] },
+    { label: `Within ${Math.round(par / 60)} minutes`, got: won && time <= par },
   ];
   return { stars: parts.filter((p) => p.got).length, parts };
 }
 
-export function recordResult(s: Settings, d: Difficulty, won: boolean, time: number, stars = 0): void {
+export function recordResult(s: Settings, d: Difficulty, won: boolean, time: number, stars = 0, quick = false): void {
   const r = s.records[d] ?? { wins: 0, losses: 0, best: 0 };
   if (won) {
     r.wins++;
-    if (!r.best || time < r.best) r.best = Math.round(time);
+    // (Best times are kept for standard battles: a quick one isn't the same race.)
+    if (!quick && (!r.best || time < r.best)) r.best = Math.round(time);
   } else r.losses++;
   r.stars = Math.max(r.stars ?? 0, stars);
   const run = r.streak ?? 0;

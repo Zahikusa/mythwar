@@ -85,6 +85,8 @@ Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](doc
 
 - **Sandbox:** on the "Choose your foe" screen — no foe, endless gold, citadels that can't fall.
   Summon for either side (the "For:" button or X) and watch any match-up play out.
+- **Quick battle:** a chip on the "Choose your foe" screen — XP ×2.2, 300 starting gold, Ragnarök at
+  10:00 — the same five ages in roughly 10–11 minutes against Adept or Master instead of 14–16.
 - **Trials:** on the "Choose your foe" screen — Glass Citadel (half health), Godless (no god
   powers), No Walls (no turrets) — for a harder battle; winning under all three is a feat.
 - **Feats:** sixteen deeds to be proud of (beat each foe, summon the Elder Dragon, hold all three

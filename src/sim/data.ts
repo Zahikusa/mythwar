@@ -186,6 +186,13 @@ export const SURGE_OMEN = 10;
 export const SURGE_TIME = 20;
 export const SURGE_INCOME = 1.5;
 
+/**
+ * Quick battles (an option for short sessions): XP comes faster, both sides start with more
+ * gold, and Ragnarök comes sooner — the same war through the same ages in about two thirds of
+ * the time.
+ */
+export const QUICK = { xp: 2.2, gold: 300, ragnarok: 10 * 60, afterFinal: 90, ramp: 3, crumbleAfter: 4 * 60 };
+
 /** Every citadel gate has a built-in ward that shoots the nearest enemy (damage scales with age). */
 export const WARD: { damage: number; cooldown: number; range: number; projectile: ProjectileSpec } = {
   damage: 8,

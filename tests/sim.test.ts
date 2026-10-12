@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AGES, AGE_UNITS, BLESSINGS, BLESSING_PRICE_FLOOR_AGE, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_CRUMBLE, RAGNAROK_CRUMBLE_AFTER, RAGNAROK_TIME, RUSH_COST, SHRINE_X, HOLD_PAST_SHRINE, SURGE_FIRST, SURGE_INCOME, SURGE_OMEN, SURGE_TIME, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
+import { AGES, AGE_UNITS, BLESSINGS, BLESSING_PRICE_FLOOR_AGE, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_CRUMBLE, RAGNAROK_CRUMBLE_AFTER, RAGNAROK_TIME, QUICK, RUSH_COST, SHRINE_X, HOLD_PAST_SHRINE, SURGE_FIRST, SURGE_INCOME, SURGE_OMEN, SURGE_TIME, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
 import { World } from '../src/sim/world.ts';
 import type { Team } from '../src/sim/types.ts';
 
@@ -289,6 +289,21 @@ describe('shrines', () => {
     run(w, 6);
     expect(w.shrines[2].owner).toBe(-1);
     expect(w.shrines[2].contested).toBe(true);
+  });
+});
+
+describe('quick battles', () => {
+  it('start richer, gain XP faster, reach Ragnarök sooner, and survive a save', () => {
+    const std = new World({ seed: 1 });
+    const q = new World({ seed: 1, quick: true });
+    expect(q.players[0].gold).toBe(QUICK.gold);
+    expect(q.ragnarokAt).toBe(QUICK.ragnarok);
+    run(std, 10);
+    run(q, 10);
+    expect(q.players[0].xp).toBeCloseTo(std.players[0].xp * QUICK.xp, 6);
+    const copy = World.deserialize(q.serialize());
+    expect(copy.quick).toBe(true);
+    expect(World.deserialize(std.serialize()).quick).toBe(false);
   });
 });
 
