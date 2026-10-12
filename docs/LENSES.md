@@ -420,3 +420,30 @@ change constraints?*
   sides 53%; even AI battles 20.2 min median (19.6 without brittle) — just past the 20-minute
   line; pacing is #39's job and is noted there.
 - Checked: unit test (frozen → ×1.5); Fimbulwinter screenshot; full verify.
+
+## #24 The Lens of Action
+*What are the operational actions in my game? What are the resultant actions? Which resultant
+actions would I like to see? Am I happy with the ratio? Which actions do players wish they could
+do that they cannot?*
+- Operational actions: select a lane, summon (tap/drag), cast, build/sell a turret, bless,
+  ascend, cancel. Resultant actions: countering, contesting shrines, soaking a push with a
+  power, saving for an age, racing to a surge (#2), freezing a wave for a combo (#23).
+- What players of lane games wish they could do — and Mythwar couldn't — is **choose when to
+  attack**: every creature walks the moment it is summoned, so a careful player's army arrives
+  in a trickle and melts in the wards one creature at a time (the coach even has a tip for it).
+  "Gather, then push" was only possible by not summoning, which wastes time.
+- Change: a new verb, **hold the line** — a per-lane stance (`stance` command; `PlayerState.hold`).
+  The shield under each lane's ▶ marker (or G for the selected lane) holds that lane: its
+  creatures advance no further than just past the shrine (so holding also holds the shrine),
+  still fighting anything in reach; a war banner in the owner's colour marks the line for both
+  players. Tap again and the wave goes in together. One operational action, many resultant
+  ones: massing a push, guarding the shrine through a Ley Surge, baiting the foe into your
+  wards, keeping a lane quiet while you fight elsewhere.
+- Plumbing: simulation (stance in movement, snapshot, hash; old saves default to advance),
+  server validation, protocol v6, in-flight checks online, sandbox routing, keys panel, README,
+  DESIGN.md, a coach tip after 2:30 for players who never used it. The AI keeps advancing (it
+  is unaffected by the player's stance).
+- Checked: unit tests (stops just past the shrine and captures it, flyers too; other lanes
+  unaffected; released lanes march on; mirrored for the right-hand side; survives a save;
+  validation accepts/rejects); screenshots (desktop: held middle lane with banner; phone);
+  full verify.

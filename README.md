@@ -95,6 +95,7 @@ Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](doc
 | Space | God power on the selected lane |
 | U | Ascend |
 | T / B | Turret / blessing panel |
+| G | Hold the selected lane at its shrine / advance (or the shield under a lane's ▶ marker) |
 | F | Toggle 2× speed |
 | Esc / P | Pause |
 | ? / H | Controls card |

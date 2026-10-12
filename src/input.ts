@@ -179,6 +179,8 @@ export class Input {
       this.hud.toggleSpeed();
     } else if (k === 'x') {
       this.hud.toggleSide();
+    } else if (k === 'g') {
+      this.hud.toggleHold();
     } else if (k === 'm') {
       this.hud.toggleMute();
     } else if (k === 'backspace' || k === 'delete') {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AGES, AGE_UNITS, BLESSINGS, BLESSING_PRICE_FLOOR_AGE, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_CRUMBLE, RAGNAROK_CRUMBLE_AFTER, RAGNAROK_TIME, SHRINE_X, SURGE_FIRST, SURGE_INCOME, SURGE_OMEN, SURGE_TIME, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
+import { AGES, AGE_UNITS, BLESSINGS, BLESSING_PRICE_FLOOR_AGE, LANE_LENGTH, MAX_AGE, POWERS, RAGNAROK_AFTER_FINAL, RAGNAROK_CRUMBLE, RAGNAROK_CRUMBLE_AFTER, RAGNAROK_TIME, SHRINE_X, HOLD_PAST_SHRINE, SURGE_FIRST, SURGE_INCOME, SURGE_OMEN, SURGE_TIME, TICK, UNITS, blessingCost, counterMultiplier } from '../src/sim/data.ts';
 import { World } from '../src/sim/world.ts';
 import type { Team } from '../src/sim/types.ts';
 
@@ -289,6 +289,35 @@ describe('shrines', () => {
     run(w, 6);
     expect(w.shrines[2].owner).toBe(-1);
     expect(w.shrines[2].contested).toBe(true);
+  });
+});
+
+describe('lane stance', () => {
+  it('a lane told to hold stops just past the shrine, and marches on when released', () => {
+    const w = new World();
+    expect(w.apply({ type: 'stance', team: 0, lane: 1, hold: true }).ok).toBe(true);
+    const u = w.spawnUnit(0, 1, UNITS.redcap, 200);
+    const v = w.spawnUnit(0, 1, UNITS.valkyrie, 150); // flyers hold too
+    run(w, 30);
+    expect(u.x + u.def.radius).toBeCloseTo(SHRINE_X + HOLD_PAST_SHRINE, 3);
+    expect(v.x + v.def.radius).toBeLessThanOrEqual(SHRINE_X + HOLD_PAST_SHRINE + 1e-6);
+    expect(w.shrines[1].owner).toBe(0);
+    // The other side's lane and the other lanes are unaffected.
+    const o = w.spawnUnit(0, 2, UNITS.redcap, 200);
+    run(w, 10);
+    expect(o.x).toBeGreaterThan(SHRINE_X + 100);
+    w.apply({ type: 'stance', team: 0, lane: 1, hold: false });
+    run(w, 3);
+    expect(u.x).toBeGreaterThan(SHRINE_X + HOLD_PAST_SHRINE + 20);
+  });
+
+  it('mirrors for the right-hand side and survives a save', () => {
+    const w = new World();
+    w.apply({ type: 'stance', team: 1, lane: 0, hold: true });
+    const u = w.spawnUnit(1, 0, UNITS.redcap, 800);
+    run(w, 30);
+    expect(LANE_LENGTH - (u.x - u.def.radius)).toBeCloseTo(SHRINE_X + HOLD_PAST_SHRINE, 3);
+    expect(World.deserialize(w.serialize()).players[1].hold).toEqual([true, false, false]);
   });
 });
 

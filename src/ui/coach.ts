@@ -142,6 +142,13 @@ const TIPS: Tip[] = [
     done: (_g, t, s) => t - s > 9,
   },
   {
+    id: 'hold',
+    text: 'Tap the shield under a lane’s ▶ marker to hold that lane at its shrine: your creatures gather there instead of trickling into the enemy’s wards. Tap again to let the wave loose.',
+    anchor: '.holdbtn',
+    when: (g, t) => t > 150 && !g.world.players[g.playerTeam].hold.some(Boolean),
+    done: (g, t, s) => g.world.players[g.playerTeam].hold.some(Boolean) || t - s > 11,
+  },
+  {
     id: 'bless',
     text: 'Blessings permanently strengthen your army. Worth it when gold piles up.',
     anchor: '.blessbtn',

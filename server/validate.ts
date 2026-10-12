@@ -28,6 +28,8 @@ export function validateCommand(raw: unknown): NetCommand | null {
       return isLane(c.lane) ? { type: 'sellTurret', lane: c.lane } : null;
     case 'power':
       return isLane(c.lane) ? { type: 'power', lane: c.lane } : null;
+    case 'stance':
+      return isLane(c.lane) && typeof c.hold === 'boolean' ? { type: 'stance', lane: c.lane, hold: c.hold } : null;
     case 'bless':
       return isId(c.blessing, BLESSINGS) ? { type: 'bless', blessing: c.blessing as keyof typeof BLESSINGS } : null;
     default:

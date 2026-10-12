@@ -20,6 +20,7 @@ import {
   QUEUE_MAX,
   SELL_REFUND,
   SHRINE_CAPTURE_TIME,
+  HOLD_PAST_SHRINE,
   SHRINE_RADIUS,
   SHRINE_X,
   START_GOLD,
@@ -176,6 +177,7 @@ export class World {
       blessings: { might: 0, vitality: 0, bastion: 0 },
       stats: { summoned: 0, summonedBy: {}, kills: 0, killsByLane: [0, 0, 0], losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0, surgeGold: 0 },
       lastBaseHit: -10,
+      hold: [false, false, false],
     };
   }
 
@@ -230,6 +232,7 @@ export class World {
       p.stats.killsByLane ??= [0, 0, 0];
       p.stats.summonedBy ??= {};
       p.stats.surgeGold ??= 0;
+      p.hold ??= [false, false, false];
       w.players[i] = {
         ...p,
         turrets: p.turrets.map((t) => {
@@ -487,6 +490,12 @@ export class World {
         p.gold += Math.floor(slot.def.cost * SELL_REFUND);
         slot.def = null;
         this.emit({ type: 'turretBuilt', team: cmd.team, lane: cmd.lane, turretId: null });
+        return { ok: true };
+      }
+      case 'stance': {
+        if (cmd.lane < 0 || cmd.lane >= LANE_COUNT) return { ok: false, reason: 'Invalid lane' };
+        p.hold[cmd.lane] = !!cmd.hold;
+        this.emit({ type: 'stance', team: cmd.team, lane: cmd.lane, hold: !!cmd.hold });
         return { ok: true };
       }
       case 'bless': {
@@ -811,6 +820,11 @@ export class World {
     }
     let step = def.speed * speedMult * dt;
     step = Math.min(step, Math.max(0, dist - def.range + 0.5));
+    // Holding the line: no further than just past the shrine (those already beyond stand fast).
+    if (this.players[u.team].hold[u.lane]) {
+      const front = u.team === 0 ? SHRINE_X + HOLD_PAST_SHRINE - (u.x + def.radius) : u.x - def.radius - (LANE_LENGTH - SHRINE_X - HOLD_PAST_SHRINE);
+      step = Math.min(step, Math.max(0, front));
+    }
     if (!u.flying) step = Math.min(step, Math.max(0, this.allyGap(u, list)));
     u.x += dirOf(u.team) * step;
     u.moving = step > 1e-4;

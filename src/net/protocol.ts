@@ -12,7 +12,7 @@ import type { Command, Team } from '../sim/types.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 5;
+export const PROTOCOL_VERSION = 6;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';

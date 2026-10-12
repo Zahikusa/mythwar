@@ -1281,6 +1281,35 @@ svg {
   border-color: var(--gold);
 }
 
+.holdbtn {
+  position: absolute;
+  pointer-events: auto;
+  width: 22px;
+  height: 22px;
+  margin-left: -11px;
+  margin-top: -2px;
+  padding: 4px;
+  border-radius: 7px;
+  background: rgba(10, 6, 20, 0.55);
+  border: 1px solid rgba(255, 221, 150, 0.25);
+  color: rgba(255, 231, 166, 0.45);
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.hud.mobile .holdbtn {
+  width: 28px;
+  height: 28px;
+  margin-left: -14px;
+  padding: 5px;
+}
+
+.holdbtn.on {
+  background: var(--gold);
+  border-color: #fff3c4;
+  color: #3a2508;
+  box-shadow: 0 0 12px rgba(242, 196, 90, 0.8);
+}
+
 .lanetab .qn {
   position: absolute;
   top: -8px;

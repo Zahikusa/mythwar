@@ -143,7 +143,9 @@ export const LANE_COUNT = 3;
 export const LANE_LENGTH = 1000;
 export const SHRINE_X = LANE_LENGTH / 2;
 export const SHRINE_RADIUS = 80;
-export const SHRINE_CAPTURE_TIME = 4; // seconds from neutral to owned with uncontested presence
+export const SHRINE_CAPTURE_TIME = 4;
+/** A lane told to hold the line: its creatures advance no further than this far past the shrine. */
+export const HOLD_PAST_SHRINE = 25; // seconds from neutral to owned with uncontested presence
 export const QUEUE_MAX = 5;
 export const START_GOLD = 150;
 export const START_POWER_COOLDOWN = 25;

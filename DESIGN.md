@@ -52,6 +52,10 @@ green, marble gold, glacier blue, lacquer vermilion, starlight).
 - Creatures only fight creatures in the same lane. Any lane can reach the citadel.
 - Each lane has a **Ley Shrine** at its centre. Only your creatures near it ⇒ you
   capture it over a few seconds. Each held shrine adds gold income.
+- **Lane stance — hold the line:** a shield under each lane's ▶ marker (key G) tells that lane's
+  creatures to stop just past the shrine (they still fight whatever comes); a war banner marks
+  the line. Gather a wave out of the wards' reach, then let it loose together. Both sides see
+  each other's banners.
 - **Ley sight:** holding a lane's shrine shows the foe's summons waiting for that lane (portraits
   above their gate, the one in training with a progress ring) — information is part of the prize.
 - **Ley Surges** (seeded surprise): from ~2 minutes in, every 2–3 minutes the ley lines flare under

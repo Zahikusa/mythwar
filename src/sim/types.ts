@@ -110,6 +110,8 @@ export interface PlayerState {
   blessings: Record<BlessingId, number>;
   stats: TeamStats;
   lastBaseHit: number;
+  /** Per lane: hold the line at the shrine instead of marching on (the lane's stance). */
+  hold: boolean[];
 }
 
 export interface Shrine {
@@ -161,6 +163,7 @@ export type SimEvent =
   | { type: 'meteor'; team: Team; lane: number; x: number; fall: number }
   | { type: 'shrine'; lane: number; owner: Team | -1 }
   | { type: 'surge'; lane: number; phase: 'omen' | 'start' | 'end'; gained: [number, number] }
+  | { type: 'stance'; team: Team; lane: number; hold: boolean }
   | { type: 'trainStart'; team: Team }
   | { type: 'ragnarok' }
   | { type: 'crumble' }
@@ -174,6 +177,7 @@ export type Command =
   | { type: 'buildTurret'; team: Team; lane: number; turretId: string }
   | { type: 'sellTurret'; team: Team; lane: number }
   | { type: 'power'; team: Team; lane: number }
-  | { type: 'bless'; team: Team; blessing: BlessingId };
+  | { type: 'bless'; team: Team; blessing: BlessingId }
+  | { type: 'stance'; team: Team; lane: number; hold: boolean };
 
 export type CommandResult = { ok: true } | { ok: false; reason: string };

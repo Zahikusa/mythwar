@@ -405,6 +405,8 @@ export class NetGame extends Game {
         return p.turrets[cmd.lane]?.def ? null : 'No turret there';
       case 'cancel':
         return p.queue.length ? null : 'Nothing to cancel';
+      case 'stance':
+        return null;
     }
   }
 }

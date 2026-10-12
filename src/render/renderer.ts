@@ -1,4 +1,4 @@
-import { COUNTERS, LANE_LENGTH, SHRINE_RADIUS, SHRINE_X, TICK, UNITS, WARD, counterOf } from '../sim/data.ts';
+import { COUNTERS, HOLD_PAST_SHRINE, LANE_LENGTH, SHRINE_RADIUS, SHRINE_X, TICK, UNITS, WARD, counterOf } from '../sim/data.ts';
 import type { UnitDef } from '../sim/data.ts';
 import { POWER_TIMING, spiritDragonHead } from '../sim/powers.ts';
 import type { Projectile, SimEvent, Team, Unit } from '../sim/types.ts';
@@ -1134,6 +1134,32 @@ export class Renderer {
    */
   private drawReach(ctx: CanvasRenderingContext2D, world: World, g: LaneGeom): void {
     const lane = g.index;
+    // A lane told to hold the line: a war banner planted where its creatures stop.
+    for (const team of [0, 1] as Team[]) {
+      if (!world.players[team].hold[lane]) continue;
+      const s = this.artScale(g);
+      const x = laneX(g, team === 0 ? SHRINE_X + HOLD_PAST_SHRINE : LANE_LENGTH - SHRINE_X - HOLD_PAST_SHRINE);
+      const top = g.y - g.band * 0.3 - 44 * s;
+      const dir = team === 0 ? 1 : -1;
+      const wave = Math.sin(this.time * 4 + lane) * 3 * s;
+      ctx.save();
+      ctx.strokeStyle = '#4a3a2a';
+      ctx.lineWidth = Math.max(1.5, 2.2 * s);
+      ctx.beginPath();
+      ctx.moveTo(x, g.y - g.band * 0.3);
+      ctx.lineTo(x, top);
+      ctx.stroke();
+      ctx.fillStyle = TEAM_COLORS[team].main;
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.quadraticCurveTo(x - dir * 10 * s, top + 6 * s + wave, x - dir * 20 * s, top + 4 * s + wave);
+      ctx.lineTo(x - dir * 14 * s, top + 10 * s + wave * 0.5);
+      ctx.lineTo(x - dir * 20 * s, top + 16 * s + wave);
+      ctx.quadraticCurveTo(x - dir * 10 * s, top + 18 * s + wave, x, top + 14 * s);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
     for (const team of [0, 1] as Team[]) {
       const turret = world.players[team].turrets[lane].def;
       const reach = Math.max(world.ragnarokStarted ? 0 : WARD.range, turret ? turret.range : 0);

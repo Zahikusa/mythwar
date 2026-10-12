@@ -491,6 +491,9 @@ describe('battle', () => {
     expect(validateCommand({ type: 'bless', blessing: 'toString' })).toBeNull();
     expect(validateCommand({ type: 'cancel', index: 1.5 })).toBeNull();
     expect(validateCommand({ type: 'power', lane: 1, team: 1 })).toEqual({ type: 'power', lane: 1 });
+    expect(validateCommand({ type: 'stance', lane: 2, hold: true, team: 0 })).toEqual({ type: 'stance', lane: 2, hold: true });
+    expect(validateCommand({ type: 'stance', lane: 2, hold: 'yes' })).toBeNull();
+    expect(validateCommand({ type: 'stance', lane: 5, hold: false })).toBeNull();
     expect(validateCommand(null)).toBeNull();
   });
 });

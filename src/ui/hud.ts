@@ -77,6 +77,8 @@ export class Hud {
   private cardAge = -1;
   private el: Record<string, HTMLElement> = {};
   private laneTabs: HTMLButtonElement[] = [];
+  /** Per lane: hold the line at the shrine / advance. */
+  private holdBtns: HTMLButtonElement[] = [];
   private laneBars: { bar: HTMLElement; fill: HTMLElement; count: HTMLElement }[] = [];
   private queueChips: QueueChip[] = [];
   private toastTimer = 0;
@@ -242,6 +244,10 @@ export class Hud {
       onTap(tab, () => this.selectLane(i));
       this.laneTabs.push(tab);
       E.lanetabs.appendChild(tab);
+      const hold = h('button', { class: 'holdbtn', title: `Hold the ${LANE_NAMES[i].toLowerCase()} lane at its shrine (G)`, 'aria-label': `Hold the ${LANE_NAMES[i].toLowerCase()} lane at its shrine`, 'aria-pressed': 'false', html: ICONS.shield });
+      onTap(hold, () => this.toggleHold(i));
+      this.holdBtns.push(hold);
+      E.lanetabs.appendChild(hold);
     }
 
     // Panels
@@ -290,6 +296,7 @@ export class Hud {
       ['Backspace / Del', 'Cancel the last summon (refund)'],
       ['U', 'Ascend to the next age'],
       ['T  ·  B', 'Turrets  ·  Blessings'],
+      ['G', 'Hold the selected lane at its shrine / advance'],
       ['F', 'Toggle 2× speed'],
       ['M', 'Mute / unmute'],
       ['Click your gate', 'Turret panel for that lane'],
@@ -391,6 +398,9 @@ export class Hud {
       // Tabs share the HUD zoom, which also scales their left/top.
       tab.style.left = `${(g.x0 - 58 * s) / layout.hud}px`;
       tab.style.top = `${(g.y - 22 * s) / layout.hud}px`;
+      const hold = this.holdBtns[i];
+      hold.style.left = `${(g.x0 - 58 * s) / layout.hud}px`;
+      hold.style.top = `${(g.y + 10 * s) / layout.hud}px`;
     }
   }
 
@@ -426,6 +436,17 @@ export class Hud {
     if (lane < 0 || lane >= LANE_COUNT) return;
     if (this.game.view.selectedLane !== lane) this.cb.sound('select');
     this.game.view.selectedLane = lane;
+  }
+
+  /** Hold the line in `lane` (creatures stop just past its shrine), or march on. */
+  toggleHold(lane: number = this.game?.view.selectedLane ?? -1): void {
+    const g = this.game;
+    if (!g || lane < 0 || lane >= LANE_COUNT) return;
+    const team = g.options.sandbox && g.sandboxFoe ? 1 : g.playerTeam;
+    const hold = !g.world.players[team].hold[lane];
+    if (!g.command({ type: 'stance', team: g.playerTeam, lane, hold }).ok) return;
+    this.cb.sound(hold ? 'build' : 'select');
+    this.toast(hold ? `${LANE_NAMES[lane]} lane: holding at the shrine` : `${LANE_NAMES[lane]} lane: advance!`, 'info', true);
   }
 
   tryTrain(unitId: string, lane?: number): boolean {
@@ -1020,6 +1041,12 @@ export class Hud {
       toggle(bar, 'show', mine > 0 && theirs > 0);
       if (mine > 0 && theirs > 0) setStyle(fill, 'width', `${((mine / (mine + theirs)) * 100).toFixed(0)}%`);
       toggle(tab, 'sel', g.view.selectedLane === i);
+      const holding = me.hold[i];
+      const hb = this.holdBtns[i];
+      if (hb.classList.contains('on') !== holding) {
+        toggle(hb, 'on', holding);
+        hb.setAttribute('aria-pressed', String(holding));
+      }
       toggle(tab, 'hover', g.view.hoverLane === i && g.view.targeting !== 'none');
       setText(this.laneBars[i].count, counts[i] ? String(counts[i]) : '');
     }

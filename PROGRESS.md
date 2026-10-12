@@ -54,7 +54,7 @@ complete; its log follows below the lens plan.
 - [x] #21 Functional Space — each gate's reach (ward or turret range) drawn as a dashed line that lights up with foes inside
 - [x] #22 Dynamic State — ley sight: holding a lane's shrine reveals the foe's queued summons for that lane
 - [x] #23 Emergence — brittle: frozen creatures take +50% damage from everything (Fimbulwinter becomes a setup)
-- [ ] #24 Action — a new meaningful verb (e.g. lane stance: hold / advance)
+- [x] #24 Action — new verb: hold the line (per-lane stance at the shrine, G / shield button, war banner)
 - [ ] #25 Goals — short-term goals inside a battle
 - [ ] #26 Rules — rules clarity: in-game reference
 - [ ] #27 Skill — measure/show skill (counter rate on results)
