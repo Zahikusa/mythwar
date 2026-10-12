@@ -5,16 +5,20 @@ Status: **Phase 2 in progress** — 100 design iterations, one per lens of Jesse
 complete; its log follows below the lens plan.
 
 ## Run #5 in short (for the morning)
-- Phase 2 started: lenses #1–#20 done, one commit each (`git log --oneline | grep Lens`), full
-  reasoning in `docs/LENSES.md`. Highlights: battle opening + war horn, **Ley Surges** (a foretold
-  shrine surge — new mechanic, AI uses it), rout callouts, next-age silhouettes, card savings
-  bars, Counter!-advice switch, a lore line per age, age-tinted HUD, a cry per creature,
-  **Bestiary**, **Sandbox**, Novice follows the player up the ages, "Start here" ribbon,
-  **15 Feats**, flow nudges, **progress codes** (PC ↔ phone), three-star battle rating.
-- New tools: `npm run designcheck` (difficulty ladder, pacing, variety, fairness — all pass),
-  `npm run perfcheck` (per-frame JS budget; 0.9 of 3 ms).
-- Findings parked for later lenses: even AI battles run ~18 min (Ragnarök decides them, #39);
-  the AI never summons the Elder Dragon (#46/#47).
+- Phase 2 started: lenses #1–#40 done, one commit each (`git log --oneline | grep Lens`), full
+  reasoning per lens in `docs/LENSES.md`.
+- Biggest additions: **co-op rooms** (two friends vs a server-run AI, #37) with tactical calls
+  (#38); **handicaps** in rooms (#36); **hold the line** lane stance (#24); **Ley Surges** (#2)
+  and **ley sight** (#22); **Quick battles** (#39); **Trials** (#31); **rush an age** (#33);
+  **Sandbox** (#15); **Bestiary** (#11); **16+2 feats** (#17); **three-star rating** with live
+  goals (#20, #25); **progress codes** PC ↔ phone (#19); Novice follows the player up the ages
+  (#13); AIs bank for the Elder Dragon (#32); Zeus/Starfall targeting (#29, #34); brittle frost
+  (#23); per-creature cries (#10); lore lines, age-tinted HUD, many smaller clarity fixes.
+- Protocol is now v8 (trials, co-op, stance): server and pages must be from the same build.
+- New tools: `npm run designcheck` (difficulty ladder, pacing, variety, side fairness — all
+  pass: ladder 100/53/13/0% for the scripted player, even AI battles 19.2 min), `npm run
+  perfcheck` (per-frame JS budget). Verified throughout with `npm run verify` (unit tests,
+  smoke, multiplayer smoke incl. a co-op battle).
 
 ## Phase 2 — open issues found along the way
 - Intermittent (1 in ~7 smoke runs, not reproduced in 12 targeted runs): "IndexSizeError: arc
@@ -22,6 +26,8 @@ complete; its log follows below the lens plan.
   battle start, safe-area resize, world time jumped to 30 s). Every smoke page-error handler now
   logs the first stack frames (`pageError`), so the next occurrence names the drawing call. The
   ley-sight portraits (new in #22) clamp their radius defensively.
+- The results screen at 1600×900 is close to its height budget (the smoke test clicks "Change
+  foe"): new lines on it must share existing ones (done for surge gold, rewards).
 - The smoke's "number key summons" check was timing-sensitive after #35 added a wheel step
   before it (a creature could leave the queue between the two reads); it now counts queued +
   summoned and tops up gold first.
