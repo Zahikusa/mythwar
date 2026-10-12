@@ -612,7 +612,10 @@ export class App {
     }
     const P = g.world.players[g.playerTeam];
     const quick = g.world.quick;
-    recordResult(this.settings, this.difficulty, won, g.world.time, battleStars(won, P.baseHp / P.baseMaxHp, g.world.time, this.difficulty, quick).stars, quick);
+    const stars = battleStars(won, P.baseHp / P.baseMaxHp, g.world.time, this.difficulty, quick).stars;
+    // A better rating than ever against this foe is celebrated on the results.
+    this.menus.newBestStars = stars > (this.settings.records[this.difficulty]?.stars ?? 0) ? stars : 0;
+    recordResult(this.settings, this.difficulty, won, g.world.time, stars, quick);
     clearBattle();
     this.audio.ui(won ? 'victory' : 'defeat');
     this.overTimer = 2.6;

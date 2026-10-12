@@ -775,3 +775,21 @@ periods of downtime? Is the rhythm right?*
 - Checked: unit tests (quick: richer start, faster XP, earlier Ragnarök, kept by saves; turret
   half-rate in Ragnarök; quick par/best rules); `designcheck` all pass (pacing 19.2); foe-screen
   screenshot; full verify.
+
+## #40 The Lens of Reward
+*What rewards is my game giving out? Could it give others? Are players excited when they get
+them, or bored? Rewards that mean nothing? How do the rewards relate to each other? Are they
+building up?*
+- Rewards today: gold popups and flying coins (every kill), rout callouts (#3), shrine and surge
+  gold (#2), the ascension fanfare and banner with a line of story (#7), discovered creatures in
+  the age preview and bestiary (#4, #11), feats (#17), the star rating (#20), laurels per beaten
+  foe on the title.
+- Two of them didn't relate: the stars judged each battle but *nothing remembered them visibly* —
+  the best rating per foe sat in a tooltip-sized record line on the foe card — and earning a
+  better rating than ever went unremarked. A reward the game doesn't acknowledge doesn't build up.
+- Change: when a battle earns a **better rating than ever against that foe**, the results say so
+  beside the new feats — "New best vs Master: ★★★" — and the **title laurels show each foe's best
+  stars** (Adept ★★☆), so the meta-progress is visible every time the game opens. The rewards line
+  stays one line (a separate one pushed the results buttons below a 900-px fold — the smoke test
+  caught it).
+- Checked: results screenshot (feats + new best on one line), title laurels; full verify.

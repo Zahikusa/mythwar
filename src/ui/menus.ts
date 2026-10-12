@@ -84,6 +84,8 @@ export class Menus {
   private pauseGoals: HTMLElement | null = null;
   /** Feats earned in the battle whose results are shown next. */
   featsEarned: Feat[] = [];
+  /** A new best star rating against this foe (0 = not a new best). */
+  newBestStars = 0;
   private featList: HTMLElement | null = null;
   private featChip: HTMLButtonElement | null = null;
 
@@ -160,7 +162,8 @@ export class Menus {
     for (const d of DIFFICULTIES) {
       const r = this.settings.records[d];
       if (!r || !r.wins) continue;
-      el.appendChild(h('span', { class: `laurel l-${d}`, title: `${AI_PROFILES[d].name} defeated ${r.wins}×${r.best ? ` · fastest ${fmtTime(r.best)}` : ''}` }, h('i', { html: ICONS.crown }), AI_PROFILES[d].name));
+      const stars = r.stars ? `${'★'.repeat(r.stars)}${'☆'.repeat(3 - r.stars)}` : '';
+      el.appendChild(h('span', { class: `laurel l-${d}`, title: `${AI_PROFILES[d].name} defeated ${r.wins}×${r.best ? ` · fastest ${fmtTime(r.best)}` : ''}${stars ? ` · best rating ${stars}` : ''}` }, h('i', { html: ICONS.crown }), AI_PROFILES[d].name, stars ? h('small', { class: 'lstars', text: stars }) : null));
     }
   }
 
@@ -723,7 +726,20 @@ export class Menus {
         world.quick ? h('span', { class: 'vtrials', text: 'Quick battle' }) : null,
         P.trials?.length ? h('span', { class: 'vtrials', text: `Trials: ${P.trials.map((t) => TRIALS[t].name).join(', ')}` }) : null,
       ),
-      ...(this.featsEarned.length ? [h('div', { class: 'vfeats' }, h('i', { html: ICONS.xp }), `New feat${this.featsEarned.length > 1 ? 's' : ''}: ${this.featsEarned.map((f) => f.name).join(', ')}`)] : []),
+      // Rewards of this battle, on one line: new feats and a new best rating against this foe.
+      ...(this.featsEarned.length || (!online && this.newBestStars)
+        ? [
+            h(
+              'div',
+              { class: 'vfeats' },
+              h('i', { html: ICONS.xp }),
+              this.featsEarned.length ? `New feat${this.featsEarned.length > 1 ? 's' : ''}: ${this.featsEarned.map((f) => f.name).join(', ')}` : null,
+              !online && this.newBestStars
+                ? h('span', { class: 'vbest' }, `${this.featsEarned.length ? ' · ' : ''}New best vs ${AI_PROFILES[difficulty].name}: `, h('b', { text: `${'★'.repeat(this.newBestStars)}${'☆'.repeat(3 - this.newBestStars)}` }))
+                : null,
+            ),
+          ]
+        : []),
       h(
         'div',
         { class: 'vtip' },

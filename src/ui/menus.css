@@ -1045,6 +1045,23 @@
   font-size: 13px;
 }
 
+.vbest {
+  white-space: pre;
+}
+
+.vbest b {
+  color: var(--gold);
+  font-size: 18px;
+  text-shadow: 0 0 12px rgba(242, 196, 90, 0.9);
+}
+
+.laurel .lstars {
+  margin-left: 4px;
+  color: var(--gold);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
 .vstars {
   display: flex;
   gap: 14px;
