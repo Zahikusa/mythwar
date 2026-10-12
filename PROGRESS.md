@@ -65,7 +65,7 @@ complete; its log follows below the lens plan.
 - [x] #32 Meaningful Choices — the dragon is a real choice (equal-gold tests) the AI never made; able AIs now save for it in calm moments
 - [x] #33 Triangularity — rush an age with 75% of the XP for a double tithe (risky early age vs safe wait)
 - [x] #34 Skill vs. Chance — Wrath of Zeus strikes the foes nearest your citadel first (was random)
-- [ ] #35 Head and Hands — dexterity vs thought: input convenience
+- [x] #35 Head and Hands — head game, hands need efficiency: mouse wheel steps the selected lane
 - [ ] #36 Competition — competitive comparison (stats on results)
 - [ ] #37 Cooperation — cooperative element
 - [ ] #38 Competition vs. Cooperation — balance of the two

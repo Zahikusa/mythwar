@@ -522,6 +522,22 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     await sleep(50);
     s = await state(page);
     check('S moves lane selection down', s.lane === 2 || s.lane === 1, `lane=${s.lane}`);
+    {
+      // The mouse wheel over the battlefield steps the selected lane.
+      const before = s.lane;
+      const box = await page.evaluate(() => {
+        const r = (window as unknown as { __mythwar: any }).__mythwar.canvas.getBoundingClientRect();
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      });
+      await page.mouse.move(box.x, box.y);
+      await page.mouse.wheel({ deltaY: -120 });
+      await sleep(60);
+      const up = (await state(page)).lane;
+      await page.mouse.wheel({ deltaY: 120 });
+      await sleep(60);
+      s = await state(page);
+      check('mouse wheel steps the selected lane', up === Math.max(0, before - 1) && s.lane === Math.min(2, up + 1), JSON.stringify({ before, up, down: s.lane }));
+    }
     const q0 = s.queue;
     await page.keyboard.press('3');
     await sleep(50);

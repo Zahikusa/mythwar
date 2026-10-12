@@ -57,6 +57,25 @@ export class Input {
       this.hud.cancelTargeting();
     });
     window.addEventListener('keydown', (e) => this.onKey(e));
+    // Mouse wheel over the battlefield steps the selected lane (up = the lane above): the hand on
+    // the mouse can steer summons without travelling to the lane or the keyboard.
+    let wheelAcc = 0;
+    canvas.addEventListener(
+      'wheel',
+      (e) => {
+        const g = this.game;
+        if (!g || g.options.demo || g.paused) return;
+        e.preventDefault();
+        wheelAcc += e.deltaY;
+        // Trackpads send many small deltas: one lane per notch's worth.
+        if (Math.abs(wheelAcc) < 40) return;
+        const step = wheelAcc > 0 ? 1 : -1;
+        wheelAcc = 0;
+        const lane = Math.max(0, Math.min(LANE_COUNT - 1, g.view.selectedLane + step));
+        this.hud.selectLane(lane);
+      },
+      { passive: false },
+    );
   }
 
   attach(game: Game | null): void {

@@ -663,3 +663,21 @@ elements with skill or strategy elements make them feel more controllable?*
   of 3, siege ramp ×2, crumble after 6 instead of 10 minutes. Per-battle traces show the
   bottleneck is *reaching* a defended Celestial citadel, not damaging it. Left for #39 (Time),
   with the pacing criterion red until then.
+
+## #35 The Lens of the Head and Hands
+*Are my players looking for mindless activity, or an intellectual experience? Would adding more
+places that involve problem solving make it more interesting? Are there places where the game
+should be more physical — where dexterity, or simply efficient handling, matters?*
+- Mythwar is a head game with light hands: what matters is *what* you summon *where* and *when*;
+  the hands only have to turn decisions into orders before the moment passes. More dexterity
+  challenge (aimed powers, timing minigames) would fight the design — a phone player with a
+  thumb and a PC player with a mouse must be equals online. The right goal for the hands is
+  **efficiency**: the shortest path from intention to order.
+- Paths today: tap a lane then a card (2 taps), drag a card onto a lane (1 gesture), keys 1–4
+  with W/S or Q/A/Z for lanes, Space for the power, G to hold (#24). The gap is the mouse hand on
+  desktop: to change lanes it had to travel to the lane (or the other hand to the keyboard)
+  between every summon into different lanes.
+- Change: the **mouse wheel over the battlefield steps the selected lane** (up = the lane
+  above; trackpad deltas accumulate so one notch is one lane). Point anywhere, flick, press a
+  number or click a card. Keys panel and README updated; paused or attract-mode battles ignore it.
+- Checked: new smoke step ("mouse wheel steps the selected lane": 2 → 1 → 2); full verify.

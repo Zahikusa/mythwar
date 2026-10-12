@@ -292,7 +292,7 @@ export class Hud {
     panel.appendChild(h('div', { class: 'ptitle' }, h('i', { html: ICONS.info }), 'Controls', close));
     const rows: [string, string][] = [
       ['1 – 4', 'Summon a creature into the selected lane'],
-      ['W / S  ·  ↑ / ↓  ·  Q A Z', 'Select a lane (or click it)'],
+      ['W / S  ·  ↑ / ↓  ·  Q A Z', 'Select a lane (or click it, or turn the mouse wheel)'],
       ['Drag a card', 'Summon straight into any lane'],
       ['Space', 'God power on the selected lane'],
       ['Backspace / Del', 'Cancel the last summon (refund)'],

@@ -95,7 +95,7 @@ Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](doc
 | Key | Action |
 |---|---|
 | 1 – 4 | Summon creature |
-| W / S, ↑ / ↓, Q / A / Z | Select lane |
+| W / S, ↑ / ↓, Q / A / Z, mouse wheel | Select lane |
 | Space | God power on the selected lane |
 | U | Ascend |
 | T / B | Turret / blessing panel |
