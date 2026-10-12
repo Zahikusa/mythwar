@@ -29,6 +29,8 @@ export interface Settings {
   online: Record<string, { w: number; l: number }>;
   /** Show the opponent's quick messages in online battles. */
   emotes: boolean;
+  /** Highest age (index) this player has ever reached — later ages stay a mystery until then. */
+  ageSeen: number;
 }
 
 const KEY = 'mythwar.settings.v1';
@@ -50,6 +52,7 @@ const DEFAULTS: Settings = {
   playerName: '',
   online: {},
   emotes: true,
+  ageSeen: 0,
 };
 
 export function loadSettings(): Settings {
@@ -94,6 +97,7 @@ function sanitize(s: Settings): Settings {
     playerName: typeof s.playerName === 'string' ? s.playerName.slice(0, 40) : '',
     online: sanitizeOnline(s.online),
     emotes: bool(s.emotes, true),
+    ageSeen: Math.max(0, Math.min(4, Math.floor(Number(s.ageSeen) || 0))),
   };
 }
 

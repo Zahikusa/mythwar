@@ -1749,6 +1749,42 @@ svg {
   margin: 4px 0;
 }
 
+.ttage-sub {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ttages {
+  display: flex;
+  justify-content: space-around;
+  gap: 4px;
+  margin: 6px 0 2px;
+}
+
+.ttage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 56px;
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.15;
+  color: #e4dcff;
+}
+
+.ttage.unknown canvas {
+  filter: brightness(0) drop-shadow(0 0 1px #d6bcff) drop-shadow(0 0 5px rgba(190, 160, 255, 0.7));
+}
+
+.ttage.unknown span {
+  color: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
 .ttblurb {
   color: var(--muted);
   font-style: italic;

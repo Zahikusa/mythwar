@@ -22,7 +22,7 @@ complete; its log follows below the lens plan.
 - [x] #1 Essential Experience — essence written in DESIGN.md; every battle opens with "Topple their citadel — vs <foe>" + war horn
 - [x] #2 Surprise — Ley Surges: a foretold, seeded shrine surge every 2–3 min (race for a flood of gold)
 - [x] #3 Fun — "Rout! / Slaughter! / Annihilation! ×N" callouts + brass stab when 4+ foes fall in a lane within 2.5 s
-- [ ] #4 Curiosity — peek at the next age (creatures/power) from the Ascend button
+- [x] #4 Curiosity — Ascend preview of the next age; never-reached ages are glowing silhouettes and "???"
 - [ ] #5 Endogenous Value — make gold/XP value felt (kill gold popups, bounty)
 - [ ] #6 Problem Solving — surface the problem: enemy lane composition at your gate
 - [ ] #7 The Elemental Tetrad — story is the weakest element: lore line per age on ascension

@@ -347,7 +347,13 @@ export class App {
         this.hud.onEvents(ev);
         this.coach.onEvents(ev);
         for (const e of ev) {
-          if (e.type === 'ageUp' && e.team === game.playerTeam) this.buzz([30, 60, 30, 60, 60]);
+          if (e.type === 'ageUp' && e.team === game.playerTeam) {
+            this.buzz([30, 60, 30, 60, 60]);
+            if (!demo && e.age > this.settings.ageSeen) {
+              this.settings.ageSeen = this.hud.ageSeen = e.age;
+              saveSettings(this.settings);
+            }
+          }
           else if (e.type === 'baseHit' && e.team === game.playerTeam && game.world.time - this.lastBuzz > 1.5) {
             this.lastBuzz = game.world.time;
             this.buzz(25);
@@ -388,6 +394,7 @@ export class App {
     this.lastBuzz = -10;
     this.audio.ambience = 1;
     this.audio.startMusic(game.world.players[game.playerTeam].age);
+    this.hud.ageSeen = this.settings.ageSeen;
     this.hud.attach(game);
     this.input.attach(game);
     this.coach.attach(game);

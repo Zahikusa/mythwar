@@ -65,6 +65,8 @@ interface CardEl {
 export class Hud {
   readonly root: HTMLDivElement;
   private game: Game | null = null;
+  /** Highest age this player has ever reached (from the settings): later ones preview as silhouettes. */
+  ageSeen = 0;
   private cb: HudCallbacks;
   private layoutInfo: Layout | null = null;
   private cards: CardEl[] = [];
@@ -196,8 +198,21 @@ export class Hud {
 
     E.ascFill = h('div', { class: 'ascfill' });
     E.ascSub = h('div', { class: 'asub' });
-    E.ascend = h('button', { class: 'act ascend', title: 'Ascend to the next age (U)' }, E.ascFill, h('i', { class: 'aico', html: ICONS.ascend }), h('div', { class: 'aname', text: 'Ascend' }), E.ascSub, h('span', { class: 'akey', text: 'U' }));
+    E.ascend = h('button', { class: 'act ascend', 'aria-label': 'Ascend to the next age (U)' }, E.ascFill, h('i', { class: 'aico', html: ICONS.ascend }), h('div', { class: 'aname', text: 'Ascend' }), E.ascSub, h('span', { class: 'akey', text: 'U' }));
     onTap(E.ascend, () => this.tryAscend());
+    // What waits in the next age: hover, keyboard focus or a long press (right click).
+    E.ascend.addEventListener('pointerenter', (e) => {
+      if ((e as PointerEvent).pointerType === 'mouse') this.showAgePreview(E.ascend);
+    });
+    E.ascend.addEventListener('pointerleave', () => this.hideTooltip());
+    E.ascend.addEventListener('focus', () => {
+      if (E.ascend.matches(':focus-visible')) this.showAgePreview(E.ascend);
+    });
+    E.ascend.addEventListener('blur', () => this.hideTooltip());
+    E.ascend.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      this.showAgePreview(E.ascend);
+    });
 
     E.turretBtn = h('button', { class: 'act small turretbtn', title: 'Turrets (T)' }, h('i', { class: 'aico', html: ICONS.tower }), h('div', { class: 'aname', text: 'Turrets' }), h('span', { class: 'akey', text: 'T' }));
     onTap(E.turretBtn, () => this.togglePanel('turret'));
@@ -756,6 +771,38 @@ export class Hud {
       <div class="ttclassnote">${CLASS_NOTE[def.cls]}</div>
       ${def.traitText ? `<div class="tttrait">${def.traitText}</div>` : ''}
       <div class="ttblurb">${def.blurb}</div>`;
+    this.placeTooltip(anchor);
+  }
+
+  /**
+   * The next age's roster, power and citadel. Ages this player has never reached stay a mystery:
+   * dark silhouettes and "???" — ascend to find out.
+   */
+  private showAgePreview(anchor: HTMLElement): void {
+    const g = this.game;
+    if (!g) return;
+    const me = g.world.players[g.playerTeam];
+    if (me.age >= MAX_AGE) return;
+    const next = AGES[me.age + 1];
+    const known = next.index <= this.ageSeen;
+    const tt = this.el.tooltip;
+    tt.innerHTML = `
+      <div class="tth"><b>${next.name}</b><span class="ttage-sub">${next.subtitle}</span></div>
+      <div class="ttsub">${known ? 'Ascend to summon:' : 'Who waits in the next age? Ascend to find out.'}</div>`;
+    const row = h('div', { class: 'ttages' });
+    for (const def of AGE_UNITS[next.index]) {
+      row.appendChild(h('div', { class: `ttage${known ? '' : ' unknown'}` }, portrait(def.id, 50, 0, 0.4, false, this.zoom), h('span', { text: known ? def.name : '???' })));
+    }
+    tt.append(
+      row,
+      h('div', { class: 'tttrait', text: `God power: ${known ? POWERS[next.power].name : '???'} · Citadel ${fmt(next.baseHp)} health` }),
+      h('div', { class: 'ttsub', text: `Needs ${fmt(next.xpRequired)} XP and a tithe of ${fmt(next.ascendCost)} gold${this.layoutInfo?.mode === 'mobile' ? '' : ' (U)'}` }),
+    );
+    this.placeTooltip(anchor);
+  }
+
+  private placeTooltip(anchor: HTMLElement): void {
+    const tt = this.el.tooltip;
     tt.classList.remove('hidden');
     const br = anchor.getBoundingClientRect();
     const [ax, ay] = this.toStage(br.left, br.top);
@@ -773,7 +820,8 @@ export class Hud {
     let x: number;
     let y: number;
     if (this.layoutInfo?.mode === 'mobile') {
-      x = r.right + 8;
+      // Beside the anchor, towards the middle of the screen (cards on the left, actions on the right).
+      x = r.left + rw / 2 < W / 2 ? r.right + 8 : r.left - tw - 8;
       y = Math.max(8, Math.min(H - th - 8, r.top + rh / 2 - th / 2));
     } else {
       x = Math.max(8, Math.min(W - tw - 8, r.left + rw / 2 - tw / 2));
@@ -998,8 +1046,9 @@ export class Hud {
       }
       toggle(E.ascend, 'ready', !why);
       toggle(E.ascend, 'xpready', me.xp >= next.xpRequired && !!why);
-      const title = `Ascend to ${next.name} (U): needs ${fmt(next.xpRequired)} XP and ${fmt(next.ascendCost)} gold. New creatures, turrets, god power and a stronger citadel.`;
-      if (E.ascend.title !== title) E.ascend.title = title;
+      // (The hover preview shows the details; screen readers get them from the label.)
+      const label = `Ascend to ${next.name} (U): needs ${fmt(next.xpRequired)} XP and ${fmt(next.ascendCost)} gold. New creatures, turrets, god power and a stronger citadel.`;
+      if (E.ascend.getAttribute('aria-label') !== label) E.ascend.setAttribute('aria-label', label);
     } else {
       setStyle(E.ascFill, 'transform', 'scaleY(1)');
       setText(E.ascSub, 'Final age');

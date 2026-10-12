@@ -66,6 +66,10 @@ const SCENARIOS: Scenario[] = [
     script: `(() => { const w = window.__mythwar.game.world; for (let i = 0; i < 6; i++) { const u = w.spawnUnit(1, 1, window.__mythwarData.UNITS.pixie, 520 + i * 12); u.hp = 20; }; const p = w.players[0]; p.age = 1; p.powerCooldown = 0; window.__mythwar.game.command({ type: 'power', team: 0, lane: 1 }); })()`,
     after: 1500,
   },
+  // The next age as a mystery (never reached) and as known (reached before).
+  { name: 'age-preview', query: 'demo&ff=60&seed=3', w: 1600, h: 900, script: `document.querySelector('.act.ascend').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true }))`, after: 300 },
+  { name: 'age-preview-known', query: 'demo&ff=60&seed=3', w: 1600, h: 900, script: `(() => { window.__mythwar.hud.ageSeen = 4; document.querySelector('.act.ascend').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true })); })()`, after: 300 },
+  { name: 'age-preview-mobile', query: 'demo&ff=60&seed=3', w: 844, h: 390, mobile: true, dpr: 2, script: `document.querySelector('.act.ascend').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true }))`, after: 300 },
   { name: 'power-zeus', query: 'demo&ff=200&seed=3', w: 1600, h: 900, script: cast(1, 1), after: 900 },
   { name: 'power-fimbul', query: 'demo&ff=300&seed=2', w: 1600, h: 900, script: cast(2, 1), after: 1300 },
   { name: 'power-dragon', query: 'demo&ff=500&seed=5', w: 1600, h: 900, script: cast(3, 1), after: 1100 },

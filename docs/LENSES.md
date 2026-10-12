@@ -57,3 +57,18 @@ other — and themselves?*
   callout per lane updates in place instead of stacking. Not in attract mode.
 - Checked: new screenshot scenario `node scripts/shoot.ts rout` (Wrath of Zeus on a packed lane →
   "Annihilation! ×9" centred over the fallen); full verify.
+
+## #4 The Lens of Curiosity
+*What questions does my game put into the player's mind? What am I doing to make them care
+about these questions? What can I do to make them invent even more questions?*
+- The big question Mythwar can plant is "what waits in the next age?" — five ages of new
+  creatures, powers and citadels. But the game never asked it: the Ascend button's tooltip was a
+  plain browser title with numbers, and nothing hinted at what ascending would bring.
+- Change: **next-age preview.** Hovering, focusing or long-pressing (right-clicking) Ascend shows
+  the next age: name and subtitle, its creatures, god power and citadel health, and the XP/tithe
+  needed. Ages the player has never reached are a mystery — glowing black silhouettes, "???"
+  for names and the power, "Who waits in the next age? Ascend to find out." Reaching an age once
+  (`settings.ageSeen`, any mode but attract) reveals it for good. On phones the preview opens
+  beside the button, towards the middle (the old placement assumed a left-hand anchor).
+- Checked: screenshots `age-preview`, `age-preview-known`, `age-preview-mobile` (new shoot
+  scenarios); full verify.
