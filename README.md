@@ -132,6 +132,7 @@ node scripts/playthrough.mjs 90  # casual scripted play through the real UI, scr
 node scripts/perf2.mjs 1600 900  # per-frame render cost (supports skipping render passes)
 node scripts/classwar.ts         # equal-gold army battles per class and age
 npm run designcheck              # the design's success criteria (difficulty ladder, pacing, variety, fairness)
+npm run perfcheck                # per-frame JavaScript cost of a busy late-game battle (budget 3 ms)
 node scripts/calib.ts counter adept 90  # a scripted "follow the Counter! badge" bot vs an AI
 node scripts/icons.mjs           # re-render PNG app icons (incl. maskable) from public/icon.svg
 ```

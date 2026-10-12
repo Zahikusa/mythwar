@@ -32,7 +32,7 @@ complete; its log follows below the lens plan.
 - [x] #11 Infinite Inspiration — a Bestiary (title + pause): every creature with the real myth behind it; unreached ages hidden
 - [x] #12 The Problem Statement — problem + 4 measurable success criteria in DESIGN.md; `npm run designcheck` measures them (all pass)
 - [x] #13 The Eight Filters — weak filter = audience: newcomers never saw the ages; Novice now follows the player up the ages
-- [ ] #14 Risk Mitigation — biggest risk → mitigate (real devices / network diagnostics)
+- [x] #14 Risk Mitigation — risk register; `npm run perfcheck` guards the per-frame JS budget (0.93 of 3 ms) as effects are added
 - [ ] #15 The Toy — a toy-like sandbox / practice mode
 - [ ] #16 The Player — who plays; first-run defaults / recommendations
 - [ ] #17 Pleasure — completion pleasure: feats/achievements

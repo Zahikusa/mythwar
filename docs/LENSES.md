@@ -226,3 +226,24 @@ goals? Have the playtesters enjoyed it enough?*
   (unchanged); spam bot 30/30 (was 22/30 — the old Novice sometimes ascended ahead of it). The
   difficulty card says "it only ascends after you do"; DESIGN.md documents it.
 - Checked: `npm run designcheck` (ladder 100/73/23/0, all criteria pass); full verify.
+
+## #14 The Lens of Risk Mitigation
+*What could keep this game from being great? How can we stop that from happening?*
+Risk register (what could still sink it, and what guards against it):
+| Risk | Mitigation | Status |
+|---|---|---|
+| Multiplayer fails on a real Wi-Fi (firewall, guest network, VPN adapter, wrong address in the QR code) | address ranking that skips virtual adapters, "can't reach the server" help after a few seconds, firewall notes in docs, auto-reconnect | covered since phase 1 |
+| A real iPhone/Android behaves differently from the emulators | three engines simulate identically (`enginecheck`), WebKit vs Chrome online battles (`mpengines`) | open — needs a human with two phones (PROGRESS: open questions) |
+| A crash in one frame freezes the game | the frame loop is rescheduled before anything else runs | covered |
+| Balance drifts as the lens iterations add mechanics | `npm run designcheck` (#12) after every balance-touching change | covered |
+| **The new effects, sounds and HUD work make phones slow** | automatic battery saver after 4 s under 40 fps — but nothing measured the *cost* of each addition | **new: `npm run perfcheck`** |
+- Investigation: CPU-throttled headless Chrome (DevTools' 4x throttle) dropped a late-game battle
+  from 237 to 13 fps — but profiling showed the game's own JavaScript at 0.36 ms/frame unthrottled
+  and the time going to *software canvas rasterization*, which headless Chrome does on the CPU
+  and phones do on the GPU (and battery-saver resolution made no difference there). Throttled
+  headless numbers are therefore not a phone stand-in.
+- Change: **`npm run perfcheck`** (`scripts/perfcheck.ts`) measures what we control — the
+  game's JavaScript per frame (simulation + AI, renderer command generation, HUD) in a busy
+  late-game Celestial battle on a phone viewport with both sides casting powers — against a
+  3 ms budget (≈ 12–18 ms on a budget phone). Today: 0.93 ms (sim+AI 0.01, renderer 0.84,
+  HUD 0.08). Later lenses that add effects run it.
