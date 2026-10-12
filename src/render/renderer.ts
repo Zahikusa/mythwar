@@ -1,4 +1,4 @@
-import { COUNTERS, LANE_LENGTH, SHRINE_RADIUS, SHRINE_X, TICK, UNITS, counterOf } from '../sim/data.ts';
+import { COUNTERS, LANE_LENGTH, SHRINE_RADIUS, SHRINE_X, TICK, UNITS, WARD, counterOf } from '../sim/data.ts';
 import type { UnitDef } from '../sim/data.ts';
 import { POWER_TIMING, spiritDragonHead } from '../sim/powers.ts';
 import type { Projectile, SimEvent, Team, Unit } from '../sim/types.ts';
@@ -859,6 +859,7 @@ export class Renderer {
     for (let lane = 0; lane < L.lanes.length; lane++) {
       const g = L.lanes[lane];
       if (!this.skip.has('highlight')) this.drawLaneHighlight(ctx, g, view);
+      if (!this.skip.has('reach')) this.drawReach(ctx, world, g);
       if (!this.skip.has('shrine')) this.drawShrine(ctx, world, g);
       for (const team of [0, 1] as Team[]) {
         if (this.skip.has('gates')) break;
@@ -1121,6 +1122,38 @@ export class Renderer {
       }
     }
     ctx.restore();
+  }
+
+  /**
+   * Where each gate's defences reach (its ward, or a longer-ranged turret): a faint dashed line
+   * across the lane in the owner's colour, brighter while foes stand inside it. Pushing past that
+   * line is pushing into fire. (Wards fall silent in Ragnarök; then only turrets count.)
+   */
+  private drawReach(ctx: CanvasRenderingContext2D, world: World, g: LaneGeom): void {
+    const lane = g.index;
+    for (const team of [0, 1] as Team[]) {
+      const turret = world.players[team].turrets[lane].def;
+      const reach = Math.max(world.ragnarokStarted ? 0 : WARD.range, turret ? turret.range : 0);
+      if (reach <= 0) continue;
+      let hot = false;
+      for (const u of world.lanes[lane]) {
+        if (!u.alive || u.team === team) continue;
+        const d = team === 0 ? u.x - u.def.radius : LANE_LENGTH - (u.x + u.def.radius);
+        if (d <= reach) hot = true;
+      }
+      const x = laneX(g, team === 0 ? reach : LANE_LENGTH - reach);
+      const half = g.band * 0.38;
+      ctx.save();
+      ctx.globalAlpha = hot ? 0.6 + 0.2 * Math.sin(this.time * 8) : 0.3;
+      ctx.strokeStyle = TEAM_COLORS[team].main;
+      ctx.lineWidth = Math.max(2, 3 * this.artScale(g));
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath();
+      ctx.moveTo(x, g.y - half);
+      ctx.lineTo(x, g.y + half);
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   private drawShrine(ctx: CanvasRenderingContext2D, world: World, g: LaneGeom): void {

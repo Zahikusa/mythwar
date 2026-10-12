@@ -51,7 +51,7 @@ complete; its log follows below the lens plan.
 - [x] #18 Flow — win/loss runs per foe; results offer "Face the <next>" after a win, the easier foe after 3 defeats in a row
 - [x] #19 Needs — safety: progress codes carry records/feats/ages between devices (merging, never losing)
 - [x] #20 Judgment — three-star rating with reasons (victory, citadel above half, par time); best per foe on its card
-- [ ] #21 Functional Space — lane space: pressure indicators
+- [x] #21 Functional Space — each gate's reach (ward or turret range) drawn as a dashed line that lights up with foes inside
 - [ ] #22 Dynamic State — show public state the player lacks (enemy XP / ascension)
 - [ ] #23 Emergence — an emergent interaction between existing traits/powers
 - [ ] #24 Action — a new meaningful verb (e.g. lane stance: hold / advance)

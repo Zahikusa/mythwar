@@ -364,3 +364,21 @@ improve?*
 - Checked: unit tests (each star's condition, par per foe, best rating kept); results
   screenshots (desktop, phone victory/defeat — the stars share the battle-length line so the
   phone layout doesn't grow); full verify.
+
+## #21 The Lens of Functional Space
+*If all the surface elements were stripped away, what is the game's functional space? Is it
+discrete or continuous? How many dimensions? What are its boundaries? Are there sub-spaces?*
+- Stripped down, Mythwar is three discrete, parallel, one-dimensional tracks of length 1000,
+  bounded by the two citadels and coupled only by the shared citadel health and the player's
+  gold and attention. Each track has functional **sub-spaces**: the shrine zone (±80 around the
+  middle — drawn, with a capture ring), and at each end the zone a gate's ward (170) or turret
+  (230–280) can hit, where attackers take fire before they can strike the citadel.
+- The second kind was invisible. Players learned it by losing creatures ("lone creatures melt
+  there", the coach says after three deaths at the gate), and couldn't see that a turret pushes
+  the zone further out, or that Ragnarök silences the wards and shrinks it.
+- Change: each gate's **reach** is drawn as a faint dashed line across its lane in the owner's
+  colour, at the furthest of the ward's and the turret's range (wards drop out in Ragnarök); it
+  brightens and pulses while foes stand inside it. Both sides' lines show, so the space between
+  them — where fights are fair — is readable at a glance. The ward coach tip points at it.
+- Checked: screenshots in Fae Wilds and Asgard (subtle while idle, bright with a foe inside);
+  `perfcheck` 0.94 ms (unchanged budget); full verify.

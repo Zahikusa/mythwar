@@ -59,7 +59,7 @@ const TIPS: Tip[] = [
   },
   {
     id: 'wards',
-    text: 'Every gate is guarded by a ward (and maybe a turret). Lone creatures melt there — push with a group, or soften the gate with your god power.',
+    text: 'Every gate is guarded by a ward (and maybe a turret) — the dashed line in front of it shows how far it shoots. Lone creatures melt there: push with a group, or soften the gate with your god power.',
     when: (_g, _t, c) => (c?.diedAtEnemyGate ?? 0) >= 3,
     done: (_g, t, s) => t - s > 10,
   },
