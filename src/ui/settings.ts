@@ -33,6 +33,8 @@ export interface Settings {
   advice: boolean;
   /** Highest age (index) this player has ever reached — later ages stay a mystery until then. */
   ageSeen: number;
+  /** Feats earned (ids, see src/ui/feats.ts). */
+  feats: string[];
 }
 
 const KEY = 'mythwar.settings.v1';
@@ -56,6 +58,7 @@ const DEFAULTS: Settings = {
   emotes: true,
   advice: true,
   ageSeen: 0,
+  feats: [],
 };
 
 export function loadSettings(): Settings {
@@ -70,7 +73,7 @@ export function loadSettings(): Settings {
   }
   // First run: respect the OS "reduce motion" preference.
   const calm = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  return { ...DEFAULTS, shake: !calm, hintsSeen: [], records: {}, online: {} };
+  return { ...DEFAULTS, shake: !calm, hintsSeen: [], records: {}, online: {}, feats: [] };
 }
 
 /** Stored settings may come from an older build or be hand-edited: keep only sane values. */
@@ -102,6 +105,7 @@ function sanitize(s: Settings): Settings {
     emotes: bool(s.emotes, true),
     advice: bool(s.advice, true),
     ageSeen: Math.max(0, Math.min(4, Math.floor(Number(s.ageSeen) || 0))),
+    feats: Array.isArray(s.feats) ? [...new Set(s.feats.filter((x): x is string => typeof x === 'string'))].slice(0, 100) : [],
   };
 }
 

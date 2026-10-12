@@ -35,7 +35,7 @@ complete; its log follows below the lens plan.
 - [x] #14 Risk Mitigation — risk register; `npm run perfcheck` guards the per-frame JS budget (0.93 of 3 ms) as effects are added
 - [x] #15 The Toy — Sandbox: no foe, endless gold, unbreakable citadels, summon for either side (X)
 - [x] #16 The Player — "Start here" / "Next challenge" ribbon on the easiest foe not beaten yet
-- [ ] #17 Pleasure — completion pleasure: feats/achievements
+- [x] #17 Pleasure — pride in accomplishment was missing: 15 Feats, toasts, results line, title chip + list
 - [ ] #18 Flow — suggest the right next difficulty
 - [ ] #19 Needs — esteem: ranks/titles
 - [ ] #20 Judgment — fair judgment: battle grade on results

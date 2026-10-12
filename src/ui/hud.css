@@ -1638,6 +1638,12 @@ svg {
   border-color: rgba(255, 79, 109, 0.5);
 }
 
+.toast.feat {
+  color: var(--gold-l);
+  border-color: var(--gold);
+  box-shadow: 0 0 18px rgba(242, 196, 90, 0.45);
+}
+
 .toast.good {
   color: #c6ffd0;
   border-color: rgba(126, 224, 138, 0.5);

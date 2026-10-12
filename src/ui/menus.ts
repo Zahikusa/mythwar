@@ -10,6 +10,8 @@ import type { Settings } from './settings.ts';
 import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
 import { Bestiary } from './bestiary.ts';
+import { FEATS } from './feats.ts';
+import type { Feat } from './feats.ts';
 import type { MpMenuCallbacks } from './mpmenus.ts';
 import type { EndReason } from '../net/protocol.ts';
 
@@ -39,7 +41,7 @@ export interface MenuCallbacks {
   toRoom(): void;
 }
 
-type Screen = 'none' | 'title' | 'difficulty' | 'howto' | 'settings' | 'bestiary' | 'pause' | 'over' | 'mp' | 'room';
+type Screen = 'none' | 'title' | 'difficulty' | 'howto' | 'settings' | 'bestiary' | 'feats' | 'pause' | 'over' | 'mp' | 'room';
 
 /** Full-screen menus: title, difficulty, how-to-play, settings, pause and results. */
 export class Menus {
@@ -75,6 +77,10 @@ export class Menus {
   private rematchBtn: HTMLButtonElement | null = null;
   private rematchNote: HTMLElement | null = null;
   private bestiary!: Bestiary;
+  /** Feats earned in the battle whose results are shown next. */
+  featsEarned: Feat[] = [];
+  private featList: HTMLElement | null = null;
+  private featChip: HTMLButtonElement | null = null;
 
   constructor(parent: HTMLElement, settings: Settings, cb: MenuCallbacks) {
     this.cb = cb;
@@ -88,6 +94,7 @@ export class Menus {
     this.screens.settings = this.buildSettings();
     this.bestiary = new Bestiary(this.button('Back', 'primary', () => this.goBack()), (k) => this.cb.sound(k));
     this.screens.bestiary = this.bestiary.el;
+    this.screens.feats = this.buildFeats();
     this.screens.pause = this.buildPause();
     this.screens.over = h('div', { class: 'screen over' });
     this.mp = new MpScreens((label, cls, onClick, icon) => this.button(label, cls, onClick, icon), cb.mp);
@@ -99,6 +106,7 @@ export class Menus {
       howto: 'How to play',
       settings: 'Settings',
       bestiary: 'Bestiary',
+      feats: 'Feats',
       pause: 'Paused',
       over: 'Battle results',
       mp: 'Multiplayer',
@@ -136,6 +144,12 @@ export class Menus {
     const el = this.laurels;
     if (!el) return;
     el.innerHTML = '';
+    // Feats earned so far: a chip that opens the list.
+    if (this.featChip) {
+      const n = FEATS.filter((f) => this.settings.feats.includes(f.id)).length;
+      this.featChip.querySelector('span')!.textContent = `Feats ${n}/${FEATS.length}`;
+      el.appendChild(this.featChip);
+    }
     for (const d of DIFFICULTIES) {
       const r = this.settings.records[d];
       if (!r || !r.wins) continue;
@@ -164,7 +178,7 @@ export class Menus {
 
   /** Return from how-to / settings / difficulty to whichever screen opened them. */
   goBack(): void {
-    if (this.screen === 'howto' || this.screen === 'settings' || this.screen === 'bestiary') this.show(this.back);
+    if (this.screen === 'howto' || this.screen === 'settings' || this.screen === 'bestiary' || this.screen === 'feats') this.show(this.back);
     else if (this.screen === 'difficulty') this.show(this.diffBack);
   }
 
@@ -172,8 +186,8 @@ export class Menus {
     // The first-run "how-to, then battle" hand-off only lasts while the how-to is showing
     // (Esc / Back out of it must not leave a pending battle start behind).
     if (this.screen === 'howto' && screen !== 'howto') this.afterHowto = null;
-    if (screen === 'howto' || screen === 'settings' || screen === 'bestiary') {
-      if (this.screen !== 'howto' && this.screen !== 'settings' && this.screen !== 'bestiary') this.back = this.screen === 'none' ? 'title' : this.screen;
+    if (screen === 'howto' || screen === 'settings' || screen === 'bestiary' || screen === 'feats') {
+      if (this.screen !== 'howto' && this.screen !== 'settings' && this.screen !== 'bestiary' && this.screen !== 'feats') this.back = this.screen === 'none' ? 'title' : this.screen;
     }
     if (screen === 'difficulty' && this.screen !== 'difficulty' && this.screen !== 'howto' && this.screen !== 'settings') {
       this.diffBack = this.screen === 'over' ? 'over' : 'title';
@@ -193,6 +207,7 @@ export class Menus {
     }
     if (screen === 'title') this.refreshLaurels();
     if (screen === 'bestiary') this.bestiary.open(this.settings.ageSeen);
+    if (screen === 'feats') this.refreshFeats();
     if (screen === 'settings') for (const f of this.syncers) f();
   }
 
@@ -238,6 +253,11 @@ export class Menus {
     });
     const foot = h('div', { class: 'title-foot', text: 'A tribute to Age of War — reimagined with gods and monsters.' });
     this.laurels = h('div', { class: 'laurels' });
+    this.featChip = h('button', { class: 'laurel featchip', title: 'Your feats' }, h('i', { html: ICONS.xp }), h('span')) as HTMLButtonElement;
+    onTap(this.featChip, () => {
+      this.cb.sound('click');
+      this.show('feats');
+    });
     return h('div', { class: 'screen title' }, logo, creatures, this.laurels, buttons, foot);
   }
 
@@ -402,6 +422,24 @@ export class Menus {
     this.howtoDots?.querySelectorAll('.hdot').forEach((d, k) => d.classList.toggle('on', k === i));
     const next = this.screens.howto?.querySelector('.hnext span');
     if (next) next.textContent = i === this.howtoPages.length - 1 ? (this.afterHowto ? 'To battle!' : 'Got it') : 'Next';
+  }
+
+  // -------------------------------------------------------------------------
+  // Feats
+  // -------------------------------------------------------------------------
+
+  private buildFeats(): HTMLElement {
+    this.featList = h('div', { class: 'featlist' });
+    return h('div', { class: 'screen feats' }, h('h2', { text: 'Feats' }), this.featList, h('div', { class: 'mrow' }, this.button('Back', 'primary', () => this.goBack())));
+  }
+
+  private refreshFeats(): void {
+    const list = this.featList!;
+    list.innerHTML = '';
+    for (const f of FEATS) {
+      const got = this.settings.feats.includes(f.id);
+      list.appendChild(h('div', { class: `feat${got ? ' got' : ''}` }, h('i', { html: ICONS.xp }), h('div', null, h('b', { text: f.name }), h('span', { text: f.desc }))));
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -574,6 +612,7 @@ export class Menus {
         h('div', { class: 'vportrait' }, portrait(champion.id, 96, 0, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
       ),
       h('div', { class: 'vtime', text: `Battle length ${fmtTime(world.time)}` }),
+      ...(this.featsEarned.length ? [h('div', { class: 'vfeats' }, h('i', { html: ICONS.xp }), `New feat${this.featsEarned.length > 1 ? 's' : ''}: ${this.featsEarned.map((f) => f.name).join(', ')}`)] : []),
       h('div', { class: 'vtip', text: online && (won || online.reason !== 'citadel') ? scoreLine(online) : battleTip(world, me, difficulty, ageUps, this.settings.advice) }),
       h('div', { class: 'vstats' }, table, history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null),
       online ? this.onlineResultButtons(share) : h(

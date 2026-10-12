@@ -592,6 +592,88 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Feats                                                               */
+/* ------------------------------------------------------------------ */
+.laurel.featchip {
+  cursor: pointer;
+  pointer-events: auto;
+  color: var(--gold-l);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.featlist {
+  width: min(760px, 94cqw);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+
+.feat {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(21, 14, 38, 0.9);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.feat i {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  filter: grayscale(1) brightness(0.5);
+}
+
+.feat div {
+  display: flex;
+  flex-direction: column;
+}
+
+.feat b {
+  font-family: var(--title-font);
+  font-size: 15px;
+}
+
+.feat.got {
+  border-color: var(--gold);
+  color: #e4dcff;
+}
+
+.feat.got b {
+  color: var(--gold-l);
+}
+
+.feat.got i {
+  filter: drop-shadow(0 0 4px rgba(183, 164, 255, 0.9));
+}
+
+.vfeats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gold-l);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.vfeats i {
+  width: 18px;
+  height: 18px;
+}
+
+@container stage (max-width: 620px) {
+  .featlist {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Bestiary                                                            */
 /* ------------------------------------------------------------------ */
 .btabs {

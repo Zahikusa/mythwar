@@ -285,3 +285,24 @@ about my game in particular?*
   last choice stays selected.
 - Checked: unit test for the recommendation; difficulty screenshots (desktop, QHD, small phone);
   full verify.
+
+## #17 The Lens of Pleasure
+*What pleasures does my game give players? Can these be improved? What pleasures are missing
+from my experience? Why? Can they be added?*
+- Present: sensation (art, synthesized music and cries), fantasy (commanding legends), challenge
+  (four foes), fellowship (same-Wi-Fi battles, quick messages), discovery (silhouettes, bestiary,
+  sandbox — lenses #4, #11, #15), surprise (Ley Surges, #2), triumph (rout callouts, #3).
+- Missing: **pride in accomplishment beyond "won/lost"** — Schell's completion pleasure. The
+  only lasting trace of a great battle was a W/L count and a laurel per difficulty; summoning
+  your first Elder Dragon, holding all three shrines, or winning from a sliver of health left
+  nothing behind.
+- Change: **Feats** (`src/ui/feats.ts`) — fifteen deeds earned once and kept: beat each foe, win
+  online, reach the Celestial age, summon the Elder Dragon, Annihilation (nine foes in a lane
+  within 2.5 s), hold all three shrines, draw from three Ley Surges in a battle, a fifth-rank
+  blessing, beat Adept+ in under 8 minutes, beat Adept+ above 75% citadel health, win after
+  falling below 15%. Mid-battle feats pop a gold toast with a chime; victory feats are listed on
+  the results ("New feats: …"). A "Feats n/15" chip above the title menu opens the list (earned
+  ones glow). Not counted in attract mode or the sandbox; online wins count.
+- Checked: 4 unit tests (unique ids, annihilation once and only in one lane, victory feats per
+  foe/time/health, nothing for a defeat, online win); screenshots of the feats screen (desktop,
+  phone), the title chip (desktop, phone) and the results line; full verify.

@@ -80,7 +80,7 @@ export class Hud {
   private laneBars: { bar: HTMLElement; fill: HTMLElement; count: HTMLElement }[] = [];
   private queueChips: QueueChip[] = [];
   private toastTimer = 0;
-  private toastQueue: { text: string; kind: 'bad' | 'good' | 'info' }[] = [];
+  private toastQueue: { text: string; kind: 'bad' | 'good' | 'info' | 'feat' }[] = [];
   private bannerTimer = 0;
   private panel: 'none' | 'turret' | 'bless' | 'keys' = 'none';
   private turretRows: HTMLElement[] = [];
@@ -647,7 +647,7 @@ export class Hud {
    * Shows a toast. Event toasts queue behind the current one (max 3) so simultaneous events
    * aren't lost; `immediate` (used for failed actions) replaces whatever is showing.
    */
-  toast(text: string, kind: 'bad' | 'good' | 'info' = 'info', immediate = false): void {
+  toast(text: string, kind: 'bad' | 'good' | 'info' | 'feat' = 'info', immediate = false): void {
     if (!immediate && this.toastTimer > 0) {
       const t = this.el.toast.textContent;
       if (t !== text && !this.toastQueue.some((q) => q.text === text) && this.toastQueue.length < 3) this.toastQueue.push({ text, kind });
@@ -656,11 +656,11 @@ export class Hud {
     this.showToast(text, kind);
   }
 
-  private showToast(text: string, kind: 'bad' | 'good' | 'info'): void {
+  private showToast(text: string, kind: 'bad' | 'good' | 'info' | 'feat'): void {
     const t = this.el.toast;
     setText(t, text);
     t.className = `toast show ${kind}`;
-    this.toastTimer = this.toastQueue.length ? 1.4 : 1.8;
+    this.toastTimer = kind === 'feat' ? 3.2 : this.toastQueue.length ? 1.4 : 1.8;
   }
 
   /** A centre-screen banner; `lore` adds a line of story (and keeps it up long enough to read). */

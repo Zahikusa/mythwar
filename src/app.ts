@@ -19,6 +19,7 @@ import { hasMpServer } from './net/connection.ts';
 import { NetGame } from './net/netgame.ts';
 import { EMOTES, cleanCode, cleanName } from './net/protocol.ts';
 import { randomName } from './ui/mpmenus.ts';
+import { FeatTracker } from './ui/feats.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
 
 type AppState = 'title' | 'playing' | 'over';
@@ -54,6 +55,8 @@ export class App {
   private coinsSeen = 0;
   private lastSave = 0;
   private lastBuzz = -10;
+  /** Feats earned in the current battle (null until one starts). */
+  private feats: FeatTracker | null = null;
   private slowSeconds = 0;
   private autoLowDone = false;
   private params = new URLSearchParams(location.search);
@@ -350,6 +353,7 @@ export class App {
       if (this.state === 'playing') {
         this.hud.onEvents(ev);
         this.coach.onEvents(ev);
+        if (!demo && !game.options.sandbox) this.feats?.onEvents(ev, game.world);
         for (const e of ev) {
           if (e.type === 'ageUp' && e.team === game.playerTeam) {
             this.buzz([30, 60, 30, 60, 60]);
@@ -393,6 +397,15 @@ export class App {
   }
 
   private enterBattle(game: Game): void {
+    this.feats = new FeatTracker(this.settings.feats, (f) => {
+      this.settings.feats.push(f.id);
+      saveSettings(this.settings);
+      // (Feats for the victory itself are listed on the results screen instead.)
+      if (this.game?.over) return;
+      this.hud.toast(`Feat: ${f.name} — ${f.desc}`, 'feat');
+      this.audio.ui('bless');
+    });
+    this.feats.start(game.world, game.playerTeam);
     this.immersive();
     this.state = 'playing';
     this.overTimer = -1;
@@ -511,7 +524,7 @@ export class App {
     const m = this.menus.current;
     if (m === 'mp') this.closeMultiplayer();
     else if (m === 'room') return;
-    else if (m === 'howto' || m === 'settings' || m === 'bestiary' || m === 'difficulty') this.menus.goBack();
+    else if (m === 'howto' || m === 'settings' || m === 'bestiary' || m === 'feats' || m === 'difficulty') this.menus.goBack();
     else if (this.state !== 'playing') return;
     else if (this.game instanceof NetGame) {
       // Online the battle may be held for other reasons (countdown, someone away): Esc
@@ -567,6 +580,9 @@ export class App {
   private onGameOver(): void {
     const g = this.game!;
     const won = g.world.winner === g.playerTeam;
+    // (A battle abandoned by a server restart has no result: no feats for it either.)
+    if (!(g instanceof NetGame) || g.result) this.feats?.onEnd(g.world, g instanceof NetGame ? null : this.difficulty);
+    this.menus.featsEarned = this.feats?.earned ?? [];
     if (g instanceof NetGame) {
       // (A battle abandoned by the server restarting has no result to count.)
       if (g.result) recordOnline(this.settings, g.foeName.replace(/ \(2\)$/, ''), won);
