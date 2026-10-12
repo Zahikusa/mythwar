@@ -1,4 +1,5 @@
 import { TICK } from '../src/sim/data.ts';
+import type { TrialId } from '../src/sim/data.ts';
 import { hashWorld } from '../src/sim/hash.ts';
 import type { Team } from '../src/sim/types.ts';
 import { World } from '../src/sim/world.ts';
@@ -27,6 +28,8 @@ export interface MatchOptions {
   awayGrace?: number;
   /** Seconds away after which the other player may claim the win. */
   claimAfter?: number;
+  /** Handicaps per seat. */
+  trials?: [TrialId[], TrialId[]];
 }
 
 type MatchState = 'countdown' | 'running' | 'paused' | 'resuming' | 'over';
@@ -66,7 +69,7 @@ export class Match {
   constructor(opts: MatchOptions, now: number, host: MatchHost) {
     this.seed = opts.seed;
     this.names = opts.names;
-    this.world = new World({ seed: opts.seed });
+    this.world = new World({ seed: opts.seed, trials: opts.trials });
     this.host = host;
     this.turnTicks = opts.turnTicks ?? 2;
     this.awayGrace = opts.awayGrace ?? AWAY_GRACE;

@@ -51,7 +51,8 @@ runs the small game server, and every device plays in its browser:
 From a checkout of this repository, `npm install` and `npm run lan` do the same (build + serve
 on port 8787).
 
-Battles survive app switches, Wi-Fi blips and reloads; leaving forfeits.
+Battles survive app switches, Wi-Fi blips and reloads; leaving forfeits. A stronger player can
+take a handicap in the room (half a citadel, no god powers, no turrets) to give a friend a chance.
 Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](docs/MULTIPLAYER.md).
 
 | Battle room: code + QR invite | The guest's phone: every player sees their own citadel on the left |

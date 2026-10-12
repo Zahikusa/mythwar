@@ -4,6 +4,8 @@ import { CODE_LENGTH, NAME_MAX, cleanCode } from '../net/protocol.ts';
 import type { SeatInfo } from '../net/protocol.ts';
 import { h, onTap, setText, toggle } from './dom.ts';
 import { ICONS } from './icons.ts';
+import { TRIALS, TRIAL_ORDER } from '../sim/data.ts';
+import type { TrialId } from '../sim/data.ts';
 
 export interface MpMenuCallbacks {
   sound(kind: string): void;
@@ -13,6 +15,8 @@ export interface MpMenuCallbacks {
   host(): void;
   join(code: string): void;
   ready(ready: boolean): void;
+  /** This player's own handicaps for the next battle. */
+  trials(trials: TrialId[]): void;
   leaveRoom(): void;
 }
 
@@ -44,7 +48,10 @@ export class MpScreens {
   private invite!: HTMLElement;
   private qr!: HTMLElement;
   private link!: HTMLElement;
-  private seats: { el: HTMLElement; name: HTMLElement; side: HTMLElement; state: HTMLElement; wins: HTMLElement; edit: HTMLInputElement }[] = [];
+  private seats: { el: HTMLElement; name: HTMLElement; side: HTMLElement; state: HTMLElement; wins: HTMLElement; edit: HTMLInputElement; trials: HTMLElement }[] = [];
+  /** My handicap chips in the room, and the trials they currently show. */
+  private trialChips: { id: TrialId; el: HTMLButtonElement }[] = [];
+  private myTrials: TrialId[] = [];
   private mySeat = -1;
   private readyBtn!: HTMLButtonElement;
   private roomNote!: HTMLElement;
@@ -215,6 +222,7 @@ export class MpScreens {
       const side = h('div', { class: 'sside', text: i === 0 ? 'Host' : 'Guest' });
       const state = h('div', { class: 'sstate' });
       const wins = h('div', { class: 'swins' });
+      const trials = h('div', { class: 'strials' });
       // Your own name can be changed right here (tap it).
       const edit = h('input', { class: 'mpname sedit hidden', type: 'text', maxlength: NAME_MAX, spellcheck: 'false', 'aria-label': 'Your name' }) as HTMLInputElement;
       const done = () => {
@@ -240,12 +248,26 @@ export class MpScreens {
         edit.focus();
         edit.select();
       });
-      const el = h('div', { class: 'rseat' }, name, edit, side, state, wins);
-      this.seats.push({ el, name, side, state, wins, edit });
+      const el = h('div', { class: 'rseat' }, name, edit, side, state, wins, trials);
+      this.seats.push({ el, name, side, state, wins, edit, trials });
       seatsBox.appendChild(el);
       if (i === 0) seatsBox.appendChild(h('div', { class: 'rvs', text: 'VS' }));
     }
     this.readyBtn = this.button('Ready', 'primary big', () => this.cb.ready(!this.iAmReady), ICONS.swords);
+    // Handicaps: the stronger friend can take trials so the other has a real chance.
+    const handicap = h('div', { class: 'trials rtrials' }, h('span', { class: 'tlabel', text: 'Your handicap:' }));
+    for (const id of TRIAL_ORDER) {
+      const chip = h('button', { class: 'trial', title: TRIALS[id].blurb, 'aria-pressed': 'false' }, TRIALS[id].name) as HTMLButtonElement;
+      onTap(chip, () => {
+        const set = new Set(this.myTrials);
+        if (set.has(id)) set.delete(id);
+        else set.add(id);
+        this.cb.sound('select');
+        this.cb.trials(TRIAL_ORDER.filter((x) => set.has(x)));
+      });
+      this.trialChips.push({ id, el: chip });
+      handicap.appendChild(chip);
+    }
     this.roomNote = h('div', { class: 'mnote rnote' });
     const leave = this.button('Leave room', 'ghost', () => this.cb.leaveRoom());
     return h(
@@ -254,6 +276,7 @@ export class MpScreens {
       h('div', { class: 'rhead' }, h('h2', { text: 'Battle room' }), h('div', { class: 'rcodebox' }, h('span', { text: 'Room code' }), this.roomCode)),
       this.invite,
       seatsBox,
+      handicap,
       this.makeFlash(),
       this.roomNote,
       h('div', { class: 'mrow' }, leave, this.readyBtn),
@@ -352,6 +375,16 @@ export class MpScreens {
     // A weak link shows before the battle: amber / red ping.
     v.state.dataset.q = !s?.connected || !s.ping ? '' : s.ping > 250 ? 'bad' : s.ping > 120 ? 'ok' : 'good';
     setText(v.wins, s && s.wins ? `${s.wins} ${s.wins === 1 ? 'win' : 'wins'}` : '');
+    const trials = s?.trials ?? [];
+    setText(v.trials, trials.length ? `Handicap: ${trials.map((t) => TRIALS[t].name).join(', ')}` : '');
+    if (mine) {
+      this.myTrials = trials;
+      for (const c of this.trialChips) {
+        const on = trials.includes(c.id);
+        c.el.classList.toggle('on', on);
+        c.el.setAttribute('aria-pressed', String(on));
+      }
+    }
   }
 }
 

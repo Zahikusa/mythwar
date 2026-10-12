@@ -154,6 +154,7 @@ export class App {
           if (on) this.immersive();
           this.mp?.ready(on);
         },
+        trials: (t) => this.mp?.setTrials(t),
         leaveRoom: () => this.leaveRoom(),
       },
     });

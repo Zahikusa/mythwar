@@ -681,3 +681,25 @@ should be more physical — where dexterity, or simply efficient handling, matte
   above; trackpad deltas accumulate so one notch is one lane). Point anywhere, flick, press a
   number or click a card. Keys panel and README updated; paused or attract-mode battles ignore it.
 - Checked: new smoke step ("mouse wheel steps the selected lane": 2 → 1 → 2); full verify.
+
+## #36 The Lens of Competition
+*Does my game give a fair measurement of player skill? Do people want to win? Is winning
+something players can be proud of? Can novices meaningfully compete? Can experts? Can experts
+generally be sure they will defeat novices?*
+- Measurement: fair and skill-heavy (mirror tests, `designcheck`; online every replica runs the
+  same simulation and the server's room keeps a running score). Pride: feats (#17), stars
+  (#20). Experts can compete with each other and with Mythic.
+- **Can novices meaningfully compete? Online, no** — and online here means friends on the same
+  Wi-Fi, often of very different experience. Mythwar's skill gradient is steep (a "smart" bot
+  beats a "counter" bot almost always), so the expert friend wins every time and the evening is
+  over after two battles. Against the AI the novice has Novice; against a friend they had nothing.
+- Change: **handicaps in the battle room** — each player may take any of the Trials from #31
+  for themselves (Glass Citadel, Godless, No Walls). The room shows both players' handicaps
+  under their names; changing them takes both seats out of Ready, so nobody starts against
+  handicaps they haven't seen; the server builds the battle with them and every replica
+  simulates them identically (protocol v7: `trials` message, `SeatInfo.trials`, `start.trials`).
+  The results list the trials fought under. The expert can now *choose* how hard to make it —
+  a fairer measurement of skill between two people who know each other's level.
+- Checked: server test (sanitizing, un-readying, the start message, both replicas apply the
+  handicap and keep hashing equal); multiplayer smoke with screenshots (room on desktop and
+  phone); full verify.

@@ -899,3 +899,18 @@
 .hud.mobile .ebubble.theirs {
   right: calc(var(--side, 80px) + 40px);
 }
+
+/* A seat's handicaps (trials) and the handicap chips under the seats. */
+.strials {
+  font-size: 12px;
+  color: #ffb08a;
+  min-height: 1em;
+}
+
+.strials:empty {
+  display: none;
+}
+
+.trials.rtrials {
+  margin-top: -4px;
+}

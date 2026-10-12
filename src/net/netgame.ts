@@ -1,5 +1,6 @@
 import { Game } from '../game.ts';
 import { AGES, QUEUE_MAX, SELL_REFUND, TICK, TURRETS, UNITS, blessingCost } from '../sim/data.ts';
+import type { TrialId } from '../sim/data.ts';
 import { hashWorld } from '../sim/hash.ts';
 import type { Command, CommandResult, Team } from '../sim/types.ts';
 import { World } from '../sim/world.ts';
@@ -25,6 +26,8 @@ export interface NetGameInit {
   snapshot?: Extract<ServerMsg, { type: 'snapshot' }>;
   /** Seconds until the first tick (new battles). */
   countdown?: number;
+  /** Handicaps per seat (new battles). */
+  trials?: [TrialId[], TrialId[]];
   send: (msg: ClientMsg) => boolean;
   now?: () => number;
 }
@@ -72,7 +75,7 @@ export class NetGame extends Game {
   private playOffset: number | null = null;
 
   constructor(init: NetGameInit) {
-    const world = init.snapshot ? World.deserialize(init.snapshot.world) : new World({ seed: init.seed ?? 1 });
+    const world = init.snapshot ? World.deserialize(init.snapshot.world) : new World({ seed: init.seed ?? 1, trials: init.trials });
     super({ difficulty: 'adept', online: true, team: init.seat }, world);
     this.seat = init.seat;
     this.names = init.names;

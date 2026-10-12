@@ -41,6 +41,10 @@ Either way it prints something like:
 
 Each player always sees their own citadel on the left, in blue.
 
+**Handicaps:** a stronger player can take trials in the room ("Your handicap": Glass Citadel,
+Godless, No Walls) so a newer friend has a real chance. Both players see each other's handicaps,
+and changing them takes both out of Ready, so nobody starts against handicaps they haven't seen.
+
 During development `npm run dev` hosts rooms as well (open the "Network" address Vite prints).
 `npm run serve` serves an existing build without rebuilding; `node server/main.ts --port 9000`
 picks another port.

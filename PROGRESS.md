@@ -66,7 +66,7 @@ complete; its log follows below the lens plan.
 - [x] #33 Triangularity — rush an age with 75% of the XP for a double tithe (risky early age vs safe wait)
 - [x] #34 Skill vs. Chance — Wrath of Zeus strikes the foes nearest your citadel first (was random)
 - [x] #35 Head and Hands — head game, hands need efficiency: mouse wheel steps the selected lane
-- [ ] #36 Competition — competitive comparison (stats on results)
+- [x] #36 Competition — novices couldn't compete with expert friends: per-player handicaps (trials) in the battle room (protocol v7)
 - [ ] #37 Cooperation — cooperative element
 - [ ] #38 Competition vs. Cooperation — balance of the two
 - [ ] #39 Time — PACING: designcheck median of even AI battles ~20.5 min (red); bottleneck = reaching a defended Celestial citadel in Ragnarök (see #34 notes)

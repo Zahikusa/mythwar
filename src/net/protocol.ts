@@ -9,10 +9,12 @@
  * hashes are compared now and then; a snapshot repairs a client that is behind or diverged.
  */
 import type { Command, Team } from '../sim/types.ts';
+import { TRIAL_ORDER } from '../sim/data.ts';
+import type { TrialId } from '../sim/data.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 6;
+export const PROTOCOL_VERSION = 7;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -65,6 +67,8 @@ export interface SeatInfo {
   wins: number;
   /** Round-trip time to the server as the player's device measures it (ms; 0 = unknown). */
   ping: number;
+  /** Handicaps this player takes in the next battle (to give a less experienced friend a chance). */
+  trials: TrialId[];
 }
 
 /** waiting: seats filling / getting ready; playing: a battle runs (incl. its countdown); over: results, rematch. */
@@ -133,6 +137,8 @@ export type ClientMsg =
   | { type: 'host' }
   | { type: 'join'; code: string }
   | { type: 'ready'; ready: boolean }
+  /** This player's own handicaps for the next battle (between battles only). */
+  | { type: 'trials'; trials: TrialId[] }
   | { type: 'leave' }
   | { type: 'cmd'; seq: number; cmd: NetCommand }
   | { type: 'pause' }
@@ -166,7 +172,7 @@ export type ServerMsg =
   | { type: 'rooms'; rooms: OpenRoom[] }
   | { type: 'room'; room: RoomInfo; seat: Team }
   | { type: 'left' }
-  | { type: 'start'; seed: number; seat: Team; names: [string, string]; countdown: number }
+  | { type: 'start'; seed: number; seat: Team; names: [string, string]; countdown: number; trials: [TrialId[], TrialId[]] }
   | { type: 'turn'; tick: number; cmds?: ScheduledCommand[]; hash?: [number, number] }
   | {
       type: 'snapshot';
@@ -190,6 +196,11 @@ export type ServerMsg =
   | { type: 'emote'; seat: Team; id: EmoteId };
 
 export type ErrorCode = 'version' | 'no-room' | 'room-full' | 'bad-request' | 'not-in-room' | 'rate';
+
+/** Keeps only known trials, once each, in their usual order. */
+export function cleanTrials(raw: unknown): TrialId[] {
+  return Array.isArray(raw) ? TRIAL_ORDER.filter((t) => raw.includes(t)) : [];
+}
 
 /** Sanitizes a player name (printable, trimmed, at most NAME_MAX characters). */
 export function cleanName(raw: unknown): string {

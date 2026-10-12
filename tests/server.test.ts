@@ -40,7 +40,7 @@ class FakeClient {
   private receive(m: ServerMsg): void {
     this.inbox.push(m);
     if (m.type === 'welcome') this.token = m.token;
-    if (m.type === 'start') this.world = new World({ seed: m.seed });
+    if (m.type === 'start') this.world = new World({ seed: m.seed, trials: m.trials });
     if (m.type === 'snapshot') this.world = World.deserialize(m.world);
     if (m.type === 'turn' && this.world) {
       const w = this.world;
@@ -147,6 +147,32 @@ describe('lobby', () => {
     expect(sa.seed).toBe(sb.seed);
     expect([sa.seat, sb.seat]).toEqual([0, 1]);
     expect(sa.names).toEqual(['Ada', 'Bo']);
+  });
+
+  it('players may take handicaps (trials): shown to both, un-ready both, applied to the battle', () => {
+    const { lobby, run } = setup();
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    a.hello('Ada');
+    b.hello('Bo');
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    b.send({ type: 'ready', ready: true });
+    a.send({ type: 'trials', trials: ['nowalls', 'glass', 'bogus' as never, 'glass'] });
+    const seats = b.last('room')!.room.seats;
+    expect(seats[0]!.trials).toEqual(['glass', 'nowalls']);
+    expect(seats[1]!.trials).toEqual([]);
+    expect(seats[1]!.ready).toBe(false);
+    a.send({ type: 'ready', ready: true });
+    b.send({ type: 'ready', ready: true });
+    const start = b.last('start')!;
+    expect(start.trials).toEqual([['glass', 'nowalls'], []]);
+    run(3100);
+    expect(b.world!.players[0].baseMaxHp).toBe(b.world!.players[1].baseMaxHp / 2);
+    expect(b.world!.players[0].trials).toEqual(['glass', 'nowalls']);
+    // (The replicas keep hashing equal with the handicaps applied: FakeClient checks every hash.)
+    run(2000);
+    expect(b.hashChecks).toBeGreaterThan(0);
   });
 
   it('refuses unknown codes, full rooms and old versions', () => {

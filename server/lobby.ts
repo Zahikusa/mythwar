@@ -1,5 +1,6 @@
-import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName } from '../src/net/protocol.ts';
+import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName, cleanTrials } from '../src/net/protocol.ts';
 import type { ClientMsg, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
+import type { TrialId } from '../src/sim/data.ts';
 import type { Team } from '../src/sim/types.ts';
 import { simFingerprint } from '../src/sim/fingerprint.ts';
 import { Match } from './match.ts';
@@ -74,6 +75,7 @@ interface Seat {
   session: Session;
   ready: boolean;
   wins: number;
+  trials: TrialId[];
 }
 
 interface Room {
@@ -281,6 +283,14 @@ export class Lobby {
         if (room) this.removeFromRoom(s);
         this.send(s, { type: 'left' });
         return;
+      case 'trials': {
+        if (!room || seat === null || (room.phase !== 'waiting' && room.phase !== 'over')) return;
+        room.seats[seat]!.trials = cleanTrials(msg.trials);
+        // Nobody starts against handicaps they haven't seen: a change takes both seats out of Ready.
+        for (const x of room.seats) if (x) x.ready = false;
+        this.broadcastRoom(room);
+        return;
+      }
       case 'ready': {
         if (!room || seat === null || (room.phase !== 'waiting' && room.phase !== 'over')) return;
         room.seats[seat]!.ready = !!msg.ready;
@@ -343,8 +353,9 @@ export class Lobby {
     const seed = (this.random() * 2 ** 31) | 0;
     const names: [string, string] = [this.nameIn(room, 0), this.nameIn(room, 1)];
     const countdown = this.opts.countdown ?? START_COUNTDOWN;
+    const trials: [TrialId[], TrialId[]] = [[...a.trials], [...b.trials]];
     room.phase = 'playing';
-    room.match = new Match({ seed, names, countdown, turnTicks: this.opts.turnTicks, awayGrace: this.opts.awayGrace, claimAfter: this.opts.claimAfter }, this.now(), {
+    room.match = new Match({ seed, names, countdown, trials, turnTicks: this.opts.turnTicks, awayGrace: this.opts.awayGrace, claimAfter: this.opts.claimAfter }, this.now(), {
       broadcast: (msg) => {
         const text = JSON.stringify(msg);
         for (const s of room.seats) if (s?.session.conn) s.session.conn.send(text);
@@ -372,7 +383,7 @@ export class Lobby {
     for (const seat of [0, 1] as Team[]) {
       const s = room.seats[seat]!.session;
       s.lastOver = null;
-      this.send(s, { type: 'start', seed, seat, names, countdown });
+      this.send(s, { type: 'start', seed, seat, names, countdown, trials });
     }
     this.broadcastRoom(room);
     this.roomsDirty = true;
@@ -380,7 +391,7 @@ export class Lobby {
   }
 
   private seat(s: Session, room: Room, seat: Team): void {
-    room.seats[seat] = { session: s, ready: false, wins: 0 };
+    room.seats[seat] = { session: s, ready: false, wins: 0, trials: [] };
     for (const other of room.seats) if (other) other.ready = false;
     s.room = room;
     s.seat = seat;
@@ -427,7 +438,7 @@ export class Lobby {
     const seat = (i: Team) => {
       const x = room.seats[i];
       if (!x) return null;
-      return { name: this.nameIn(room, i), connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins, ping: x.session.rtt };
+      return { name: this.nameIn(room, i), connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins, ping: x.session.rtt, trials: x.trials };
     };
     return { code: room.code, phase: room.phase, seats: [seat(0), seat(1)] };
   }

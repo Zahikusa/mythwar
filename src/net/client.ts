@@ -1,5 +1,6 @@
 import { simFingerprint } from '../sim/fingerprint.ts';
 import type { Team } from '../sim/types.ts';
+import type { TrialId } from '../sim/data.ts';
 import { Connection } from './connection.ts';
 import type { ConnState, SocketLike } from './connection.ts';
 import { NetGame } from './netgame.ts';
@@ -172,6 +173,16 @@ export class MpClient {
     }
   }
 
+  /** This player's own handicaps for the next battle (shown to both; un-readies both seats). */
+  setTrials(trials: TrialId[]): void {
+    if (!this.conn.send({ type: 'trials', trials })) return;
+    const mine = this.seat !== null ? this.room?.seats[this.seat] : null;
+    if (mine) {
+      mine.trials = trials;
+      this.emit((l) => l.changed?.());
+    }
+  }
+
   leave(): void {
     // Offline: the server still seats us; say it as soon as we're back.
     this.leaving = !this.conn.send({ type: 'leave' });
@@ -244,7 +255,7 @@ export class MpClient {
         break;
       case 'start':
         if (this.leaving) return;
-        this.startGame(new NetGame({ seat: msg.seat, names: msg.names, seed: msg.seed, countdown: msg.countdown, send: (m) => this.conn.send(m), now: this.now }));
+        this.startGame(new NetGame({ seat: msg.seat, names: msg.names, seed: msg.seed, countdown: msg.countdown, trials: msg.trials, send: (m) => this.conn.send(m), now: this.now }));
         return;
       case 'snapshot':
         if (this.leaving) return;
