@@ -778,7 +778,7 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   const verdict = await page.evaluate(() => document.querySelector('.verdict .vt')?.textContent);
   check('results show Victory', verdict === 'Victory', String(verdict));
   const tip = await page.evaluate(() => document.querySelector('.screen.over .vtip')?.textContent ?? '');
-  check('results suggest the next difficulty after a win', /Try Master/.test(tip), tip);
+  check('results suggest the next difficulty after a win', /Face the Master/.test(tip), tip);
   // "Change foe", then Back: returns to the results (not a broken title over the battlefield).
   {
     const tapAt = async (p: { x: number; y: number }) => {

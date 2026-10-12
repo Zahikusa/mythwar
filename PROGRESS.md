@@ -89,7 +89,7 @@ complete; its log follows below the lens plan.
 - [x] #40 Reward — "New best vs <foe>: ★★★" on the results; title laurels show each foe's best stars
 - [x] #41 Punishment — a power cast into an empty lane is refused (charge kept) instead of silently wasted
 - [x] #42 Simplicity/Complexity — progressive disclosure: newcomers see the hold shields when the coach introduces them (2:30)
-- [ ] #43 Elegance — remove a wart
+- [x] #43 Elegance — results tip and next-foe button no longer say the same thing: the tip points at the missing star
 - [ ] #44 Character — AI foes as characters (personas, taunts)
 - [ ] #45 Imagination — leave room for imagination (lore lines)
 - [ ] #46 Economy — economy analysis & fix

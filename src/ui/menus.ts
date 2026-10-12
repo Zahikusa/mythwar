@@ -857,8 +857,12 @@ export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps
   const foe: Team = me === 0 ? 1 : 0;
   const P = world.players[me];
   if (world.winner === me) {
-    const i = DIFFICULTIES.indexOf(difficulty);
-    return i < DIFFICULTIES.length - 1 ? `Ready for more? Try ${AI_PROFILES[DIFFICULTIES[i + 1]].name}.` : 'You have humbled a god of war. Can you win faster?';
+    // (The next foe is offered by the button beside this tip; the tip points at the stars.)
+    const par = parTime(difficulty, world.quick);
+    if (P.baseHp / P.baseMaxHp <= 0.5) return 'Victory — now keep your citadel above half for the second star: turrets and Bastion help.';
+    if (world.time > par) return `Victory — win within ${Math.round(par / 60)} minutes for the third star: ascend sooner, push with a held wave.`;
+    if (difficulty !== 'mythic') return 'A flawless victory: all three stars.';
+    return P.trials?.length === 3 ? 'You have humbled a god of war under every trial. Nothing in the nine worlds can stop you.' : 'You have humbled a god of war. For a harder fight still, take on the Trials.';
   }
   // Fell behind in the ages?
   for (let age = 1; age < AGES.length; age++) {

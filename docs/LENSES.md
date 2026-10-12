@@ -829,3 +829,19 @@ elements of emergent complexity arise? Are there elements that are too simple?*
   a lane's ▶ marker to hold that lane…"); after that, or with tips off, they are always there.
   The key G works throughout, and the how-to's Tactics page documents it for anyone reading ahead.
 - Checked: full verify (fresh profiles in the smoke tests never needed the shields early).
+
+## #43 The Lens of Elegance
+*What are the elements of my game? What is the purpose of each? Elements with only one purpose:
+can several be combined into one? Elements with several purposes: can they do more?*
+- Several-purpose elements are where Mythwar is already elegant: a **shrine** is income, ley sight
+  (#22), the surge prize (#2) and — since #24 — the place a held lane stops; the **gate turret**
+  is defence, its reach line (#21) and a Ragnarök variable (#39); **Trials** are a single-player
+  challenge (#31) *and* a multiplayer handicap (#36), one system with two framings.
+- The inelegant spot was the results screen after a win, where two elements did one job: the tip
+  said "Ready for more? Try Master." and the button beside it said "Face the Master →" (#18).
+- Change: the button keeps the job of pointing at the next foe; the **tip now points at the
+  stars** — "Victory — now keep your citadel above half for the second star: turrets and Bastion
+  help", "…win within 12 minutes for the third star: ascend sooner, push with a held wave", "A
+  flawless victory: all three stars." — and after a flawless Mythic win at the Trials (#31). One
+  line of text, a purpose of its own, linking the judgment (#20) to concrete play.
+- Checked: unit tests for each win tip; smoke ("Face the Master" offered after a win); full verify.

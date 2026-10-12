@@ -6,8 +6,13 @@ describe('results tip', () => {
   it('after a win, suggests the next difficulty', () => {
     const w = new World();
     w.winner = 0;
-    expect(battleTip(w, 0, 'novice', [])).toMatch(/Try Adept/);
-    expect(battleTip(w, 0, 'mythic', [])).toMatch(/faster/);
+    expect(battleTip(w, 0, 'novice', [])).toMatch(/flawless/);
+    expect(battleTip(w, 0, 'mythic', [])).toMatch(/Trials/);
+    w.players[0].baseHp = w.players[0].baseMaxHp * 0.4;
+    expect(battleTip(w, 0, 'adept', [])).toMatch(/second star/);
+    w.players[0].baseHp = w.players[0].baseMaxHp;
+    w.time = 13 * 60;
+    expect(battleTip(w, 0, 'adept', [])).toMatch(/within 12 minutes for the third star/);
   });
 
   it('after a loss, points at the biggest mistake first', () => {
