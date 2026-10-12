@@ -1041,7 +1041,8 @@ export class World {
         if (!def || bestD > def.range) continue;
         slot.aimX = best.x;
         if (slot.cooldown > 0) continue;
-        slot.cooldown = def.cooldown;
+        // (In Ragnarök the gate turrets fire at half their rate: stalemates break.)
+        slot.cooldown = def.cooldown * (this.ragnarokStarted ? 2 : 1);
         slot.lastFire = this.time;
         this.addProjectile({
           team: p.team,

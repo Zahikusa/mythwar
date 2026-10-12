@@ -112,7 +112,8 @@ turret (splash). Turrets can be sold for 50%.
   each, prices scale with rank and age but never drop below the Asgard price (cheap permanent
   first-age blessings were the best buy in the game). A late-game gold sink.
 - **Ragnarök:** at 18:00, or 3 minutes after both sides reach the final age, the wards fall
-  silent and damage to citadels ramps +150% per minute (raised from +100% in phase 2: the stronger defensive tools had stretched even battles past 20 minutes) — long stalemates end.
+  silent, turrets fire at half their rate (since #39: stalemates at defended gates had dragged even
+  battles to a 20-minute median), and damage to citadels ramps +150% per minute (raised from +100% in phase 2: the stronger defensive tools had stretched even battles past 20 minutes) — long stalemates end.
 
 ## Controls
 - **Desktop:** click a lane (or W/S, ↑/↓, Q/A/Z) to select it; click a creature card

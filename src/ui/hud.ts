@@ -923,7 +923,7 @@ export class Hud {
       } else if (e.type === 'power' && e.team !== me) {
         this.toast(`Enemy casts ${POWERS[e.kind].name}!`, 'bad');
       } else if (e.type === 'ragnarok') {
-        this.banner('Ragnarök', 'The wards fall silent — citadels crumble', 'red');
+        this.banner('Ragnarök', 'The wards fall silent, the turrets falter', 'red');
       } else if (e.type === 'crumble') {
         this.banner('The citadels crumble', 'Both are falling — the sturdier one stands last', 'red');
       } else if (e.type === 'surge') {

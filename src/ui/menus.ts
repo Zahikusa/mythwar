@@ -410,7 +410,7 @@ export class Menus {
         body: [
           powersArt(),
           p('Each age grants a <b>god power</b>. Press it, then choose a lane to unleash it (on a keyboard, <b>Space</b> casts it on the selected lane). <b>Turrets</b> guard one lane each from your gates; <b>Blessings</b> permanently strengthen your army.'),
-          p('At 18:00 — or 3 minutes after both sides reach the Celestial age — <b>Ragnarök</b> comes: the citadels’ wards fall silent and every blow against them grows deadlier, minute by minute.'),
+          p('At 18:00 — or 3 minutes after both sides reach the Celestial age — <b>Ragnarök</b> comes: the citadels’ wards fall silent, their turrets falter, and every blow against them grows deadlier, minute by minute.'),
         ],
       },
       {

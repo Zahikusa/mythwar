@@ -586,6 +586,26 @@ describe('ragnarok', () => {
     expect(w.siegeMult()).toBeGreaterThan(m0);
   });
 
+  it('makes gate turrets fire at half their rate', () => {
+    const shots = (rag: boolean) => {
+      const w = new World();
+      w.players[0].gold = 1e6;
+      w.apply({ type: 'buildTurret', team: 0, lane: 0, turretId: 'thornspitter' });
+      w.ragnarokStarted = rag;
+      const e = w.spawnUnit(1, 0, UNITS.treant, 150);
+      e.def = { ...e.def, speed: 0, damage: 0 };
+      e.hp = e.maxHp = 1e9;
+      let n = 0;
+      for (let t = 0; t < 10; t += TICK) {
+        w.step();
+        n += w.drainEvents().filter((ev) => ev.type === 'turretFire').length;
+      }
+      return n;
+    };
+    const normal = shots(false);
+    expect(shots(true)).toBeCloseTo(normal / 2, 0);
+  });
+
   it('comes early once both sides reach the final age', () => {
     const w = new World();
     setAge(w, MAX_AGE);
