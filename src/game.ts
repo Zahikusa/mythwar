@@ -14,6 +14,9 @@ export interface GameOptions {
   /** Against another human over the network: no AI; `team` is the local player's side. */
   online?: boolean;
   team?: Team;
+  /** A toy, not a battle: no foe AI, endless gold, unbreakable citadels; the player can summon
+   *  for either side (`sandboxFoe`). Both sides always share an age. */
+  sandbox?: boolean;
 }
 
 export type GameListener = (events: SimEvent[]) => void;
@@ -51,6 +54,8 @@ export class Game {
   readonly view: ViewState;
   speed = 1;
   paused = false;
+  /** Sandbox: orders go to the other side (team 1). */
+  sandboxFoe = false;
   over = false;
   readonly history: HistorySample[] = [];
   /** Ascension moments for the results chart. */
@@ -63,8 +68,9 @@ export class Game {
     this.options = opts;
     const seed = opts.seed ?? (Math.random() * 1e9) | 0;
     this.world = world ?? new World({ seed });
+    this.world.endless = !!opts.sandbox;
     this.playerTeam = opts.online ? (opts.team ?? 0) : 0;
-    this.ai = opts.online ? null : new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);
+    this.ai = opts.online || opts.sandbox ? null : new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);
     this.demoAi = opts.demo ? new AiController(this.world, 0, AI_PROFILES[opts.difficulty], seed ^ 0x1234567) : null;
     this.view = { playerTeam: this.playerTeam, selectedLane: opts.demo ? -1 : 1, hoverLane: -1, targeting: 'none', paused: false };
   }
@@ -113,7 +119,26 @@ export class Game {
   }
 
   command(cmd: Command): CommandResult {
+    if (this.options.sandbox) {
+      const r = this.world.apply(this.sandboxFoe ? { ...cmd, team: 1 } : cmd);
+      this.sandboxRules();
+      return r;
+    }
     return this.world.apply(cmd);
+  }
+
+  /** Sandbox: endless gold, XP and god powers; citadels can't fall; both sides in one age. */
+  private sandboxRules(): void {
+    const w = this.world;
+    for (const p of w.players) {
+      p.gold = Math.max(p.gold, 99999);
+      p.xp = Math.max(p.xp, 1e9);
+      p.powerCooldown = 0;
+      p.baseHp = p.baseMaxHp;
+    }
+    const [a, b] = w.players;
+    while (a.age < b.age && w.apply({ type: 'ageUp', team: 0 }).ok);
+    while (b.age < a.age && w.apply({ type: 'ageUp', team: 1 }).ok);
   }
 
   /** Advances the simulation by real time `dt` (seconds). Returns the interpolation alpha. */
@@ -125,6 +150,7 @@ export class Game {
         this.ai?.update(TICK);
         this.demoAi?.update(TICK);
         this.world.step();
+        if (this.options.sandbox) this.sandboxRules();
         this.acc -= TICK;
         steps++;
       }

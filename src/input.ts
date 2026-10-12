@@ -177,6 +177,8 @@ export class Input {
       this.hud.togglePanel('bless');
     } else if (k === 'f') {
       this.hud.toggleSpeed();
+    } else if (k === 'x') {
+      this.hud.toggleSide();
     } else if (k === 'm') {
       this.hud.toggleMute();
     } else if (k === 'backspace' || k === 'delete') {

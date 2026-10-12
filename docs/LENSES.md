@@ -247,3 +247,21 @@ Risk register (what could still sink it, and what guards against it):
   late-game Celestial battle on a phone viewport with both sides casting powers — against a
   3 ms budget (≈ 12–18 ms on a budget phone). Today: 0.93 ms (sim+AI 0.01, renderer 0.84,
   HUD 0.08). Later lenses that add effects run it.
+
+## #15 The Lens of the Toy
+*If my game had no goal, would it be fun at all? If not, how can I change that? When people see
+my game, do they want to start interacting with it, even before they know what to do?*
+- Mythwar's pieces are toy-like — sixteen animated creatures with distinct fighting styles,
+  spectacular god powers — but the only way to touch them was inside a battle with a clock, a
+  foe and gold to husband. You couldn't simply *play with* a valkyrie, or set Fenrir against a
+  wall of treants to see what happens.
+- Change: a **Sandbox** (button on the "Choose your foe" screen, `?sandbox` URL): no foe AI,
+  endless gold and XP, god powers always ready, citadels that can't fall (`World.endless`), both
+  sides always in the same age (ascending takes the other side along). A **"For: You / For:
+  Foe"** pill under the clock (key X) routes every order — summons, powers, turrets, blessings —
+  to either side, so any match-up can be staged and watched. No autosave, no records, no coach
+  tips (they'd be used up), restart keeps the sandbox, and the pause menu says it keeps no score.
+  It is also a learning tool: try counters without pressure.
+- Checked: 2 unit tests (no AI, endless gold, unbreakable citadel even against a huge single
+  blow; orders for either side; shared ascension); screenshots on desktop and phone (`sandbox`,
+  `mobile-sandbox`), the difficulty screen with the new button on a small phone; full verify.

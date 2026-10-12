@@ -492,6 +492,31 @@ svg {
   }
 }
 
+.sidebtn {
+  pointer-events: auto;
+  padding: 3px 14px;
+  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.sidebtn.foe {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+/* Phones: below the resource pill. */
+.hud.mobile .sidebtn {
+  position: absolute;
+  left: 50%;
+  top: 84px;
+  transform: translateX(-50%);
+}
+
 .sysbtn.keysbtn {
   font-family: var(--title-font);
   font-size: 20px;

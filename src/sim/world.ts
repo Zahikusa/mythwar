@@ -127,6 +127,8 @@ export class World {
   readonly powers: PowerInstance[] = [];
   readonly unitById = new Map<number, Unit>();
   winner: Team | null = null;
+  /** Sandbox (single player only): citadels can't fall, the battle never ends. */
+  endless = false;
   /** Sim time at which Ragnarök begins (may move earlier once both sides reach the final age). */
   ragnarokAt = RAGNAROK_TIME;
   ragnarokStarted = false;
@@ -1200,7 +1202,7 @@ export class World {
   }
 
   private checkWin(): void {
-    if (this.winner !== null) return;
+    if (this.winner !== null || this.endless) return;
     const [p0, p1] = this.players;
     const fallen0 = p0.baseHp <= 0;
     const fallen1 = p1.baseHp <= 0;

@@ -158,11 +158,14 @@ export class Hud {
     E.bubbleTheirs = h('div', { class: 'ebubble theirs', 'aria-live': 'polite' });
     onTap(E.speed, () => this.toggleSpeed());
     onTap(E.pause, () => this.cb.pause());
+    // Sandbox: which side your orders summon for.
+    E.side = h('button', { class: 'sidebtn hidden', title: 'Summon for which side (X)', 'aria-label': 'Summon for which side', text: 'For: You' });
+    onTap(E.side, () => this.toggleSide());
     const top = h(
       'div',
       { class: 'topbar' },
       h('div', { class: 'side left' }, E.ageL, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpLd, E.hpL, E.hpLn), h('div', { class: 'agerow left' }, E.ageLn, E.blessL))),
-      h('div', { class: 'mid' }, E.clock, E.shrines, E.rag, E.net),
+      h('div', { class: 'mid' }, E.clock, E.shrines, E.rag, E.net, E.side),
       h('div', { class: 'side right' }, h('div', { class: 'hpcol' }, h('div', { class: 'hpbar' }, E.hpRd, E.hpR, E.hpRn), h('div', { class: 'agerow' }, E.blessR, E.foePow, E.ageRn)), E.ageR),
     );
     E.keysBtn = h('button', { class: 'sysbtn keysbtn', title: 'Controls (?)', 'aria-label': 'Controls', text: '?' });
@@ -333,6 +336,9 @@ export class Hud {
     toggle(this.el.speed, 'hidden', !!game.options.online);
     toggle(this.el.net, 'hidden', !game.options.online);
     toggle(this.el.emoteBtn, 'hidden', !game.options.online);
+    toggle(this.el.side, 'hidden', !game.options.sandbox);
+    setText(this.el.side, 'For: You');
+    toggle(this.el.side, 'foe', false);
     toggle(this.el.emotes, 'hidden', true);
     this.foeName = '';
     this.root.classList.toggle('online', !!game.options.online);
@@ -575,6 +581,16 @@ export class Hud {
       E.net.dataset.q = q;
       E.net.title = online ? `Connection to the game server: ${q === 'good' ? 'good' : q === 'ok' ? 'fair — a little delay' : 'unsteady — orders arrive late'}` : 'Reconnecting…';
     }
+  }
+
+  /** Sandbox: switch which side summons, powers, turrets and blessings are for. */
+  toggleSide(): void {
+    const g = this.game;
+    if (!g?.options.sandbox) return;
+    g.sandboxFoe = !g.sandboxFoe;
+    setText(this.el.side, g.sandboxFoe ? 'For: Foe' : 'For: You');
+    toggle(this.el.side, 'foe', g.sandboxFoe);
+    this.cb.sound('select');
   }
 
   toggleSpeed(): void {

@@ -23,6 +23,8 @@ export interface OnlineResult {
 
 export interface MenuCallbacks {
   play(difficulty: Difficulty): void;
+  /** The goal-free sandbox. */
+  sandbox(): void;
   continueSaved(): void;
   resume(): void;
   restart(): void;
@@ -115,16 +117,18 @@ export class Menus {
   }
 
   /** One-line battle summary shown on the pause screen. `foe`: the other player's name online. */
-  setPauseSummary(world: World, me: Team, difficulty: Difficulty, online?: { foe: string; title: string }): void {
+  setPauseSummary(world: World, me: Team, difficulty: Difficulty, online?: { foe: string; title: string }, sandbox = false): void {
     if (!this.pauseSummary) return;
     const P = world.players[me];
     const E = world.players[me === 0 ? 1 : 0];
     const foe = online ? online.foe : AI_PROFILES[difficulty].name;
-    this.pauseSummary.textContent = `vs ${foe} · ${fmtTime(world.time)} · ${AGES[P.age].name} vs ${AGES[E.age].name} · ${P.stats.kills} foes slain`;
+    this.pauseSummary.textContent = sandbox
+      ? `Sandbox · ${fmtTime(world.time)} · ${AGES[P.age].name}`
+      : `vs ${foe} · ${fmtTime(world.time)} · ${AGES[P.age].name} vs ${AGES[E.age].name} · ${P.stats.kills} foes slain`;
     // Online, either player may pause and either may resume; the battle can't restart.
     this.restartBtn?.classList.toggle('hidden', !!online);
     if (this.pauseTitle) this.pauseTitle.textContent = online ? online.title : 'Paused';
-    if (this.pauseNote) this.pauseNote.textContent = online ? 'Leaving the battle counts as a defeat. Either player can resume.' : 'Leaving or restarting after the first minute counts as a defeat.';
+    if (this.pauseNote) this.pauseNote.textContent = online ? 'Leaving the battle counts as a defeat. Either player can resume.' : sandbox ? 'The sandbox keeps no score — leave or restart any time.' : 'Leaving or restarting after the first minute counts as a defeat.';
   }
 
   /** One laurel per difficulty the player has beaten (shown on the title screen). */
@@ -279,8 +283,11 @@ export class Menus {
     });
     const begin = this.button('Begin Battle', 'primary big', () => this.begin(this.selected), ICONS.swords);
     const back = this.button('Back', 'ghost', () => this.goBack());
+    // The toy: no foe, endless gold — play with the creatures and try match-ups.
+    const sandbox = this.button('Sandbox', 'ghost', () => this.cb.sandbox());
+    sandbox.title = 'No foe, endless gold: summon for either side and watch any match-up';
     this.saveNote = h('div', { class: 'dnote hidden', text: 'A new battle replaces your saved one (after its first minute, that counts as a defeat).' });
-    return h('div', { class: 'screen difficulty' }, h('h2', { text: 'Choose your foe' }), grid, this.saveNote, h('div', { class: 'mrow' }, back, begin));
+    return h('div', { class: 'screen difficulty' }, h('h2', { text: 'Choose your foe' }), grid, this.saveNote, h('div', { class: 'mrow' }, back, sandbox, begin));
   }
 
   /** Start a battle — first-timers see the five-page how-to first (skippable). */

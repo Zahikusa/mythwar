@@ -113,11 +113,12 @@ export class App {
     this.input.onPause = () => this.escape();
     this.menus = new Menus(this.stage, this.settings, {
       play: (d) => this.play(d),
+      sandbox: () => this.play(this.settings.difficulty, undefined, true),
       continueSaved: () => this.continueSaved(),
       resume: () => this.resume(),
       restart: () => {
         this.forfeit();
-        this.play(this.difficulty);
+        this.play(this.difficulty, undefined, !!this.game?.options.sandbox);
       },
       quit: () => {
         // Online: leaving the battle forfeits it and leaves the room.
@@ -297,6 +298,8 @@ export class App {
       game.speed = Number(p.get('speed') ?? 1);
       this.state = 'playing';
       this.hud.attach(game);
+    } else if (p.has('sandbox')) {
+      this.play('novice', Number(p.get('seed') ?? 0) || undefined, true);
     } else if (p.has('play')) {
       const d = p.get('play') as Difficulty;
       this.play(DIFFICULTIES.includes(d) ? d : 'adept', Number(p.get('seed') ?? 0) || undefined);
@@ -328,8 +331,8 @@ export class App {
     requestAnimationFrame((t) => this.frame(t));
   }
 
-  private startGame(difficulty: Difficulty, seed: number | undefined, demo: boolean): Game {
-    return this.hookGame(new Game({ difficulty, seed, demo }), demo);
+  private startGame(difficulty: Difficulty, seed: number | undefined, demo: boolean, sandbox = false): Game {
+    return this.hookGame(new Game({ difficulty, seed, demo, sandbox }), demo);
   }
 
   /** Makes `game` the active game: resets visuals and routes its events. */
@@ -366,7 +369,8 @@ export class App {
     return game;
   }
 
-  play(difficulty: Difficulty, seed?: number): void {
+  /** A new battle against the AI — or, with `sandbox`, the goal-free toy mode. */
+  play(difficulty: Difficulty, seed?: number, sandbox = false): void {
     this.difficulty = difficulty;
     this.settings.difficulty = difficulty;
     saveSettings(this.settings);
@@ -380,11 +384,12 @@ export class App {
     }
     clearBattle();
     this.menus.setContinue(null);
-    const game = this.startGame(difficulty, seed, false);
+    const game = this.startGame(difficulty, seed, false, sandbox);
     game.speed = this.settings.speed === 2 ? 2 : 1;
     this.enterBattle(game);
     this.menus.show('none');
-    this.hud.opening(AI_PROFILES[difficulty].name);
+    if (sandbox) this.hud.banner('Sandbox', 'No foe · endless gold · try anything', 'gold', 'Summon for either side with the “For:” button (X) and watch any match-up play out.');
+    else this.hud.opening(AI_PROFILES[difficulty].name);
   }
 
   private enterBattle(game: Game): void {
@@ -398,7 +403,8 @@ export class App {
     this.hud.ageSeen = this.settings.ageSeen;
     this.hud.attach(game);
     this.input.attach(game);
-    this.coach.attach(game);
+    // (The sandbox is a toy: battle tips would only be used up there.)
+    this.coach.attach(game.options.sandbox ? null : game);
     this.coinTarget = this.hud.goldTarget();
   }
 
@@ -425,7 +431,7 @@ export class App {
   /** Autosave the battle in progress. */
   private persist(): void {
     const g = this.game;
-    if (this.state !== 'playing' || !g || g.over || g.world.winner !== null || g.options.demo || g.options.online) return;
+    if (this.state !== 'playing' || !g || g.over || g.world.winner !== null || g.options.demo || g.options.online || g.options.sandbox) return;
     saveBattle(g.toSave());
     this.lastSave = g.world.time;
   }
@@ -496,7 +502,7 @@ export class App {
   /** Abandoning a battle that has properly started counts as a loss in the records. */
   private forfeit(): void {
     const g = this.game;
-    if (this.state !== 'playing' || !g || g.over || g.options.demo || g.options.online || g.world.time < 60) return;
+    if (this.state !== 'playing' || !g || g.over || g.options.demo || g.options.online || g.options.sandbox || g.world.time < 60) return;
     recordResult(this.settings, this.difficulty, false, g.world.time);
   }
 
@@ -537,7 +543,7 @@ export class App {
       return;
     }
     this.game.paused = true;
-    this.menus.setPauseSummary(this.game.world, this.game.playerTeam, this.difficulty);
+    this.menus.setPauseSummary(this.game.world, this.game.playerTeam, this.difficulty, undefined, !!this.game.options.sandbox);
     this.hud.cancelTargeting();
     this.hud.hideTooltip();
     if (this.hud.panelOpen) this.hud.togglePanel('none');

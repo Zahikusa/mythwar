@@ -48,6 +48,8 @@ const SCENARIOS: Scenario[] = [
   { name: 'menu-bestiary', query: 'screen=bestiary', w: 1600, h: 900, wait: 2000 },
   { name: 'menu-bestiary-known', query: 'screen=bestiary', w: 1600, h: 900, wait: 2000, script: `(() => { const a = window.__mythwar; a.settings.ageSeen = 4; a.menus.show('title'); a.menus.show('bestiary'); document.querySelectorAll('.btab')[1].click(); })()`, after: 500 },
   { name: 'mobile-bestiary', query: 'screen=bestiary', w: 844, h: 390, mobile: true, dpr: 2, wait: 2000 },
+  { name: 'sandbox', query: 'sandbox&seed=3', w: 1600, h: 900, wait: 1200, script: `(() => { const a = window.__mythwar; const g = a.game; for (let i = 0; i < 3; i++) g.command({ type: 'train', team: 0, unitId: 'treant', lane: i }); a.hud.toggleSide(); for (let i = 0; i < 3; i++) g.command({ type: 'train', team: 0, unitId: 'pixie', lane: i }); })()`, after: 3500 },
+  { name: 'mobile-sandbox', query: 'sandbox&seed=3', w: 844, h: 390, mobile: true, dpr: 2, wait: 1200, script: `window.__mythwar.hud.toggleSide()`, after: 3500 },
   { name: 'menu-settings', query: 'screen=settings', w: 1600, h: 900, wait: 2000 },
   { name: 'mobile-settings', query: 'screen=settings', w: 844, h: 390, mobile: true, dpr: 2, wait: 2000 },
   { name: 'mobile-title', query: '', w: 844, h: 390, mobile: true, dpr: 3, wait: 2500 },
