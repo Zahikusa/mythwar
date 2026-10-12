@@ -388,6 +388,14 @@ export class Menus {
           p('At 18:00 — or 3 minutes after both sides reach the Celestial age — <b>Ragnarök</b> comes: the citadels’ wards fall silent and every blow against them grows deadlier, minute by minute.'),
         ],
       },
+      {
+        title: 'Tactics',
+        body: [
+          art(['jotunn', 'fenrir', 'valkyrie'], 0),
+          p('<b>Hold the line:</b> the shield under a lane’s ▶ marker (or <b>G</b>) stops that lane’s creatures just past its shrine. Gather a wave outside the enemy gate’s reach — the dashed line in front of it — then let it loose together.'),
+          p('<b>Ley sight:</b> while you hold a lane’s shrine you see the enemy’s next summons for that lane above their gate. <b>Brittle frost:</b> frozen foes take 50% more damage — strike while they are frozen.'),
+        ],
+      },
     ];
     this.howtoPages = pages.map((pg, i) => h('div', { class: `hpage${i === 0 ? ' active' : ''}` }, h('h3', { text: pg.title }), ...pg.body));
     const dots = h('div', { class: 'hdots' });

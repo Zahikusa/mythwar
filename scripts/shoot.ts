@@ -59,6 +59,7 @@ const SCENARIOS: Scenario[] = [
   { name: 'mobile-howto', query: 'screen=howto', w: 844, h: 390, mobile: true, dpr: 2, wait: 2000, script: `(() => { const b = document.querySelector('.hnext'); b.click(); b.click(); })()`, after: 500 },
   { name: 'mobile-howto-4', query: 'screen=howto', w: 844, h: 390, mobile: true, dpr: 2, wait: 2000, script: `(() => { const b = document.querySelector('.hnext'); for (let i = 0; i < 3; i++) b.click(); })()`, after: 500 },
   { name: 'mobile-howto-5', query: 'screen=howto', w: 667, h: 375, mobile: true, dpr: 2, wait: 2000, script: `(() => { const b = document.querySelector('.hnext'); for (let i = 0; i < 4; i++) b.click(); })()`, after: 500 },
+  { name: 'mobile-howto-6', query: 'screen=howto', w: 667, h: 375, mobile: true, dpr: 2, wait: 2000, script: `(() => { const b = document.querySelector('.hnext'); for (let i = 0; i < 5; i++) b.click(); })()`, after: 500 },
   { name: 'mobile-pause', query: 'play=novice&seed=4', w: 844, h: 390, mobile: true, dpr: 2, wait: 1500, script: `window.__mythwar.pause()`, after: 500 },
   { name: 'mobile-port-title', query: '', w: 390, h: 844, mobile: true, dpr: 2, wait: 2500 },
   { name: 'mobile-diff-se', query: 'screen=difficulty', w: 667, h: 375, mobile: true, dpr: 2, wait: 2000 },

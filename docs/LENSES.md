@@ -467,3 +467,22 @@ players have the chance to decide on their own goals?*
   long-term rating.
 - Checked: unit test for the goals line (in reach / slipping / passed); phone pause screenshot;
   full verify.
+
+## #26 The Lens of Rules
+*What are the foundational rules of my game? How do they differ from the operational rules? Are
+there "house rules" players want? Are there different modes? Who enforces the rules? Are the
+rules simple to understand, or is there confusion?*
+- Foundational rules (the simulation): three lanes, the counter triangle with its formation rules,
+  gold/XP/ages, shrines, surges, wards, Ragnarök. Operational rules (what the player does) are
+  taught by a five-page how-to plus contextual coach tips. The simulation enforces everything,
+  online included (the server validates the shape of every order, every replica the rest).
+  Modes: battle, online battle, sandbox (#15). House rules — custom battle settings — are for #71.
+- Confusion check: the phase-2 lenses added three operational rules (hold the line #24, ley
+  sight #22, brittle frost #23) that were taught only by coach tips — which a returning player
+  who has dismissed tips never sees, and which can't be looked up.
+- Change: a sixth how-to page, **Tactics** (hold the line with the shield or G and the dashed
+  reach line; ley sight; brittle frost), so every rule a player can act on is written down in
+  one place, reachable from the title and the pause menu. A screenshot scenario
+  (`mobile-howto-6`) keeps it in view on small phones.
+- Checked: page on desktop and a 667×375 phone; full verify (the first-battle how-to flow and its
+  skip button still work).

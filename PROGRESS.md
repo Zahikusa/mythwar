@@ -56,7 +56,7 @@ complete; its log follows below the lens plan.
 - [x] #23 Emergence — brittle: frozen creatures take +50% damage from everything (Fimbulwinter becomes a setup)
 - [x] #24 Action — new verb: hold the line (per-lane stance at the shrine, G / shield button, war banner)
 - [x] #25 Goals — star goals live in the pause menu, toasts when the citadel or par star slips
-- [ ] #26 Rules — rules clarity: in-game reference
+- [x] #26 Rules — new rules were only in coach tips: how-to page 6 "Tactics" (hold the line, ley sight, brittle frost)
 - [ ] #27 Skill — measure/show skill (counter rate on results)
 - [ ] #28 Expected Value — show values that inform choices (cards, blessings)
 - [ ] #29 Chance — review randomness; add or tune
