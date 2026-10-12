@@ -596,3 +596,25 @@ challenge?*
   or harder under all three.
 - Checked: unit tests (half citadel before and after ascending, power and turret refused, kept
   by save/load; the feat); foe screen on desktop and a 667×375 phone; full verify.
+
+## #32 The Lens of Meaningful Choices
+*What choices am I asking the player to make? Are they meaningful? How? Am I giving the player
+the right number of choices? Are there any dominant strategies?*
+- Choices: lane, class, when to spend vs save (ages, blessings, the dragon), turret type, which
+  blessing, when to cast, and since #24 when to hold. `designcheck` shows no dominant class in
+  any age (22–46% of summons each).
+- The odd one out was the **Elder Dragon**: the final age's one big decision — bank ~2,600 gold
+  for a single legend, or keep the waves coming? Equal-gold tests (`classwar`'s `battle`) say
+  it is a real choice: one dragon keeps 59–86% of its value against the same gold of Titans,
+  Griffins, Phoenixes or a mix — strong, but only one may live at a time and it costs the army
+  you didn't summon meanwhile. Yet the AI *never made it* (0 dragons in 15 even battles, #12):
+  it spends gold as it comes, so it never has 2,600 at once. The choice was meaningful for the
+  player only, and the player never saw the game's most spectacular creature on the other side.
+- Change: in the final age, able AIs (Adept and up) **bank gold for the dragon** — a reserve of
+  its cost × their counter skill — while the lanes are calm and Ragnarök hasn't begun, and
+  summon it once affordable. A first version saved regardless of the situation: even AI battles
+  stretched to a 24.8-minute median and the left side won 73% — rejected; restricting it to calm
+  moments before Ragnarök fixed both.
+- Result: against the scripted smart player, Master now summons the dragon in 9 of 20 battles
+  (16 reached the final age), Mythic in 8 of 20, Adept 1. `designcheck`: all pass (ladder
+  100/77/17/3%, pacing 18.6 min, sides 47%). Full verify.

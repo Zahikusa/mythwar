@@ -62,7 +62,7 @@ complete; its log follows below the lens plan.
 - [x] #29 Chance — Starfall's meteors weighted toward crowds (was uniform per foe: stragglers soaked stars)
 - [x] #30 Fairness — mirrored side-bias test for the phase-2 mechanics; the AI's income handicap shown by its name on the results
 - [x] #31 Challenge — Trials: Glass Citadel, Godless, No Walls (any foe; feat for all three)
-- [ ] #32 Meaningful Choices — make an existing choice more meaningful
+- [x] #32 Meaningful Choices — the dragon is a real choice (equal-gold tests) the AI never made; able AIs now save for it in calm moments
 - [ ] #33 Triangularity — a risky high-reward option
 - [ ] #34 Skill vs. Chance — balance check
 - [ ] #35 Head and Hands — dexterity vs thought: input convenience

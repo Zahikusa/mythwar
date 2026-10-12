@@ -1,4 +1,4 @@
-import { AGES, AGE_TURRETS, AGE_UNITS, BLESSING_MAX_RANK, CLASS_ORDER, LANE_COUNT, LANE_LENGTH, UNITS, blessingCost, counterOf } from '../sim/data.ts';
+import { AGES, AGE_TURRETS, AGE_UNITS, BLESSING_MAX_RANK, CLASS_ORDER, DRAGON, LANE_COUNT, LANE_LENGTH, MAX_AGE, UNITS, blessingCost, counterOf } from '../sim/data.ts';
 import type { BlessingId } from '../sim/data.ts';
 import type { TurretDef, UnitClass, UnitDef } from '../sim/data.ts';
 import { Rng } from '../sim/rng.ts';
@@ -273,6 +273,12 @@ export class AiController {
       } else if (me.xp >= next.xpRequired * 0.8 && !underSiege) {
         reserve = next.ascendCost * 0.5 * p.ascendSkill;
       }
+    }
+    // In the final age, able generals bank gold for the Elder Dragon (one at a time) while the
+    // lanes are calm and Ragnarök hasn't begun: at equal gold it outfights any army — but only
+    // if it gets bought.
+    if (me.age === MAX_AGE && p.counterSkill >= 0.5 && !underSiege && !w.ragnarokStarted && danger <= 0 && w.aliveCount(this.team, DRAGON.id) === 0 && !me.queue.some((q) => q.unitId === DRAGON.id)) {
+      reserve = Math.max(reserve, DRAGON.cost * p.counterSkill);
     }
     const keep = underSiege && !saveThroughSiege ? 0 : reserve;
 
