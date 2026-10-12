@@ -21,6 +21,17 @@ import { NetGame } from './net/netgame.ts';
 import { EMOTES, cleanCode, cleanName, emoteLane } from './net/protocol.ts';
 import { randomName } from './ui/mpmenus.ts';
 import { FeatTracker } from './ui/feats.ts';
+
+/** Questions the sandbox opens with: match-ups worth staging. */
+const SANDBOX_PROMPTS = [
+  'Can five pack-hunting Redcaps bring down a Treant Warden?',
+  'How many Pixies does it take to hold a lane against Centaurs?',
+  'Does a frozen army fall faster? Try Fimbulwinter, then charge',
+  'Who wins: one Elder Dragon, or its gold in Griffins?',
+  'Will a Phoenix outlast a Fenrir Wolf twice over?',
+  'Hold a lane at its shrine, gather ten creatures, then let them loose',
+  'Which turret stops a Kitsune pack: bolt or blast?',
+];
 import { PERSONAS, tauntLine } from './ui/personas.ts';
 import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
@@ -410,7 +421,11 @@ export class App {
     game.speed = this.settings.speed === 2 ? 2 : 1;
     this.enterBattle(game);
     this.menus.show('none');
-    if (sandbox) this.hud.banner('Sandbox', 'No foe · endless gold · try anything', 'gold', 'Summon for either side with the “For:” button (X) and watch any match-up play out.');
+    if (sandbox) {
+      // A question to try, each time: the sandbox is for imagining match-ups.
+      const prompt = SANDBOX_PROMPTS[Math.floor(Math.random() * SANDBOX_PROMPTS.length)];
+      this.hud.banner('Sandbox', 'No foe · endless gold · try anything', 'gold', `${prompt}${prompt.endsWith('?') ? '' : '.'} Summon for either side with the “For:” button (X).`);
+    }
     else {
       this.hud.opening(PERSONAS[difficulty].title);
       this.hud.setFoeName(PERSONAS[difficulty].name);
