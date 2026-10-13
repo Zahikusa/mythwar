@@ -52,6 +52,8 @@ export class MpClient {
   welcomed = false;
   /** The server no longer knows our room: 'restart' (it forgot us) or 'expired' (away too long). */
   sessionLost: 'restart' | 'expired' | 'fault' | null = null;
+  /** With `sessionLost`: the code of the room we were in. */
+  lostRoom: string | null = null;
   /** This session was taken over by another tab or device. */
   replaced = false;
   /** The server runs another version of the game: no point reconnecting until a reload. */
@@ -263,10 +265,12 @@ export class MpClient {
           if (this.watching) this.conn.send({ type: 'watchRooms', on: true });
           break;
         }
+        const had = this.room?.code ?? null;
         this.room = msg.room;
         this.seat = msg.seat;
         // We thought we were in a room but the server doesn't seat us any more.
         this.sessionLost = hadRoom && !msg.room ? (msg.resumed ? 'expired' : this.conn.lastClose === 4002 ? 'fault' : 'restart') : null;
+        this.lostRoom = this.sessionLost ? had : null;
         // (A battle that ended meanwhile is replayed to us by the server; a restart lost it.)
         if ((this.sessionLost === 'restart' || this.sessionLost === 'fault') && this.game && !this.game.over) this.game.abandon();
         if (this.watching) this.conn.send({ type: 'watchRooms', on: true });

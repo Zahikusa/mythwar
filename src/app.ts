@@ -1143,9 +1143,14 @@ export class App {
         this.toTitle();
         this.openMultiplayer();
       }
+      // A phone that locked while waiting in the room (over plain http there's no wake lock) lost
+      // its seat after a minute: back on the room's screens, it takes it again if still free.
+      const rejoin = lost === 'expired' && !!mp.lostRoom && this.state === 'title' && (this.menus.current === 'mp' || this.menus.current === 'room');
+      if (rejoin) mp.join(mp.lostRoom!);
       // (Shown when the lobby is next on screen — after the results, if a battle was replayed.)
-      this.lobbyNote =
-        lost === 'fault'
+      this.lobbyNote = rejoin
+        ? 'You were away a while and lost your seat — joining the room again…'
+        : lost === 'fault'
           ? 'The game server ran into a fault and stopped your battle — sorry. It doesn’t count for anyone.'
           : lost === 'restart'
             ? 'The game server no longer knows your session (it restarted, or you were away a long time).'

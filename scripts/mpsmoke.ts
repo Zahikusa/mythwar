@@ -137,7 +137,7 @@ async function main(): Promise<void> {
   const root = resolve('dist');
   if (!existsSync(join(root, 'index.html'))) throw new Error('Run "npm run build" first');
   const http = createServer(serveStatic(root));
-  let mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4 });
+  let mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 6 });
   await new Promise<void>((r) => http.listen(0, '127.0.0.1', () => r()));
   const base = `http://127.0.0.1:${(http.address() as { port: number }).port}`;
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--autoplay-policy=no-user-gesture-required'] });
@@ -230,6 +230,18 @@ async function main(): Promise<void> {
     await press(b, '.screen.howto', 'Back');
     await waitFor(b, 'B back in the room from the how-to', () => (window as any).__mythwar.menus.current === 'room', 4000);
     check('room: How to play and back, still seated', await b.evaluate(() => (window as any).__mythwar.mp.seat === 1 && !!(window as any).__mythwar.mp.room));
+    // (Backlog 160) B's phone locks in the room (no wake lock over http): its link is gone for longer
+    // than the server keeps a seat (6 s here, a minute for real). Back, it joins the room again.
+    await b.evaluate(() => (window as any).__mythwar.mp.conn.close());
+    await waitFor(a, "B's seat given up", () => (window as any).__mythwar.mp.room?.seats[1] === null, 15_000);
+    await b.evaluate(() => (window as any).__mythwar.mp.conn.open());
+    // (Welcomed again: until then B's page still shows the room it had before the link went.)
+    await waitFor(b, 'B back in the room by itself', () => {
+      const m = (window as any).__mythwar.mp;
+      return m.welcomed && (window as any).__mythwar.menus.current === 'room' && m.seat === 1 && m.room?.seats[1]?.connected === true;
+    }, 8000);
+    await waitFor(a, 'A sees B back', () => (window as any).__mythwar.mp.room?.seats[1]?.connected === true, 8000);
+    check('room: a phone that lost its seat while locked takes it again', true);
     if (portrait) {
       // (Backlog 164) An upright phone renaming in the room is told to turn sideways first.
       await b.tap('.rseat.mine .sname');
@@ -579,6 +591,7 @@ async function main(): Promise<void> {
     console.log('== co-op against the AI ==');
     // B (still in the room, at the results; A has left) goes back to the room and makes it a
     // co-op room; A comes back and joins.
+    await waitFor(b, 'B told A left (Back to room)', () => [...document.querySelectorAll('.screen.over button')].some((x) => x.textContent?.trim() === 'Back to room' && (x as HTMLElement).offsetParent !== null), 6000);
     await press(b, '.screen.over', 'Back to room');
     await waitFor(b, 'B back in the room from the results', () => (window as any).__mythwar.menus.current === 'room' && (window as any).__mythwar.state === 'title', 6000);
     check('results → Back to room (the other player gone): still seated', await b.evaluate(() => (window as any).__mythwar.mp.seat !== null && !!(window as any).__mythwar.mp.room));
@@ -642,7 +655,7 @@ async function main(): Promise<void> {
     console.log('== server restart ==');
     // B sits on the results in its room; the game server restarts and forgets everyone.
     mp.close();
-    mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4 });
+    mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 6 });
     await waitFor(b, 'B back in the lobby after the restart', () => (window as any).__mythwar.menus.current === 'mp' && (window as any).__mythwar.mp?.state === 'online', 10000);
     const note = await b.evaluate(() => document.querySelector('.screen.mp .mpflash')?.textContent ?? '');
     check('B told the server restarted', note.includes('restarted'), note);

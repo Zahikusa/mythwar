@@ -28,6 +28,8 @@ export interface LobbyOptions {
   countdown?: number;
   /** Seconds a player must have been away before the other may claim the win. */
   claimAfter?: number;
+  /** Seconds a disconnected player keeps their seat in a room that isn't fighting (default SEAT_GRACE). */
+  seatGrace?: number;
   log?: (line: string) => void;
   /** Where other devices in the network can open the game (shown as invite link / QR code). */
   lanUrls?: () => string[];
@@ -290,7 +292,7 @@ export class Lobby {
       if (room.phase !== 'playing') {
         for (const seat of [0, 1] as Team[]) {
           const s = room.seats[seat];
-          if (s && s.session.goneAt !== null && now - s.session.goneAt > SEAT_GRACE * 1000) this.removeFromRoom(s.session);
+          if (s && s.session.goneAt !== null && now - s.session.goneAt > (this.opts.seatGrace ?? SEAT_GRACE) * 1000) this.removeFromRoom(s.session);
         }
       }
     }

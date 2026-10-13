@@ -313,6 +313,32 @@ describe('NetGame over a simulated network', () => {
     }
   });
 
+  it('a phone that lost its seat while away knows which room it was (backlog 160)', () => {
+    net = new SimNet();
+    const a = net.client('Ada');
+    const b = net.client('Bo');
+    net.run(400);
+    a.host();
+    net.run(400);
+    const code = a.room!.code;
+    b.join(code);
+    net.run(400);
+    const conn = (b as unknown as { conn: { close(): void; open(): void } }).conn;
+    conn.close(); // (the phone locks)
+    net.run(75_000); // longer than the seat is kept for a room that isn't fighting
+    expect(a.room!.seats[1]).toBeNull();
+    conn.open();
+    net.run(2000);
+    expect(b.sessionLost).toBe('expired');
+    expect(b.lostRoom).toBe(code);
+    expect(b.room).toBeNull();
+    // (The app joins it again; the free seat is there to take.)
+    b.join(b.lostRoom!);
+    net.run(400);
+    expect(b.room?.code).toBe(code);
+    expect(a.room!.seats[1]).toMatchObject({ name: 'Bo', connected: true });
+  });
+
   it('a phone that missed the end of the battle sees the result when it reconnects', () => {
     const { a, b, ga, gb } = twoPlayers();
     net.run(3000);

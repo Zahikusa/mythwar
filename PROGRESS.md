@@ -699,10 +699,16 @@ battle, results — 2026-10-13.)
    host waited for a claim. (Done: `server/lobby.ts` join — the same device takes its seat back in
    a running battle too: snapshot, present again; server test; mpsmoke closes B's tab mid-battle
    and rescans — failed before the fix; MULTIPLAYER.md.)
-160. [ ] A phone that locks while waiting in the battle room (plain http: no wake lock; iPhones
+160. [x] A phone that locks while waiting in the battle room (plain http: no wake lock; iPhones
    lock after 30 s) loses its seat after 12 s + 60 s and lands in the lobby with "away too long".
    Hold a disconnected seat longer while the room is waiting (and say "keep your screen on" in the
-   room on phones?).
+   room on phones?). (Done another way — holding seats longer keeps strangers out of an open room and the
+   host waiting: the client remembers the room it lost (`MpClient.lostRoom`), and the app, back on
+   the room or lobby screen, joins it again if the seat is still free ("You were away a while and
+   lost your seat — joining the room again…"). `LobbyOptions.seatGrace` lets mpsmoke test it in 6 s:
+   B's link closes in the room, A sees the seat empty, B reconnects and is back — failed before the
+   fix; client test in netgame.test.ts; MULTIPLAYER.md. Found on the way: under latency mpsmoke
+   pressed "Back to room" before B had heard A left — it waits for the button now.)
 161. [x] The battle room has no way to the how-to: a QR guest never saw it (it shows before a first
    *local* battle) and Leave room → Back disconnects. A "How to play" in the room, Back to the room. (Done: "How to play" between Leave room and Ready — fits a 844×390 phone; a battle
    starting meanwhile closes it like any menu; mpsmoke goes there and back, still seated.)
