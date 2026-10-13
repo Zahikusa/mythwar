@@ -20,10 +20,11 @@ the improvement backlog below (verified, committed) and add what the review find
 4. [ ] `scripts/smoke.ts`: nothing checks that the results screen fits a 1600×900 / 1366×768
    window in its fullest form (new feats + new best + chapter close + break note + chronicle);
    several lenses added lines to it and two of them overflowed until spotted in screenshots.
-5. [ ] `src/render/renderer.ts`: a temper gesture (#77) can start in the middle of an attack
-   swing and overlay it (a hop mid-swing); start it when the swing ends instead.
-6. [ ] `package.json`: the new tools `scripts/servercost.ts` and `scripts/ogcard.mjs` have no npm
-   aliases (economy, designcheck, puzzlecheck do).
+5. [x] `src/render/renderer.ts`: a temper gesture (#77) can start in the middle of an attack
+   swing and overlay it (a hop mid-swing); start it when the swing ends instead. (Done: it waits
+   up to 0.8 s for the swing to end; a sandbox melee still showed 5 gestures in 12 kills.)
+6. [x] `package.json`: the new tools `scripts/servercost.ts` and `scripts/ogcard.mjs` have no npm
+   aliases (economy, designcheck, puzzlecheck do). (Done: `npm run servercost`, `npm run ogcard`.)
 
 **Start here: [docs/BRIEF.md](docs/BRIEF.md)** — one page: what TASK.md asked for, what was
 built, how to see each part working, and the decisions that need you.
