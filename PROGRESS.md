@@ -897,9 +897,9 @@ it prints, inviting, stopping — 2026-10-13.)
 204. [ ] smoke still has ~90 short fixed sleeps (100–600 ms) between taps and checks — on the CI
    runner (#127) the timing-sensitive ones may flake. Turn the ones that wait for a state into
    `waitForFunction`s (as #134/#158 did for results and page loads).
-205. [ ] The `browser-tests` workflow (#127) hasn't run on GitHub yet and now has `package:check`
+205. [x] The `browser-tests` workflow (#127) hasn't run on GitHub yet and now has `package:check`
    to consider: add `npm run package:check` to it (it needs no browser) so every PR proves the
-   release package starts.
+   release package starts. (Done: a last step in browser-tests.yml.)
 197. [ ] (minor) The co-op chronicle calls the foe by the difficulty label ("First blood to Novice")
    where single player uses the general's name (Puck); the results drop the AI's income note.
 

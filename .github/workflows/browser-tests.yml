@@ -28,3 +28,5 @@ jobs:
       - run: echo "CHROME=$(command -v google-chrome || command -v google-chrome-stable)" >> "$GITHUB_ENV"
       - run: npm run smoke
       - run: node scripts/mpsmoke.ts
+      # The release package as shipped starts and answers the lobby (no browser needed).
+      - run: npm run package:check
