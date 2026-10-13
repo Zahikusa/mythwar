@@ -1,6 +1,7 @@
 import { AI_PROFILES, DIFFICULTIES } from '../ai/ai.ts';
 import type { Difficulty } from '../ai/ai.ts';
 import { AGES, AGE_UNITS, POWERS, TRIALS, TRIAL_ORDER } from '../sim/data.ts';
+import type { UnitDef } from '../sim/data.ts';
 import type { World } from '../sim/world.ts';
 import type { Team } from '../sim/types.ts';
 import { h, fmt, fmtTime, onTap } from './dom.ts';
@@ -10,7 +11,7 @@ import type { Settings } from './settings.ts';
 import { SIGILS, battleStars, journalText, parTime } from './settings.ts';
 import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
-import { Bestiary } from './bestiary.ts';
+import { Bestiary, MYTHS } from './bestiary.ts';
 import { JOURNEY, PERSONAS } from './personas.ts';
 import { battleName, placeName } from './places.ts';
 import { FEATS, MAX_STARS, PINNACLE, starTotal } from './feats.ts';
@@ -932,7 +933,7 @@ export class Menus {
         h('span', { text: online && (won || online.reason !== 'citadel') ? scoreLine(online) : battleTip(world, me, difficulty, ageUps, this.settings.advice) }),
         online ? null : this.flowButton(won, difficulty),
       ),
-      h('div', { class: 'vstats' }, table, this.storyPanel(history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null, story)),
+      h('div', { class: 'vstats' }, table, this.storyPanel(history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null, story, best > 0 ? champion : null)),
       online ? this.onlineResultButtons(share) : h(
         'div',
         { class: 'mrow' },
@@ -949,28 +950,29 @@ export class Menus {
    * The army chart and the battle's chronicle (Lens #65) share one panel, with two small tabs;
    * a battle too short for a chart shows its chronicle straight away.
    */
-  private storyPanel(chart: HTMLElement | null, story: string[]): HTMLElement | null {
-    if (!story.length) return chart;
-    const chron = h('div', { class: 'chart chron' }, h('div', { class: 'ctitle', text: 'Chronicle of the battle' }), h('ol', { class: 'chronlist' }, ...story.map((line) => h('li', { text: line }))));
-    if (!chart) return chron;
+  private storyPanel(chart: HTMLElement | null, story: string[], champion: UnitDef | null): HTMLElement | null {
+    const panels: { label: string; title: string; el: HTMLElement }[] = [];
+    if (chart) panels.push({ label: 'Armies', title: 'Army strength', el: chart });
+    if (story.length) panels.push({ label: 'Chronicle', title: 'Chronicle', el: h('div', { class: 'chart chron' }, h('div', { class: 'ctitle', text: 'Chronicle of the battle' }), h('ol', { class: 'chronlist' }, ...story.map((line) => h('li', { text: line })))) });
+    // What a battle leaves behind (Lens #97): the real myth behind the creature that carried it.
+    const myth = champion ? MYTHS[champion.id] : undefined;
+    if (champion && myth) panels.push({ label: 'Legend', title: `The legend of the ${champion.name}`, el: h('div', { class: 'chart chron legend' }, h('div', { class: 'ctitle', text: `The legend of the ${champion.name}` }), h('p', { class: 'clegend', text: myth }), h('p', { class: 'cnote', text: 'Every creature’s story is in the Bestiary.' })) });
+    if (panels.length <= 1) return panels[0]?.el ?? null;
     const wrap = h('div', { class: 'storypanel' });
-    const tab = (label: string, show: HTMLElement, hide: HTMLElement) => {
-      const b = h('button', { class: 'ctab', text: label }) as HTMLButtonElement;
+    const tabs = h('div', { class: 'ctabs' });
+    panels.forEach((p, i) => {
+      // (Shorter titles leave room for the tabs on the same line.)
+      p.el.querySelector('.ctitle')!.textContent = p.label === 'Legend' ? 'Legend' : p.title;
+      if (i > 0) p.el.classList.add('hidden');
+      const b = h('button', { class: `ctab${i === 0 ? ' on' : ''}`, text: p.label }) as HTMLButtonElement;
       onTap(b, () => {
         this.cb.sound('click');
-        show.classList.remove('hidden');
-        hide.classList.add('hidden');
-        for (const t of wrap.querySelectorAll('.ctab')) t.classList.toggle('on', t === b);
+        for (const q of panels) q.el.classList.toggle('hidden', q !== p);
+        for (const t of tabs.children) t.classList.toggle('on', t === b);
       });
-      return b;
-    };
-    chron.classList.add('hidden');
-    // (Shorter titles leave room for the tabs on the same line.)
-    chart.querySelector('.ctitle')!.textContent = 'Army strength';
-    chron.querySelector('.ctitle')!.textContent = 'Chronicle';
-    const tabs = h('div', { class: 'ctabs' }, tab('Armies', chart, chron), tab('Chronicle', chron, chart));
-    tabs.firstElementChild!.classList.add('on');
-    wrap.append(tabs, chart, chron);
+      tabs.appendChild(b);
+    });
+    wrap.append(tabs, ...panels.map((p) => p.el));
     return wrap;
   }
 

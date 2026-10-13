@@ -209,7 +209,7 @@ built, how to see each part working, and the decisions that need you.
 - [x] #94 The Client — docs/BRIEF.md: each TASK.md requirement → what was built → how to see it yourself; what's unverified; the decisions that need the client (linked atop PROGRESS)
 - [x] #95 The Pitch — docs/PITCH.md (one line, elevator, 30 s, store texts); link previews: og/twitter tags + a 1200×630 card (scripts/ogcard.mjs); manifest/meta description
 - [x] #96 Profit — scripts/servercost.ts measures a battle's hosting cost (~19 MB/h, 0.04% of a core); docs/PROFIT.md: cost model + no-pay-to-win stance
-- [ ] #97 Transformation — what players take away
+- [x] #97 Transformation — the results' Legend tab tells the real myth behind your champion of the battle
 - [ ] #98 Responsibility — healthy play / privacy
 - [ ] #99 The Raven — step back: biggest remaining issue
 - [ ] #100 Your Secret Purpose — final reflection

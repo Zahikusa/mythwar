@@ -1831,3 +1831,19 @@ value?*
 - Found on the way: the first measurement averaged over the whole 10 minutes although every
   simulated battle had ended after ~4.5 — rates now count each player's time in battle.
 - Checked: the script runs at both turn rates (numbers above); typecheck.
+
+## #97 The Lens of Transformation
+*How does playing change the player? What do they take away that they didn't have before?*
+- Two things Mythwar can leave with a player: a way of thinking (read the threat, answer with
+  the counter, time the big move — trained by every battle) and a piece of world culture: sixteen
+  creatures from real myths — Celtic, Greek, Norse, Japanese, Chinese. The second lived in the
+  Bestiary (#11), which a player has to go and open; in battle the myths were names on cards.
+- Change: the results panel gets a third tab, **Legend** — the real myth behind *your champion*
+  of that battle (the creature you summoned most, already on the results' portrait): "A
+  murderous goblin of the Anglo-Scottish border that haunts ruined castles and dyes its cap in
+  travellers' blood. If the cap ever dries, the redcap dies." — with a pointer to the Bestiary
+  for the rest. A player who leans on Fenrir learns of Gleipnir and Týr's hand; one who loves
+  the kitsune learns why they grow nine tails. Every battle leaves a story from the world's
+  myths behind, not only a score. (The tabs were generalised from two to any number of panels.)
+- Checked: `shoot results-legend` (a short battle with redcaps: Armies · Chronicle · Legend,
+  the Legend open); without a champion the tab stays away; full verify.

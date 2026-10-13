@@ -1391,6 +1391,21 @@
   overflow-y: auto;
 }
 
+/* The legend behind the battle's champion (Lens #97). */
+.clegend {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
+  color: #e4dcff;
+}
+
+.cnote {
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
 .chronlist {
   margin: 4px 0 0;
   padding: 0 0 0 4px;
