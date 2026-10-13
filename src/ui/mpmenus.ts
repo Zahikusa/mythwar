@@ -442,8 +442,9 @@ export class MpScreens {
     if (foe) {
       const r = record(foe.name);
       const v = this.seats[me === 0 ? 1 : 0];
-      const inRoom = foe.wins || room.seats[me]?.wins ? `${room.seats[me]?.wins ?? 0} – ${foe.wins} here` : '';
-      const ever = r && r.w + r.l > 0 ? `you ${r.w} – ${r.l} overall` : '';
+      // (Co-op: the two are allies — their victories are shared, not a score between them.)
+      const inRoom = room.coop ? (foe.wins ? `Victories together: ${foe.wins}` : '') : foe.wins || room.seats[me]?.wins ? `${room.seats[me]?.wins ?? 0} – ${foe.wins} here` : '';
+      const ever = !room.coop && r && r.w + r.l > 0 ? `you ${r.w} – ${r.l} overall` : '';
       setText(v.wins, [inRoom, ever].filter(Boolean).join(' · '));
     }
     this.iAmReady = !!room.seats[me]?.ready;

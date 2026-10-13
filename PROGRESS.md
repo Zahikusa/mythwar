@@ -856,8 +856,9 @@ it prints, inviting, stopping — 2026-10-13.)
    may offer "Claim victory", which the server refuses in co-op (netoverlay.ts ~91–97). Co-op
    wording: "Bo is away — the battle waits for you both"; no claim button. (Done: in co-op, "Bo is
    away — … The battle goes on as soon as one of you is here.", no claim, no "you win".)
-195. [ ] Co-op room: under the ally's seat "2 – 2 here · you 3 – 1 overall" frames the ally as an
-   opponent (mpmenus.ts ~441–447). In co-op: "Victories together: 2".
+195. [x] Co-op room: under the ally's seat "2 – 2 here · you 3 – 1 overall" frames the ally as an
+   opponent (mpmenus.ts ~441–447). In co-op: "Victories together: 2". (Done: co-op rooms show "Victories together: N" under the
+   ally and no head-to-head record.)
 196. [ ] Co-op leaving and credit: the leaver's journal records a defeat and the pause note says
    leaving "counts as a defeat" though the side may still win; side-wide feats (Wyrmcaller,
    Favoured, Among the Gods) go to both allies for one ally's deed; a stayer who won alone reads
