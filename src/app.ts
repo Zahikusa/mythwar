@@ -37,6 +37,7 @@ const SANDBOX_PROMPTS = [
   'Which turret stops a Kitsune pack: bolt or blast?',
 ];
 import { JOURNEY, PERSONAS, tauntLine } from './ui/personas.ts';
+import { breakNoteFor } from './ui/wellbeing.ts';
 import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
 
@@ -766,10 +767,9 @@ export class App {
    * (pauses included: it's time spent at the screen; the title and menus between battles not).
    */
   private breakNote(): string | null {
-    const hours = Math.floor(this.playedSecs / 3600);
-    if (hours <= this.breakHours) return null;
+    const { note, hours } = breakNoteFor(this.playedSecs, this.breakHours);
     this.breakHours = hours;
-    return `You have been at war for over ${hours === 1 ? 'an hour' : `${hours} hours`}. The gods will wait — a good moment for a break.`;
+    return note;
   }
 
   private onGameOver(): void {
