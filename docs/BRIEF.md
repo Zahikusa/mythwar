@@ -61,7 +61,7 @@ questions).
 
 Three independent reviews (the client's netcode, the server's rooms and battles, and the run's
 own changes) went looking for what goes wrong on a real network. Fixed (PROGRESS.md, items
-215–250): **a phone that reconnected after a citadel fell froze in the battle** with no results
+215–272): **a phone that reconnected after a citadel fell froze in the battle** with no results
 and no menu — now it sees how the battle ended; a phone that **walks out of the Wi-Fi mid-battle**
 holds the battle after 4 s of silence instead of the battle running on for 12 s without it; a
 player whose phone was gone when the battle ended keeps their seat (and the winner their win)

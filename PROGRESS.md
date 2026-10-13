@@ -732,7 +732,7 @@ server changes found sound.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #10 in short (for the morning)
-- Verification mode, backlog items 215–250. Open from run #9: #204 (smoke waits for menu
+- Verification mode, backlog items 215–272. Open from run #9: #204 (smoke waits for menu
   changes, not sleeps), #215 (Back twice leaves the room on a phone), #217 (mpsmoke cuts the
   phone's links silently through a TCP relay — CDP's offline mode turned out unfaithful: Chrome
   still answers the server's pings) done; #137 and #172 decided (reasons in the items).
@@ -760,7 +760,13 @@ built, how to see each part working, and the decisions that need you.
   instead of previewing; the automatic battery saver stuck for good after an iPhone's Low Power
   Mode; iOS 15 got a broken layout or a crash — now a "needs a newer browser" message; iOS focus
   zoom on the 12-px code box; text inflation on rotation. A docs-vs-code review (#244).
-- Tests 285 → 299; mpsmoke plain / latency / portrait green (a co-op Ready race in the test
+- A second visual pass (#251–257: the results' pinned row over the stats, a squeezed away
+  notice, a see-through dimmed Ready, small room chips, sentence case, calm news colour, the
+  results subtitle) and a review of the run's later diff (#264–268: a return to the room no
+  longer drops a working link and its Ready — it probes first; news vs errors; reduced motion).
+  Room news takes turns (#262); the server sums a battle's quiet spells in one log line (#260);
+  mpsmoke 88 → 85 s (#269); netgame tests use SimNet helpers (#270); docs (#259, #271).
+- Tests 285 → 300; mpsmoke plain / latency / portrait green (a co-op Ready race in the test
   fixed, #228); mpengines, package:check green.
 
 ## Run #9 in short (for the morning)
