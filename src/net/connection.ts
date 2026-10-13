@@ -69,6 +69,8 @@ export class Connection {
   rtt = 0;
   onMessage: (msg: ServerMsg, at: number) => void = () => {};
   onState: (state: ConnState) => void = () => {};
+  /** The code the last link was closed with (4002: the server stopped our battle on a fault). */
+  lastClose = 0;
   /** The server closed the link for good (4000 = other version, 4001 = taken over elsewhere). */
   onRefused: (code: number) => void = () => {};
   private ws: SocketLike | null = null;
@@ -178,6 +180,7 @@ export class Connection {
       if (this.ws !== ws) return;
       this.ws = null;
       const code = (e as { code?: number } | null)?.code ?? 0;
+      this.lastClose = code;
       if (code === 4000 || code === 4001) {
         // Reconnecting would only repeat this (and, for 4001, steal the seat back).
         this.close();

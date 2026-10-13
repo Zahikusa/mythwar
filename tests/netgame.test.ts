@@ -83,7 +83,7 @@ class FakeSocket implements SocketLike {
         if (this.net.cut.has(this)) return;
         net.later(() => this.readyState === 1 && this.onmessage?.({ data }), this.down);
       },
-      close: () => this.close(),
+      close: (code) => this.close(code),
     });
     net.later(() => {
       this.readyState = 1;
@@ -96,11 +96,11 @@ class FakeSocket implements SocketLike {
     this.net.later(() => this.handlers.message(data), this.up);
   }
 
-  close(): void {
+  close(code?: number): void {
     if (this.readyState === 3) return;
     this.readyState = 3;
     this.net.later(() => this.handlers.close(), this.up);
-    this.net.later(() => this.onclose?.({}), this.down);
+    this.net.later(() => this.onclose?.({ code }), this.down);
   }
 
   /** The link dies silently; the server notices (heartbeat) and the socket closes. */
@@ -307,7 +307,7 @@ describe('NetGame over a simulated network', () => {
     for (const [c, g] of [[a, ga], [b, gb]] as const) {
       expect(c.state).toBe('online');
       expect(c.room).toBeNull();
-      expect(c.sessionLost).toBe('restart');
+      expect(c.sessionLost).toBe('fault');
       expect(g.over).toBe(true);
       expect(g.result).toBeNull();
     }

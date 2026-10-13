@@ -300,9 +300,11 @@ chronicle, 2026-10-13 — renderer/fx/layout/lobby held up.)
    through 120 pauses a second. Coalesce or rate-limit away toggles (e.g. at most 4/s).
    (Done: a change within 250 ms of the last waits and the latest wish is applied — never
    dropped, so "back" always lands; test: 50 flips in a second → ≤ 5 pauses, ends resumed.)
-72. [ ] `src/app.ts` lobby note after a battle the server stopped on a fault (#51) reads "it restarted,
+72. [x] `src/app.ts` lobby note after a battle the server stopped on a fault (#51) reads "it restarted,
    or you were away a long time" — say what happened. Needs a reason from the server (a close
-   code, e.g. 4002 "fault", read by Connection before reconnecting).
+   code, e.g. 4002 "fault", read by Connection before reconnecting). (Done: the server closes
+   with 4002; `Connection.lastClose`; `sessionLost: 'fault'` → "The game server ran into a fault
+   and stopped your battle — sorry. It doesn't count for anyone."; netgame test.)
 73. [ ] `public/sw.js`: lazily loaded chunks (qrcode, gallery, selftest) are never pruned — each build
    that changes one leaves the old copy in the cache (a few kB each, forever).
 74. [ ] A continued battle's chronicle starts at the resume (#66 stops it lying, but the moments

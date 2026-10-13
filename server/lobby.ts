@@ -332,7 +332,8 @@ export class Lobby {
       this.sessions.delete(s.token);
       const conn = s.conn;
       s.conn = null;
-      conn?.close(1011, 'fault');
+      // (4002: the page then knows why the server no longer knows it.)
+      conn?.close(4002, 'fault');
     }
   }
 

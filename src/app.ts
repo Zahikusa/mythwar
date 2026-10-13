@@ -1102,12 +1102,17 @@ export class App {
       mp.sessionLost = null;
       const shown = this.game instanceof NetGame && this.state !== 'title';
       // (An expired seat mid-battle first gets the battle's ending replayed: results follow.)
-      if (shown && (lost === 'restart' || this.state === 'over')) {
+      if (shown && (lost !== 'expired' || this.state === 'over')) {
         this.toTitle();
         this.openMultiplayer();
       }
       // (Shown when the lobby is next on screen — after the results, if a battle was replayed.)
-      this.lobbyNote = lost === 'restart' ? 'The game server no longer knows your session (it restarted, or you were away a long time).' : 'You were away too long and lost your seat in the room.';
+      this.lobbyNote =
+        lost === 'fault'
+          ? 'The game server ran into a fault and stopped your battle — sorry. It doesn’t count for anyone.'
+          : lost === 'restart'
+            ? 'The game server no longer knows your session (it restarted, or you were away a long time).'
+            : 'You were away too long and lost your seat in the room.';
       if (this.state === 'title') this.flushLobbyNote();
     }
     if (mp.replaced && this.game instanceof NetGame && this.state !== 'title') {
