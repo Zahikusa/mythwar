@@ -48,6 +48,10 @@ Pick one or two questions for this session, not ten. Good ones right now:
   be back in the room by itself if nobody took the seat); after a battle tap **Copy result** on
   a phone and paste it into a message (it should paste the result, not "Copy failed"); a guest
   who came by QR code: did they find **How to play** in the room?
+- And from run #10: mid-battle, walk one phone out of the Wi-Fi's reach (or switch its Wi-Fi off
+  for ~10 s) — the other screen should say "… is away" within about 5 s and the battle wait,
+  then count down 3-2-1 once the phone is back. In co-op, let one phone lock until the ally has
+  won: when it wakes it should show the victory, not a frozen battle.
 
 **Don't** explain, defend or coach while they play. "What are you thinking?" is the only
 question allowed during the battle.
