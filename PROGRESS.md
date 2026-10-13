@@ -685,12 +685,16 @@ server changes found sound.)
    `conn.lastHeard`, `lobby.rooms`, a match's world): a few test-only accessors on SimNet
    (`socketOf(client)`, `matchOf(code)`, `suspend(client, ms)`) would make them read as the
    scenarios they are and survive refactors.
-271. [ ] docs/MULTIPLAYER.md's "What happens when…" lacks run #10's room behaviours: a short app
+271. [x] docs/MULTIPLAYER.md's "What happens when…" lacks run #10's room behaviours: a short app
    switch keeps the seat and Ready (#264), a longer one redials at once on return (#243), room
    news takes turns (#262), and a silent phone mid-battle (#222 — there) vs in the room.
-272. [ ] `mpengines`' WebKit pass doesn't check #246 (a long press on Ascend previews without
+   (Done: the "phone locks in the room" row says how a return probes, keeps or redials; a new
+   row for news taking turns.)
+272. [x] `mpengines`' WebKit pass doesn't check #246 (a long press on Ascend previews without
    ascending) — WebKit's touch/contextmenu behaviour is the reason for the fix; Playwright's
    touchscreen can hold a press there.
+   (Done with touch-type pointer events from the page (Playwright has no touch hold): a 600-ms
+   press previews, no ascension; a short press then ascends — so the button was ready.)
 260. [x] The server logs "went quiet" / "heard from again" for every Wi-Fi blip of 4 s+ (#222) —
    a flaky phone could fill the host's console in a long session. Keep the first of each in a
    battle and sum the rest at the battle's end ("Bo went quiet 5 times, 23 s in all").

@@ -110,6 +110,29 @@ async function webkitPhone(launch: () => Promise<Browser>, base: string): Promis
     check('WebKit: "Copy my code" copies without the Clipboard API', status.startsWith('Copied'), status);
     await page.goto(`${base}/?play=adept&seed=4&mode=mobile`);
     await page.waitForFunction(() => (window as any).__mythwar?.state === 'playing' && (window as any).__mythwar.game.world.tick > 0);
+    // (Backlog 246/272) A long press on Ascend previews the next age and doesn't ascend on release.
+    // (Playwright has no touch hold: touch-type pointer events from the page.)
+    const held = await page.evaluate(async () => {
+      const w = (window as any).__mythwar.game.world;
+      w.players[0].gold = 99_999;
+      w.players[0].xp = 99_999;
+      await new Promise((r) => setTimeout(r, 200));
+      const el = document.querySelector('.act.ascend') as HTMLElement;
+      const r = el.getBoundingClientRect();
+      const at = { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, pointerId: 7, pointerType: 'touch', isPrimary: true, bubbles: true, button: 0 };
+      el.dispatchEvent(new PointerEvent('pointerdown', at));
+      await new Promise((r) => setTimeout(r, 600));
+      const preview = !document.querySelector('.tooltip')!.classList.contains('hidden');
+      el.dispatchEvent(new PointerEvent('pointerup', at));
+      await new Promise((r) => setTimeout(r, 150));
+      const age = w.players[0].age as number;
+      // (…while a short press does ascend: the button was ready.)
+      el.dispatchEvent(new PointerEvent('pointerdown', at));
+      el.dispatchEvent(new PointerEvent('pointerup', at));
+      await new Promise((r) => setTimeout(r, 150));
+      return { preview, age, afterTap: w.players[0].age as number };
+    });
+    check('WebKit: a long press on Ascend previews the next age and does not ascend', held.preview && held.age === 0 && held.afterTap === 1, JSON.stringify(held));
     await page.touchscreen.tap(420, 200);
     const url = page.url();
     await page.goBack({ timeout: 3000 }).catch(() => null);
