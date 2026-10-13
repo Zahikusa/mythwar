@@ -909,8 +909,17 @@ describe('battle', () => {
     expect(readdirSync(join(dir, 'sub')).filter((f) => f.endsWith('.tmp'))).toEqual([]);
     writeFileSync(path, '{ not json');
     const lines: string[] = [];
-    expect(fileStore(path, (l) => lines.push(l)).load()).toBeNull();
+    const again = fileStore(path, (l) => lines.push(l));
+    expect(again.load()).toBeNull();
     expect(lines.length).toBe(1);
+    // (Backlog 65) The unreadable file is kept aside, not overwritten by the next save.
+    again.save({ v: 1, halls: {} });
+    await again.idle();
+    const aside = readdirSync(join(dir, 'sub')).filter((f) => f.startsWith('data.json.unreadable-'));
+    expect(aside).toHaveLength(1);
+    const { readFileSync } = await import('node:fs');
+    expect(readFileSync(join(dir, 'sub', aside[0]), 'utf8')).toBe('{ not json');
+    expect(lines[0]).toContain(aside[0]);
   });
 
   it('orders not yet applied when the battle pauses are dropped', () => {

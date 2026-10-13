@@ -268,6 +268,21 @@ the improvement backlog below (verified, committed) and add what the review find
    Dragon (needs ~4,700–5,100 gold while calm). Low impact; leave the reserve out for the Dragon.
    (Done: the Dragon is weighed against the bank without its own share. designcheck passes:
    100/53/13/3%, even battles 18.6 min, left side 58%; Dragons 0% → 1% of final-age summons.)
+(Items 65–69: an independent review of rendering, persistence, the service worker, feats and the
+chronicle, 2026-10-13 — renderer/fx/layout/lobby held up.)
+65. [x] `server/store.ts` `load()`: an unreadable Hall file (a stray comma after a hand edit) gave an
+   empty Hall — and the next save overwrote the file, every network's champions gone. (Done: kept
+   aside as `<file>.unreadable-<time>` and said so in the log; test.)
+66. [ ] `src/ui/chronicle.ts` with `src/app.ts` `enterBattle`: a continued (or online-rejoined)
+   battle starts a fresh Chronicle — "5:00 — First blood to Odin…" though it fell at 0:25; a
+   citadel already below a quarter is "falling" at the resume time; earlier veterans unnamed.
+67. [ ] `public/sw.js`: everything but the page is cache-first — the manifest and icons cached at
+   install are served stale forever (sw.js itself never changes between builds, so it never
+   reinstalls; `mythwar-v3` was bumped by hand). Network-first for all but hashed `/assets/`.
+68. [ ] `src/ui/feats.ts` ~128: "Swift Conquest" (Adept+ in under 8 minutes) counts quick battles
+   (faster XP, +300 gold, par time cut to ⅔) and later-age starts, which skip best times and stars.
+69. [x] `server/store.ts`: a background save whose rename fails (Windows: a scanner holding the file)
+   left its numbered `.tmp` behind — one per failed save. (Done: removed in the catch.)
 
 
 

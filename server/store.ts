@@ -48,6 +48,8 @@ export function fileStore(path: string, log?: (line: string) => void): ServerSto
         else renameSync(tmp, path);
       } catch (e) {
         fail(e);
+        // (A rename refused — say, a virus scanner holding the file a moment — leaves no temp file behind.)
+        await unlink(tmp).catch(() => {});
       }
     })().then(() => {
       writing = null;
@@ -58,14 +60,22 @@ export function fileStore(path: string, log?: (line: string) => void): ServerSto
   };
   return {
     load() {
+      if (!existsSync(path)) return null;
       try {
-        if (!existsSync(path)) return null;
         const raw = JSON.parse(readFileSync(path, 'utf8'));
-        return raw && raw.v === 1 && raw.halls && typeof raw.halls === 'object' ? (raw as StoredState) : null;
+        if (raw && raw.v === 1 && raw.halls && typeof raw.halls === 'object') return raw as StoredState;
       } catch {
-        log?.(`could not read ${path} — starting with an empty Hall of champions`);
-        return null;
+        // (Unreadable — say, a stray comma after editing it by hand.)
       }
+      // Kept aside, not overwritten by the next save: the champions in it can still be mended.
+      const aside = `${path}.unreadable-${Date.now()}`;
+      try {
+        renameSync(path, aside);
+        log?.(`could not read ${path} — kept it as ${aside}; starting with an empty Hall of champions`);
+      } catch (e) {
+        log?.(`could not read ${path} (${(e as Error).message}) — starting with an empty Hall of champions`);
+      }
+      return null;
     },
     save(state) {
       if (closed) return;
