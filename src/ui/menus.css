@@ -1998,7 +1998,37 @@
 /* ------------------------------------------------------------------ */
 /* Getting the app (ui/install.ts)                                     */
 /* ------------------------------------------------------------------ */
+/* The offer and its ×: two buttons in one pill. */
+.tnote.tgroup {
+  gap: 0;
+  padding: 0 0 0 14px;
+}
+
+.tgroup .tmain {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 12px 0 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.tgroup .tmain i {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  color: var(--gold-l);
+}
+
 .tnote.tinstall.small {
+  width: 44px;
+  padding: 0;
+  justify-content: center;
+}
+
+.tnote.tinstall.small .tmain {
   width: 44px;
   padding: 0;
   justify-content: center;
@@ -2009,13 +2039,12 @@
   height: 20px;
 }
 
-/* "Not now" on the title's offer: a 44-px target around a small cross. */
+/* "Not now" on the title's offer: a 44-px key around a small cross, at the pill's end. */
 .tclose {
   flex: none;
-  width: 30px;
-  height: 30px;
-  margin: -8px -10px -8px 0;
-  padding: 8px;
+  width: 44px;
+  height: 44px;
+  padding: 14px;
   box-sizing: border-box;
   border-radius: 50%;
   color: var(--muted);
@@ -2314,13 +2343,6 @@
     translate: 0 -50%;
   }
 
-  /* The offer's "Not now" ×: a full key at the chip's end. */
-  .tclose {
-    width: 44px;
-    height: 44px;
-    margin: -8px -14px -8px -6px;
-    padding: 15px;
-  }
 }
 
 /* The shortest stages (a small phone sideways in a browser tab, ~290 px): the title's parade of

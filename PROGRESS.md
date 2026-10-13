@@ -199,9 +199,11 @@ Already in the code before Phase 3, and kept:
    visible the first time (the note hid only at `installHint === -1`, the first × sets a
    date). (Done: one × puts it away for good — it offers nothing else; smoke `app-elsewhere`
    stubs getInstalledRelatedApps, taps ×, reloads.)
-15. [ ] (review) The title offer's × (`.tclose`) is a `role="button"` span inside the offer's
+15. [x] (review) The title offer's × (`.tclose`) is a `role="button"` span inside the offer's
    own button: nested controls, unreachable by Tab or a gamepad (the D-pad lands on the chip
    only). Make × a sibling button of the chip (a small group), each ≥ 44 px.
+   (Done: one pill of two buttons, `.tmain` and `.tclose`, both 44 px; smoke's gamepad and
+   app-elsewhere flows and mobilecheck's title screens pass.)
 
 ## Decisions
 

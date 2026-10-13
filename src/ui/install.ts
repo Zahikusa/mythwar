@@ -194,7 +194,7 @@ export class InstallGuide {
   /** The app is installed on this device, but this is a tab (Android: getInstalledRelatedApps). */
   private elsewhere = false;
   private notes: HTMLElement | null = null;
-  private chip: HTMLButtonElement | null = null;
+  private chip: HTMLElement | null = null;
   private sheet: HTMLElement | null = null;
   private arrow: HTMLElement | null = null;
   private readonly hooks: InstallHooks;
@@ -311,19 +311,23 @@ export class InstallGuide {
     const away = s.installHint === -1 || (s.installHint > 0 && Date.now() - s.installHint < OFFER_AGAIN_MS);
     const icon = this.advice === 'qr' ? pic('phone') : this.advice === 'lan' ? pic('full') : this.advice === 'escape' || this.advice === 'ios-safari' ? pic('open') : pic('add');
     this.chip = this.makeChip(icon, away ? '' : this.label, () => this.act(), !away);
-    this.chip.setAttribute('aria-label', this.label);
+    this.chip.querySelector('.tmain')!.setAttribute('aria-label', this.label);
     this.notes.appendChild(this.chip);
   }
 
-  private makeChip(icon: string, text: string, act: () => void, closable = true): HTMLButtonElement {
-    const chip = h('button', { class: `tnote tinstall${text ? '' : ' small'}` }, h('i', { html: icon }), text ? h('span', { text }) : null) as HTMLButtonElement;
-    onTap(chip, (e) => {
-      if ((e.target as Element).closest('.tclose')) return;
+  /**
+   * The offer: one pill of two real buttons — the offer itself and its × ("Not now") — each a
+   * full touch target, each reachable by Tab and a gamepad (not a control inside a control).
+   */
+  private makeChip(icon: string, text: string, act: () => void, closable = true): HTMLElement {
+    const main = h('button', { class: 'tmain' }, h('i', { html: icon }), text ? h('span', { text }) : null) as HTMLButtonElement;
+    onTap(main, () => {
       this.hooks.sound('click');
       act();
     });
+    const chip = h('div', { class: `tnote tinstall tgroup${text ? '' : ' small'}` }, main);
     if (text && closable) {
-      const x = h('span', { class: 'tclose', role: 'button', 'aria-label': 'Not now', html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>' });
+      const x = h('button', { class: 'tclose', 'aria-label': 'Not now', html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>' }) as HTMLButtonElement;
       onTap(x, () => this.putAway());
       chip.appendChild(x);
     }
