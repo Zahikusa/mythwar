@@ -37,7 +37,7 @@ const SANDBOX_PROMPTS = [
   'Which turret stops a Kitsune pack: bolt or blast?',
 ];
 import { JOURNEY, PERSONAS, tauntLine } from './ui/personas.ts';
-import { breakNoteFor } from './ui/wellbeing.ts';
+import { Sitting } from './ui/wellbeing.ts';
 import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
 
@@ -96,9 +96,8 @@ export class App {
   /** The AI general's lines: how many so far (to rotate them), when the last one was, and the
    *  one-off moments already used (losing / winning). */
   private taunts = { n: 0, at: -100, said: new Set<TauntEvent>(), heldShrine: [false, false, false] };
-  /** Time in battle this sitting (s) and the hours already noted (Lens #98). */
-  private playedSecs = 0;
-  private breakHours = 0;
+  /** Time in battle this sitting and the break notes said (Lens #98). */
+  private readonly sitting = new Sitting();
   /** Feats earned in the current battle (null until one starts). */
   private feats: FeatTracker | null = null;
   private slowSeconds = 0;
@@ -764,12 +763,11 @@ export class App {
   /**
    * Healthy play (Lens #98): after every full hour of battles in one sitting, the results — a
    * natural place to stop — suggest a break, once. Time in battle is counted frame by frame
-   * (pauses included: it's time spent at the screen; the title and menus between battles not).
+   * (pauses included: it's time spent at the screen; the title and menus between battles not);
+   * half an hour without a battle starts a new sitting.
    */
   private breakNote(): string | null {
-    const { note, hours } = breakNoteFor(this.playedSecs, this.breakHours);
-    this.breakHours = hours;
-    return note;
+    return this.sitting.note();
   }
 
   private onGameOver(): void {
@@ -861,7 +859,7 @@ export class App {
     this.last = now;
     this.pads.update(dt);
     // Time spent in battle this sitting (Lens #98; a hidden tab gets no frames, so it isn't counted).
-    if (this.state === 'playing' && this.game && !this.game.options.demo) this.playedSecs += dt;
+    if (this.state === 'playing' && this.game && !this.game.options.demo) this.sitting.battle(now / 1000, dt);
     this.fpsAcc += dt;
     this.fpsFrames++;
     if (this.fpsAcc >= 1) {

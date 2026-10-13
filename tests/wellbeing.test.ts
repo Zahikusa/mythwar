@@ -17,3 +17,24 @@ describe('the break note (Lens #98)', () => {
     expect(breakNoteFor(3 * 3600 + 5, 1).note).toMatch(/over 3 hours/);
   });
 });
+
+describe('a sitting (backlog 29)', () => {
+  it('ends after half an hour without a battle', async () => {
+    const { Sitting, SITTING_GAP } = await import('../src/ui/wellbeing.ts');
+    const s = new Sitting();
+    let t = 1000;
+    // 61 minutes of battle, frame by frame (in one-second steps here).
+    for (let i = 0; i < 61 * 60; i++) s.battle((t += 1), 1);
+    expect(s.note()).toMatch(/over an hour/);
+    expect(s.note()).toBeNull();
+    // Next morning (the tab left open): a minute of battle is a new sitting — no note.
+    t += 10 * 3600;
+    for (let i = 0; i < 60; i++) s.battle((t += 1), 1);
+    expect(s.note()).toBeNull();
+    // A short pause between battles doesn't end the sitting.
+    for (let i = 0; i < 59 * 60; i++) s.battle((t += 1), 1);
+    t += SITTING_GAP - 5;
+    for (let i = 0; i < 120; i++) s.battle((t += 1), 1);
+    expect(s.note()).toMatch(/over an hour/);
+  });
+});
