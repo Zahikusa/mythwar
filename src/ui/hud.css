@@ -2430,13 +2430,14 @@ html.cbfoe .side.right .hpfill {
 }
 
 .hud.mobile .panel {
-  background: rgba(21, 14, 38, 0.96);
+  /* (Opaque: the HUD's bright numbers behind it showed through the header as ghost text.) */
+  background: rgb(21, 14, 38);
   left: 50%;
   right: auto;
   top: 50%;
   bottom: auto;
   transform: translate(-50%, -50%);
-  width: min(420px, calc(100cqw - 2 * var(--side) - 16px));
+  width: min(444px, calc(100cqw - 2 * var(--side) - 16px));
   /* (The whole box — padding and border too: as a content-box height the blessing panel ran
      24 px past a 390-px-high phone.) */
   box-sizing: border-box;

@@ -515,9 +515,15 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 120. [ ] No `shoot` scenario for the multiplayer lobby or the battle room (the visual review
    couldn't look at them): add `mp-lobby` / `mp-room` (a local server like mpsmoke's, or a stubbed
    MpClient state).
-121. [ ] Phone panels (turrets, blessings): the HUD's numbers show through the panel header as ghost
+121. [x] Phone panels (turrets, blessings): the HUD's numbers show through the panel header as ghost
    text (`.hud.mobile .panel` at 96% — the header row has no own background). Opaque header or a
-   backdrop blur.
+   backdrop blur. (Done: the phone panel is opaque; its outer width kept at 444 px after #111's
+   border-box (else "range 230" wrapped); checked in the turret-panel shot.)
+122. [ ] Settings: the sigil button (`.mbtn.ssigil`, menus.css ~1815, 18 px) is much larger than the
+   controls around it, on phones and desktop (visual review).
+123. [ ] README screenshots (`docs/*.jpg`, refreshed in run #7) predate run #8's HUD changes (the
+   "!" danger badge, clearer lane tabs, the hold shield's place, opaque phone panels): refresh the
+   phone battle shot.
 
 
 
