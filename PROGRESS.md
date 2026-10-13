@@ -61,6 +61,26 @@ the improvement backlog below (verified, committed) and add what the review find
    champions): a server-side blocklist (`--names <file>`) would be the minimum before going
    public (ROADMAP *Next*). (Done: `--names <file>`; a name with a listed word, compared case- and
    punctuation-blind, becomes "Player" — at hello and on rename.)
+(Items 16–23: an independent review of the run #7 diff, 2026-10-13.)
+16. [ ] `server/lobby.ts` `flush(true)` / `server/store.ts`: Ctrl+C during a background save loses the
+   newest Hall (nothing "dirty" → no final save, and `process.exit` cuts the write off); and an
+   async `rename` already under way can land after `saveNow`'s.
+17. [ ] `src/ui/chronicle.ts`: only each side's *first* veteran is registered with `HeroNames`, so
+   the hero of the battle can get a name that differs from the renderer's (a duplicate).
+18. [ ] Online results chips: after the opponent leaves and a stranger joins the open room, the
+   chips reappear and the stranger's messages show under the old opponent's name.
+19. [ ] Hall of champions: the server cuts to the top 5 *before* the client drops players without
+   wins, so a co-op champion with 0 head-to-head wins can vanish behind four 0–1 lines; the
+   lobby's tooltip still says "since it started" though the Hall now survives restarts.
+20. [ ] `--names` blocklist: full-width or accented letters slip through (`ｂａｄ`, `bäd`), and names
+   loaded from the saved Hall are never checked.
+21. [ ] Two tabs of one browser share a device id: a two-tab battle credits the win and the loss
+   to the same Hall line (and co-op counts twice).
+22. [ ] `scripts/perfcheck.ts`: the script share comes from a later profiling phase; if the load
+   differs then (battle over, fewer creatures) the estimate doesn't describe the timed seconds.
+23. [ ] (note) The lobby's old-rival recognition (#84) matches by name; the Hall now tells two Adas
+   apart, the rivals list doesn't. Leave unless it confuses players.
+
 
 
 
