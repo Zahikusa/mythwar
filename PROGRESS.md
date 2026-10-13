@@ -348,8 +348,8 @@ it prints, inviting, stopping — 2026-10-13.)
    check runs on the phone viewports; mpsmoke and the WebKit pass unchanged.)
    (Checked on the way: #151's per-screen MutationObserver makes no calls at all while a screen
    sits idle — title, settings, bestiary, a battle — so no layout reads per frame.)
-210. [ ] Co-op room: your own seat shows "2 wins" while the ally's shows "Victories together: 2"
-   (#195) — the same number twice; in co-op, leave your own seat's line empty.
+210. [x] Co-op room: your own seat shows "2 wins" while the ally's shows "Victories together: 2"
+   (#195) — the same number twice; in co-op, leave your own seat's line empty. (Done.)
 211. [ ] `lostSessionPlan` (#171): a seat that expired while the phone sat on the *results* pulls
    the player off the results to the lobby (then rejoins, #160) — the results vanish mid-read.
    Keep the results up with a note, and rejoin when they leave them.

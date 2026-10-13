@@ -446,6 +446,8 @@ export class MpScreens {
       const inRoom = room.coop ? (foe.wins ? `Victories together: ${foe.wins}` : '') : foe.wins || room.seats[me]?.wins ? `${room.seats[me]?.wins ?? 0} – ${foe.wins} here` : '';
       const ever = !room.coop && r && r.w + r.l > 0 ? `you ${r.w} – ${r.l} overall` : '';
       setText(v.wins, [inRoom, ever].filter(Boolean).join(' · '));
+      // (Co-op: the shared count shows once, under the ally — not again as "2 wins" under you.)
+      if (room.coop && me !== null) setText(this.seats[me].wins, '');
     }
     this.iAmReady = !!room.seats[me]?.ready;
     setText(this.readyBtn.querySelector('span')!, this.iAmReady ? 'Not ready' : 'Ready');
