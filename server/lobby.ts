@@ -355,6 +355,7 @@ export class Lobby {
     if (!room?.match || s.seat === null || room.phase !== 'playing' || s.saysAway || !room.match.isAway(s.seat)) return;
     room.match.setAway(s.seat, false, now);
     this.broadcastRoom(room);
+    this.log(`${s.name} is heard from again in room ${room.code}`);
   }
 
   /** A player's away/back takes effect (see 'away'). */
