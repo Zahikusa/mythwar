@@ -211,7 +211,7 @@ built, how to see each part working, and the decisions that need you.
 - [x] #96 Profit — scripts/servercost.ts measures a battle's hosting cost (~19 MB/h, 0.04% of a core); docs/PROFIT.md: cost model + no-pay-to-win stance
 - [x] #97 Transformation — the results' Legend tab tells the real myth behind your champion of the battle
 - [x] #98 Responsibility — a break suggested on the results after each hour of battles; public network keys hashed in the hall file (no IPs at rest); docs/PRIVACY.md; Reset records clears the journal
-- [ ] #99 The Raven — step back: biggest remaining issue
+- [x] #99 The Raven — stepped back: the newcomer path is fine; the core risk was an untested multiplayer path — mpsmoke now starts a battle with one tab hidden (backlog #29 closed)
 - [ ] #100 Your Secret Purpose — final reflection
 
 # Phase 1 — Local (Wi-Fi) multiplayer (complete)
@@ -419,8 +419,9 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 27. [x] Settings: no switch to hide the opponent's quick messages (rate-limited, but some players
     will want them off).
 28. [x] package.json: the new tools (mpbot, enginecheck, mpengines) have no npm script aliases.
-29. [ ] `scripts/mpsmoke.ts`: nothing checks that a battle starting while a tab is hidden makes
-    that player "away" (fixed in app.ts after the second review, untested end to end).
+29. [x] `scripts/mpsmoke.ts`: nothing checks that a battle starting while a tab is hidden makes
+    that player "away" (fixed in app.ts after the second review, untested end to end). (Run #7,
+    Lens #99: the rematch starts with the guest's tab hidden; held at tick 0, runs once back.)
 30. [x] `src/ui/hud.ts`: the quick-message picker stays open when you tap elsewhere, open a panel
     or pause. (Found already done in run #6: a tap outside, any panel and pausing close it.)
 31. [x] Battle room: no "Copy link" button — on a desktop the invite is easier to paste into a

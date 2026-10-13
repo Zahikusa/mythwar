@@ -1872,3 +1872,23 @@ does the game meet them?*
 - Checked: server test (a public network's hall saved hashed, the address nowhere in the file,
   found again after a restart, other networks don't see it); `shoot results-break` (the note
   after an hour, no next-foe nudge); full verify.
+
+## #99 The Lens of the Raven
+*Stop. Is this the best use of my time? What is the most important thing right now?*
+- After 98 iterations that each added something, I stopped adding and looked for the biggest
+  remaining risk. Candidates: (1) newcomers drowning in accumulated features — checked the path a
+  first-time player takes (title → foe screen → battle): the foe screen is still four cards, a
+  "Start here" ribbon and Begin Battle; Trials and later starts stay hidden until earned, Mímir
+  introduces the rest in battle. Not the problem. (2) Real phones — the biggest risk, but it
+  needs the human (docs/PLAYTEST.md). (3) The task's core, multiplayer robustness: the Phase-1
+  backlog still had one path *fixed but never tested end to end* — **#29, a battle that starts
+  while one player's tab is in the background** (on phones: both press Ready, one glances at a
+  message). If that regressed, a battle would run while one player isn't there.
+- Change: mpsmoke now plays the rematch with the guest's tab hidden as it starts (document.hidden
+  overridden, then a real visibilitychange): the host must see the battle held for the guest at
+  tick 0 ("away"), and the battle must run once the guest is back. It passes — the fix from run
+  #4 holds. Backlog #29 closed.
+- The Raven's verdict, written down for the next run: the most valuable work left is not another
+  lens-sized feature but the real-device playtest and the remaining improvement backlog.
+- Checked: mpsmoke ("a battle starting in a hidden tab waits for that player — away:1 at tick
+  0"; the rematch then runs); full verify.

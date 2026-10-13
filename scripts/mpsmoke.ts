@@ -341,9 +341,20 @@ async function main(): Promise<void> {
     await waitFor(a, 'A offered a rematch', () => [...document.querySelectorAll('.screen.over button')].some((b) => b.textContent?.trim() === 'Rematch'));
     await press(a, '.screen.over', 'Rematch');
     await waitFor(a, 'A ready for the rematch', () => !!(window as any).__mythwar.mp.room?.seats[0]?.ready);
+    // (Backlog #29) B switches to another app just as the rematch starts: the battle must wait
+    // for B like for any other absence, and run once B is back.
+    await b.evaluate(() => Object.defineProperty(document, 'hidden', { configurable: true, get: () => true }));
     await press(b, '.screen.room', 'Ready');
     await waitFor(a, 'A in a new battle', () => (window as any).__mythwar.state === 'playing' && (window as any).__mythwar.game.world.tick < 200, 8000);
     await waitFor(b, 'B in a new battle', () => (window as any).__mythwar.state === 'playing', 8000);
+    await waitFor(a, 'A waits for B (hidden as it started)', () => ((window as any).__mythwar.game.netPause?.reason ?? '') === 'away', 6000);
+    const held = await info(a);
+    check('a battle starting in a hidden tab waits for that player', held.netPause === 'away:1' && held.tick < 60, `${held.netPause} at tick ${held.tick}`);
+    await b.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await waitFor(a, 'B back: the rematch runs', () => !(window as any).__mythwar.game.netPause && !(window as any).__mythwar.game.paused, 10000);
     await sleep(4500);
     const a6 = await info(a);
     check('rematch running', a6.tick > 30 && !a6.paused, `tick ${a6.tick}`);
