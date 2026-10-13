@@ -172,3 +172,15 @@ Code map: `src/sim` (deterministic simulation and all balance data), `src/ai` (o
 `src/audio` (synth), `DESIGN.md` (game design), `PROGRESS.md` (development log).
 **Working on the code? Read [CONTRIBUTING.md](CONTRIBUTING.md) first** — the determinism and
 fairness rules, what to run for which change, and the checklist for adding a creature.
+
+### Documents
+| | |
+|---|---|
+| [docs/BRIEF.md](docs/BRIEF.md) | One page: what was asked, what was built, how to see it working |
+| [docs/MULTIPLAYER.md](docs/MULTIPLAYER.md) | Wi-Fi play, troubleshooting, the netcode, going online |
+| [DESIGN.md](DESIGN.md) | The game design (and [docs/LENSES.md](docs/LENSES.md): the reasoning behind 100 iterations) |
+| [docs/PLAYTEST.md](docs/PLAYTEST.md) | A one-hour kit for testing with real people on real phones |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Where it could go next |
+| [docs/PITCH.md](docs/PITCH.md) · [docs/PROFIT.md](docs/PROFIT.md) | The pitch and store texts · what a server costs |
+| [docs/PRIVACY.md](docs/PRIVACY.md) | What the game keeps, where, and who sees it |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Rules and checklists for working on the code |
