@@ -374,9 +374,9 @@ chronicle, 2026-10-13 — renderer/fx/layout/lobby held up.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #8 in short (for the morning)
-- Verification mode, backlog items 38–64 (all but the note #23 done): three independent reviews
-  (netcode; app state flow; simulation/AI/HUD) found 18 real defects, most reproduced by a new
-  test before fixing.
+- Verification mode, backlog items 38–86 (all but the note #23 done): six independent reviews
+  (netcode; app state; simulation/AI/HUD; rendering/persistence; accessibility; docs) found most
+  of them, each reproduced by a new test or smoke check where possible before fixing.
 - **Rules changed** (battle outcomes can differ from run-#7 builds): mixed mirrored armies were
   uneven — team 1 had a one-tick edge in shot timing and in followers freed by a kill (#59–60);
   the AI's Dragon bank no longer blocks the Dragon (#64). designcheck passes; riddles unchanged.
@@ -393,7 +393,16 @@ built, how to see each part working, and the decisions that need you.
 - Menus: riddle result → Riddles → Back → Back reaches the real title (#52); battle keys wait
   under a menu over a running online battle (#53).
 - Bundle: the QR library loads on demand (main chunk 401 → 381 kB, #38). Progress codes carry
-  solved riddles (#42). New test files: connection, static, net. Tests: 218 → 234+.
+  solved riddles (#42). New test files: connection, static, net. Tests: 218 → 241.
+- Items 65–86 (later in the run): an unreadable Hall file is kept aside instead of overwritten
+  (#65); a continued battle keeps its chronicle (#66, #74); the service worker refreshes the
+  manifest/icons (#67), prunes old lazy chunks (#73) and shows the saved page after 4 s when the
+  server hangs (#85); bad server flags get a plain message (#70); away flips are coalesced
+  (#71); a battle stopped by a fault says so (#72); accessibility (#76–84: focus follows
+  screens, screen-reader wording, finger-sized hit areas clear of the gate, "!" for danger);
+  docs corrected (#75); `npm run smoke -- --only <flow>` (#86).
+- The release package (`npm run package`) was started and probed: brotli, immutable hashed
+  assets, no-cache page/sw/manifest, path escapes refused, stray upgrades closed.
 
 ## Run #7 in short (for the morning)
 - Lenses #77–#84: Creatures have a **temper** and a kill gesture (#77); the generals
