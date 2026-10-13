@@ -314,6 +314,29 @@ describe('NetGame over a simulated network', () => {
     }
   });
 
+  it('a Ready right after one’s own handicap change is not taken as stale (backlog 229)', () => {
+    net = new SimNet();
+    net.latency = 60;
+    const a = net.client('Ada');
+    const b = net.client('Bo');
+    net.run(400);
+    a.host();
+    net.run(400);
+    b.join(a.room!.code);
+    net.run(400);
+    b.ready(true);
+    net.run(400);
+    // Ada takes a handicap and presses Ready at once (the server's word on the handicap is
+    // still on its way); Bo, told of it, readies again.
+    a.setTrials(['glass']);
+    a.ready(true);
+    net.run(400);
+    expect(a.room!.seats[0]).toMatchObject({ ready: true, trials: ['glass'] });
+    b.ready(true);
+    net.run(400);
+    expect(a.game).not.toBeNull();
+  });
+
   it('a phone that lost its seat while away knows which room it was (backlog 160)', () => {
     net = new SimNet();
     const a = net.client('Ada');

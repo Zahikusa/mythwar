@@ -201,6 +201,7 @@ export class MpClient {
     const mine = this.seat !== null ? this.room?.seats[this.seat] : null;
     if (mine) {
       mine.trials = trials;
+      this.termsChanged();
       this.emit((l) => l.changed?.());
     }
   }
@@ -209,9 +210,20 @@ export class MpClient {
   setCoop(coop: Difficulty | null): void {
     if (!this.conn.send({ type: 'coop', coop })) return;
     if (this.room) {
+      if (coop !== this.room.coop) this.termsChanged();
       this.room.coop = coop;
       this.emit((l) => l.changed?.());
     }
+  }
+
+  /**
+   * The server counts each change of a room's terms (`rev`; a Ready for older terms is stale). A
+   * Ready pressed right after our own change — before the server's word on it is back — must
+   * carry the count our change makes: TCP delivers the change first.
+   */
+  private termsChanged(): void {
+    const room = this.room;
+    if (room && (room.phase === 'waiting' || room.phase === 'over')) room.rev++;
   }
 
   leave(): void {

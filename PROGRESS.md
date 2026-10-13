@@ -492,6 +492,11 @@ server/lobby.ts and match.ts, 2026-10-13.)
    and its Ready went out with the room's old `rev` — stale (#96). (Done: both pages wait for a
    newer `rev` than the one with the handicap; `waitFor` passes arguments into the page. Four
    runs green incl. two with latency.) A person can't tap that fast after a chip (~100 ms).
+229. [x] (#228's cause, for people too) A Ready pressed right after one's own handicap or mode
+   change carried the room's old `rev` whenever the server's echo hadn't arrived — on a slow
+   phone link (200–300 ms) a quick chip-then-Ready bounced. (Done: `MpClient.termsChanged()` —
+   our own change bumps the local `rev` as the server will (TCP delivers the change first); test
+   with 60 ms latency — failed before. An *other* player's change racing a Ready stays #155.)
 
 
 
