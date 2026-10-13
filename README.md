@@ -153,7 +153,7 @@ npm run shoot -- desktop         # screenshots into screenshots/ (--list, --size
 node scripts/soak.ts 60 16       # long fast battles in Chrome: errors + fps
 npm run verify                   # typecheck + unit tests + build + smoke + multiplayer smoke
 npm run mpsmoke -- --shots       # two browsers play an online battle (screenshots/mp/)
-npm run mobilecheck              # every screen on iPhones/Androids/iPads, tab and installed: nothing scrolls, all fits, 44-px targets (screenshots/mobile/)
+npm run mobilecheck              # every screen on iPhones/Androids/iPads, tab and installed, both ways and turned while open: nothing scrolls, all fits, nothing overlaps, 44-px targets, 16-px text fields (screenshots/mobile/)
 node scripts/splash.ts           # re-render the installed app's iPhone/iPad launch images (public/splash/)
 npm run enginecheck              # the simulation is identical in V8, SpiderMonkey and JavaScriptCore
 node scripts/mpbot.ts            # an AI opponent that joins online rooms

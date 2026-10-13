@@ -3,7 +3,9 @@
  * browser tab (the viewport left by the browser's bars) and installed (the whole screen, with the
  * notch and home bar as safe-area insets). Every screen must keep the page itself still (no
  * scrolling document, no zoom), keep every control on screen and clear of the notch, give every
- * control a 44-px target, and let panels that overflow scroll inside themselves.
+ * control a 44-px target, and let panels that overflow scroll inside themselves; no control or
+ * text on top of a control, no text under 10 px, no text field under 16 px (iOS zooms into it).
+ * Some screens are turned while open; online ones get a friend (a client run here).
  *
  *   npm run build && node scripts/mobilecheck.ts [--device iphone-se] [--screen title]
  *     [--mode tab|app] [--orient p|l] [--no-shots] [--quick]
@@ -267,6 +269,46 @@ function inspect(safe: Insets): Problem[] {
       const o = cut(a.b, b.b);
       if (o.r - o.l > 4 && o.b - o.t > 4) out.push({ kind: 'overlap', what: `${name(a.el)} and ${name(b.el)} overlap by ${Math.round(o.r - o.l)}×${Math.round(o.b - o.t)}` });
     }
+  // Text over a control (a footer line across a button): the text's own lines, as drawn (clipped
+  // by scrolling panels), against every control it isn't part of — where the text is on top.
+  // (Hit-tested with every element hit-testable: a footer line ignores the finger but is drawn
+  // over the button. The battle's floating notes — the opening banner, a coach tip, a card's
+  // details — come and go over the lane buttons on purpose.)
+  const over = new Set<string>();
+  const allHit = document.createElement('style');
+  allHit.textContent = '* { pointer-events: auto !important; }';
+  document.head.appendChild(allHit);
+  for (const el of document.querySelectorAll<HTMLElement>('body *')) {
+    const texts = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent!.trim());
+    if (!texts.length || touchable.some((t) => t.el.contains(el)) || el.closest('.banner, .coach, .tooltip')) continue;
+    const cs = getComputedStyle(el);
+    if (cs.visibility !== 'visible' || el.closest('.sronly') || (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true }))) continue;
+    let clip: Box = { l: 0, t: 0, r: vw, b: vh };
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      const ps = getComputedStyle(p);
+      if (ps.overflowX !== 'visible' || ps.overflowY !== 'visible') clip = cut(clip, box(p.getBoundingClientRect()));
+    }
+    for (const n of texts) {
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      for (const line of range.getClientRects()) {
+        const seen = cut(box(line), clip);
+        if (empty(seen)) continue;
+        for (const t of touchable) {
+          if (el.contains(t.el)) continue;
+          const o = cut(seen, t.b);
+          if (o.r - o.l <= 4 || o.b - o.t <= 4) continue;
+          // The topmost thing drawn there (see-through ones, like a faded-out toast, don't count).
+          const top = document
+            .elementsFromPoint((o.l + o.r) / 2, (o.t + o.b) / 2)
+            .find((x) => !x.checkVisibility || x.checkVisibility({ opacityProperty: true, visibilityProperty: true }));
+          if (top && (top === el || el.contains(top))) over.add(`${name(el)} over ${name(t.el)}`);
+        }
+      }
+    }
+  }
+  allHit.remove();
+  for (const o of over) out.push({ kind: 'overlap', what: `text ${o}` });
   // Readable text: nothing on screen below 10 px (the HUD's small numbers are 10).
   const tiny = new Set<string>();
   for (const el of document.querySelectorAll<HTMLElement>('body *')) {

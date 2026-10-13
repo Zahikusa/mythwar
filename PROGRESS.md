@@ -1,7 +1,7 @@
 # PROGRESS — Phase 3: a native-app feel on phones
 
 Status: Phase 3 complete, in verification mode (run #12, 2026-10-13). A–E done and verified
-(`npm run mobilecheck`: 6 devices × tab/installed × both orientations × 16 screens, all green;
+(`npm run mobilecheck`: 7 devices × tab/installed × both orientations × 29 screens, all green;
 `npm run verify` green), F decided against. From here: only mobile UX defects seen in
 screenshots or nameable on a real device (backlog below); what needs a physical phone is under
 "Open questions for the human".
@@ -265,9 +265,12 @@ Already in the code before Phase 3, and kept:
 25. [x] (run #13) TASK A says "after rotating", but mobilecheck only loaded each orientation
    fresh. (Done: `turned-battle`, `turned-settings`, `turned-install`: loaded one way, the
    viewport turned, checked again — on the devices whose insets are the same both ways.)
-26. [ ] mobilecheck's overlap check compares controls with controls only: plain text over a
-   button (the iPad title's footer line over Settings, backlog 24) passed. Check visible text
-   against the controls too (text inside a control is part of it).
+26. [x] mobilecheck's overlap check compared controls with controls only: plain text over a
+   button (the iPad title's footer line over Settings, backlog 24) passed. (Done: each line of
+   visible text is checked against the controls it isn't part of, where the text is the
+   topmost thing drawn — hit-tested with every element made hit-testable, faded-out ones
+   skipped; the battle's floating notes (opening banner, coach tip, card details) are exempt.
+   Confirmed: with the old title CSS it fails the iPad mini's footer over Settings.)
 
 ## Decisions
 
