@@ -805,6 +805,48 @@ function pageError(label: string, e: unknown): string {
   return `${label}: ${String(e)}${frames ? ` @ ${frames}` : ''}`;
 }
 
+/**
+ * The phone's Back everywhere (TASK phase 3, goal D): a battle sheet closes before the menu
+ * opens; the results go back the way their buttons do; on the bare title the first Back only
+ * says "press again", the second leaves; the install sheet closes on Back.
+ */
+async function phoneBackFlow(page: Page): Promise<void> {
+  console.log('== phone back ==');
+  await page.setViewport({ width: 844, height: 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await page.goto(`${base}/?play=novice&seed=4`, { waitUntil: 'load' });
+  await page.waitForFunction(() => (window as any).__mythwar?.game?.world.tick > 20, { timeout: 10000 });
+  const app = (fn: string) => page.evaluate(`(() => { const a = window.__mythwar; return ${fn}; })()`);
+  const back = async () => {
+    await page.goBack({ timeout: 3000 }).catch(() => null);
+    await sleep(350);
+  };
+  await page.touchscreen.tap(420, 200);
+  await app(`(a.game.world.players[0].gold = 900, a.hud.togglePanel('turret'))`);
+  await sleep(200);
+  const url = page.url();
+  await back();
+  const sheet = await app(`({ panel: a.hud.panelOpen, menu: a.menus.current })`);
+  check('Back closes an open battle sheet first (no menu)', !(sheet as any).panel && (sheet as any).menu === 'none' && page.url() === url, JSON.stringify(sheet));
+  await app(`(() => { const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0); })()`);
+  await page.waitForFunction(() => (window as any).__mythwar.menus.current === 'over', { timeout: 10000 });
+  await page.touchscreen.tap(20, 380);
+  await back();
+  const results = await app(`({ state: a.state, menu: a.menus.current })`);
+  check('Back on the results goes to the main menu (no dead end)', (results as any).menu === 'title' && page.url() === url, JSON.stringify(results));
+  await page.touchscreen.tap(20, 380);
+  await app(`a.install.open()`);
+  await sleep(300);
+  await back();
+  const install = await app(`({ open: a.install.isOpen, menu: a.menus.current })`);
+  check('Back closes the "get the app" sheet, the title stays', !(install as any).open && (install as any).menu === 'title' && page.url() === url, JSON.stringify(install));
+  await page.touchscreen.tap(20, 380);
+  await back();
+  const first = await page.evaluate(() => ({ url: location.href, toast: document.querySelector('.ttoast.show')?.textContent ?? '' }));
+  check('a first Back on the title only asks for a second', first.url === url && /Back again/.test(first.toast), JSON.stringify(first));
+  await back();
+  check('the second Back on the title leaves the page', page.url() !== url, page.url());
+}
+
 async function rotatedMenusFlow(page: Page): Promise<void> {
   console.log('== rotated portrait menus ==');
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
@@ -1510,6 +1552,7 @@ async function main(): Promise<void> {
     ...viewports.map((vp) => ({ name: vp.name, label: vp.label, consoleErrors: true, go: (page: Page) => run(page, vp.label, vp) })),
     { name: 'resume', label: 'resume', go: resumeFlow },
     { name: 'rotated', label: 'rotated menus', go: rotatedMenusFlow },
+    { name: 'phone-back', label: 'phone back', go: phoneBackFlow },
     { name: 'phone-menus', label: 'phone menus', go: phoneMenusFit },
     { name: 'service-worker', label: 'service worker', go: serviceWorkerFlow },
     { name: 'tutorial', label: 'tutorial', go: tutorialHandoffFlow },
