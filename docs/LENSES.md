@@ -1395,3 +1395,17 @@ freedoms that matter?*
   When the crowd thins, the hint fades by itself.
 - Checked: screenshot (five redcaps in the bottom lane: marker ringed, button glowing); full
   verify.
+
+## #73 The Lens of Collusion
+*Is there a character in the game who is on the player's side — who seems to want what the
+player wants and helps without taking control? Does the player feel that partnership?*
+- The game has rivals with voices (#44) and a player with a name (#64); the help the player gets
+  — the coach's tips (when to ascend, the shrines, the portals, holding the line, blessings, a
+  jammed gate…) — came from nobody: a yellow box with a "?". Information, not a partner.
+- Change: the tips have a speaker — **Mímir, keeper of the well**, the wise head from the
+  Norse myths whose counsel even Odin sought. Every tip is signed "Mímir, keeper of the well",
+  with his initial where the "?" was. The same words now come from someone who sits on the
+  player's side of the war, against the four generals — a mentor for the journey (#68), and the
+  one voice in the game that colludes with the player.
+- Checked: screenshot of a tip in battle; full verify (the smoke's coach checks read the tip
+  text and still pass).

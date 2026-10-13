@@ -183,7 +183,15 @@ export class Coach {
     this.text = h('div', { class: 'ctext' });
     const close = h('button', { class: 'cclose', text: 'Got it' });
     onTap(close, () => this.finish());
-    this.el = h('div', { class: 'coach' }, h('div', { class: 'cicon', text: '?' }), this.text, close);
+    // The tips have a speaker (Lens #73): Mímir, the wise head kept by the well, the mentor of
+    // the journey (#68) — one voice that is always on the player's side.
+    this.el = h(
+      'div',
+      { class: 'coach' },
+      h('div', { class: 'cicon mimir', text: 'M', title: 'Mímir' }),
+      h('div', { class: 'cbody' }, h('div', { class: 'cwho', text: 'Mímir, keeper of the well' }), this.text),
+      close,
+    );
     parent.appendChild(this.el);
   }
 

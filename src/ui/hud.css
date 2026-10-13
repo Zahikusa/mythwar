@@ -2579,3 +2579,19 @@ html.cbfoe .side.right .hpfill {
 .hud.inriddle .xprow {
   visibility: hidden;
 }
+
+/* The coach's speaker (Lens #73). */
+.coach .cwho {
+  font-family: var(--title-font);
+  font-size: 11px;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  color: #7a5414;
+  margin-bottom: 1px;
+}
+
+.coach .cicon.mimir {
+  font-family: var(--title-font);
+  font-weight: 700;
+}
