@@ -677,6 +677,39 @@ async function phoneMenusFit(page: Page): Promise<void> {
       }, sel);
     const done = await visible('.screen.settings .mbtn.primary');
     check(`${w}x${h}: Settings' Done button is on screen`, done.fits, JSON.stringify(done));
+    // (Backlog 245) A swipe that starts on a button scrolls the screen (buttons were
+    // touch-action: none — only the gaps between them scrolled).
+    if (w === 844) {
+      // (Scrolled a little first: at the top, Settings' only free button sits half under the
+      // pinned row.)
+      const from = await page.evaluate(async () => {
+        const s = document.querySelector('.screen.settings') as HTMLElement;
+        s.scrollTop = 100;
+        await new Promise((r) => requestAnimationFrame(() => r(null)));
+        // (A button in the scrolling part — its middle clear of the pinned row of buttons below.)
+        const pinned = s.querySelector(':scope > .mrow')!.getBoundingClientRect().top;
+        const b = [...s.querySelectorAll<HTMLElement>('button')].find((x) => {
+          const r = x.getBoundingClientRect();
+          return !x.closest('.mrow') && r.width > 0 && r.top > 40 && r.top + r.height / 2 < pinned - 4;
+        });
+        const r = b?.getBoundingClientRect();
+        return { x: r ? r.left + r.width / 2 : -1, y: r ? r.top + r.height / 2 : -1, start: s.scrollTop, room: s.scrollHeight - s.clientHeight, label: b?.textContent?.trim() ?? '' };
+      });
+      if (from.x < 0 || from.room - from.start < 40) check('phone: a swipe that starts on a button scrolls Settings', false, `no button / nothing to scroll: ${JSON.stringify(from)}`);
+      else {
+        const cdp = await page.createCDPSession();
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: from.x, y: from.y }] });
+        for (let i = 1; i <= 10; i++) {
+          await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: from.x, y: from.y - i * 12 }] });
+          await sleep(16);
+        }
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+        await sleep(300); // (a fling may carry on a little)
+        const top = await page.evaluate(() => (document.querySelector('.screen.settings') as HTMLElement).scrollTop);
+        check('phone: a swipe that starts on a button scrolls Settings', top > from.start + 20, `scrollTop ${from.start} → ${top} (swiped on "${from.label}")`);
+        await cdp.detach();
+      }
+    }
     await page.goto(`${base}/?play=adept&seed=4`, { waitUntil: 'load' });
     await appUp(page);
     // (Backlog 81) The pause summary wraps rather than cutting its end off; Resume stays on screen.

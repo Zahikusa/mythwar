@@ -31,6 +31,13 @@ button {
   background: none;
   padding: 0;
   cursor: pointer;
+  /* A swipe that starts on a button still scrolls the screen or panel it's in (no double-tap
+     zoom); only what's dragged — the cards, the god power — keeps every touch to itself. */
+  touch-action: manipulation;
+}
+
+.card,
+.act.power {
   touch-action: none;
 }
 

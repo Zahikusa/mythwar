@@ -13,6 +13,9 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: none;
   overscroll-behavior: none;
+  /* (iOS Safari may enlarge text after a turn to landscape — how the game is played.) */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 #app {

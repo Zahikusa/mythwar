@@ -576,6 +576,28 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
    `npm run …` (builds first), with mpsmoke's `--portrait`; README said Node 24 only; BRIEF and
    PROGRESS gave run #10's range as 215–228; PLAYTEST filed #215 under run #9; BRIEF said
    "Android" where an iPhone's swipe back does the same. (Done.)
+(Items 245–250: an independent review of mobile-browser quirks — iOS Safari, Android Chrome —
+2026-10-13.)
+245. [x] Every button has `touch-action: none` (src/ui/hud.css ~27): a swipe that starts on a
+   button scrolls nothing — Settings, the results, the lobby's list, the phone's panels scroll
+   only from the gaps. Keep `none` on what's dragged (cards, power buttons); others `manipulation`.
+   (Done that way. smoke: on an 844×390 phone a swipe that starts on a Settings button scrolls
+   it (100 → 143) — 100 → 100 with the old rule. smoke ×2 and mpsmoke `--portrait` green.)
+246. [ ] A long press on Ascend (to preview the next age) ascends on release: the preview opens on
+   `contextmenu` (hud.ts ~224), which iOS Safari doesn't fire on a long press, and `onTap` fires
+   on the release anyway. A 420-ms hold timer like the cards': preview, and no ascend on release.
+247. [ ] The automatic battery saver (app.ts ~688) switches to low quality after ~14 s under
+   40 fps and *saves* it — an iPhone in Low Power Mode (30 fps cap) gets a blurry 1× canvas for
+   good. Session-only, or not for a steady ~30 fps.
+248. [ ] No minimum-browser check: iOS 15 Safari lacks container queries (the whole phone layout)
+   and `color-mix`; 15.0–15.3 lacks `Array.prototype.at`, which throws in `frame()`. Say "update
+   iOS / use a newer browser" when `CSS.supports('container-type: size')` fails; state iOS 16.2+.
+249. [x] The progress-code box is 12 px (`.sproginput`, menus.css ~995): iOS zooms into text fields
+   under 16 px on focus — and pinch is blocked, so there may be no way back. 16 px on touch.
+   (Done: 16 px under `pointer: coarse` — iPads too.)
+250. [x] No `text-size-adjust`: iOS Safari may enlarge text after rotating to landscape (how the
+   game is played), overflowing pixel-fitted buttons. `-webkit-text-size-adjust: 100%` on html.
+   (Done, on html and body.)
 
 
 
