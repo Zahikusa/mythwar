@@ -51,7 +51,7 @@ runs the small game server, and every device plays in its browser:
 4. **Multiplayer → Host a battle** on one device; the other scans the room's QR code or enters
    its code. Both press **Ready**.
 
-From a checkout of this repository, `npm install` and `npm run lan` do the same (build + serve
+From a checkout of this repository (Node.js 24 or newer), `npm install` and `npm run lan` do the same (build + serve
 on port 8787).
 
 Fight each other, or **together against the AI** (choose "Together vs …" in the room: one shared

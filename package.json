@@ -5,6 +5,9 @@
   "type": "module",
   "description": "Mythwar: Ages of Legend - a three-lane, mythological take on Age of War",
   "homepage": "https://zahikusa.github.io/mythwar/",
+  "engines": {
+    "node": ">=22.18.0 <23 || >=23.6.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Zahikusa/mythwar.git"
@@ -14,8 +17,8 @@
     "build": "tsc --noEmit && vite build",
     "build:pages": "tsc --noEmit && vite build --mode pages",
     "preview": "vite preview",
-    "lan": "tsc --noEmit && vite build && node server/main.ts",
-    "serve": "node server/main.ts",
+    "lan": "node scripts/nodecheck.mjs && tsc --noEmit && vite build && node server/main.ts",
+    "serve": "node scripts/nodecheck.mjs && node server/main.ts",
     "package": "tsc --noEmit && node scripts/package.ts",
     "mpbot": "node scripts/mpbot.ts",
     "designcheck": "node scripts/designcheck.ts",

@@ -12,7 +12,7 @@ One computer in the Wi-Fi (Windows, macOS or Linux) runs the game server. Either
   `mythwar-server-v….zip` from the [latest release](https://github.com/Zahikusa/mythwar/releases/latest),
   unzip it and start it — Windows: double-click `Start Mythwar Server` (offers to install Node.js
   if it's missing); macOS: double-click `Start Mythwar Server.command` (if macOS won't open it: System Settings → Privacy & Security → *Open Anyway*; before macOS 15: right-click → *Open*); Linux: `sh start.sh`.
-- **From this repository** (Node.js 24+):
+- **From this repository** (Node.js 24 or newer — 22.18+ works too; `npm run lan` checks):
 
   ```bash
   npm install

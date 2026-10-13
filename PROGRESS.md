@@ -779,10 +779,13 @@ it prints, inviting, stopping — 2026-10-13.)
    addresses without adapter names; `server/lan.ts`'s virtual-adapter filter misses virbr0,
    br-<id> (Docker), vmnet8, bridge100, wg0, NordLynx, ProtonVPN. Print the adapter name by each
    address, say which one the QR uses, and widen the filter.
-177. [ ] Node version: no `engines` in package.json, no check in server/main.ts; README gives no
+177. [x] Node version: no `engines` in package.json, no check in server/main.ts; README gives no
    version, MULTIPLAYER.md says 24+, the real minimum for running .ts directly is 22.18 / 23.6 —
    below it `npm run lan` builds, then fails with ERR_UNKNOWN_FILE_EXTENSION. State it once,
    check it at start with a plain message.
+   (Done: `scripts/nodecheck.mjs` (plain JS — runs on any Node) before `npm run lan` / `serve`:
+   "runs on Node.js 24 or newer (22.18+ works too) — this is v22.11.0"; `engines` in
+   package.json; README and MULTIPLAYER.md say 24+ (what CI and this machine test).)
 178. [x] The packaged server prints source-checkout help: `--help` shows `node server/main.ts …
    (npm run lan …)`, a busy port says `try: node server/main.ts --port N`, a missing build says
    `run "npm run build"` (main.ts ~66, ~106). Word them for how it was started.
