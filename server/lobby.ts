@@ -1,4 +1,4 @@
-import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName, cleanRank, cleanSigil, cleanTrials } from '../src/net/protocol.ts';
+import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanDevice, cleanName, cleanRank, cleanSigil, cleanTrials } from '../src/net/protocol.ts';
 import type { ClientMsg, HallEntry, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
 import { createHash, randomBytes } from 'node:crypto';
 import type { ServerStore } from './store.ts';
@@ -80,6 +80,8 @@ interface Session {
   rank: number;
   /** Sigil (SIGILS index, -1 = none). */
   sigil: number;
+  /** The browser's own id ('' = none sent): how the Hall of champions knows this player. */
+  device: string;
   conn: Conn | null;
   room: Room | null;
   seat: Team | null;
@@ -154,7 +156,8 @@ export class Lobby {
       for (const e of entries.slice(-HALL_NAMES)) {
         if (!e || typeof e !== 'object') continue;
         const name = cleanName(e.name);
-        hall.set(name.toLowerCase(), { name, sigil: cleanSigil(e.sigil), w: n(e.w), l: n(e.l), coop: n(e.coop), days: n(e.days), last: n(e.last) });
+        const key = typeof e.key === 'string' && /^d:[\w-]{22}$/.test(e.key) ? e.key : name.toLowerCase();
+        hall.set(key, { name, sigil: cleanSigil(e.sigil), w: n(e.w), l: n(e.l), coop: n(e.coop), days: n(e.days), last: n(e.last), key });
       }
       if (hall.size) this.halls.set(network, hall);
     }
@@ -261,6 +264,7 @@ export class Lobby {
       if (msg.name !== undefined) s.name = cleanName(msg.name);
       if (msg.rank !== undefined) s.rank = cleanRank(msg.rank);
       if (msg.sigil !== undefined) s.sigil = cleanSigil(msg.sigil);
+      if (msg.device !== undefined) s.device = cleanDevice(msg.device);
     } else {
       // Full (overall, or for this address): make room by forgetting the oldest idle session.
       const max = this.opts.maxSessions ?? MAX_SESSIONS;
@@ -277,6 +281,7 @@ export class Lobby {
         name: cleanName(msg.name),
         rank: cleanRank(msg.rank),
         sigil: cleanSigil(msg.sigil),
+        device: cleanDevice(msg.device),
         conn,
         room: null,
         seat: null,
@@ -588,8 +593,18 @@ export class Lobby {
     else hall = new Map();
     this.halls.set(net, hall);
     if (this.halls.size > HALL_NETWORKS) this.halls.delete(this.halls.keys().next().value!);
-    const key = s.name.toLowerCase();
-    const e = hall.get(key) ?? { name: s.name, sigil: s.sigil, w: 0, l: 0, coop: 0 };
+    // A player is known by their browser's id (hashed), or — an older client without one — by
+    // name. A line made under the name before ids existed is adopted by the first device to play
+    // under it, so nobody loses their record. (Two people called Ada now get a line each.)
+    const byName = s.name.toLowerCase();
+    const key = s.device ? `d:${createHash('sha256').update(this.hallSalt).update(s.device).digest('base64url').slice(0, 22)}` : byName;
+    let e = hall.get(key);
+    if (!e && key !== byName && hall.get(byName) && !hall.get(byName)!.key?.startsWith('d:')) {
+      e = hall.get(byName);
+      hall.delete(byName);
+    }
+    e ??= { name: s.name, sigil: s.sigil, w: 0, l: 0, coop: 0 };
+    e.key = key;
     hall.delete(key);
     e.name = s.name;
     e.sigil = s.sigil;

@@ -66,7 +66,7 @@ class FakeClient {
     this.handlers.message(JSON.stringify(m));
   }
 
-  hello(name: string, token?: string, extra: { battle?: boolean; away?: boolean; rank?: number } = {}): void {
+  hello(name: string, token?: string, extra: { battle?: boolean; away?: boolean; rank?: number; device?: string } = {}): void {
     this.send({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint(), name, token, ...extra });
   }
 
@@ -635,6 +635,45 @@ describe('battle', () => {
     // 23:30 and 00:30 local are two days; 00:30 and 23:30 local of one date are one.
     expect(localDay(new Date(2026, 9, 13, 0, 30))).toBe(localDay(new Date(2026, 9, 13, 23, 30)));
     expect(localDay(new Date(2026, 9, 14, 0, 30))).toBe(localDay(new Date(2026, 9, 13, 23, 30)) + 1);
+  });
+
+  it('the hall knows players by their device, not their name (backlog)', () => {
+    const store = memoryStore();
+    const { lobby, run } = setup({ store });
+    // A line from before device ids, under the name Ada.
+    const duel = (an: string, ad: string | undefined, bn: string, bd: string | undefined) => {
+      const a = new FakeClient(lobby);
+      const b = new FakeClient(lobby);
+      a.hello(an, undefined, ad ? { device: ad } : {});
+      b.hello(bn, undefined, bd ? { device: bd } : {});
+      a.send({ type: 'host' });
+      b.send({ type: 'join', code: a.last('room')!.room.code });
+      a.send({ type: 'ready', ready: true });
+      b.send({ type: 'ready', ready: true });
+      run(3100);
+      b.send({ type: 'leave' });
+      run(300);
+      a.send({ type: 'leave' });
+      run(100);
+    };
+    duel('Ada', undefined, 'Bo', undefined); // legacy: Ada 1–0 by name
+    duel('Ada', 'aaaaaaaaaaaaaaaaaaaaaaaa', 'Bo', 'bbbbbbbbbbbbbbbbbbbbbbbb'); // Ada's device adopts the line: 2–0
+    duel('Ada', 'cccccccccccccccccccccccc', 'Bo', 'bbbbbbbbbbbbbbbbbbbbbbbb'); // another Ada: a line of her own
+    duel('Queen Ada', 'aaaaaaaaaaaaaaaaaaaaaaaa', 'Bo', 'bbbbbbbbbbbbbbbbbbbbbbbb'); // the first Ada, renamed
+    const watcher = new FakeClient(lobby);
+    watcher.hello('Cy');
+    watcher.send({ type: 'watchRooms', on: true });
+    const hall = watcher.last('rooms')!.hall!;
+    expect(hall.map((e) => `${e.name} ${e.w}–${e.l}`)).toEqual(['Queen Ada 3–0', 'Ada 1–0', 'Bo 0–4']);
+    expect(Object.keys(hall[0])).not.toContain('key');
+    // The ids stay out of the file (hashed) and the lines come back after a restart.
+    run(5100);
+    expect(JSON.stringify(store.saved)).not.toContain('aaaaaaaa');
+    const { lobby: again } = setup({ store });
+    const w2 = new FakeClient(again);
+    w2.hello('Dee');
+    w2.send({ type: 'watchRooms', on: true });
+    expect(w2.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Queen Ada', 'Ada', 'Bo']);
   });
 
   it('the file store writes atomically and reads back; a broken file means an empty hall', async () => {

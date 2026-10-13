@@ -84,6 +84,7 @@ export class MpClient {
         name: this.name,
         rank: this.rank,
         sigil: this.sigil,
+        device: deviceId(),
         token: this.token ?? undefined,
         battle: !!this.game && !this.game.over,
         away: typeof document !== 'undefined' && document.hidden,
@@ -340,6 +341,24 @@ export class MpClient {
 /** This tab was in a multiplayer session before (a reload): it may still have a room or battle. */
 export function hasStoredSession(): boolean {
   return !!safeSessionStorage()?.getItem(TOKEN_KEY);
+}
+
+const DEVICE_KEY = 'mythwar.device';
+
+/** This browser's random id for the Hall of champions (made once, kept in localStorage). */
+function deviceId(): string | undefined {
+  try {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (!id || !/^[0-9a-f]{16,32}$/.test(id)) {
+      const bytes = new Uint8Array(12);
+      crypto.getRandomValues(bytes);
+      id = [...bytes].map((b) => b.toString(16).padStart(2, '0')).join('');
+      localStorage.setItem(DEVICE_KEY, id);
+    }
+    return id;
+  } catch {
+    return undefined; // (no storage: the hall falls back to the name)
+  }
 }
 
 function safeSessionStorage(): Storage | null {

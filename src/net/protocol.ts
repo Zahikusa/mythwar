@@ -17,7 +17,7 @@ import { World } from '../sim/world.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 12;
+export const PROTOCOL_VERSION = 13;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -135,6 +135,8 @@ export interface HallEntry {
   /** Server-side only (Lens #93): on how many different days they battled here, and the last. */
   days?: number;
   last?: number;
+  /** Server-side only: what the hall knows them by (a hashed device id, or the lower-case name). */
+  key?: string;
 }
 
 export interface HistorySample {
@@ -179,6 +181,11 @@ export type ClientMsg =
       rank?: number;
       /** The player's sigil (index into SIGILS, -1 = none). */
       sigil?: number;
+      /**
+       * A random id this browser keeps (localStorage): the Hall of champions knows a player by it
+       * rather than by name. Never shown to anyone; the server keeps only a salted hash.
+       */
+      device?: string;
       /** Session token from an earlier welcome (reconnect). */
       token?: string;
       /** The client still shows a battle in progress (it may have missed how it ended). */
@@ -295,6 +302,11 @@ export const RANKS = ['Recruit', 'Warden', 'Champion', 'Warlord', 'Conqueror', '
  * emoji). Online, each player's flies on their keep for both to see (Lens #85).
  */
 export const SIGILS = ['☀︎', '☾︎', '✦', '♛︎', '⚔︎', '❖'];
+
+/** A device id as the client sends it (16–32 hex digits), or '' if it isn't one. */
+export function cleanDevice(raw: unknown): string {
+  return typeof raw === 'string' && /^[0-9a-f]{16,32}$/.test(raw) ? raw : '';
+}
 
 /** A sigil index, or -1 (none). */
 export function cleanSigil(raw: unknown): number {

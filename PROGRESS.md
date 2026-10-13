@@ -35,9 +35,11 @@ the improvement backlog below (verified, committed) and add what the review find
    environment and try the usual install paths. (Done: `scripts/chrome.ts`, used by all 15.)
 9. [x] `src/ui/settings.ts` `playerLabel` + HUD: a sigil without a name shows "♛ · Celestial"
    (glyph, then a separator with nothing before it); show "♛ Celestial". (Done.)
-10. [ ] Names are identity for the Hall of champions and rival records: two different people
+10. [x] Names are identity for the Hall of champions and rival records: two different people
    called "Ada" on one LAN share a line, and renaming yourself to the champion's name inherits
    their record. A per-device id (localStorage, not the per-tab session token) would fix it.
+   (Done: protocol v13 `hello.device`; hall lines keyed by its salted hash, old name lines adopted
+   once; the rivals list on the client is still by name — names there are what you see.)
 
 
 **Start here: [docs/BRIEF.md](docs/BRIEF.md)** — one page: what TASK.md asked for, what was
@@ -59,7 +61,7 @@ built, how to see each part working, and the decisions that need you.
   player per online battle** (#87, v12); veterans earn myth names and the chronicle names the
   hero of the battle (#88); **CONTRIBUTING.md** (#89); DESIGN.md refreshed (#90); a local
   **playtest journal** (Settings → Copy playtest journal) and **docs/PLAYTEST.md** (#91).
-- Protocol is now **v12**: server and pages must come from the same build (as always).
+- Protocol is now **v13** (v13: device ids for the Hall): server and pages must come from the same build.
 
 ## Run #6 in short (for the morning)
 - Lenses #45–#76 done (one commit each, reasoning in `docs/LENSES.md`). Highlights: battles are
