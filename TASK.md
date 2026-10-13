@@ -46,16 +46,48 @@ and home indicator in landscape on both sides), status bar handling, and orienta
 that is a deliberate choice (decide what to do in portrait and make it clean). Offline start
 still works, and updates arrive without breaking a running battle.
 
-**C. Getting players to install.** Add an unobtrusive "Install as app" path:
-- **Android:** the real install prompt (`beforeinstallprompt`), plus a fullscreen option in the
-  tab.
-- **iPhone Safari:** a short, illustrated sheet ("Share → Add to Home Screen") shown at a sensible
-  moment, such as after the first battle or from the title menu, never on top of the first
-  seconds of play. It can be dismissed and does not nag again.
-- Never show it when the game is already installed.
-
-The LAN multiplayer address (`http://192.168…`) is a different origin from GitHub Pages. Handle
-installing from there sensibly and say so in the multiplayer docs.
+**C. Guide every player to the best way to play, with no PWA knowledge needed.** Players never
+read docs, and they don't know what a PWA is. The game itself must detect where it is running
+and show the one right next step for that situation, in plain words and with a picture. This is
+the state-of-the-art pattern used by installable web apps. Never block play: playing in the tab
+always works, and the guidance is an offer.
+- **Detect the situation** (central module, unit-tested with real user-agent strings):
+  - already installed (`display-mode: standalone/fullscreen`, `navigator.standalone`);
+  - iOS Safari, and iOS Chrome/Edge/Firefox (which can also add to the home screen since
+    iOS 16.4);
+  - Android Chrome, Edge or Samsung Internet;
+  - desktop;
+  - **in-app browsers** (WhatsApp, Instagram, Facebook, Telegram, Snapchat, LinkedIn, etc.).
+    That is where a shared link opens, and nothing can be installed there.
+- **Show the right guidance:**
+  - **Android:** an "Install app" button that opens the real install dialog
+    (`beforeinstallprompt`). If that is not available, a "Fullscreen" button
+    (`requestFullscreen`) and the browser's menu steps.
+  - **iPhone/iPad:** a short illustrated bottom sheet with the exact steps for *this* browser and
+    iOS version. On iOS 26 Safari that is "⋯ → Share → Add to Home Screen → Open as Web App"; on
+    older Safari it is the Share icon in the toolbar. An arrow points to where that button is on
+    screen.
+  - **In-app browser:** "Open in Safari / Chrome" with the steps for that app. On Android, use an
+    `intent://` link that opens Chrome directly where it works.
+  - **Desktop:** a QR code that takes the phone to the game.
+- **Timing:**
+  - A small, dismissible hint on the title screen of a tab.
+  - The full sheet after the first finished battle.
+  - A permanent "Install app" entry in the menu and Settings.
+  - Never on top of the first seconds of play, and no nagging after a dismiss: remember it, and
+    offer again at most once later.
+  - Never shown when the game is already installed.
+- **In the installed app:** the first launch gets a short welcome. A tab that is open while the
+  app is installed says "Open it from your home screen" where that can be detected
+  (`getInstalledRelatedApps` on Android).
+- **The LAN server (`http://192.168…:8787`)** is a different origin from GitHub Pages and not a
+  secure context: no service worker, so no offline mode and no Android install prompt. The IP
+  address can also change, which would break a home-screen icon. On that origin:
+  - Don't push installing it. Players just play in the tab, which must already be excellent
+    from A and D.
+  - Offer the fullscreen button on Android.
+  - Explain in one line that the installed app comes from the public game address.
+  - Document the trade-off in docs/MULTIPLAYER.md.
 
 **D. Phone navigation and gestures.**
 - The system back gesture and Android's Back button behave consistently on every screen and
