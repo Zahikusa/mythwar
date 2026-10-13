@@ -569,6 +569,13 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
    looked "Reconnecting…" for ~6–9 s. (Done: back on the page always nudges (a no-op on a link
    heard within 2.5 s); and a page restored from the back-forward cache (`pageshow` persisted —
    Safari keeps pages there) does the same. netgame test — failed before. mpsmoke green.)
+244. [x] (A docs-vs-code review, 2026-10-13: every timer, limit and flag checked against the
+   code — all right but these.) MULTIPLAYER.md's console sample lacked the adapter name and the
+   firewall/Ctrl+C lines, and no doc said how to stop the server; README / MULTIPLAYER called
+   mpsmoke, enginecheck and mpengines directly (testing whatever old build was in dist/) — now
+   `npm run …` (builds first), with mpsmoke's `--portrait`; README said Node 24 only; BRIEF and
+   PROGRESS gave run #10's range as 215–228; PLAYTEST filed #215 under run #9; BRIEF said
+   "Android" where an iPhone's swipe back does the same. (Done.)
 
 
 
