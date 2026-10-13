@@ -6,12 +6,13 @@ Game Design*, runs #5–#7, finished 2026-10-13). Each run now: review, then com
 the improvement backlog below (verified, committed) and add what the review finds.
 
 ## Improvement backlog (verification mode, phase 2)
-1. [ ] `src/ui/heroes.ts`: a veteran's name comes from its unit id alone, so two veterans of one
+1. [x] `src/ui/heroes.ts`: a veteran's name comes from its unit id alone, so two veterans of one
    kind can share a name in the same battle ("Your Minotaur, Asterion, rises…" twice, for two
-   different minotaurs). Assign names per battle in the order veterans rise.
-2. [ ] `server/lobby.ts` `hallEntry`: "days played" uses UTC days, so a European evening that
+   different minotaurs). Assign names per battle in the order veterans rise. (Done: `HeroNames`,
+   one per view — renderer and chronicle agree; a fifth of a kind is "Asterion II".)
+2. [x] `server/lobby.ts` `hallEntry`: "days played" uses UTC days, so a European evening that
    runs past 01:00/02:00 local time counts as two days and inflates "came back on another day".
-   Use the server's local calendar day.
+   Use the server's local calendar day. (Done: `localDay()`, tested across local midnight.)
 3. [ ] Online results: no way to say "Well played!" after the battle (quick messages only exist
    in battle) — phase-1 backlog #25, still open.
 4. [ ] `scripts/smoke.ts`: nothing checks that the results screen fits a 1600×900 / 1366×768

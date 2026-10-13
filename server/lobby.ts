@@ -36,8 +36,16 @@ export interface LobbyOptions {
   maxSessions?: number;
   /** Where the Hall of champions survives restarts (none: kept in memory only). */
   store?: ServerStore;
-  /** Today as a day number (injectable for tests; default: UTC days since 1970). */
+  /** Today as a day number (injectable for tests; default: localDay()). */
   today?: () => number;
+}
+
+/**
+ * Today as a day number in the server's own calendar (local midnight, not UTC: a European
+ * evening running past 01:00 is still one evening).
+ */
+export function localDay(at = new Date()): number {
+  return Math.floor((at.getTime() - at.getTimezoneOffset() * 60_000) / 86_400_000);
 }
 
 /** The Hall of champions is saved at most this often (ms) when it changed. */
@@ -586,7 +594,7 @@ export class Lobby {
     e.name = s.name;
     e.sigil = s.sigil;
     // Do players come back for another evening? (Lens #93: the question for the crystal ball.)
-    const today = this.opts.today?.() ?? Math.floor(Date.now() / 86_400_000);
+    const today = this.opts.today?.() ?? localDay();
     if (e.last !== today) {
       e.days = (e.days ?? 0) + 1;
       e.last = today;

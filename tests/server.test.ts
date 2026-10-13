@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Lobby } from '../server/lobby.ts';
+import { Lobby, localDay } from '../server/lobby.ts';
 import { fileStore, memoryStore } from '../server/store.ts';
 import type { ServerStore } from '../server/store.ts';
 import { networkOf } from '../server/lan.ts';
@@ -629,6 +629,12 @@ describe('battle', () => {
     elsewhere.hello('Dee');
     elsewhere.send({ type: 'watchRooms', on: true });
     expect(elsewhere.last('rooms')!.hall).toEqual([]);
+  });
+
+  it('a day is the server’s local calendar day, not UTC (backlog)', () => {
+    // 23:30 and 00:30 local are two days; 00:30 and 23:30 local of one date are one.
+    expect(localDay(new Date(2026, 9, 13, 0, 30))).toBe(localDay(new Date(2026, 9, 13, 23, 30)));
+    expect(localDay(new Date(2026, 9, 14, 0, 30))).toBe(localDay(new Date(2026, 9, 13, 23, 30)) + 1);
   });
 
   it('the file store writes atomically and reads back; a broken file means an empty hall', async () => {
