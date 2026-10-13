@@ -302,6 +302,8 @@ export class Match {
   }
 
   private finish(winner: Team, reason: EndReason): void {
+    // The last turn goes out first: a client that is told 'over' plays no further turns.
+    this.flush();
     this.state = 'over';
     this.pauseState = null;
     this.host.broadcast({ type: 'over', winner, reason, tick: this.world.tick });

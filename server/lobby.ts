@@ -244,14 +244,20 @@ export class Lobby {
           rate.cmds = 0;
         }
         if (++rate.msgs > MSG_RATE) return;
-        if (msg.type === 'hello') {
-          if (session) return;
-          session = this.hello(conn, msg, network, quota);
-          return;
+        // (A fault while handling one message — a bug, whatever the input — is logged and that
+        // message dropped; thrown on, it would end the process and every battle in it.)
+        try {
+          if (msg.type === 'hello') {
+            if (session) return;
+            session = this.hello(conn, msg, network, quota);
+            return;
+          }
+          if (!session || session.conn !== conn) return this.error(conn, 'bad-request', 'Say hello first');
+          if (msg.type === 'cmd' && ++rate.cmds > CMD_RATE) return this.error(conn, 'rate', 'Too many commands');
+          this.handle(session, msg);
+        } catch (e) {
+          this.fault(`error handling "${msg.type}" from ${session?.name ?? 'a new connection'}: ${(e as Error)?.stack ?? e}`);
         }
-        if (!session || session.conn !== conn) return this.error(conn, 'bad-request', 'Say hello first');
-        if (msg.type === 'cmd' && ++rate.cmds > CMD_RATE) return this.error(conn, 'rate', 'Too many commands');
-        this.handle(session, msg);
       },
       close: () => {
         if (session && session.conn === conn) this.disconnected(session);
@@ -790,5 +796,10 @@ export class Lobby {
 
   private log(line: string): void {
     this.opts.log?.(line);
+  }
+
+  /** A server fault: always reported (to the log, or the console when it's quiet). */
+  private fault(line: string): void {
+    (this.opts.log ?? console.error)(line);
   }
 }

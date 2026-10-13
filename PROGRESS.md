@@ -191,12 +191,21 @@ the improvement backlog below (verified, committed) and add what the review find
    `scryptSync` (~20 ms) on the 4-ms loop. Evict oldest-first; re-warm keys of live sessions.
    (Done: least recently used out first — networks whose lists keep going out stay fresh; a
    network found missing is hashed again in the background; test with a 2-key cache.)
-48. [ ] `src/net/client.ts` ~217–290: `leave()` only sets `leaving` when the send fails — a `room`
+48. [x] `src/net/client.ts` ~217–290: `leave()` only sets `leaving` when the send fails — a `room`
    or `start` message already on its way puts the room back / starts a battle the player just
-   left (then forfeited). Set `leaving` always; clear it on `left`.
-49. [ ] `server/match.ts` ~293 / `server/lobby.ts` ~503: on forfeit, `finish()` sends `over` before
+   left (then forfeited). Set `leaving` always; clear it on `left`. (Done; the server always
+   answers 'left'; netgame test with 50 ms latency: failed before (a NetGame started), passes.)
+49. [x] `server/match.ts` ~293 / `server/lobby.ts` ~503: on forfeit, `finish()` sends `over` before
    `ended()`→`snapshotFor()`→`flush()` sends the last `turn`; the client, already over, drops it —
    the final board and the results chart miss the last tick. Flush at the start of `finish()`.
+   (Done — for every ending, not only forfeits; test: leave between two turns, failed before.)
+50. [x] `server/lobby.ts` `connect().message`: nothing contains a fault while handling a message —
+   any bug reachable from one client's message (whatever the validation) throws out of the ws
+   'message' event and ends the process with every battle in it. (Done: logged — even with
+   --quiet — and that message dropped; test with a handler that throws.)
+51. [ ] `server/lobby.ts` `update()`: likewise a throw from one room's `match.update` (a simulation
+   bug in some rare state) ends every battle on the server. Contain it per room — log once, stop
+   that battle for its two players (they need a clear message, not a frozen "waiting" screen).
 
 
 

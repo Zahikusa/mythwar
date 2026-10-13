@@ -562,6 +562,23 @@ describe('battle', () => {
     expect(a.last('room')!.room.phase).toBe('over');
   });
 
+  it('the last turn goes out before the end of the battle, not after (backlog 49)', () => {
+    const { run, a, b } = battle();
+    run(2000);
+    // (Turns go out every few ticks: leave between two, with a tick played but not yet sent.)
+    const sent = () => (a.inbox.filter((m) => m.type === 'turn').at(-1) as { tick: number }).tick;
+    const before = sent();
+    while (sent() === before) run(5);
+    run(20);
+    b.send({ type: 'leave' });
+    const types = a.inbox.map((m) => m.type);
+    const over = types.lastIndexOf('over');
+    expect(over).toBeGreaterThan(0);
+    expect(types.slice(over)).not.toContain('turn');
+    const last = a.inbox.slice(0, over).filter((m) => m.type === 'turn').at(-1) as { tick: number };
+    expect(last.tick).toBe((a.inbox[over] as { tick: number }).tick);
+  });
+
   it('leaving mid-battle forfeits; the room survives for a new opponent', () => {
     const { lobby, run, a, b, code } = battle();
     run(2000);
@@ -707,6 +724,18 @@ describe('battle', () => {
     expect(home.last('rooms')!.hall).toEqual([]);
     await settle(() => !!home.last('rooms')?.hall?.length);
     expect(home.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Ada']);
+  });
+
+  it('a fault while handling a message is logged, not thrown (it would end every battle)', () => {
+    const lines: string[] = [];
+    const lobby = new Lobby({ log: (l) => lines.push(l) });
+    const a = new FakeClient(lobby);
+    a.hello('Ada');
+    (lobby as unknown as { handle: () => void }).handle = () => {
+      throw new Error('boom');
+    };
+    expect(() => a.send({ type: 'host' })).not.toThrow();
+    expect(lines.some((l) => l.includes('"host" from Ada') && l.includes('boom'))).toBe(true);
   });
 
   it('a day is the server’s local calendar day, not UTC (backlog)', () => {
