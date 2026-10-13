@@ -55,6 +55,8 @@ export interface Settings {
   shake: boolean;
   hints: boolean;
   lowQuality: boolean;
+  /** The battery saver was switched on by the game (a slow stretch), not by the player: only for that visit. */
+  lowQualityAuto: boolean;
   fullscreen: boolean;
   difficulty: Difficulty;
   tutorialSeen: boolean;
@@ -110,6 +112,7 @@ const DEFAULTS: Settings = {
   shake: true,
   hints: true,
   lowQuality: false,
+  lowQualityAuto: false,
   fullscreen: true,
   difficulty: 'novice',
   tutorialSeen: false,
@@ -169,6 +172,7 @@ function sanitize(s: Settings): Settings {
     shake: bool(s.shake, DEFAULTS.shake),
     hints: bool(s.hints, DEFAULTS.hints),
     lowQuality: bool(s.lowQuality, false),
+    lowQualityAuto: bool(s.lowQualityAuto, false),
     fullscreen: bool(s.fullscreen, DEFAULTS.fullscreen),
     difficulty: DIFFICULTIES.includes(s.difficulty) ? s.difficulty : DEFAULTS.difficulty,
     tutorialSeen: bool(s.tutorialSeen, false),

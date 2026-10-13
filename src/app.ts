@@ -138,6 +138,12 @@ export class App {
   constructor(root: HTMLElement) {
     this.root = root;
     this.settings = loadSettings();
+    // A battery saver the game switched on during a slow stretch was for that visit (an iPhone in
+    // Low Power Mode caps the frame rate at 30): this one measures afresh.
+    if (this.settings.lowQualityAuto) {
+      this.settings.lowQuality = false;
+      this.settings.lowQualityAuto = false;
+    }
     this.difficulty = this.settings.difficulty;
     this.stage = document.createElement('div');
     this.stage.id = 'stage';
@@ -689,6 +695,7 @@ export class App {
     if (this.slowSeconds >= 4) {
       this.autoLowDone = true;
       this.settings.lowQuality = true;
+      this.settings.lowQualityAuto = true;
       this.applySettings(this.settings);
       this.hud.toast('Battery saver on for smoother play (change in Settings)', 'info');
     }

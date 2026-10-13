@@ -752,6 +752,8 @@ export class Menus {
       this.syncers.push(() => (input.checked = !!s[key]));
       input.addEventListener('change', () => {
         s[key] = input.checked;
+        // (The player's own choice now — kept, unlike a battery saver the game switched on.)
+        if (key === 'lowQuality') s.lowQualityAuto = false;
         this.cb.settingsChanged(s);
       });
       return h('label', { class: 'srow check' }, h('span', { text: label }), input, h('i', { class: 'sw' }));

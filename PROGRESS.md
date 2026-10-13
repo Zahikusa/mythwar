@@ -586,9 +586,12 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
 246. [ ] A long press on Ascend (to preview the next age) ascends on release: the preview opens on
    `contextmenu` (hud.ts ~224), which iOS Safari doesn't fire on a long press, and `onTap` fires
    on the release anyway. A 420-ms hold timer like the cards': preview, and no ascend on release.
-247. [ ] The automatic battery saver (app.ts ~688) switches to low quality after ~14 s under
+247. [x] The automatic battery saver (app.ts ~688) switches to low quality after ~14 s under
    40 fps and *saves* it — an iPhone in Low Power Mode (30 fps cap) gets a blurry 1× canvas for
    good. Session-only, or not for a steady ~30 fps.
+   (Done: `Settings.lowQualityAuto` marks a battery saver the game switched on; the next visit
+   starts without it and measures afresh, while one the player ticks in Settings stays (ticking
+   clears the mark). smoke: auto → off on reload, chosen → kept.)
 248. [ ] No minimum-browser check: iOS 15 Safari lacks container queries (the whole phone layout)
    and `color-mix`; 15.0–15.3 lacks `Array.prototype.at`, which throws in `frame()`. Say "update
    iOS / use a newer browser" when `CSS.supports('container-type: size')` fails; state iOS 16.2+.

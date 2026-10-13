@@ -226,6 +226,15 @@ async function resumeFlow(page: Page): Promise<void> {
   // The whole ladder of generals is on the title from the start, unbeaten ones dimmed.
   const ladder = await page.evaluate(() => [...document.querySelectorAll('.laurels .laurel:not(.featchip)')].map((l) => `${l.textContent}${l.classList.contains('dim') ? ':dim' : ''}`));
   check('the title shows all four generals, none beaten yet', ladder.length === 4 && ladder.every((l) => l.endsWith('☆☆☆:dim')), JSON.stringify(ladder));
+  // (Backlog 247) A battery saver the game switched on is for that visit; one the player chose stays.
+  const saver: boolean[] = [];
+  for (const auto of [true, false]) {
+    await page.evaluate((auto) => localStorage.setItem('mythwar.settings.v1', JSON.stringify({ lowQuality: true, lowQualityAuto: auto })), auto);
+    await page.goto(`${base}/`, { waitUntil: 'load' });
+    await appUp(page, 0);
+    saver.push(await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.settings.lowQuality as boolean));
+  }
+  check('an automatic battery saver ends with the visit; a chosen one stays', saver[0] === false && saver[1] === true, JSON.stringify(saver));
   await page.evaluate(() => localStorage.clear());
 }
 
