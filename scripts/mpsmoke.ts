@@ -698,7 +698,11 @@ async function main(): Promise<void> {
       return !!btn && !btn.classList.contains('hidden');
     }, 30_000);
     await shot(a, '12-claim-desktop');
-    await press(a, '.netoverlay', 'Claim victory');
+    // (Backlog 276) The claim is in the pause menu too — where a gamepad's Start and the
+    // keyboard's Esc lead (the notice's button is out of a pad's reach).
+    await a.keyboard.press('Escape');
+    await waitFor(a, 'A pause menu with a claim', () => (window as any).__mythwar.menus.current === 'pause' && [...document.querySelectorAll<HTMLElement>('.screen.pause button')].some((x) => x.textContent?.trim() === 'Claim victory' && x.offsetParent !== null), 4000);
+    await press(a, '.screen.pause', 'Claim victory');
     await waitFor(a, 'A results after claiming', () => (window as any).__mythwar.menus.current === 'over', 8000);
     await waitFor(b, 'B results (lost: away too long)', () => (window as any).__mythwar.menus.current === 'over', 8000);
     {

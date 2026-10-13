@@ -50,6 +50,8 @@ export interface MenuCallbacks {
   resume(): void;
   restart(): void;
   quit(): void;
+  /** Online: take the win from an opponent away long enough (also on the notice). */
+  claim(): void;
   settingsChanged(s: Settings): void;
   sound(kind: string): void;
   multiplayer(): void;
@@ -99,6 +101,7 @@ export class Menus {
   /** Multiplayer lobby and room screens. */
   readonly mp: MpScreens;
   private restartBtn: HTMLButtonElement | null = null;
+  private claimBtn: HTMLButtonElement | null = null;
   private pauseNote: HTMLElement | null = null;
   /** What the other player said while the menu covers the battle (online). */
   private pauseSaid: HTMLElement | null = null;
@@ -894,6 +897,8 @@ export class Menus {
     this.pauseGoals = h('div', { class: 'pgoals' });
     this.pauseTitle = h('h2', { text: 'Paused' });
     this.restartBtn = this.button('Restart', '', () => this.cb.restart());
+    // (The away notice's "Claim victory", within a gamepad's and the keyboard's reach too.)
+    this.claimBtn = this.button('Claim victory', 'hidden', () => this.cb.claim());
     this.pauseNote = h('div', { class: 'mnote', text: 'Leaving or restarting after the first minute counts as a defeat.' });
     this.pauseSaid = h('div', { class: 'vemoteline', role: 'status' });
     return h(
@@ -910,11 +915,17 @@ export class Menus {
         this.button('How to play', '', () => this.show('howto'), ICONS.info),
         this.button('Bestiary', '', () => this.show('bestiary'), ICONS.book),
         this.button('Settings', '', () => this.show('settings'), ICONS.sound),
+        this.claimBtn,
         this.restartBtn,
         this.button('Leave battle', 'ghost', () => this.cb.quit()),
         this.pauseNote,
       ),
     );
+  }
+
+  /** Online: whether the pause menu offers "Claim victory" (the opponent away long enough). */
+  setClaimable(on: boolean): void {
+    if (this.claimBtn && this.claimBtn.classList.contains('hidden') === on) this.claimBtn.classList.toggle('hidden', !on);
   }
 
   // -------------------------------------------------------------------------

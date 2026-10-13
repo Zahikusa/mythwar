@@ -204,6 +204,7 @@ export class App {
         if (riddle) this.playRiddle(riddle.id);
         else this.play(this.difficulty, undefined, !!this.game?.options.sandbox);
       },
+      claim: () => this.netOverlay.onClaim(),
       quit: () => {
         // Online: leaving the battle forfeits it and leaves the room.
         if (this.game instanceof NetGame) return this.leaveRoom();
@@ -976,6 +977,9 @@ export class App {
     if (this.hud.root.inert !== inert) {
       this.hud.root.inert = inert;
       this.hud.root.classList.toggle('under-menu', inert);
+      // (An online battle's opening banner is written while the room still covers the HUD —
+      // unheard: say it once the HUD is out.)
+      if (!inert) this.hud.sayBannerAgain();
     }
     const g = this.game;
     if (g) {
@@ -1042,6 +1046,7 @@ export class App {
       }
     }
     this.netOverlay.update(g instanceof NetGame && this.state !== 'title' ? g : null, performance.now());
+    this.menus.setClaimable(this.netOverlay.claimable);
     this.hud.holdBanner(this.netOverlay.noticeShowing);
   }
 

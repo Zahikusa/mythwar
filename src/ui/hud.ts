@@ -785,6 +785,12 @@ export class Hud {
     if (held === this.bannerHeld) return;
     this.bannerHeld = held;
     if (held || this.bannerTimer <= 0) return;
+    this.sayBannerAgain();
+  }
+
+  /** The banner's words, put back so a screen reader reads them (they appeared where it couldn't). */
+  sayBannerAgain(): void {
+    if (this.bannerTimer <= 0 || this.bannerHeld) return;
     for (const line of this.el.banner.children) {
       const text = line.textContent;
       line.textContent = '';

@@ -31,9 +31,11 @@ export class NetOverlay {
   onBeat: (final: boolean) => void = () => {};
   /** The player takes the win (the opponent has been away long enough). */
   onClaim: () => void = () => {};
+  /** The claim is open now (its button shows on the notice). */
+  claimable = false;
 
   constructor(parent: HTMLElement) {
-    this.count = h('div', { class: 'ncount', 'aria-live': 'assertive' });
+    this.count = h('div', { class: 'ncount', 'aria-live': 'polite' });
     this.title = h('div', { class: 'nbtitle' });
     // (The sub-line counts down every second: screen readers get a steady wording instead.)
     this.sub = h('div', { class: 'nbsub', 'aria-hidden': 'true' });
@@ -49,6 +51,7 @@ export class NetOverlay {
     toggle(this.root, 'hidden', !game);
     if (!game) {
       this.lastCount = '';
+      this.claimable = false;
       return;
     }
     // Countdown: 3, 2, 1… then "Fight!" for a moment.
@@ -110,5 +113,6 @@ export class NetOverlay {
     setText(this.srSub, srSub || sub);
     toggle(this.banner, 'show', !!title);
     toggle(this.claimBtn, 'hidden', !claim);
+    this.claimable = claim;
   }
 }
