@@ -922,3 +922,12 @@
 .trials.rtrials {
   margin-top: -4px;
 }
+
+/* "Copy link" under the invite address (backlog #31). */
+.rinvtext .rcopy {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 5px 14px;
+  font-size: 13px;
+  min-height: 0;
+}

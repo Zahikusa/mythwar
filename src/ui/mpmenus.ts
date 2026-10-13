@@ -216,11 +216,20 @@ export class MpScreens {
     this.roomCode = h('div', { class: 'rcode', 'aria-label': 'Room code' });
     this.qr = h('div', { class: 'rqr', 'aria-hidden': 'true' });
     this.link = h('div', { class: 'rlink' });
+    // On a desktop the invite is easier to paste into a chat than to read off the screen.
+    const copy = this.button('Copy link', 'ghost small rcopy', () => {
+      const done = (ok: boolean) => (copy.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed');
+      try {
+        navigator.clipboard.writeText(this.qrFor).then(() => done(true), () => done(false));
+      } catch {
+        done(false);
+      }
+    });
     this.invite = h(
       'div',
       { class: 'rinvite' },
       this.qr,
-      h('div', { class: 'rinvtext' }, h('b', { text: 'Invite a friend' }), h('span', { text: 'Scan the code with the other phone’s camera — or open this address there and enter the room code:' }), this.link),
+      h('div', { class: 'rinvtext' }, h('b', { text: 'Invite a friend' }), h('span', { text: 'Scan the code with the other phone’s camera — or open this address there and enter the room code:' }), this.link, copy),
     );
     const seatsBox = h('div', { class: 'rseats' });
     for (let i = 0; i < 2; i++) {
