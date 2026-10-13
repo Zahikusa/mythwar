@@ -181,9 +181,13 @@ battle, results — 2026-10-13.)
    `sessionLostAction(lost, state, menu, lostRoom)` with tests, like #150/#156. (Done: `lostSessionPlan()` in src/ui/roomnews.ts —
    toLobby / rejoin / note; 3 tests (8 in the file); behaviour unchanged, mpsmoke green. Made
    explicit on the way: a seat that expired while the phone sat on the results also rejoins.)
-172. [ ] Back (#166) on the online results does nothing (Esc does nothing there either); on a phone,
+172. [x] Back (#166) on the online results does nothing (Esc does nothing there either); on a phone,
    Back from the results could mean "Room" (the friend-facing next step) — or leave it: the
    buttons are right there. Decide after a playtest (docs/PLAYTEST.md).
+   (Decided, run #10: left as is. Single-player results ignore Back too, so the two agree; on
+   the results Back leaving the room would drop a friend mid-read, and #215's "press Back
+   again" in the room covers the place where Back is expected to leave. PLAYTEST.md asks how
+   Back feels in the room; revisit with that answer.)
 173. [x] `docs/PLAYTEST.md` predates run #9: add what to watch for the new phone behaviours — Back in
    a battle opens the menu (and doesn't spend a pause online), a locked phone rejoins the room,
    Copy result on a LAN phone. (Done: a run-#9 paragraph under "What to watch".)
