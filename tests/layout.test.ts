@@ -53,4 +53,11 @@ describe('layout', () => {
     const L = computeLayout(1600, 900, 'desktop');
     for (const g of L.lanes) expect(laneAt(L, (g.x0 + g.x1) / 2, g.y - 5)).toBe(g.index);
   });
+
+  it('keeps creature scales positive on a stage squeezed to nothing (reload, safe-area resize)', () => {
+    for (const [w, h, mode] of [[1280, 0, 'desktop'], [1, 1, 'desktop'], [844, 20, 'mobile'], [0, 0, 'mobile']] as const) {
+      const L = computeLayout(w, h, mode);
+      for (const g of L.lanes) expect(artScaleOf(L, g)).toBeGreaterThan(0);
+    }
+  });
 });

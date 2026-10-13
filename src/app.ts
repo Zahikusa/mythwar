@@ -765,7 +765,11 @@ export class App {
   private frame(now: number): void {
     // Scheduled first, so one bad frame can't stop the loop for good.
     requestAnimationFrame((t) => this.frame(t));
-    const dt = Math.min(0.1, (now - this.last) / 1000);
+    // (Never negative: `last` may come from performance.now() — set after a slow start — while
+    // `now` is the frame's timestamp, which can be earlier. A negative step ran the creatures'
+    // summon-in animation backwards to a negative scale: the intermittent "arc radius is
+    // negative" error (open issue since run #5).)
+    const dt = Math.max(0, Math.min(0.1, (now - this.last) / 1000));
     this.last = now;
     this.pads.update(dt);
     this.fpsAcc += dt;

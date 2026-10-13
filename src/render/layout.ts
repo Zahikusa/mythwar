@@ -127,7 +127,9 @@ export function hudZoom(width: number, height: number, mode: LayoutMode): number
  */
 export function artScaleOf(layout: Layout, g: LaneGeom): number {
   const cap = (layout.field.h / 620) * (0.8 + 0.2 * g.depth);
-  return Math.min(g.s, cap) * (layout.mode === 'mobile' ? 1.4 : 1.25);
+  // (Never zero or below, whatever the stage size: a negative scale turns the creatures'
+  // outline circles' radii negative, which throws in canvas arc().)
+  return Math.max(0.05, Math.min(g.s, cap)) * (layout.mode === 'mobile' ? 1.4 : 1.25);
 }
 
 /** Screen x for a lane position. */

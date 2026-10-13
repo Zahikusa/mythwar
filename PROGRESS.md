@@ -37,11 +37,12 @@ complete; its log follows below the lens plan.
   smoke, multiplayer smoke incl. a co-op battle).
 
 ## Phase 2 — open issues found along the way
-- Intermittent (1 in ~7 smoke runs, not reproduced in 12 targeted runs): "IndexSizeError: arc
-  radius is negative" (-14.3 / -237.6) during the smoke's *rotated menus* flow (upright phone:
-  battle start, safe-area resize, world time jumped to 30 s). Every smoke page-error handler now
-  logs the first stack frames (`pageError`), so the next occurrence names the drawing call. The
-  ley-sight portraits (new in #22) clamp their radius defensively.
+- (Resolved in run #6) The intermittent "IndexSizeError: arc radius is negative": caught with a
+  stack at last (drawUnit → creature art → the outlined-circle helper). A creature's draw scale
+  went slightly negative because the frame loop allowed a *negative* time step (`last` stamped
+  with performance.now() after a slow start, `now` an earlier frame timestamp), running the
+  summon-in animation backwards. dt is now clamped at 0, the spawn factor to [0, 1] and the art
+  scale to > 0 (defensive). Watch the next smoke runs to confirm.
 - The results screen at 1600×900 is close to its height budget (the smoke test clicks "Change
   foe"): new lines on it must share existing ones (done for surge gold, rewards).
 - The smoke's "number key summons" check was timing-sensitive after #35 added a wheel step

@@ -1478,7 +1478,7 @@ export class Renderer {
     v.walk += Math.abs(xi - v.lastX) * 0.24;
     v.lastX = xi;
     v.flash = Math.max(0, v.flash - dt * 6);
-    v.spawn = Math.min(1, v.spawn + dt / SPAWN_TIME);
+    v.spawn = Math.max(0, Math.min(1, v.spawn + dt / SPAWN_TIME));
     const tc = TEAM_COLORS[u.team];
     const animDur = u.def.windup + Math.min(0.4, Math.max(0.15, u.def.cooldown - u.def.windup));
     let attack = -1;
