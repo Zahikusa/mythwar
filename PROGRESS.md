@@ -611,19 +611,23 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
    (Done, on html and body.)
 (Items 251–257: a second visual review of the online screens, 2026-10-13 — #230–234 confirmed
 on screen.)
-251. [ ] Online results on a short phone (667×375, 844×390): the pinned `.vbuttons` row (rematch
+251. [x] Online results on a short phone (667×375, 844×390): the pinned `.vbuttons` row (rematch
    note, chips, buttons) has no backdrop, so "Ember Treant left the room." is drawn across the
    stats table. The "more below" backdrop covers `.screen.more > .mrow` only (menus.css ~1731):
-   give `.vbuttons` the same.
-252. [ ] The "is away" notice with Claim is squeezed into half the screen's width on a phone (9
+   give `.vbuttons` the same. (Done; re-shot at 667×375: the row reads over a fade.)
+252. [x] The "is away" notice with Claim is squeezed into half the screen's width on a phone (9
    lines, the button far below): `.nbanner { position: absolute; left: 50% }` caps its width at
    the space right of centre. `width: max-content` within the max-width; "Wi-Fi" breaks as
-   "Wi-/Fi" (a no-break hyphen).
-253. [ ] The disabled Ready in the room's pinned row is see-through (`.mbtn:disabled { opacity:
+   "Wi-/Fi" (a no-break hyphen). (Done: `width: max-content`, the text flexes; the notice is
+   two lines wide at 667×375 with Claim beside it.)
+253. [x] The disabled Ready in the room's pinned row is see-through (`.mbtn:disabled { opacity:
    .45 }`): the open seat's text shows through it on phones. Solid muted colours instead.
-254. [ ] The room's mode and handicap chips are 27 px tall with 4 px between rows on phones — a
+   (Done for pinned rows on a short stage.)
+254. [x] The room's mode and handicap chips are 27 px tall with 4 px between rows on phones — a
    thumb aimed at "Novice" can switch on a handicap. ≥ 38 px and ~10 px gaps under
-   `pointer: coarse`.
+   `pointer: coarse`. (Done: 38 px, 10-px row gaps, the handicap row 6 px further down.)
+   Also: smoke's "queue chips match the queue" read the HUD a frame early once — it waits for
+   the chips now (two runs green).
 255. [ ] Mixed capitalisation: "How to Play" (title, pause) vs "How to play" (room), "Begin
    Battle" beside "Leave room", "Change foe". Sentence case throughout.
 256. [ ] The room's message line uses the alarm pink for tips too ("Tip: turn your phone

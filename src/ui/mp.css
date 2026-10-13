@@ -670,6 +670,8 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  /* (Its own width: left at 50%, it would otherwise get only the half right of centre.) */
+  width: max-content;
   max-width: min(560px, 90cqw);
   padding: 12px 18px;
   border-radius: 16px;
@@ -678,6 +680,11 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   opacity: 0;
   transition: opacity 0.3s, transform 0.3s;
+}
+
+.nbanner > div {
+  flex: 1;
+  min-width: 0;
 }
 
 .nbanner.show {
@@ -809,6 +816,25 @@
     bottom: 0;
     z-index: 2;
     gap: 6px;
+  }
+
+  /* While the results scroll under it, the pinned row gets the "more below" backdrop every
+     other screen's buttons have — not the rematch note printed across the stats table. */
+  .screen.more > .vbuttons {
+    background: linear-gradient(to bottom, rgba(17, 10, 30, 0), rgba(17, 10, 30, 0.94) 16px);
+    align-self: stretch;
+    margin: -16px -20px 0;
+    padding: 16px 20px 0;
+  }
+
+  /* A dimmed button in a pinned row is solid: what scrolls under it doesn't show through. */
+  .screen > .mrow .mbtn:disabled {
+    opacity: 1;
+    filter: none;
+    background: rgb(36, 30, 50);
+    color: rgba(244, 236, 255, 0.45);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: none;
   }
 
   .screen > .vbuttons .mbtn.ghost,
@@ -1034,6 +1060,22 @@
 
 .trials.rtrials {
   margin-top: -4px;
+}
+
+/* Finger-sized choices in the room on touch screens: a thumb aimed at a difficulty mustn't
+   switch on a handicap in the row below. */
+@media (pointer: coarse) {
+  .screen.room .trials .trial {
+    min-height: 38px;
+  }
+
+  .screen.room .trials {
+    row-gap: 10px;
+  }
+
+  .trials.rtrials {
+    margin-top: 2px;
+  }
 }
 
 /* "Copy link" under the invite address (backlog #31). */

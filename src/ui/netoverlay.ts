@@ -90,17 +90,18 @@ export class NetOverlay {
     } else if (game.syncing) {
       title = 'Re-syncing the battle…';
     } else if (pause?.reason === 'away' && pause.seat !== game.seat && game.coop) {
+      // ("Wi‑Fi" below has a no-break hyphen: a narrow phone notice mustn't split it.)
       // Co-op: the battle waits only while both allies are gone — and nobody wins by waiting.
       title = `${game.allyName} is away`;
-      sub = 'Your ally’s app is in the background or lost the Wi-Fi. The battle goes on as soon as one of you is here.';
+      sub = 'Your ally’s app is in the background or lost the Wi‑Fi. The battle goes on as soon as one of you is here.';
     } else if (pause?.reason === 'away' && pause.seat !== game.seat) {
       const waited = (now - game.netPauseAt) / 1000;
       const left = Math.max(0, (pause.forfeitIn ?? 0) - waited);
       title = `${game.foeName} is away`;
       // Waited long enough: no need to sit out the whole timer.
       claim = pause.claimIn !== undefined && waited >= pause.claimIn;
-      sub = `Their app is in the background or lost the Wi-Fi. The battle waits — if they aren’t back in ${fmtTime(left)}, you win${claim ? ', or claim the victory now' : ''}.`;
-      srSub = `Their app is in the background or lost the Wi-Fi. The battle waits — if they don’t come back in time, you win${claim ? '. You may claim the victory now' : ''}.`;
+      sub = `Their app is in the background or lost the Wi‑Fi. The battle waits — if they aren’t back in ${fmtTime(left)}, you win${claim ? ', or claim the victory now' : ''}.`;
+      srSub = `Their app is in the background or lost the Wi‑Fi. The battle waits — if they don’t come back in time, you win${claim ? '. You may claim the victory now' : ''}.`;
     } else if (pause?.reason === 'away') {
       title = 'Rejoining the battle…';
     }

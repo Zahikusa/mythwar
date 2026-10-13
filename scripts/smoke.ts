@@ -1164,6 +1164,8 @@ async function run(page: Page, label: string, viewport: { width: number; height:
 
   // Queue chips mirror the queue; tapping one cancels it (refund).
   {
+    // (The HUD redraws its chips on the next frame after an order.)
+    await settled(page, () => document.querySelectorAll('.qchip').length === (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.length);
     const before = await page.evaluate(() => ({ q: (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.length, chips: document.querySelectorAll('.qchip').length }));
     check('queue chips match the queue', before.q === before.chips && before.q > 0, JSON.stringify(before));
     const chip = await center(page, '.qchip:last-of-type');
