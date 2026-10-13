@@ -41,7 +41,7 @@ Pick one or two questions for this session, not ten. Good ones right now:
   come back, not "already has two players"); after a battle press **Room**, switch to co-op and
   Ready again (the other phone should say what changed); hold the lane shield on a small phone
   right next to the gate (the tap should hold the lane, and a tap on the gate open its turret).
-- And the phone behaviours from run #9: on Android, press **Back** in a battle (the menu should
+- And the phone behaviours from runs #9–#10: on Android, press **Back** in a battle (the menu should
   open on that phone only — the other player's battle goes on, no pause spent — and Back again
   closes it; in the battle room, Back once says "Press Back again to leave the room" and a
   second Back leaves it — does that feel right, or should a single Back leave?); in the room, let the guest's phone lock for two minutes, then wake it (it should

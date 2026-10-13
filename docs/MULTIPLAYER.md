@@ -26,11 +26,17 @@ Either way it prints something like:
 
   On this computer:   http://localhost:8787/
   Other devices in this Wi-Fi:
-    http://192.168.1.105:8787/
+    http://192.168.1.105:8787/   (Wi-Fi)
 
   Scan to open on a phone:
     ▄▄▄▄▄▄▄ ...
+
+  If phones can't connect: allow Node.js through the firewall — and check that this
+  computer counts the Wi-Fi as a private network (…). Ctrl+C stops.
 ```
+
+**Ctrl+C** in that window — or closing it — stops the server (the Hall of champions is saved
+first).
 
 1. **Player 1** opens the game (on the computer, or on a phone via the address / QR code) and
    chooses **Multiplayer → Host a battle**. The battle room shows a **room code** and a
@@ -164,11 +170,12 @@ jitter buffer, resync), `server/lobby.ts` (rooms, seats, sessions), `server/matc
 
 ```bash
 npm test                                   # incl. determinism, server and simulated-network tests
-node scripts/mpsmoke.ts --shots            # two Chrome profiles (desktop + phone) play it through
-node scripts/mpsmoke.ts --latency 60 --jitter 80   # the same over a bad network
+npm run mpsmoke -- --shots                 # two Chrome profiles (desktop + phone) play it through
+npm run mpsmoke -- --latency 60 --jitter 80   # the same over a bad network
+npm run mpsmoke -- --portrait              # the phone held upright
 node server/main.ts --latency 80 --jitter 60       # play by hand with simulated lag
-node scripts/enginecheck.ts 30 2                   # same battle in Node, Chrome, Firefox, WebKit
-node scripts/mpengines.ts                          # online: Chrome / Firefox host vs a WebKit guest
+npm run enginecheck -- 30 2                # same battle in Node, Chrome, Firefox, WebKit
+npm run mpengines                          # online: Chrome / Firefox host vs a WebKit guest
 ```
 
 `enginecheck` and `mpengines` use Playwright's Firefox and WebKit (JavaScriptCore — the engine
