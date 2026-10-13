@@ -294,6 +294,22 @@ async function serviceWorkerFlow(page: Page): Promise<void> {
   await page.goto(`${base}/?hang`, { waitUntil: 'domcontentloaded', timeout: 20_000 }).catch(() => {});
   const shown = await page.evaluate(() => !!document.querySelector('.screen.title')).catch(() => false);
   check('a page load the server never answers shows the saved page after a few seconds', shown && Date.now() - t0 < 9000, `${Date.now() - t0} ms, shown ${shown}`);
+  // (Phase 3) A newer build on the server while the game stays open: offered on the title as a
+  // restart, nothing reloads by itself.
+  await page.goto(`${base}/`, { waitUntil: 'load' });
+  await page.waitForFunction(() => (window as any).__mythwar?.menus?.current === 'title', { timeout: 8000 });
+  const update = await page.evaluate(async () => {
+    const w = window as any;
+    const real = window.fetch.bind(window);
+    window.fetch = ((u: RequestInfo | URL, o?: RequestInit) =>
+      String(u) === './' ? Promise.resolve(new Response('<script type="module" crossorigin src="./assets/index-NEWBUILD.js"></script>')) : real(u, o)) as typeof fetch;
+    const before = !!document.querySelector('.tupdate');
+    await w.__mythwarUpdateCheck?.();
+    const chip = document.querySelector('.screen.title .tupdate');
+    window.fetch = real;
+    return { hook: typeof w.__mythwarUpdateCheck, before, after: !!chip, text: chip?.textContent ?? '', url: location.href };
+  });
+  check('a newer build is offered on the title as a restart (no reload by itself)', update.hook === 'function' && !update.before && update.after && /restart/i.test(update.text) && update.url === page.url(), JSON.stringify(update));
   // No network at all (an installed app on a plane): it still starts, from the saved copy.
   await page.setOfflineMode(true);
   await page.goto(`${base}/`, { waitUntil: 'load', timeout: 20_000 }).catch(() => {});

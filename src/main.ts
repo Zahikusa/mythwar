@@ -18,7 +18,7 @@ if ((window as unknown as { __mythwarTooOld?: boolean }).__mythwarTooOld) {
   const app = new App(root);
   app.start();
   (window as unknown as { __mythwar: App }).__mythwar = app;
-  watchForUpdate(() => app.menus.updateReady());
+  (window as unknown as { __mythwarUpdateCheck: unknown }).__mythwarUpdateCheck = watchForUpdate(() => app.menus.updateReady());
   // Handy for debugging and the screenshot / smoke scripts.
   (window as unknown as { __mythwarData: unknown }).__mythwarData = { UNITS, TURRETS };
   // Cross-engine determinism probe for scripts/enginecheck.ts (loaded on demand).

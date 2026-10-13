@@ -125,16 +125,23 @@ Already in the code before Phase 3, and kept:
 
 ## Improvement backlog (verification mode, phase 3)
 
-1. [ ] Installed, sideways, on a notched iPhone: the stage stays inside the safe area, so
+1. [x] Installed, sideways, on a notched iPhone: the stage stays inside the safe area, so
    59–62-px dark strips run down both sides of the battle (screenshots/mobile/
    iphone-16-pro-max-app-l-battle.png). A native game draws its scene under the notch and keeps
    only the controls inside. Needs the renderer to draw beyond the stage (canvas wider than
    the HUD's box) — a careful change in App.resize / Renderer.resize.
+   (Done differently, without touching the layout: `App.paintAmbient` keeps a 1/8-size copy of
+   the scene, stretched to the whole screen 4× a second, blurred and dimmed, behind the stage —
+   the strips continue the scene. Shown wherever the stage leaves strips: installed or Safari
+   sideways on a notched iPhone. smoke's cursor check now reads `#stage > canvas`.)
 2. [ ] `public/splash/`: 40 PNGs, 3.8 MB in the repo and in the LAN server's release zip. Flat
    colour + one icon: palette PNGs (or one image per aspect ratio) would be a tenth of that.
-3. [ ] `src/update.ts` has a unit test for the bundle name only: nothing exercises the "New
+3. [x] `src/update.ts` has a unit test for the bundle name only: nothing exercises the "New
    version ready — restart" offer end to end (smoke could serve a page whose bundle name differs
    and fire visibilitychange).
+   (Done: `watchForUpdate` returns a check-now function, exposed as `__mythwarUpdateCheck`;
+   smoke's service-worker flow fakes a page with another bundle and expects the title's
+   "New version ready — restart", the page not reloaded.)
 4. [ ] smoke's "card tooltip sits above the card, on screen" (large desktop) failed once when
    run with `--only desktop,large-desktop` (bottom 3 px past the card's top), passed alone
    twice and in the full verify: a timing-dependent measure — make it wait for the tooltip's
