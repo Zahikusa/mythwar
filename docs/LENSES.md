@@ -1743,3 +1743,23 @@ decisions?*
   journal button now shares the progress-code block on one line.
 - Checked: unit tests (cap, the text format, a hand-edited save); Settings screenshots desktop
   and phone; full verify.
+
+## #92 The Lens of Technology
+*What technologies would make the experience better — the foundational kind, not the
+decorative? And is the technology we have doing its job?*
+- First the job it already does: PROGRESS recorded the per-frame cost creeping from 0.93 to
+  1.97 ms and asked this lens to find out what grew. Measured again three times today, after
+  footfalls, veterans and sigils: 1.30–1.58 ms (budget 3). The 1.97 was a noisy run (±0.3 ms
+  between runs on this machine) — nothing grew; resolved.
+- The foundational gap was elsewhere: **the game server remembered nothing.** Every restart (a
+  laptop closed, a crash, an update) wiped the Hall of champions (#86) — the community's shared
+  history — and the internet upgrade will need persistent state (accounts, ratings) anyway.
+- Change: a small **store seam** (`server/store.ts`, `ServerStore` with `load()` / `save()`):
+  the LAN server keeps the Hall in `mythwar-data.json` next to itself (`--data <file>`,
+  `--no-save`), written atomically (temp file + rename) at most every 5 s when it changed and on
+  Ctrl+C; tests use a memory store; a database can sit behind the same two calls later. What's
+  loaded is sanitized like any client input (the file may be hand-edited). The release README
+  says where the file is and that deleting it starts afresh.
+- Checked: server tests (a battle's result saved after 5 s and back after a "restart",
+  sanitized; the file store's atomic write, missing and broken files); the real server and the
+  packaged `server.mjs` start with the new options; full verify.

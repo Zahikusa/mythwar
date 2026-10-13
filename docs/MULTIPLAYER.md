@@ -196,6 +196,7 @@ The design already separates everything that matters for that step:
 6. **Scale:** rooms are independent, so several server processes behind sticky sessions (or one
    process per region) scale horizontally. A match costs well under 1 % of a CPU core.
 7. **Later:** accounts and persistent ratings (the Hall of champions is kept in memory per
-   network and keyed by name — with accounts it would live in a database), spectators (they would simply receive turns),
+   network and keyed by name, saved to `mythwar-data.json` through the small `ServerStore` seam
+   in `server/store.ts` — with accounts a database would sit behind the same two calls), spectators (they would simply receive turns),
    replays (seed + command log is a complete replay), and reconnect across devices (the session
    token is already the key).

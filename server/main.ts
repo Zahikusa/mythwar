@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { lanAddresses } from './lan.ts';
 import { attachMultiplayer } from './net.ts';
 import { serveStatic } from './static.ts';
+import { fileStore } from './store.ts';
 import { terminalQr } from './qr.ts';
 
 const args = process.argv.slice(2);
@@ -30,6 +31,9 @@ if (args.includes('--help') || args.includes('-h')) {
   --cert <pem> --key <pem>   serve https/wss (wake lock + app install on phones)
   --trust-proxy        behind a reverse proxy: client addresses from X-Forwarded-For
   --latency <ms> --jitter <ms>   simulate a bad network (testing)
+  --data <file>        where the Hall of champions is kept (default: mythwar-data.json
+                       next to the server)
+  --no-save            keep the Hall of champions in memory only
   --quiet              no log lines for joins, battles and results
   --help               this text`);
   process.exit(0);
@@ -65,7 +69,11 @@ const jitter = Number(arg('jitter') ?? 0);
 /** "18:42:07  Ada opened room QH7K" */
 const stamp = (line: string) => `  ${new Date().toTimeString().slice(0, 8)}  ${line}`;
 // --trust-proxy: behind a reverse proxy (internet deployment), client addresses come from it.
-const mp = attachMultiplayer(http, { latency, jitter, trustProxy: args.includes('--trust-proxy'), log: quiet ? undefined : (l) => console.log(stamp(l)) });
+const log = quiet ? undefined : (l: string) => console.log(stamp(l));
+// The Hall of champions survives restarts in a small JSON file (Lens #92), unless --no-save.
+const dataFile = resolve(arg('data') ?? join(here, 'mythwar-data.json'));
+const store = args.includes('--no-save') ? undefined : fileStore(dataFile, (l) => console.log(stamp(l)));
+const mp = attachMultiplayer(http, { latency, jitter, trustProxy: args.includes('--trust-proxy'), log, store });
 
 http.on('error', (e: NodeJS.ErrnoException) => {
   // The default port is busy (another copy running?): try the next few, unless one was asked for.
@@ -98,7 +106,7 @@ http.on('listening', () => {
 });
 
 const stop = () => {
-  mp.close();
+  mp.close(); // (saves the Hall of champions if it changed since the last save)
   http.close();
   process.exit(0);
 };

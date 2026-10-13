@@ -82,8 +82,9 @@ complete; its log follows below the lens plan.
 - Pure-Mystic armies are the strongest single composition in `classwar --matrix` (only pure
   Hunters beat them) — the triangle working, but watch it (#47).
 
-- perfcheck reads 1.97 ms of game JS per frame (budget 3 ms; renderer 1.81) — #14 measured
-  0.93. Within budget, but find out what grew (Lens #92 Technology at the latest). Measured:
+- (Resolved in run #7, Lens #92) perfcheck read 1.97 ms of game JS per frame once; repeated
+  runs on 2026-10-13 read 1.30–1.58 ms (after footfalls, veterans, sigils), so the 1.97 was
+  machine noise (±0.3 ms between runs). Budget 3 ms. Measured:
   the run-5 checkpoint (34752bb) does 1.64 ms on this machine today, run 6 ~1.85 ms (likely
   more creatures on the field with parallel training; the attract battle has no new callouts).
 
@@ -193,7 +194,7 @@ complete; its log follows below the lens plan.
 - [x] #89 The Team — CONTRIBUTING.md: the five non-obvious rules (determinism, same-tick fairness, fingerprint, protocol, AI), what to run per change, the add-a-creature checklist
 - [x] #90 Documentation — DESIGN.md refreshed: veterans, character, the modes and meta, the multiplayer social layer, gamepad, Ragnarök filed under systems
 - [x] #91 Playtesting — a local playtest journal (last 30 battles, Settings → Copy playtest journal) and docs/PLAYTEST.md, a one-hour playtest kit
-- [ ] #92 Technology — performance/tech improvement
+- [x] #92 Technology — the server remembers: a store seam (file for the LAN server, memory in tests; a database later) keeps the Hall of champions across restarts; perf re-measured (1.3–1.6 ms, the 1.97 was noise)
 - [ ] #93 The Crystal Ball — roadmap
 - [ ] #94 The Client — what the client (owner) needs
 - [ ] #95 The Pitch — pitch / store text

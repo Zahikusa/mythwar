@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Lobby } from '../server/lobby.ts';
+import { fileStore, memoryStore } from '../server/store.ts';
+import type { ServerStore } from '../server/store.ts';
 import { networkOf } from '../server/lan.ts';
 import { validateCommand } from '../server/validate.ts';
 import { PROTOCOL_VERSION, battleWorld } from '../src/net/protocol.ts';
@@ -82,7 +84,7 @@ class FakeClient {
   }
 }
 
-function setup(opts: { awayGrace?: number } = {}) {
+function setup(opts: { awayGrace?: number; store?: ServerStore } = {}) {
   let now = 1000;
   let r = 0.37;
   const lobby = new Lobby({
@@ -90,6 +92,7 @@ function setup(opts: { awayGrace?: number } = {}) {
     random: () => (r = (r * 9301 + 49297) % 233280 / 233280),
     countdown: 3,
     awayGrace: opts.awayGrace ?? 90,
+    store: opts.store,
   });
   const run = (ms: number) => {
     for (let t = 0; t < ms; t += 5) {
@@ -101,7 +104,7 @@ function setup(opts: { awayGrace?: number } = {}) {
 }
 
 /** Two players in a running battle. */
-function battle(opts: { awayGrace?: number } = {}) {
+function battle(opts: { awayGrace?: number; store?: ServerStore } = {}) {
   const { lobby, run } = setup(opts);
   const a = new FakeClient(lobby);
   const b = new FakeClient(lobby);
@@ -553,6 +556,42 @@ describe('battle', () => {
       { name: 'Ada', sigil: -1, w: 1, l: 0, coop: 0 },
       { name: 'Bo', sigil: -1, w: 0, l: 1, coop: 0 },
     ]);
+  });
+
+  it('the Hall of champions survives a server restart (Lens #92)', () => {
+    const store = memoryStore();
+    const { run, b } = battle({ store });
+    run(2000);
+    b.send({ type: 'leave' });
+    run(5100);
+    expect(store.saves).toBe(1);
+    // A new server with the same store: the hall is back, sanitized.
+    store.saved!.halls.lan?.push({ name: '<b>Eve</b>', sigil: 99, w: -3, l: 2.7, coop: 1 } as never);
+    const { lobby: again } = setup({ store });
+    const watcher = new FakeClient(again);
+    watcher.hello('Cy');
+    watcher.send({ type: 'watchRooms', on: true });
+    const hall = watcher.last('rooms')!.hall!;
+    expect(hall.map((e) => [e.name, e.w, e.l])).toContainEqual(['Ada', 1, 0]);
+    expect(hall.map((e) => [e.name, e.w, e.l])).toContainEqual(['Bo', 0, 1]);
+    expect(hall.find((e) => e.name.includes('Eve'))).toMatchObject({ name: 'bEve/b', sigil: -1, w: 0, l: 2 });
+  });
+
+  it('the file store writes atomically and reads back; a broken file means an empty hall', async () => {
+    const { mkdtempSync, writeFileSync, existsSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { tmpdir } = await import('node:os');
+    const dir = mkdtempSync(join(tmpdir(), 'mythwar-'));
+    const path = join(dir, 'sub', 'data.json');
+    const store = fileStore(path);
+    expect(store.load()).toBeNull();
+    store.save({ v: 1, halls: { lan: [{ name: 'Ada', sigil: 1, w: 2, l: 0, coop: 0 }] } });
+    expect(existsSync(`${path}.tmp`)).toBe(false);
+    expect(store.load()!.halls.lan[0].name).toBe('Ada');
+    writeFileSync(path, '{ not json');
+    const lines: string[] = [];
+    expect(fileStore(path, (l) => lines.push(l)).load()).toBeNull();
+    expect(lines.length).toBe(1);
   });
 
   it('orders not yet applied when the battle pauses are dropped', () => {

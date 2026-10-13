@@ -1,5 +1,6 @@
 import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName, cleanRank, cleanSigil, cleanTrials } from '../src/net/protocol.ts';
 import type { ClientMsg, HallEntry, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
+import type { ServerStore } from './store.ts';
 import type { TrialId } from '../src/sim/data.ts';
 import { DIFFICULTIES } from '../src/ai/ai.ts';
 import type { Difficulty } from '../src/ai/ai.ts';
@@ -32,7 +33,12 @@ export interface LobbyOptions {
   /** Server-wide limits (defaults suit a small public server). */
   maxRooms?: number;
   maxSessions?: number;
+  /** Where the Hall of champions survives restarts (none: kept in memory only). */
+  store?: ServerStore;
 }
+
+/** The Hall of champions is saved at most this often (ms) when it changed. */
+const SAVE_EVERY = 5000;
 
 /** Seconds a disconnected player keeps their seat in a room that isn't fighting. */
 const SEAT_GRACE = 60;
@@ -107,6 +113,8 @@ export class Lobby {
   private readonly rooms = new Map<string, Room>();
   /** Hall of champions per network (most recently active last). */
   private readonly halls = new Map<string, Map<string, HallEntry>>();
+  private hallDirty = false;
+  private lastHallSave = -Infinity;
   private readonly now: () => number;
   private readonly random: () => number;
   private readonly opts: LobbyOptions;
@@ -118,6 +126,34 @@ export class Lobby {
     this.opts = opts;
     this.now = opts.now ?? (() => performance.now());
     this.random = opts.random ?? Math.random;
+    this.loadHalls();
+  }
+
+  /** Restores the Hall of champions from the store (sanitized: the file may be hand-edited). */
+  private loadHalls(): void {
+    const state = this.opts.store?.load();
+    if (!state) return;
+    const n = (v: unknown) => Math.max(0, Math.floor(Number(v) || 0));
+    for (const [network, entries] of Object.entries(state.halls).slice(-HALL_NETWORKS)) {
+      if (!Array.isArray(entries)) continue;
+      const hall = new Map<string, HallEntry>();
+      for (const e of entries.slice(-HALL_NAMES)) {
+        if (!e || typeof e !== 'object') continue;
+        const name = cleanName(e.name);
+        hall.set(name.toLowerCase(), { name, sigil: cleanSigil(e.sigil), w: n(e.w), l: n(e.l), coop: n(e.coop) });
+      }
+      if (hall.size) this.halls.set(network, hall);
+    }
+  }
+
+  /** Saves the Hall of champions now if it changed (also called on shutdown). */
+  flush(): void {
+    if (!this.hallDirty || !this.opts.store) return;
+    this.hallDirty = false;
+    this.lastHallSave = this.now();
+    const halls: Record<string, HallEntry[]> = {};
+    for (const [network, hall] of this.halls) halls[network] = [...hall.values()];
+    this.opts.store.save({ v: 1, halls });
   }
 
   get roomCount(): number {
@@ -175,6 +211,7 @@ export class Lobby {
         }
       }
     }
+    if (this.hallDirty && now - this.lastHallSave >= SAVE_EVERY) this.flush();
     if (now - this.lastSweep > 1000) {
       this.lastSweep = now;
       for (const s of this.sessions.values()) {
@@ -543,6 +580,7 @@ export class Lobby {
     e.sigil = s.sigil;
     hall.set(key, e);
     if (hall.size > HALL_NAMES) hall.delete(hall.keys().next().value!);
+    this.hallDirty = true;
     return e;
   }
 
