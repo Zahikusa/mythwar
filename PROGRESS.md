@@ -525,10 +525,11 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 123. [ ] README screenshots (`docs/*.jpg`, refreshed in run #7) predate run #8's HUD changes (the
    "!" danger badge, clearer lane tabs, the hold shield's place, opaque phone panels): refresh the
    phone battle shot.
-124. [ ] `npm run smoke -- --only desktop,rotated` fails ("Play opens the difficulty screen —
+124. [x] `npm run smoke -- --only desktop,rotated` fails ("Play opens the difficulty screen —
    pause") though each passes alone and the full run passes: flows inherit storage (an autosave,
    settings) from the ones before them. Give each flow a clean profile (clear storage at its
    start, or one incognito context per flow) so `--only` combinations behave like the full run.
+   (Done: a fresh browser context per flow; the full run and `--only desktop,rotated` pass.)
 
 
 

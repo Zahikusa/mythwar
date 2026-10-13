@@ -1262,7 +1262,7 @@ async function main(): Promise<void> {
   base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--autoplay-policy=no-user-gesture-required'] });
   const errors: string[] = [];
-  // Each flow on a fresh page (one browser profile: storage carries over, as it would for a player).
+  // Each flow on a fresh page in a fresh profile (see below).
   const viewports = [
     { name: 'desktop', label: 'desktop', width: 1600, height: 900, mobile: false },
     { name: 'phone', label: 'phone landscape', width: 844, height: 390, mobile: true },
@@ -1295,7 +1295,10 @@ async function main(): Promise<void> {
   try {
     for (const f of flows) {
       if (only.length && !only.includes(f.name)) continue;
-      const page = await browser.newPage();
+      // (Each flow in its own fresh profile: no storage left by the ones before — so any `--only`
+      // combination behaves like the full run.)
+      const context = await browser.createBrowserContext();
+      const page = await context.newPage();
       page.on('pageerror', (e) => errors.push(pageError(f.label, e)));
       if (f.consoleErrors) {
         page.on('console', (m) => {
@@ -1303,7 +1306,7 @@ async function main(): Promise<void> {
         });
       }
       await f.go(page);
-      await page.close();
+      await context.close();
     }
   } finally {
     await browser.close();
