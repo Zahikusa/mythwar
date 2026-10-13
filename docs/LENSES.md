@@ -1602,3 +1602,19 @@ interlock, not-separateness…) does it lack?*
   full, so big fights don't pay for it.
 - Checked: screenshots (Olympus sand, Asgard snow); perfcheck 1.58 ms per frame (budget 3);
   full verify.
+
+## #84 The Lens of Friendship
+*What do players need to make and keep friends through the game — to talk, to play together, to
+find each other again?*
+- Mythwar is played between people who already know each other (same Wi-Fi). Talking: quick
+  messages and co-op calls. Playing together: versus, co-op, handicaps. Inviting: QR, code, copy
+  link. Remembering: a per-opponent record in the room. The gap was in *finding each other
+  again*: the open-battle list showed a friend you've fought ten times exactly like a stranger,
+  in whatever order the server listed rooms.
+- Change: the lobby **recognises old rivals** — a room hosted by someone you've battled before
+  is listed first, warmly framed in gold, with your record together ("Warlord · Room PXUA · you
+  2 – 0"; the tooltip: "You have battled Ada before"), and a soft chime plays when a friend's
+  battle appears while you wait in the lobby — the "wait here and your friend's battle will
+  appear" promise of the empty list, kept audibly.
+- Checked: a new mpsmoke step (after two battles, A's lobby shows B's new room as a friend with
+  "you 2 – 0"); full verify.

@@ -396,6 +396,11 @@ async function main(): Promise<void> {
     // (B waits in a fresh room for the restart check below.)
     await b.evaluate(() => (window as any).__mythwar.mp.host());
     await waitFor(b, 'B hosting again', () => (window as any).__mythwar.menus.current === 'room', 8000);
+    // A, back in the lobby, knows B from two battles: listed as an old rival with the record (Lens #84).
+    await waitFor(a, 'A in the lobby after co-op', () => (window as any).__mythwar.menus.current === 'mp', 8000);
+    await waitFor(a, "B's room listed for A", () => document.querySelectorAll('.mproom').length === 1, 8000);
+    const rival = await a.evaluate(() => ({ friend: !!document.querySelector('.mproom.friend'), text: document.querySelector('.mproom .mphost span')?.textContent ?? '' }));
+    check('lobby: a returning opponent is recognised with your record', rival.friend && rival.text.includes('you 2 – 0'), JSON.stringify(rival));
 
     console.log('== server restart ==');
     // B sits on the results in its room; the game server restarts and forgets everyone.

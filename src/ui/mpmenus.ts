@@ -47,6 +47,9 @@ const RANK_NOTE = [
 ];
 
 export class MpScreens {
+  /** Open rooms hosted by someone already battled, as last listed (a new one chimes). */
+  private friendRooms = new Set<string>();
+  private listSeen = false;
   readonly lobby: HTMLElement;
   readonly room: HTMLElement;
   private readonly cb: MpMenuCallbacks;
@@ -356,8 +359,15 @@ export class MpScreens {
     this.joinBtn.disabled = !online;
 
     // Lobby: open battles.
-    const rooms = c.openRooms;
-    const sig = rooms.map((r) => r.code + r.host + r.rank).join('|');
+    // Someone you have battled before is recognised (Lens #84): listed first, warmly, with your
+    // record together — and a chime when their battle appears.
+    const rooms = c.openRooms
+      .map((r) => {
+        const rec = record(r.host);
+        return { ...r, rec: rec && rec.w + rec.l > 0 ? rec : null };
+      })
+      .sort((a, b) => Number(!!b.rec) - Number(!!a.rec));
+    const sig = rooms.map((r) => `${r.code}${r.host}${r.rank}${r.rec ? `${r.rec.w}-${r.rec.l}` : ''}`).join('|');
     if (this.list.dataset.sig !== sig || !this.list.childElementCount) {
       this.list.dataset.sig = sig;
       this.list.innerHTML = '';
@@ -366,8 +376,14 @@ export class MpScreens {
       }
       for (const r of rooms) {
         const join = this.button('Join', 'primary', () => this.cb.join(r.code), ICONS.play);
-        this.list.appendChild(h('div', { class: 'mproom', role: 'listitem' }, h('i', { html: ICONS.swords }), h('div', { class: 'mphost' }, h('b', { text: r.host }), h('span', { text: `${RANKS[r.rank] ?? RANKS[0]} · Room ${r.code}` })), join));
+        const meta = `${RANKS[r.rank] ?? RANKS[0]} · Room ${r.code}`;
+        const host = h('div', { class: 'mphost' }, h('b', { text: r.host }), h('span', { text: r.rec ? `${meta} · you ${r.rec.w} – ${r.rec.l}` : meta }));
+        this.list.appendChild(h('div', { class: `mproom${r.rec ? ' friend' : ''}`, role: 'listitem', title: r.rec ? `You have battled ${r.host} before` : '' }, h('i', { html: ICONS.swords }), host, join));
       }
+      const friends = rooms.filter((r) => r.rec).map((r) => r.code);
+      if (this.listSeen && friends.some((code) => !this.friendRooms.has(code))) this.cb.sound('ready');
+      this.friendRooms = new Set(friends);
+      this.listSeen = true;
     }
 
     // Room.

@@ -174,7 +174,7 @@ complete; its log follows below the lens plan.
 - [x] #81 Character Transformation — veterans: three kills and a creature rises (gold chevron, +20% damage, a quarter healed), promoted at the end of the tick for fairness
 - [x] #82 Inner Contradiction — at Ragnarök each general shows their contradiction (Odin who knows his doom, Hippolyta who wanted peace…); Odin falters when you field Fenrir
 - [x] #83 The Nameless Quality — not-separateness: guardians and runners kick up the lane's own ground (sand, snow, cloud) at every footfall
-- [ ] #84 Friendship — multiplayer friendship tools (copy invite link)
+- [x] #84 Friendship — the lobby recognises old rivals: their rooms first, framed in gold, with your record together; a chime when one appears
 - [ ] #85 Expression — player expression
 - [ ] #86 Community — share results
 - [ ] #87 Griefing — online griefing (pause abuse)
