@@ -101,3 +101,14 @@ describe('the server process', () => {
     }
   }, 40_000);
 });
+
+describe('the server process refuses bad numbers plainly (backlog 70)', () => {
+  it('--port abc: a one-line message and exit code 1, no stack trace', async () => {
+    const child = spawn(process.execPath, ['server/main.ts', '--port', 'abc', '--dir', dir, '--no-save'], { stdio: ['ignore', 'pipe', 'pipe'] });
+    let err = '';
+    child.stderr!.on('data', (d) => (err += String(d)));
+    const code = await new Promise<number | null>((r) => child.on('exit', r));
+    expect(code).toBe(1);
+    expect(err.trim()).toBe('--port needs a whole number from 0 to 65535 (got "abc").');
+  });
+});

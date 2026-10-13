@@ -273,17 +273,40 @@ chronicle, 2026-10-13 — renderer/fx/layout/lobby held up.)
 65. [x] `server/store.ts` `load()`: an unreadable Hall file (a stray comma after a hand edit) gave an
    empty Hall — and the next save overwrote the file, every network's champions gone. (Done: kept
    aside as `<file>.unreadable-<time>` and said so in the log; test.)
-66. [ ] `src/ui/chronicle.ts` with `src/app.ts` `enterBattle`: a continued (or online-rejoined)
+66. [x] `src/ui/chronicle.ts` with `src/app.ts` `enterBattle`: a continued (or online-rejoined)
    battle starts a fresh Chronicle — "5:00 — First blood to Odin…" though it fell at 0:25; a
    citadel already below a quarter is "falling" at the resume time; earlier veterans unnamed.
-67. [ ] `public/sw.js`: everything but the page is cache-first — the manifest and icons cached at
+   (Done: `Chronicle.resume(world)` — first blood, low citadels, veterans and the hero as they
+   stand; `HeroNames.adopt` names the standing veterans oldest first, in the chronicle and on
+   the battlefield alike; test (failed before: "1:10 — First blood…" after resuming at 1:10).)
+67. [x] `public/sw.js`: everything but the page is cache-first — the manifest and icons cached at
    install are served stale forever (sw.js itself never changes between builds, so it never
    reinstalls; `mythwar-v3` was bumped by hand). Network-first for all but hashed `/assets/`.
+   (Done: cache-first only for `/assets/name-HASH.ext`; everything else network-first with the
+   cache as the offline fallback; cache `mythwar-v4` (once, to drop the stale copies); smoke
+   puts a stale manifest in the cache and gets the real one.)
 68. [x] `src/ui/feats.ts` ~128: "Swift Conquest" (Adept+ in under 8 minutes) counts quick battles
    (faster XP, +300 gold, par time cut to ⅔) and later-age starts, which skip best times and stars.
    (Done — decided: a full battle only, as for best times; the description says so; test.)
 69. [x] `server/store.ts`: a background save whose rename fails (Windows: a scanner holding the file)
    left its numbered `.tmp` behind — one per failed save. (Done: removed in the catch.)
+(Items 70–74: found along the way in run #8.)
+70. [x] `server/main.ts`: `--port abc` (or `PORT=abc`) gives `Number('abc')` = NaN and `listen`
+   throws ERR_SOCKET_BAD_PORT with a stack trace; say "--port needs a number 0–65535" instead.
+   Same for `--latency`/`--jitter` (NaN silently means no lag). (Done: one plain line, exit 1;
+   tested on the real process.)
+71. [x] `server/lobby.ts` 'away': every toggle broadcasts the room and a pause to the opponent; the
+   per-connection limit is 120 messages/s — a misbehaving client can make the other page flicker
+   through 120 pauses a second. Coalesce or rate-limit away toggles (e.g. at most 4/s).
+   (Done: a change within 250 ms of the last waits and the latest wish is applied — never
+   dropped, so "back" always lands; test: 50 flips in a second → ≤ 5 pauses, ends resumed.)
+72. [ ] `src/app.ts` lobby note after a battle the server stopped on a fault (#51) reads "it restarted,
+   or you were away a long time" — say what happened. Needs a reason from the server (a close
+   code, e.g. 4002 "fault", read by Connection before reconnecting).
+73. [ ] `public/sw.js`: lazily loaded chunks (qrcode, gallery, selftest) are never pruned — each build
+   that changes one leaves the old copy in the cache (a few kB each, forever).
+74. [ ] A continued battle's chronicle starts at the resume (#66 stops it lying, but the moments
+   before are gone): keep the chronicle's moments in the battle save (`src/save.ts`).
 
 
 

@@ -89,6 +89,8 @@ const HALL_KEYS_MAX = 4096;
 const ROOM_LIST_EVERY = 250;
 /** Minimum ms between two emotes from one player. */
 const EMOTE_GAP = 1500;
+/** Minimum ms between two away/back changes from one player (more are coalesced, not dropped). */
+const AWAY_GAP = 250;
 const MSG_RATE = 120;
 
 interface Session {
@@ -112,6 +114,9 @@ interface Session {
   quota: string;
   /** When the session last sent an emote (rate limit). */
   lastEmote: number;
+  /** When this player's away/back last took effect, and a change waiting for AWAY_GAP. */
+  awayAt: number;
+  awayWanted: boolean | null;
   /** The client's own round-trip measurement (ms). */
   rtt: number;
   /** How the session's last battle ended (final snapshot + result), for a client that missed it. */
@@ -150,6 +155,8 @@ export class Lobby {
   /** Hall keys of the networks seen (see hallKey: each costs a slow hash once). */
   private readonly hallKeys = new Map<string, string>();
   private readonly hallKeyPending = new Set<string>();
+  /** Players with an away/back change waiting (see AWAY_GAP). */
+  private readonly awayWaiting = new Set<Session>();
   private lastHallSave = -Infinity;
   private readonly now: () => number;
   private readonly random: () => number;
@@ -268,6 +275,7 @@ export class Lobby {
   /** Drives matches and expiries; call every few milliseconds. */
   update(): void {
     const now = this.now();
+    for (const s of this.awayWaiting) if (now - s.awayAt >= AWAY_GAP && s.awayWanted !== null) this.applyAway(s, s.awayWanted, now);
     for (const room of this.rooms.values()) {
       try {
         room.match?.update(now);
@@ -293,6 +301,17 @@ export class Lobby {
       this.lastRoomList = now;
       this.sendRoomLists();
     }
+  }
+
+  /** A player's away/back takes effect (see 'away'). */
+  private applyAway(s: Session, away: boolean, now: number): void {
+    s.awayAt = now;
+    s.awayWanted = null;
+    this.awayWaiting.delete(s);
+    const room = s.room;
+    if (!room?.match || s.seat === null || room.phase !== 'playing') return;
+    room.match.setAway(s.seat, away, now);
+    this.broadcastRoom(room);
   }
 
   /**
@@ -366,6 +385,8 @@ export class Lobby {
         network,
         quota,
         lastEmote: -Infinity,
+        awayAt: -Infinity,
+        awayWanted: null,
         rtt: 0,
         lastOver: null,
       };
@@ -479,8 +500,14 @@ export class Lobby {
         return;
       case 'away':
         if (room?.match && seat !== null && room.phase === 'playing') {
-          room.match.setAway(seat, !!msg.away, now);
-          this.broadcastRoom(room);
+          // (Each change pauses or resumes both screens: a client flipping it many times a
+          // second has the latest wish applied once AWAY_GAP has passed.)
+          if (now - s.awayAt < AWAY_GAP) {
+            s.awayWanted = !!msg.away;
+            this.awayWaiting.add(s);
+            return;
+          }
+          this.applyAway(s, !!msg.away, now);
         }
         return;
       case 'emote': {

@@ -493,7 +493,25 @@ describe('battle', () => {
     b.send({ type: 'away', away: true });
     expect(a.last('paused')!.state).toMatchObject({ reason: 'away', seat: 1 });
     b.send({ type: 'away', away: false });
+    run(300); // (a change right after another takes effect a moment later — backlog 71)
     expect(a.last('paused')!.state).toMatchObject({ reason: 'pause', seat: 0 });
+  });
+
+  it('away/back flipped many times a second is coalesced, the last wish kept (backlog 71)', () => {
+    const { run, a, b } = battle();
+    run(1000);
+    const before = a.inbox.length;
+    for (let i = 0; i < 50; i++) {
+      b.send({ type: 'away', away: i % 2 === 0 });
+      run(20);
+    }
+    // (The last message said "back".)
+    run(500);
+    const pauses = a.inbox.slice(before).filter((m) => m.type === 'paused').length;
+    expect(pauses).toBeLessThanOrEqual(5);
+    expect(a.last('resuming')).toBeDefined();
+    run(4000);
+    expect(a.inbox.slice(before).map((m) => m.type).lastIndexOf('resumed')).toBeGreaterThan(a.inbox.slice(before).map((m) => m.type).lastIndexOf('paused'));
   });
 
   it('the waiting player may claim the win after a while', () => {

@@ -44,8 +44,18 @@ const arg = (name: string): string | undefined => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : undefined;
 };
+/** A number option, or a plain message and exit (not a stack trace from deep inside Node). */
+const num = (name: string, raw: string | undefined, fallback: number, max: number): number => {
+  if (raw === undefined) return fallback;
+  const n = Number(raw);
+  if (raw.trim() === '' || !Number.isInteger(n) || n < 0 || n > max) {
+    console.error(`--${name} needs a whole number from 0 to ${max} (got "${raw}").`);
+    process.exit(1);
+  }
+  return n;
+};
 const fixedPort = arg('port') ?? process.env.PORT;
-let port = Number(fixedPort ?? 8787);
+let port = num('port', fixedPort, 8787, 65535);
 // The built game: dist/ in the repository, or game/ next to the bundled server (release package).
 const here = fileURLToPath(new URL('.', import.meta.url));
 const builds = [join(here, 'game'), join(here, '..', 'dist')];
@@ -66,8 +76,8 @@ const http: Server = secure
   : createServer(serveStatic(root));
 const scheme = secure ? 'https' : 'http';
 
-const latency = Number(arg('latency') ?? 0);
-const jitter = Number(arg('jitter') ?? 0);
+const latency = num('latency', arg('latency'), 0, 10_000);
+const jitter = num('jitter', arg('jitter'), 0, 10_000);
 /** "18:42:07  Ada opened room QH7K" */
 const stamp = (line: string) => `  ${new Date().toTimeString().slice(0, 8)}  ${line}`;
 // --trust-proxy: behind a reverse proxy (internet deployment), client addresses come from it.
