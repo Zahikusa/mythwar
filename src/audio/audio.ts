@@ -24,6 +24,14 @@ const SCALES: Scale[] = [
 
 const midi = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 
+/**
+ * Not playing, but able to: 'suspended' — or 'interrupted', iOS Safari's state after a phone call
+ * or a switch to another app, which only `resume()` (on the next touch) ends.
+ */
+function stalled(ctx: AudioContext): boolean {
+  return ctx.state !== 'running' && ctx.state !== 'closed';
+}
+
 export class Audio {
   private ctx: AudioContext | null = null;
   private master!: GainNode;
@@ -46,7 +54,7 @@ export class Audio {
   constructor() {
     const unlock = () => {
       this.ensure();
-      if (this.ctx && this.ctx.state === 'suspended') void this.ctx.resume();
+      if (this.ctx && stalled(this.ctx)) void this.ctx.resume().catch(() => {});
     };
     // iOS Safari only unlocks audio inside touchend/click handlers, so listen to all of them.
     for (const type of ['pointerdown', 'touchend', 'click', 'keydown']) window.addEventListener(type, unlock, { capture: true });
@@ -57,7 +65,7 @@ export class Audio {
     const ctx = this.ctx;
     if (!ctx) return;
     if (hidden && ctx.state === 'running') void ctx.suspend();
-    else if (!hidden && ctx.state === 'suspended') void ctx.resume().catch(() => {});
+    else if (!hidden && stalled(ctx)) void ctx.resume().catch(() => {});
   }
 
   get ready(): boolean {

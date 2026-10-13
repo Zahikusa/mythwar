@@ -234,6 +234,11 @@ the improvement backlog below (verified, committed) and add what the review find
    own battle.)
 57. [x] `src/app.ts` ~547: a continued battle shows "Asgard" instead of "Odin · Asgard" (the foe's
    name isn't set again after `hud.attach()` in `continueSaved`). (Done.)
+58. [x] `src/audio/audio.ts`: on iOS Safari a phone call or a switch to another app leaves the
+   AudioContext 'interrupted', not 'suspended' — the touch unlock and the page-visible resume only
+   resumed 'suspended', so a phone could stay silent for the rest of the session. (Done: any
+   state but running/closed is resumed. Not testable here — no iOS device; the logic is a
+   one-line state check.)
 
 
 
