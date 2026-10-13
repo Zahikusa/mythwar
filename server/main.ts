@@ -12,7 +12,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import type { Server } from 'node:http';
 import { createServer as createHttpsServer } from 'node:https';
-import { join, resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { lanAddresses } from './lan.ts';
 import { flatWord } from './lobby.ts';
@@ -22,10 +22,14 @@ import { fileStore } from './store.ts';
 import { terminalQr } from './qr.ts';
 
 const args = process.argv.slice(2);
+// How this server was started, for the messages below: the release package runs the bundled
+// server.mjs; a source checkout runs server/main.ts (or `npm run lan`).
+const packaged = basename(fileURLToPath(import.meta.url)) === 'server.mjs';
+const command = packaged ? 'node server.mjs' : 'node server/main.ts';
 if (args.includes('--help') || args.includes('-h')) {
   console.log(`Mythwar LAN server — serves the game and hosts multiplayer battles.
 
-  node server/main.ts [options]          (npm run lan = build + this)
+  ${command} [options]${packaged ? '' : '          (npm run lan = build + this)'}
 
   --port <n>           port (default $PORT or 8787; if busy and not given, the next free one up to 8797)
   --dir <path>         built game to serve (default: game/ next to the server, else dist/)
@@ -63,7 +67,7 @@ const root = resolve(arg('dir') ?? builds.find((d) => existsSync(join(d, 'index.
 const quiet = args.includes('--quiet');
 
 if (!existsSync(join(root, 'index.html'))) {
-  console.error(`No build found in ${root} — run "npm run build" first (or use "npm run lan").`);
+  console.error(packaged ? `No game found in ${root} — the game/ folder belongs next to server.mjs (unpack the whole zip).` : `No build found in ${root} — run "npm run build" first (or use "npm run lan").`);
   process.exit(1);
 }
 
@@ -96,14 +100,17 @@ const blockedWords = namesFile
   : undefined;
 const mp = attachMultiplayer(http, { latency, jitter, trustProxy: args.includes('--trust-proxy'), log, store, blockedWords });
 
+/** The default port that was busy, if the server moved up from it. */
+let movedFrom = 0;
 http.on('error', (e: NodeJS.ErrnoException) => {
   // The default port is busy (another copy running?): try the next few, unless one was asked for.
   if (e.code === 'EADDRINUSE' && !fixedPort && port < 8797) {
+    if (!movedFrom) movedFrom = port;
     port++;
     http.listen(port, '0.0.0.0');
     return;
   }
-  if (e.code === 'EADDRINUSE') console.error(`Port ${port} is already in use — try: node server/main.ts --port ${port + 1}`);
+  if (e.code === 'EADDRINUSE') console.error(`Port ${port} is already in use (is Mythwar running already?) — try: ${command} --port ${port + 1}`);
   else console.error(e);
   process.exit(1);
 });
@@ -116,6 +123,8 @@ http.on('listening', () => {
   console.log('\n  Mythwar is running.\n');
   const hall = mp.lobby.hallStats();
   if (hall.players) console.log(`  Hall of champions: ${hall.players} player${hall.players === 1 ? '' : 's'} remembered, ${hall.returning} came back on another day.\n`);
+  // (Busy usually means another copy is running — and phones may still be on that one.)
+  if (movedFrom) console.log(`  Port ${movedFrom} was busy (is Mythwar running already, in another window?) — using ${port}.\n`);
   console.log(`  On this computer:   ${scheme}://localhost:${port}/`);
   if (urls.length) {
     console.log(`  Other devices in this Wi-Fi:`);
@@ -126,8 +135,10 @@ http.on('listening', () => {
     console.log('  (No network address found — connect this computer to the Wi-Fi.)');
   }
   if (latency || jitter) console.log(`  Simulating network lag: ${latency} ms + up to ${jitter} ms jitter.\n`);
-  console.log('  If phones can\'t connect: allow Node.js through the firewall for private networks,');
-  console.log('  and make sure the devices are on the same Wi-Fi (not a guest network). Ctrl+C stops.\n');
+  console.log('  If phones can\'t connect: allow Node.js through the firewall — and check that this');
+  console.log('  computer counts the Wi-Fi as a private network (Windows often files a new one as');
+  console.log('  "Public", which the firewall blocks: Settings → Network → Wi-Fi → your network →');
+  console.log('  Private). The devices must be on the same Wi-Fi (not a guest network). Ctrl+C stops.\n');
 });
 
 const stop = () => {
@@ -137,9 +148,13 @@ const stop = () => {
 };
 process.on('SIGINT', stop);
 process.on('SIGTERM', stop);
+// Closing the terminal window (macOS / Linux: SIGHUP; Windows: the console's close, Ctrl+Break:
+// SIGBREAK) also saves the Hall first.
+process.on('SIGHUP', stop);
+if (process.platform === 'win32') process.on('SIGBREAK', stop);
 // Last resort: a fault outside the lobby's contained paths (the static files, the socket layer)
-// still ends the process — but says what happened and saves the Hall of champions first. (The
-// starters and a supervisor bring it back up; battles in progress are lost either way.)
+// still ends the process — but says what happened and saves the Hall of champions first. (Start
+// it again — or let a supervisor; battles in progress are lost either way.)
 process.on('uncaughtException', (e) => {
   console.error(stamp(`the server stopped on a fault: ${e?.stack ?? e}`));
   try {

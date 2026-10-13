@@ -42,8 +42,11 @@ runs the small game server, and every device plays in its browser:
    on a Windows PC, Mac or Linux computer and unzip it.
 2. Start it: **Windows** — double-click `Start Mythwar Server` (it offers to install
    [Node.js](https://nodejs.org/) if needed; if Windows warns about the file: *More info → Run
-   anyway*; when the firewall asks, allow **private** networks). **macOS** — right-click
-   `Start Mythwar Server.command` → *Open*. **Linux** — `sh start.sh`.
+   anyway*; when the firewall asks, allow it — and if phones still can't connect, set the Wi-Fi's
+   network profile to **Private**: Windows often files a new Wi-Fi as *Public*, which the firewall
+   blocks). **macOS** — double-click `Start Mythwar Server.command`; if macOS won't open it: *System
+   Settings → Privacy & Security → Open Anyway* (before macOS 15: right-click → *Open*).
+   **Linux** — `sh start.sh`.
 3. Scan the QR code it shows with each phone (or open the printed address in any browser).
 4. **Multiplayer → Host a battle** on one device; the other scans the room's QR code or enters
    its code. Both press **Ready**.

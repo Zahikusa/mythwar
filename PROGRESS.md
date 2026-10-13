@@ -757,6 +757,12 @@ battle, results — 2026-10-13.)
    `sessionLostAction(lost, state, menu, lostRoom)` with tests, like #150/#156. (Done: `lostSessionPlan()` in src/ui/roomnews.ts —
    toLobby / rejoin / note; 3 tests (8 in the file); behaviour unchanged, mpsmoke green. Made
    explicit on the way: a seat that expired while the phone sat on the results also rejoins.)
+172. [ ] Back (#166) on the online results does nothing (Esc does nothing there either); on a phone,
+   Back from the results could mean "Room" (the friend-facing next step) — or leave it: the
+   buttons are right there. Decide after a playtest (docs/PLAYTEST.md).
+173. [x] `docs/PLAYTEST.md` predates run #9: add what to watch for the new phone behaviours — Back in
+   a battle opens the menu (and doesn't spend a pause online), a locked phone rejoins the room,
+   Copy result on a LAN phone. (Done: a run-#9 paragraph under "What to watch".)
 174. [x] (#137, fourth slice) Where the other player's quick message shows (results line, menu
    line, co-op call, bubble) was a branchy listener inside `openMultiplayer`. (Done: `emoteRoute()`
    in src/ui/roomnews.ts; 4 tests; mpsmoke's emote checks green.) With #150, #156, #171 the online
@@ -764,10 +770,11 @@ battle, results — 2026-10-13.)
    wiring to its own module) stays open — the remaining code is short and touches App's privates.
 (Items 175–184: an independent review of the host's way — getting the server, starting it, what
 it prints, inviting, stopping — 2026-10-13.)
-175. [ ] Firewall advice says "allow *private* networks" (server/main.ts ~129, the package's
+175. [x] Firewall advice says "allow *private* networks" (server/main.ts ~129, the package's
    README.txt) — but Windows 11 often files a newly joined home Wi-Fi as *Public*; following the
    advice still blocks every phone. Say how to check/switch the network profile (MULTIPLAYER.md
    ~69 does) in the console and README.txt.
+   (Done: console, README.txt and README.md say how to set the Wi-Fi to Private.)
 176. [ ] The QR code always encodes the first address (main.ts ~124) and the console prints
    addresses without adapter names; `server/lan.ts`'s virtual-adapter filter misses virbr0,
    br-<id> (Docker), vmnet8, bridge100, wg0, NordLynx, ProtonVPN. Print the adapter name by each
@@ -776,29 +783,34 @@ it prints, inviting, stopping — 2026-10-13.)
    version, MULTIPLAYER.md says 24+, the real minimum for running .ts directly is 22.18 / 23.6 —
    below it `npm run lan` builds, then fails with ERR_UNKNOWN_FILE_EXTENSION. State it once,
    check it at start with a plain message.
-178. [ ] The packaged server prints source-checkout help: `--help` shows `node server/main.ts …
+178. [x] The packaged server prints source-checkout help: `--help` shows `node server/main.ts …
    (npm run lan …)`, a busy port says `try: node server/main.ts --port N`, a missing build says
    `run "npm run build"` (main.ts ~66, ~106). Word them for how it was started.
-179. [ ] macOS: "right-click → Open" no longer passes Gatekeeper on macOS 15+ (README.md ~46,
+   (Done: `packaged` = running as server.mjs — --help, the busy-port hint and the missing-game message name `node server.mjs` and the game/ folder; checked on a built package.)
+179. [x] macOS: "right-click → Open" no longer passes Gatekeeper on macOS 15+ (README.md ~46,
    README.txt, release notes): System Settings → Privacy & Security → Open Anyway.
-180. [ ] The Windows starter run from inside the zip (Explorer's zip view) fails with "Cannot find
+   (Done: README.md, MULTIPLAYER.md, README.txt, release notes: double-click; else Privacy & Security → Open Anyway.)
+180. [x] The Windows starter run from inside the zip (Explorer's zip view) fails with "Cannot find
    module": `Start Mythwar Server.cmd` should check `server.mjs` is beside it and say "extract
    the zip first".
-181. [ ] Closing the server window (README.txt recommends it) ends Node by SIGHUP — only
+   (Done: the .cmd and the .sh starters check server.mjs is beside them — "unpack the whole zip first"; tried with a starter copied alone.)
+181. [x] Closing the server window (README.txt recommends it) ends Node by SIGHUP — only
    SIGINT/SIGTERM run the final Hall save (main.ts ~138): up to 5 s of results lost. Handle SIGHUP
    (and Windows' SIGBREAK) too.
-182. [ ] The macOS/Linux starters only check that `node` exists (package.ts ~52): Ubuntu 22.04's
+   (Done: SIGHUP and, on Windows, SIGBREAK also save and stop.)
+182. [x] The macOS/Linux starters only check that `node` exists (package.ts ~52): Ubuntu 22.04's
    apt Node 12 gives a raw SyntaxError. Check the version like the Windows starter. (And nothing
    ever starts the bundled `server.mjs` in tests/CI.)
-183. [ ] Port 8787 busy → the server moves to the next free port silently (main.ts ~101): usually a
+   (Done for the version: the .sh/.command starters check Node ≥ 20 with a plain message. Still open: nothing in tests/CI starts the bundled server.mjs — see #185.)
+183. [x] Port 8787 busy → the server moves to the next free port silently (main.ts ~101): usually a
    second copy is running, and phones are on the old one. Say so when it moves.
-184. [ ] main.ts ~141's comment says the starters restart the server; they don't. Fix the comment.
-172. [ ] Back (#166) on the online results does nothing (Esc does nothing there either); on a phone,
-   Back from the results could mean "Room" (the friend-facing next step) — or leave it: the
-   buttons are right there. Decide after a playtest (docs/PLAYTEST.md).
-173. [x] `docs/PLAYTEST.md` predates run #9: add what to watch for the new phone behaviours — Back in
-   a battle opens the menu (and doesn't spend a pause online), a locked phone rejoins the room,
-   Copy result on a LAN phone. (Done: a run-#9 paragraph under "What to watch".)
+   (Done: "Port 8787 was busy (is Mythwar running already, in another window?) — using 8788." — tried with two servers.)
+184. [x] main.ts ~141's comment says the starters restart the server; they don't. Fix the comment.
+   (Done.)
+185. [ ] Nothing in tests or CI ever starts the bundled release server (`server.mjs` from
+   `npm run package`): a bundling problem (a dependency the bundle misses) would only show on a
+   user's PC. A test that packages, starts server.mjs on port 0, fetches the page and opens a
+   WebSocket hello.
 
 
 
