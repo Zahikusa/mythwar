@@ -41,6 +41,20 @@ the improvement backlog below (verified, committed) and add what the review find
    their record. A per-device id (localStorage, not the per-tab session token) would fix it.
    (Done: protocol v13 `hello.device`; hall lines keyed by its salted hash, old name lines adopted
    once; the rivals list on the client is still by name — names there are what you see.)
+11. [ ] `server/store.ts` `fileStore.save` writes synchronously on the server's 4-ms loop: a full
+   hall (256 networks × 64 names, ~1.5 MB of JSON) could stall every running battle's turns for
+   a frame or two every 5 s. Write asynchronously, one write in flight at a time.
+12. [ ] `src/ui/menus.ts` results panel tabs (Armies / Chronicle / Legend) are plain buttons: no
+   `role="tablist"`/`tab`, no `aria-selected` — screen readers don't know which panel shows.
+13. [ ] `scripts/perfcheck.ts`: readings vary up to 3× between runs on this machine (0.48–1.97 ms
+   per frame), so the 3 ms budget check is weak. Take the median of several passes and say
+   how much they spread.
+14. [ ] `src/app.ts` `breakNote()` (Lens #98) has no unit test: hour boundaries, once per hour,
+   two hours. Extract the arithmetic into a pure function and test it.
+15. [ ] Names are free text and, on a public server, shown to strangers (lobby list, Hall of
+   champions): a server-side blocklist (`--names <file>`) would be the minimum before going
+   public (ROADMAP *Next*).
+
 
 
 **Start here: [docs/BRIEF.md](docs/BRIEF.md)** — one page: what TASK.md asked for, what was
