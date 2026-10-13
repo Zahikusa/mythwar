@@ -1116,7 +1116,7 @@ export class App {
       if (n === 3) this.hud.toast('This device keeps drifting out of sync — it is corrected automatically.', 'info');
     };
     g.onResync = () => {
-      this.renderer.reset();
+      this.renderer.reset(true);
       this.renderer.setTheme(g.world.players[g.playerTeam].age, true);
     };
     this.mp?.watchRooms(false);

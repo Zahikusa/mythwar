@@ -27,5 +27,45 @@ const NAMES: Record<string, string[]> = {
 export function heroName(defId: string, unitId: number): string {
   const list = NAMES[defId];
   if (!list) return '';
-  return list[(Math.imul(unitId, 0x9e3779b1) >>> 0) % list.length];
+  return list[pick(unitId) % list.length];
+}
+
+function pick(unitId: number): number {
+  return Math.imul(unitId, 0x9e3779b1) >>> 0;
+}
+
+const ROMAN = ['', '', ' II', ' III', ' IV', ' V', ' VI', ' VII', ' VIII', ' IX', ' X'];
+
+/**
+ * The names given in one battle, so no two veterans of a kind on one side share a name (a fifth
+ * Minotaur veteran becomes "Asterion II"). Every view that names veterans keeps its own — the
+ * renderer and the chronicle — and they agree, because they see the same veteran events in the
+ * same order. A creature that rose before this view saw it (a resync) falls back to heroName().
+ */
+export class HeroNames {
+  private byUnit = new Map<number, string>();
+  private used = new Map<string, Set<string>>();
+
+  /** A creature rises a veteran: give it the first free name of its kind. */
+  rise(team: number, defId: string, unitId: number): string {
+    const list = NAMES[defId];
+    if (!list) return '';
+    const key = `${team}:${defId}`;
+    const used = this.used.get(key) ?? new Set<string>();
+    this.used.set(key, used);
+    const start = pick(unitId);
+    let name = '';
+    for (let n = 0; !name; n++) {
+      const gen = Math.floor(n / list.length) + 1;
+      const cand = `${list[(start + n) % list.length]}${gen < ROMAN.length ? ROMAN[gen] : ` ${gen}`}`;
+      if (!used.has(cand)) name = cand;
+    }
+    used.add(name);
+    this.byUnit.set(unitId, name);
+    return name;
+  }
+
+  name(defId: string, unitId: number): string {
+    return this.byUnit.get(unitId) ?? heroName(defId, unitId);
+  }
 }

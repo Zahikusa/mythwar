@@ -100,3 +100,22 @@ describe('hero names (Lens #88)', () => {
     expect(heroName('nobody', 1)).toBe('');
   });
 });
+
+describe('hero names in one battle (backlog: no two alike)', () => {
+  it('veterans of a kind on one side get different names, then numbered; views agree', async () => {
+    const { HeroNames } = await import('../src/ui/heroes.ts');
+    const a = new HeroNames();
+    const b = new HeroNames();
+    const names = [3, 9, 14, 27, 31, 40].map((id) => a.rise(0, 'minotaur', id));
+    expect(new Set(names).size).toBe(6);
+    expect(names.slice(4).every((n) => n.endsWith(' II'))).toBe(true);
+    // Another view seeing the same events in the same order names them the same.
+    expect([3, 9, 14, 27, 31, 40].map((id) => b.rise(0, 'minotaur', id))).toEqual(names);
+    expect(a.name('minotaur', 27)).toBe(names[3]);
+    // The other side and other kinds have names of their own.
+    expect(['Asterion', 'Bronzehorn', 'Labyrinthos', 'Stampede']).toContain(a.rise(1, 'minotaur', 3));
+    // Unknown to this view (a resync): the stable fallback.
+    const { heroName } = await import('../src/ui/heroes.ts');
+    expect(a.name('oni', 77)).toBe(heroName('oni', 77));
+  });
+});

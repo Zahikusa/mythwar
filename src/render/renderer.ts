@@ -6,7 +6,7 @@ import type { World } from '../sim/world.ts';
 import { renderAurora, renderBackground, renderVignette } from './background.ts';
 import { drawCitadelGate, drawCitadelKeep, drawTurret, gateBounds, keepEmblem } from './citadel.ts';
 import { SIGILS } from '../net/protocol.ts';
-import { heroName } from '../ui/heroes.ts';
+import { HeroNames } from '../ui/heroes.ts';
 import { artFor } from './creatures/index.ts';
 import { GESTURE_TIME, TEMPERS, gestureAt } from './creatures/tempers.ts';
 import type { CreatureArt, Pose } from './creatures/types.ts';
@@ -111,6 +111,8 @@ export class Renderer {
   /** Game speed (2 = fast-forward): effects timed by the sim (meteor fall, root, freeze) run
    *  this much faster in real time, so they stay in step with what they show. */
   speed = 1;
+  /** The names veterans earned in this battle (Lens #88; the chronicle keeps the same). */
+  private heroes = new HeroNames();
   /** Each side's sigil on its keep (SIGILS index, -1 = none; Lens #85). */
   sigils: [number, number] = [-1, -1];
   /** The local player is team 1: the battlefield is drawn mirrored so their citadel is on the left. */
@@ -241,7 +243,9 @@ export class Renderer {
     return 2 * f.x + f.w - x;
   }
 
-  reset(): void {
+  /** Forgets the visuals of the battle. `resync`: the same battle continues (keep its heroes' names). */
+  reset(resync = false): void {
+    if (!resync) this.heroes = new HeroNames();
     for (const r of this.routs) {
       r.times = [];
       r.xs = [];
@@ -583,6 +587,7 @@ export class Renderer {
           break;
         }
         case 'veteran': {
+          this.heroes.rise(e.team, e.defId, e.unitId);
           // A creature rises a veteran: a golden flare, and over the player's own the word for it.
           const g = L.lanes[e.lane];
           const v = this.vis.get(e.unitId);
@@ -1832,7 +1837,7 @@ export class Renderer {
   /** Small name / class / health label above the creature under the mouse. */
   private drawHoverLabel(ctx: CanvasRenderingContext2D, u: Unit, x: number, y: number, view: ViewState): void {
     const mine = u.team === view.playerTeam;
-    const name = u.veteran ? `${heroName(u.def.id, u.id)} · Veteran ${u.def.name}` : u.def.name;
+    const name = u.veteran ? `${this.heroes.name(u.def.id, u.id)} · Veteran ${u.def.name}` : u.def.name;
     const hp = `${Math.ceil(u.hp)} / ${Math.ceil(u.maxHp)}`;
     // The counter rule, right where you look: what beats this foe / what yours is good against.
     const cls = u.def.cls;

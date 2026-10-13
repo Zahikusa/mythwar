@@ -8,7 +8,7 @@ import { AGES, UNITS } from '../sim/data.ts';
 import type { SimEvent, Team } from '../sim/types.ts';
 import type { World } from '../sim/world.ts';
 import { fmtTime } from './dom.ts';
-import { heroName } from './heroes.ts';
+import { HeroNames } from './heroes.ts';
 import { VETERAN_KILLS } from '../sim/data.ts';
 
 const LANES = ['top', 'middle', 'bottom'];
@@ -29,6 +29,7 @@ export class Chronicle {
   private veteran: [boolean, boolean] = [false, false];
   /** The player's creature with the most kills so far (Lens #88: the hero of the battle). */
   private hero: { defId: string; id: number; kills: number } | null = null;
+  private readonly names = new HeroNames();
 
   /** `foe`: the opponent's name as the story calls them ("Hippolyta", "Ada"). */
   constructor(me: Team, foe: string) {
@@ -65,13 +66,13 @@ export class Chronicle {
         // Each side's first veteran (Lens #81).
         this.veteran[e.team] = true;
         const name = UNITS[e.defId]?.name ?? 'creature';
-        const called = heroName(e.defId, e.unitId);
+        const called = this.names.rise(e.team, e.defId, e.unitId);
         this.add(t, e.team === this.me ? `Your ${name}${called ? `, ${called},` : ''} rises a veteran in the ${LANES[e.lane]} lane.` : `${this.foe}'s ${name} rises a veteran in the ${LANES[e.lane]} lane.`, e.team === this.me ? 2 : 1);
       } else if (e.type === 'ragnarok') {
         this.add(t, 'Ragnarök: the wards fall silent.', 2);
       } else if (e.type === 'gameOver') {
         const h = this.hero;
-        if (h && h.kills >= VETERAN_KILLS) this.add(t, `Hero of the battle: ${heroName(h.defId, h.id)}, your ${UNITS[h.defId]?.name ?? 'creature'} — ${h.kills} foes felled.`, 5);
+        if (h && h.kills >= VETERAN_KILLS) this.add(t, `Hero of the battle: ${this.names.name(h.defId, h.id)}, your ${UNITS[h.defId]?.name ?? 'creature'} — ${h.kills} foes felled.`, 5);
         this.add(t, e.winner === this.me ? `Victory: ${this.foe}'s citadel falls.` : `Defeat: your citadel falls to ${this.foe}.`, 9);
       }
     }
