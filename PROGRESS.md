@@ -234,6 +234,16 @@ Already in the code before Phase 3, and kept:
 18. [x] The whole mobilecheck matrix now takes ~25 min (8 devices × 4 views × 22 screens): a
    `--quick` set (SE, Pixel 7, iPad mini; tab and installed; the screens that changed most)
    for iterating, the full matrix before a commit that touches layout. (Done: `--quick`.)
+19. [x] (review) TASK C asks app browsers for "the steps for that app": they were generic.
+   (Done: `escapeSteps` in ui/install.ts — Instagram/Facebook/Messenger "Open in external
+   browser" (iOS), TikTok/LinkedIn "Open in browser", Telegram, WeChat, LINE, X (the Safari
+   icon), the Google app (share → Open in Safari); generic otherwise; Android keeps "Open in
+   Chrome" first. Unit-tested. The wording follows each app's menu as last known — confirm on
+   devices with backlog 5.)
+20. [x] (review) The full matrix timed out on the coach tip and the results of big installed
+   phones held upright: headless WebKit drew them on the CPU at 3× and the battle ran at a
+   third of its speed. (Done: the check uses at most 2× and plays those two screens at 4×
+   game speed; the full matrix — 8 devices — is green again.)
 
 ## Decisions
 
