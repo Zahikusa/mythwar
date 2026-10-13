@@ -43,7 +43,8 @@ Pick one or two questions for this session, not ten. Good ones right now:
   right next to the gate (the tap should hold the lane, and a tap on the gate open its turret).
 - And the phone behaviours from run #9: on Android, press **Back** in a battle (the menu should
   open on that phone only — the other player's battle goes on, no pause spent — and Back again
-  closes it); in the room, let the guest's phone lock for two minutes, then wake it (it should
+  closes it; in the battle room, Back once says "Press Back again to leave the room" and a
+  second Back leaves it — does that feel right, or should a single Back leave?); in the room, let the guest's phone lock for two minutes, then wake it (it should
   be back in the room by itself if nobody took the seat); after a battle tap **Copy result** on
   a phone and paste it into a message (it should paste the result, not "Copy failed"); a guest
   who came by QR code: did they find **How to play** in the room?

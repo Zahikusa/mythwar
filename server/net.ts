@@ -24,6 +24,8 @@ export interface AttachOptions extends LobbyOptions {
    * other paths alone. Otherwise they are refused — an upgrade nobody answers would stay open.
    */
   sharedUpgrades?: boolean;
+  /** Testing aid: seconds without a sign of life before a link counts as dead (default 12). */
+  deadAfter?: number;
 }
 
 /** Simultaneous connections from one address (a household has a few devices; a script many). */
@@ -113,13 +115,14 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
   // Rooms and battles advance on a fast timer (the simulation runs at 60 Hz).
   const loop = setInterval(() => lobby.update(), 4);
   // Phones that lose Wi-Fi or get suspended don't always close their sockets: ping them.
+  const deadAfter = opts.deadAfter ?? DEAD_AFTER;
   const heartbeat = setInterval(() => {
     const now = performance.now();
     for (const [ws, seen] of alive) {
-      if (now - seen > DEAD_AFTER * 1000) ws.terminate();
+      if (now - seen > deadAfter * 1000) ws.terminate();
       else if (ws.readyState === ws.OPEN) ws.ping();
     }
-  }, HEARTBEAT * 1000);
+  }, (HEARTBEAT * deadAfter * 1000) / DEAD_AFTER);
 
   return {
     lobby,

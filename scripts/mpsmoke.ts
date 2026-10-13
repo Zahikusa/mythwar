@@ -7,6 +7,8 @@
  * (forfeit), results and a rematch. Exits non-zero on any failure or console error.
  */
 import { createServer } from 'node:http';
+import { connect, createServer as createTcpServer } from 'node:net';
+import type { Socket } from 'node:net';
 import { existsSync, mkdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import puppeteer from 'puppeteer-core';
@@ -139,18 +141,71 @@ async function shot(page: Page, name: string): Promise<void> {
   await page.screenshot({ path: join(shotDir, `${name}.png`) as `${string}.png` });
 }
 
+/**
+ * A TCP relay in front of the phone (B). `freeze()` makes its links go silent without closing them
+ * — what a phone that sleeps or leaves the Wi-Fi does to its sockets: nothing gets through either
+ * way, not even WebSocket pings, and no close is ever seen. `thaw()` drops those dead links (a
+ * phone that wakes has lost them) and lets new ones through.
+ */
+async function relay(port: number): Promise<{ port: number; freeze(): void; thaw(): void; close(): void }> {
+  const links = new Set<{ down: Socket; up: Socket; dead: boolean }>();
+  let frozen = false;
+  const server = createTcpServer((down) => {
+    const up = connect(port, '127.0.0.1');
+    const link = { down, up, dead: frozen };
+    links.add(link);
+    down.on('data', (d) => link.dead || up.write(d));
+    up.on('data', (d) => link.dead || down.write(d));
+    const end = () => {
+      links.delete(link);
+      down.destroy();
+      up.destroy();
+    };
+    for (const s of [down, up]) {
+      s.on('error', end);
+      s.on('close', () => link.dead || end());
+    }
+  });
+  await new Promise<void>((r) => server.listen(0, '127.0.0.1', () => r()));
+  return {
+    port: (server.address() as { port: number }).port,
+    freeze() {
+      frozen = true;
+      for (const l of links) l.dead = true;
+    },
+    thaw() {
+      frozen = false;
+      for (const l of [...links].filter((l) => l.dead)) {
+        links.delete(l);
+        l.down.destroy();
+        l.up.destroy();
+      }
+    },
+    close() {
+      for (const l of links) (l.down.destroy(), l.up.destroy());
+      server.close();
+    },
+  };
+}
+
 async function main(): Promise<void> {
   if (!CHROME) throw new Error('Chrome / Edge not found');
   const root = resolve('dist');
   if (!existsSync(join(root, 'index.html'))) throw new Error('Run "npm run build" first');
   const http = createServer(serveStatic(root));
-  let mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 3 });
+  let mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 3, deadAfter: 3 });
   await new Promise<void>((r) => http.listen(0, '127.0.0.1', () => r()));
-  const base = `http://127.0.0.1:${(http.address() as { port: number }).port}`;
+  const port = (http.address() as { port: number }).port;
+  const base = `http://127.0.0.1:${port}`;
+  // (B, the phone, reaches the server through a relay that can make its links go silent.)
+  const net = await relay(port);
+  const baseB = `http://127.0.0.1:${net.port}`;
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--autoplay-policy=no-user-gesture-required'] });
   const errors: string[] = [];
+  let netCut = false;
   const watch = (page: Page, who: string) => {
-    page.on('console', (m) => m.type() === 'error' && errors.push(`${who}: ${m.text()}`));
+    // (The browser's own note on a failed dial while the test has cut the phone's links is expected.)
+    page.on('console', (m) => m.type() === 'error' && !(netCut && /^WebSocket connection to .* failed/.test(m.text())) && errors.push(`${who}: ${m.text()}`));
     page.on('pageerror', (e) => errors.push(`${who}: ${(e as Error).message}`));
   };
   try {
@@ -218,7 +273,7 @@ async function main(): Promise<void> {
     await dup.close();
 
     // B opens the invite link (what scanning the QR code does).
-    await b.goto(`${base}/?join=${code}`, { waitUntil: 'load' });
+    await b.goto(`${baseB}/?join=${code}`, { waitUntil: 'load' });
     await waitFor(b, 'B joined the room', () => (window as any).__mythwar.menus.current === 'room');
     await waitFor(a, 'A sees B', () => document.querySelectorAll('.rseat.empty').length === 0);
     check('B in the same room', (await info(b)).room === code);
@@ -240,22 +295,39 @@ async function main(): Promise<void> {
     check('room: How to play and back, still seated', await b.evaluate(() => (window as any).__mythwar.mp.seat === 1 && !!(window as any).__mythwar.mp.room));
     // (Backlog 160) B's phone locks in the room (no wake lock over http): its link is gone for longer
     // than the server keeps a seat (3 s here, a minute for real). Back, it joins the room again.
-    await b.evaluate(() => (window as any).__mythwar.mp.conn.close());
+    // (Backlog 217) A sleeping phone rarely closes its socket — it just goes silent, and the server
+    // only learns by its heartbeat (3 s here, 12 s for real): B's network is cut, not its socket.
+    const cut = Date.now();
+    netCut = true;
+    net.freeze();
+    await waitFor(a, "B's link found dead", () => (window as any).__mythwar.mp.room?.seats[1]?.connected === false, 15_000);
+    const deadIn = Date.now() - cut;
+    check('room: a silent link is found dead by the heartbeat', deadIn > 2000, `${deadIn} ms`);
     await waitFor(a, "B's seat given up", () => (window as any).__mythwar.mp.room?.seats[1] === null, 15_000);
-    await b.evaluate(() => (window as any).__mythwar.mp.conn.open());
+    net.thaw();
     // (Welcomed again: until then B's page still shows the room it had before the link went.)
     await waitFor(b, 'B back in the room by itself', () => {
       const m = (window as any).__mythwar.mp;
       return m.welcomed && (window as any).__mythwar.menus.current === 'room' && m.seat === 1 && m.room?.seats[1]?.connected === true;
     }, 8000);
     await waitFor(a, 'A sees B back', () => (window as any).__mythwar.mp.room?.seats[1]?.connected === true, 8000);
+    netCut = false;
     check('room: a phone that lost its seat while locked takes it again', true);
-    // (Backlog 166) The phone's Back in the room (like Esc) neither leaves the room nor the page.
+    // (Backlog 166) The phone's Back in the room neither leaves the room nor the page at once…
     const roomUrl = b.url();
     await b.goBack({ timeout: 3000 }).catch(() => null);
-    await sleep(300); // (nothing should happen: give it the chance to)
-    const stay = await b.evaluate(() => ({ menu: (window as any).__mythwar.menus.current, seat: (window as any).__mythwar.mp.seat }));
+    await sleep(300); // (nothing more should happen: give it the chance to)
+    const stay = await b.evaluate(() => ({ menu: (window as any).__mythwar.menus.current, seat: (window as any).__mythwar.mp.seat, said: document.querySelector('.screen.room .mpflash.show')?.textContent ?? '' }));
     check('room: Back keeps the guest in the room and on the page', stay.menu === 'room' && stay.seat === 1 && b.url() === roomUrl, JSON.stringify(stay));
+    // (Backlog 215) …it asks to be pressed again, and a second Back leaves the room (still on the page).
+    check('room: a first Back says a second one leaves', /Press Back again to leave the room/.test(stay.said), stay.said);
+    await b.goBack({ timeout: 3000 }).catch(() => null);
+    await waitFor(b, 'B in the lobby after a second Back', () => (window as any).__mythwar.menus.current === 'mp' && !(window as any).__mythwar.mp.room, 4000);
+    await waitFor(a, "A sees B's seat empty", () => (window as any).__mythwar.mp.room?.seats[1] === null, 4000);
+    check('room: Back twice leaves the room, not the page', b.url() === roomUrl && !(await b.evaluate(() => document.querySelector('.screen.mp .mpflash.show'))));
+    await b.evaluate((c) => (window as any).__mythwar.mp.join(c), code);
+    await waitFor(a, 'B back in the room', () => (window as any).__mythwar.mp.room?.seats[1]?.connected === true, 8000);
+    await waitFor(b, 'B shows the room again', () => (window as any).__mythwar.menus.current === 'room', 4000);
     // (Backlog 186) A gamepad reaches every control of the battle room with the D-pad — the mode and
     // handicap chips, Leave room, How to play, Ready (a breadth-first walk over the app's moves).
     const roomReach = await a.evaluate(() => {
@@ -458,7 +530,7 @@ async function main(): Promise<void> {
       await b.close();
       b = b2;
       await waitFor(a, 'A waits for B (tab closed)', () => ((window as any).__mythwar.game.netPause?.reason ?? '') === 'away', 8000);
-      await b.goto(`${base}/?join=${code}`, { waitUntil: 'load' });
+      await b.goto(`${baseB}/?join=${code}`, { waitUntil: 'load' });
       await waitFor(b, 'B back in the battle from the QR code', () => (window as any).__mythwar.state === 'playing' && !!(window as any).__mythwar.game.options.online && !(window as any).__mythwar.game.paused, 10000);
       await waitFor(a, 'A running again', () => !(window as any).__mythwar.game.netPause && !(window as any).__mythwar.game.paused, 8000);
       const back = await info(b);
@@ -758,7 +830,7 @@ async function main(): Promise<void> {
     section('server restart');
     // B sits on the results in its room; the game server restarts and forgets everyone.
     mp.close();
-    mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 3 });
+    mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 3, deadAfter: 3 });
     await waitFor(b, 'B back in the lobby after the restart', () => (window as any).__mythwar.menus.current === 'mp' && (window as any).__mythwar.mp?.state === 'online', 10000);
     const note = await b.evaluate(() => document.querySelector('.screen.mp .mpflash')?.textContent ?? '');
     check('B told the server restarted', note.includes('restarted'), note);
@@ -767,6 +839,7 @@ async function main(): Promise<void> {
   } finally {
     await browser.close();
     mp.close();
+    net.close();
     http.close();
   }
   console.log(`(last section ${((Date.now() - sectionAt) / 1000).toFixed(1)} s)`);

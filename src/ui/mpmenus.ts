@@ -101,13 +101,18 @@ export class MpScreens {
   }
 
   /** A short message on the lobby and room screens (errors such as an unknown room code). */
-  flash(text: string): void {
+  flash(text: string, ms = 4500): void {
     for (const f of this.flashes) {
       setText(f, text);
       f.classList.add('show');
     }
     clearTimeout(this.flashTimer);
-    this.flashTimer = window.setTimeout(() => this.flashes.forEach((f) => f.classList.remove('show')), 4500);
+    this.flashTimer = window.setTimeout(() => this.unflash(), ms);
+  }
+
+  unflash(): void {
+    clearTimeout(this.flashTimer);
+    this.flashes.forEach((f) => f.classList.remove('show'));
   }
 
   /** Pre-fills the join code (from an invite link). */

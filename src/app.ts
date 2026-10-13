@@ -51,6 +51,8 @@ type AppState = 'title' | 'playing' | 'over';
  */
 /** How long the player's god power slows time (seconds, real time). */
 const SLOWMO = 0.6;
+/** The phone's Back in the battle room: a second press within this long (ms) leaves the room. */
+const ROOM_BACK_WINDOW = 4000;
 
 /** " · 2 pauses left" for the online pause screen (Lens #87). */
 function pausesNote(left: number): string {
@@ -113,6 +115,8 @@ export class App {
   private pendingJoin: string | null = null;
   /** A history entry is pushed for the phone's Back button (see the constructor). */
   private backArmed = false;
+  /** When the phone's Back was last pressed in the battle room (a second Back soon after leaves it). */
+  private roomBackAt = -Infinity;
   /** Reconnecting after a reload: only show multiplayer if we turn out to be in a room. */
   private quietResume = false;
   private wakeLock: { release(): Promise<void> } | null = null;
@@ -770,7 +774,19 @@ export class App {
   private escape(back = false): void {
     const m = this.menus.current;
     if (m === 'mp') this.closeMultiplayer();
-    else if (m === 'room') return;
+    else if (m === 'room') {
+      // Esc does nothing here (a friend may be seated); the phone's Back asks to be pressed
+      // again — Android's own idiom — so a stray swipe can't drop the room.
+      if (!back) return;
+      const now = performance.now();
+      if (now - this.roomBackAt < ROOM_BACK_WINDOW) {
+        this.roomBackAt = -Infinity;
+        this.leaveRoom();
+      } else {
+        this.roomBackAt = now;
+        this.menus.mp.flash('Press Back again to leave the room.', ROOM_BACK_WINDOW);
+      }
+    }
     else if (m === 'howto' || m === 'settings' || m === 'bestiary' || m === 'feats' || m === 'difficulty' || m === 'riddles') this.menus.goBack();
     else if (this.state !== 'playing') return;
     else if (this.game instanceof NetGame) {
@@ -1113,6 +1129,8 @@ export class App {
       this.journal(g, false, 'online', g.foeName, 0);
     }
     this.mp?.leave();
+    // (A room's message — "press Back again to leave", a change of terms — stays behind.)
+    this.menus.mp.unflash();
     if (inBattle) this.toTitle();
     this.openMultiplayer();
   }
