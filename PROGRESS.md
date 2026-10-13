@@ -595,9 +595,14 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
    (Done: `Settings.lowQualityAuto` marks a battery saver the game switched on; the next visit
    starts without it and measures afresh, while one the player ticks in Settings stays (ticking
    clears the mark). smoke: auto → off on reload, chosen → kept.)
-248. [ ] No minimum-browser check: iOS 15 Safari lacks container queries (the whole phone layout)
+248. [x] No minimum-browser check: iOS 15 Safari lacks container queries (the whole phone layout)
    and `color-mix`; 15.0–15.3 lacks `Array.prototype.at`, which throws in `frame()`. Say "update
    iOS / use a newer browser" when `CSS.supports('container-type: size')` fails; state iOS 16.2+.
+   (Done in index.html as a plain classic script — the ES2022 bundle wouldn't even parse on iOS
+   14: no container queries / color-mix / `.at` / structuredClone / `Object.hasOwn` → "Mythwar
+   needs a newer browser — iOS 16.2 or later…", and main.ts starts no game. smoke stubs
+   container queries away and sees the message; mpengines (real WebKit, Firefox) and smoke
+   (Chrome) still start the game. README states the minimum.)
 249. [x] The progress-code box is 12 px (`.sproginput`, menus.css ~995): iOS zooms into text fields
    under 16 px on focus — and pinch is blocked, so there may be no way back. 16 px on touch.
    (Done: 16 px under `pointer: coarse` — iPads too.)

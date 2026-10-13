@@ -235,6 +235,19 @@ async function resumeFlow(page: Page): Promise<void> {
     saver.push(await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.settings.lowQuality as boolean));
   }
   check('an automatic battery saver ends with the visit; a chosen one stays', saver[0] === false && saver[1] === true, JSON.stringify(saver));
+  // (Backlog 248) A browser too old for the game (as iOS 15's Safari: no container queries) is
+  // told so — no half-broken game.
+  {
+    const old = await page.evaluateOnNewDocument(() => {
+      const real = CSS.supports.bind(CSS) as (...a: string[]) => boolean;
+      CSS.supports = ((...a: string[]) => (/container-type/.test(a.join(' ')) ? false : real(...a))) as typeof CSS.supports;
+    });
+    await page.goto(`${base}/`, { waitUntil: 'load' });
+    await sleep(300);
+    const shown = await page.evaluate(() => ({ text: document.querySelector('.tooold')?.textContent ?? '', game: !!(window as unknown as { __mythwar?: unknown }).__mythwar }));
+    check('a browser too old for the game says so (and starts no game)', /needs a newer browser/.test(shown.text) && !shown.game, JSON.stringify(shown));
+    await page.removeScriptToEvaluateOnNewDocument(old.identifier);
+  }
   await page.evaluate(() => localStorage.clear());
 }
 

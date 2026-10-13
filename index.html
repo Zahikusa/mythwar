@@ -26,6 +26,22 @@
   </head>
   <body>
     <div id="app"></div>
+    <!-- A browser too old for the game (an iPhone on iOS 15: no container queries — the whole
+         phone layout — no color-mix, no structuredClone) says so plainly, instead of a broken
+         layout or a crash. Plain old script: it runs even where the game's own can't. -->
+    <script>
+      (function () {
+        var css = window.CSS && CSS.supports;
+        var ok = !!css && CSS.supports('container-type: size') && CSS.supports('color', 'color-mix(in srgb, red, blue)') && !!Array.prototype.at && typeof structuredClone === 'function' && !!Object.hasOwn;
+        window.__mythwarTooOld = !ok;
+        if (ok) return;
+        var box = document.createElement('div');
+        box.className = 'tooold';
+        box.setAttribute('style', 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:#0b0716;color:#f4ecff;font:17px/1.5 system-ui,-apple-system,sans-serif;text-align:center');
+        box.innerHTML = '<div style="max-width:460px"><b style="font-size:22px;color:#ffe7a6">Mythwar needs a newer browser</b><br><br>On an iPhone or iPad: iOS 16.2 or later (Settings → General → Software Update). Elsewhere: a current Chrome, Edge, Firefox or Safari.</div>';
+        document.body.appendChild(box);
+      })();
+    </script>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

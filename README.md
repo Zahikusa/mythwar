@@ -12,6 +12,7 @@ and all sound and music is synthesized with WebAudio. No asset files.
 
 **▶ Play now: [zahikusa.github.io/mythwar](https://zahikusa.github.io/mythwar/)** — in any browser
 on a PC, Mac, iPhone, Android phone or tablet. Nothing to install; scan the QR code with a phone.
+(A current browser: iOS / iPadOS 16.2 or later; Chrome, Edge, Firefox or Safari from 2023 on.)
 For battles against a friend in the same Wi-Fi, see [Multiplayer](#multiplayer-same-wi-fi).
 
 ![Title screen over a live AI battle](docs/title.jpg)

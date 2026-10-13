@@ -22,7 +22,9 @@ document.addEventListener(
 );
 
 const root = document.getElementById('app')!;
-if (new URLSearchParams(location.search).has('gallery')) {
+if ((window as unknown as { __mythwarTooOld?: boolean }).__mythwarTooOld) {
+  // (index.html's check said so on screen: no game to start in this browser.)
+} else if (new URLSearchParams(location.search).has('gallery')) {
   import('./gallery.ts').then((m) => m.runGallery(root));
 } else {
   const app = new App(root);
