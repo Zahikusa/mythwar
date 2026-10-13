@@ -45,8 +45,9 @@ the improvement backlog below (verified, committed) and add what the review find
    hall (256 networks × 64 names, ~1.5 MB of JSON) could stall every running battle's turns for
    a frame or two every 5 s. Write asynchronously, one write in flight at a time. (Done: background
    writes, newest pending state wins; `saveNow` on shutdown, after which nothing older lands.)
-12. [ ] `src/ui/menus.ts` results panel tabs (Armies / Chronicle / Legend) are plain buttons: no
+12. [x] `src/ui/menus.ts` results panel tabs (Armies / Chronicle / Legend) are plain buttons: no
    `role="tablist"`/`tab`, no `aria-selected` — screen readers don't know which panel shows.
+   (Done: tablist, tabs with aria-selected/aria-controls, labelled tabpanels; smoke checks.)
 13. [ ] `scripts/perfcheck.ts`: readings vary up to 3× between runs on this machine (0.48–1.97 ms
    per frame), so the 3 ms budget check is weak. Take the median of several passes and say
    how much they spread.

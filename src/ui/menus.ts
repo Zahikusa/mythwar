@@ -55,6 +55,9 @@ export interface MenuCallbacks {
   emote(id: EmoteId): boolean;
 }
 
+/** Distinct ids for the results panel's tabs (a new panel each battle). */
+let tabSerial = 0;
+
 /** Quick messages offered on the online results (sportsmanship, and an invitation to go again). */
 const RESULT_EMOTES: EmoteId[] = ['wp', 'gl', 'thx'];
 
@@ -978,16 +981,25 @@ export class Menus {
     if (champion && myth) panels.push({ label: 'Legend', title: `The legend of the ${champion.name}`, el: h('div', { class: 'chart chron legend' }, h('div', { class: 'ctitle', text: `The legend of the ${champion.name}` }), h('p', { class: 'clegend', text: myth }), h('p', { class: 'cnote', text: 'Every creature’s story is in the Bestiary.' })) });
     if (panels.length <= 1) return panels[0]?.el ?? null;
     const wrap = h('div', { class: 'storypanel' });
-    const tabs = h('div', { class: 'ctabs' });
+    // (Real tabs for assistive technology: a tablist, tabs that say which is selected, panels
+    // that name their tab.)
+    const tabs = h('div', { class: 'ctabs', role: 'tablist', 'aria-label': 'Battle report' });
+    const uid = `vtab${++tabSerial}`;
     panels.forEach((p, i) => {
       // (Shorter titles leave room for the tabs on the same line.)
       p.el.querySelector('.ctitle')!.textContent = p.label === 'Legend' ? 'Legend' : p.title;
       if (i > 0) p.el.classList.add('hidden');
-      const b = h('button', { class: `ctab${i === 0 ? ' on' : ''}`, text: p.label }) as HTMLButtonElement;
+      p.el.id = `${uid}p${i}`;
+      p.el.setAttribute('role', 'tabpanel');
+      p.el.setAttribute('aria-labelledby', `${uid}t${i}`);
+      const b = h('button', { class: `ctab${i === 0 ? ' on' : ''}`, text: p.label, role: 'tab', id: `${uid}t${i}`, 'aria-controls': p.el.id, 'aria-selected': String(i === 0) }) as HTMLButtonElement;
       onTap(b, () => {
         this.cb.sound('click');
         for (const q of panels) q.el.classList.toggle('hidden', q !== p);
-        for (const t of tabs.children) t.classList.toggle('on', t === b);
+        for (const t of tabs.children) {
+          t.classList.toggle('on', t === b);
+          t.setAttribute('aria-selected', String(t === b));
+        }
       });
       tabs.appendChild(b);
     });
