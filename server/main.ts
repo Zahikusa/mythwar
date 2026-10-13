@@ -100,6 +100,8 @@ http.on('error', (e: NodeJS.ErrnoException) => {
 
 http.listen(port, '0.0.0.0');
 http.on('listening', () => {
+  // (The port actually bound: --port 0 asks the system for any free one.)
+  port = (http.address() as { port: number }).port;
   const urls = lanAddresses().map((ip) => `${scheme}://${ip}:${port}/`);
   console.log('\n  Mythwar is running.\n');
   const hall = mp.lobby.hallStats();

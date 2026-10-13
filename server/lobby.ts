@@ -1,6 +1,6 @@
 import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanDevice, cleanName, cleanRank, cleanSigil, cleanTrials } from '../src/net/protocol.ts';
 import type { ClientMsg, HallEntry, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
-import { createHash, randomBytes, scryptSync } from 'node:crypto';
+import { createHash, randomBytes, scrypt, scryptSync } from 'node:crypto';
 import type { ServerStore } from './store.ts';
 import type { TrialId } from '../src/sim/data.ts';
 import { DIFFICULTIES } from '../src/ai/ai.ts';
@@ -145,6 +145,7 @@ export class Lobby {
   private hallSalt = randomBytes(16).toString('hex');
   /** Hall keys of the networks seen (see hallKey: each costs a slow hash once). */
   private readonly hallKeys = new Map<string, string>();
+  private readonly hallKeyPending = new Set<string>();
   private lastHallSave = -Infinity;
   private readonly now: () => number;
   private readonly random: () => number;
@@ -220,6 +221,7 @@ export class Lobby {
    * trusted local-network clients).
    */
   connect(conn: Conn, network = 'lan', quota = ''): { message: (data: string) => void; close: () => void } {
+    this.warmHallKey(network);
     let session: Session | null = null;
     const rate = { start: this.now(), msgs: 0, cmds: 0 };
     return {
@@ -664,6 +666,22 @@ export class Lobby {
    * The key a network's hall is kept under (Lens #98): on a public server a network is a home's
    * public IP address, which must not end up in a file — so it is a salted hash ('lan' stays).
    */
+  /**
+   * Starts a network's slow hash in the background when it first connects (see hallKey), so the
+   * server's loop never waits for it; the lists are sent again once it is ready.
+   */
+  private warmHallKey(network: string): void {
+    if (network === 'lan' || this.hallKeys.has(network) || this.hallKeyPending.has(network)) return;
+    this.hallKeyPending.add(network);
+    scrypt(network, this.hallSalt, 16, { N: 16384, r: 8, p: 1 }, (err, buf) => {
+      this.hallKeyPending.delete(network);
+      if (err || this.hallKeys.has(network)) return;
+      if (this.hallKeys.size >= 4096) this.hallKeys.clear();
+      this.hallKeys.set(network, `n:${buf.toString('base64url')}`);
+      this.roomsDirty = true;
+    });
+  }
+
   private hallKey(network: string): string {
     if (network === 'lan') return 'lan';
     // A slow, memory-hard hash (scrypt, ~20 ms and 16 MB each): the salt is kept with the file,
@@ -680,6 +698,8 @@ export class Lobby {
 
   /** The network's champions: most head-to-head wins first (then fewest losses, co-op wins). */
   private hallOf(network: string): HallEntry[] {
+    // (Not ready yet — its slow hash is still running: no Hall in this list; the next one has it.)
+    if (network !== 'lan' && !this.hallKeys.has(network)) return [];
     const hall = this.halls.get(this.hallKey(network));
     if (!hall) return [];
     // (Champions only — someone with a victory — before the top five are taken: a co-op hero

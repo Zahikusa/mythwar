@@ -602,7 +602,7 @@ describe('battle', () => {
     expect(Object.keys(watcher.last('rooms')!.hall![0]).sort()).toEqual(['coop', 'l', 'name', 'sigil', 'w']);
   });
 
-  it("a public network's hall is stored under a salted hash, never its address (Lens #98)", () => {
+  it("a public network's hall is stored under a salted hash, never its address (Lens #98)", async () => {
     const store = memoryStore();
     const { lobby, run } = setup({ store });
     const a = new FakeClient(lobby, '203.0.113.7');
@@ -620,14 +620,21 @@ describe('battle', () => {
     expect(text).not.toContain('203.0.113');
     expect(Object.keys(store.saved!.halls)).toEqual([expect.stringMatching(/^n:/)]);
     // After a restart the same network finds its hall again (same salt); another doesn't.
-    const { lobby: again } = setup({ store });
+    const { lobby: again, run: runAgain } = setup({ store });
     const home = new FakeClient(again, '203.0.113.7');
     home.hello('Cy');
     home.send({ type: 'watchRooms', on: true });
-    expect(home.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Ada']);
+    // (The network's slow hash runs in the background: the first list has no Hall yet — the
+    // server's loop doesn't wait — and the next list, once it's ready, has.)
+    expect(home.last('rooms')!.hall).toEqual([]);
     const elsewhere = new FakeClient(again, '198.51.100.1');
     elsewhere.hello('Dee');
     elsewhere.send({ type: 'watchRooms', on: true });
+    for (let i = 0; i < 50 && !home.last('rooms')!.hall!.length; i++) {
+      await new Promise((r) => setTimeout(r, 20));
+      runAgain(300);
+    }
+    expect(home.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Ada']);
     expect(elsewhere.last('rooms')!.hall).toEqual([]);
   });
 

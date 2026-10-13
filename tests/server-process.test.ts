@@ -20,7 +20,7 @@ const dir = mkdtempSync(join(tmpdir(), 'mythwar-server-'));
 writeFileSync(join(dir, 'index.html'), '<!doctype html><title>test</title>');
 writeFileSync(join(dir, 'names.txt'), 'badword\n');
 const data = join(dir, 'data.json');
-const port = 18000 + Math.floor(Math.random() * 2000);
+let port = 0;
 
 function start(): Promise<ChildProcess> {
   const child = spawn(process.execPath, ['server/main.ts', '--port', String(port), '--dir', dir, '--data', data, '--names', join(dir, 'names.txt'), '--quiet'], { stdio: ['ignore', 'pipe', 'pipe'] });
@@ -28,7 +28,12 @@ function start(): Promise<ChildProcess> {
     let out = '';
     child.stdout!.on('data', (d) => {
       out += String(d);
-      if (out.includes('Mythwar is running')) resolve(child);
+      // (Started with --port 0 the first time: the server says which port it got.)
+      const m = /localhost:(\d+)\//.exec(out);
+      if (out.includes('Mythwar is running') && m) {
+        port = Number(m[1]);
+        resolve(child);
+      }
     });
     child.stderr!.on('data', (d) => (out += String(d)));
     child.on('exit', (code) => reject(new Error(`server exited (${code}): ${out}`)));

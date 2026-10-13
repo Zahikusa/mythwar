@@ -130,11 +130,13 @@ the improvement backlog below (verified, committed) and add what the review find
    restarts, two-tab battles not counted; turns also go out right after a command; the lobby's
    real "Connecting…" texts; "small interface"), README ("sixteen deeds" → eighteen), DESIGN
    (surges every 100–160 s, not "2–3 minutes"). (Done, all nine.)
-36. [ ] `server/lobby.ts` `hallKey`: the scrypt (≈19 ms) runs on the server's 4-ms loop the first
+36. [x] `server/lobby.ts` `hallKey`: the scrypt (≈19 ms) runs on the server's 4-ms loop the first
    time a public network shows up — a hitch for every running battle. Compute it asynchronously
-   when the network first connects.
-37. [ ] `server/main.ts --port 0` (any free port) prints "localhost:0" — the real port is never
+   when the network first connects. (Done: `scrypt` in the background on first connection; the
+   list shows that network's Hall once it's ready; the sync path stays as a fallback.)
+37. [x] `server/main.ts --port 0` (any free port) prints "localhost:0" — the real port is never
    shown, so scripts and tests have to guess a free one (tests/server-process.test.ts does).
+   (Done: the bound port is printed; the process test starts on port 0.)
 38. [ ] The game bundle grew from ~300 kB to 400 kB (135 kB gzipped) over phase 2: find what grew
    and whether rarely-used screens (Bestiary myths, riddles) should load on demand.
 39. [ ] No end-to-end check of Settings → "Copy playtest journal" (#91) or the break note in a real
