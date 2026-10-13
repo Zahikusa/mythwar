@@ -15,7 +15,8 @@ online battle shares only what the other player needs to see.
 
 Nothing of this leaves the device by itself. Three buttons copy something to the clipboard, and
 only when you press them: *Copy my code* (progress code), *Copy playtest journal*, *Copy result*.
-*Reset records* in Settings clears your records, online records and the playtest journal;
+*Reset records* in Settings clears your records, online records and the playtest journal, and
+gives the browser a new device id (its old Hall line is no longer linked to it);
 clearing the site's data in the browser removes everything.
 
 ## When you play online

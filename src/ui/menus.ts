@@ -22,6 +22,7 @@ import type { Feat } from './feats.ts';
 import type { MpMenuCallbacks } from './mpmenus.ts';
 import type { EmoteId, EndReason } from '../net/protocol.ts';
 import { EMOTES, cleanName } from '../net/protocol.ts';
+import { forgetDevice } from '../net/client.ts';
 
 /** Results of a battle against another player (instead of an AI difficulty). */
 export interface OnlineResult {
@@ -708,6 +709,8 @@ export class Menus {
       s.records = {};
       s.online = {};
       s.journal = [];
+      // (…and the Hall of champions no longer links its old line to this browser.)
+      forgetDevice();
       this.cb.settingsChanged(s);
       resetRecords.dataset.armed = '';
       resetRecords.querySelector('span')!.textContent = 'Records cleared';

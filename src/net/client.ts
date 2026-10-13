@@ -361,6 +361,15 @@ function deviceId(): string | undefined {
   }
 }
 
+/** Gives this browser a new id from the next connection on (Settings → Reset records). */
+export function forgetDevice(): void {
+  try {
+    localStorage.removeItem(DEVICE_KEY);
+  } catch {
+    // (no storage, no id)
+  }
+}
+
 function safeSessionStorage(): Storage | null {
   try {
     return typeof sessionStorage !== 'undefined' ? sessionStorage : null;
