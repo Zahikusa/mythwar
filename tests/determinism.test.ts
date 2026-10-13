@@ -99,6 +99,22 @@ describe('protocol helpers', () => {
     expect([...cleanName('x'.repeat(40))].length).toBe(16);
   });
 
+  it('drops invisible characters a name could hide behind', () => {
+    // Zero-width space, right-to-left override, a bidi isolate, a soft hyphen, a byte-order mark.
+    expect(cleanName('Ada​')).toBe('Ada');
+    expect(cleanName('‮Ada')).toBe('Ada');
+    expect(cleanName('⁨Ada⁩')).toBe('Ada');
+    expect(cleanName('A­d﻿a')).toBe('Ada');
+    // A lone joiner goes; the joiner inside an emoji stays (👩‍🚀, ❤️‍🔥).
+    expect(cleanName('Ada‍')).toBe('Ada');
+    expect(cleanName('Bo \u{1f469}‍\u{1f680}')).toBe('Bo \u{1f469}‍\u{1f680}');
+    expect(cleanName('❤️‍\u{1f525}')).toBe('❤️‍\u{1f525}');
+    // Accents stay (composed); a tower of combining marks is cut to two.
+    expect(cleanName('Zoé')).toBe('Zoé');
+    expect(cleanName('Z' + '̶̷̸̹̺')).toBe('Z̶̷');
+    expect(cleanName('​​')).toBe('Player');
+  });
+
   it('cleans room codes', () => {
     expect(cleanCode(' abcd ')).toBe('ABCD');
     expect(cleanCode('AB-CD')).toBe('ABCD');

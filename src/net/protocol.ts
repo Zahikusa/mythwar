@@ -321,11 +321,22 @@ export function cleanRank(raw: unknown): number {
   return typeof raw === 'number' && Number.isInteger(raw) && raw >= 0 && raw < RANKS.length ? raw : 0;
 }
 
-/** Sanitizes a player name (printable, trimmed, at most NAME_MAX characters). */
+/**
+ * Sanitizes a player name (printable, trimmed, at most NAME_MAX characters). Invisible format
+ * characters go — a zero-width space or a right-to-left override would let "Ada​" pass for
+ * "Ada" (no "(2)" in the room) — but for the joiner inside an emoji (👩‍🚀); combining marks
+ * stack at most two deep.
+ */
 export function cleanName(raw: unknown): string {
-  const s = typeof raw === 'string' ? raw : '';
-  // eslint-disable-next-line no-control-regex
-  const clean = s.replace(/[\u0000-\u001f\u007f<>]/g, '').replace(/\s+/g, ' ').trim();
+  const s = typeof raw === 'string' ? raw.normalize('NFC') : '';
+  const clean = s
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\u007f<>]/g, '')
+    // (No lookbehind: Safari before 16.4 can't parse one — and then can't parse the game.)
+    .replace(/\p{Cf}/gu, (ch, i: number, all: string) => (ch === '‍' && /\p{Extended_Pictographic}️?$/u.test(all.slice(0, i)) && /^\p{Extended_Pictographic}/u.test(all.slice(i + 1)) ? ch : ''))
+    .replace(/(\p{M}{2})\p{M}+/gu, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
   return [...clean].slice(0, NAME_MAX).join('') || 'Player';
 }
 

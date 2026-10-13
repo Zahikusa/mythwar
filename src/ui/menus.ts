@@ -1408,10 +1408,12 @@ function armyChart(history: HistorySample[], me: Team, foeName: string, ageUps: 
     hair.setAttribute('x1', String(x));
     hair.setAttribute('x2', String(x));
     hair.setAttribute('visibility', 'visible');
-    tip.innerHTML =
-      '<b>' + fmtTime(best.t) + '</b>' +
-      '<span><i style="background:' + CHART_YOU + '"></i>You ' + fmt(best.army[me]) + '</span>' +
-      '<span><i style="background:' + CHART_FOE + '"></i>' + foeName + ' ' + fmt(best.army[foe]) + '</span>';
+    // (Built as text: online, `foeName` is another player's — never markup.)
+    tip.replaceChildren(
+      h('b', { text: fmtTime(best.t) }),
+      h('span', null, h('i', { style: 'background:' + CHART_YOU }), `You ${fmt(best.army[me])}`),
+      h('span', null, h('i', { style: 'background:' + CHART_FOE }), `${foeName} ${fmt(best.army[foe])}`),
+    );
     tip.classList.remove('hidden');
     // Place the tip in the plot's own px (unzoomed, unrotated), like its offsetWidth.
     const cw = plot.clientWidth;

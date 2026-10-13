@@ -5,7 +5,7 @@ import { hashWorld } from '../sim/hash.ts';
 import type { Command, CommandResult, SimEvent, Team } from '../sim/types.ts';
 import { World } from '../sim/world.ts';
 import type { ClientMsg, EndReason, NetCommand, PauseState, ScheduledCommand, ServerMsg } from './protocol.ts';
-import { PAUSES_PER_BATTLE, battleWorld } from './protocol.ts';
+import { NAME_MAX, PAUSES_PER_BATTLE, battleWorld } from './protocol.ts';
 import { AI_PROFILES } from '../ai/ai.ts';
 import type { Difficulty } from '../ai/ai.ts';
 
@@ -96,7 +96,10 @@ export class NetGame extends Game {
     this.seat = init.seat;
     this.team = coop ? 0 : init.seat;
     this.coop = coop;
-    this.names = init.names;
+    // (Text only from here on, whatever the server sent — a page sent to another server by
+    // `?server=` must not take markup from it. "Ada (2)" may run past a typed name's length.)
+    const shown = (n: unknown, i: number) => String(n ?? '').replace(/[<>&"]/g, '').slice(0, 2 * NAME_MAX) || `Player ${i + 1}`;
+    this.names = [shown(init.names?.[0], 0), shown(init.names?.[1], 1)];
     this.send = init.send;
     this.now = init.now ?? (() => performance.now());
     if (init.snapshot) this.applySnapshot(init.snapshot, true);

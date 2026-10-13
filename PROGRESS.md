@@ -139,6 +139,47 @@ keyboard, gamepad), checked with puppeteer, 2026-10-13.)
    (two `/** */` in a row — an editor shows only the second): `MpScreens`, `App`, `Hud`,
    `hallKey`, `cry`, `battleTip`, smoke's `resultsShown`, and three halves of one comment.
    (Done: each back on its declaration or merged; an awk check over all .ts files finds none.)
+(Items 281–289: an independent review of hostile or buggy peers — the server as it would face
+the internet — with scripts against the real Lobby / attachMultiplayer / serveStatic, 2026-10-13.
+Checked fine: command validation, seats and teams from the server only, malformed / binary /
+oversized frames, static-file traversal (encoded `..`, `%5c`, `%00`, drive letters, UNC, CON),
+the save file re-cleaned on load.)
+281. [x] Client: the results' army-chart tooltip (menus.ts ~1411) put `foeName` into `innerHTML` —
+   and `?server=` (honoured in every build, GitHub Pages too) lets a link point the page at any
+   server, whose names NetGame kept as sent: `<img onerror=…>` would run on the game's origin.
+   (Done: the tooltip is built with `h()` and text; NetGame keeps names as plain text (`<>&"`
+   dropped, bounded) whatever the server sends. smoke hovers the chart and checks the tooltip —
+   there was no check of it at all.)
+282. [x] `cleanName` kept invisible format characters (zero-width space, right-to-left override,
+   bidi isolates) and towers of combining marks: "Ada​" passed the room's "(2)" rule and
+   showed as "Ada" beside "Ada". (Done: `\p{Cf}` dropped but the joiner inside an emoji, marks two
+   deep at most, NFC; written without a lookbehind — Safari < 16.4 (the minimum is 16.2) can't
+   parse one, and a regex literal it can't parse stops the whole bundle. Test.)
+283. [ ] `server/net.ts` ~91: `send` never looks at `ws.bufferedAmount`, and any message counts as
+   a sign of life — a client that stops reading but sends `resync` 100×/s gets a snapshot queued
+   each time (measured 3.9 MB after 20 s, growing ~200 kB/s, 32 sockets per address). Close a
+   socket whose send buffer passes ~512 kB; rate-limit `resync` (~1/s) and `watchRooms`; run the
+   rate check before parsing and before the "Not JSON" / "Bad message" replies.
+284. [ ] `server/lobby.ts` ~258/882: every connection from a new network starts a 16-MB scrypt for
+   the Hall key before `hello`, unqueued — 400 connections from different /64s slowed a plain
+   readFile from 0.8 ms to 2.5 s (the libuv pool is shared with static files and saves). Hash
+   lazily (first needed at a battle's end) with 1–2 in flight.
+285. [ ] Public-server limits: per-/64 quotas multiply over a /56 (256 × 8 rooms = the 2000-room
+   cap: "The server is full"); no server-wide socket cap; a socket that never says `hello`
+   lives forever (ws answers pings). A 10-s hello deadline, a global cap, /56 and /48 tiers.
+286. [ ] Room codes can be brute-forced: 27⁴ = 531,441 codes, joins only under the 120 msgs/s
+   limit — 32 sockets cover them all in ~2.3 min. Count failed joins per session / address with
+   a backoff; longer codes on a public server.
+287. [ ] The Hall can be wiped or farmed: 256 self-duels from 256 /64s evict a network's Hall (LRU
+   of 256 networks, saved); two invented device ids farm wins within one network. Don't count
+   forfeits before some battle time; cap new Hall lines per network per hour; keep networks with
+   history from eviction. (Only matters on a public server — LAN players see each other.)
+288. [ ] `--trust-proxy` (net.ts ~72) trusts X-Forwarded-For from anyone: with the flag and the port
+   reachable directly, quotas are bypassed; behind a proxy without it, everyone is 127.0.0.1 =
+   one "LAN". Trust the header only from loopback / a configured proxy; warn at startup.
+289. [ ] A griefer in a waiting room can make the server broadcast room updates up to 120×/s to the
+   other player (alternating reported ping, renames, trial toggles that un-ready both). Coalesce
+   room broadcasts (~4/s, as room lists are).
 271. [x] docs/MULTIPLAYER.md's "What happens when…" lacks run #10's room behaviours: a short app
    switch keeps the seat and Ready (#264), a longer one redials at once on return (#243), room
    news takes turns (#262), and a silent phone mid-battle (#222 — there) vs in the room.

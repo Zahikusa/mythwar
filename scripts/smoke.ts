@@ -371,8 +371,26 @@ async function journalFlow(page: Page): Promise<void> {
   };
   // An hour of battle in this sitting so far (frames keep the sitting alive).
   await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.sitting.played = 3605));
+  // (A battle this short has no army chart yet: a few earlier samples give it one.)
+  await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.history.unshift({ t: 0, army: [0, 0] }, { t: 0.2, army: [40, 25] }, { t: 0.4, army: [55, 70] }));
   const first = await win();
   check('after an hour of battle the results suggest a break (instead of the next foe)', first.menu === 'over' && /over an hour/.test(first.note) && !first.next, JSON.stringify(first));
+  // (Backlog 281) The army chart's hover names both sides — built as text (online the foe's
+  // name is another player's), not as markup.
+  {
+    const box = await page.evaluate(() => {
+      const r = document.querySelector('.screen.over .cplot svg')?.getBoundingClientRect();
+      return r && r.width > 0 ? { x: r.left + r.width * 0.6, y: r.top + r.height / 2 } : null;
+    });
+    if (box) await page.mouse.move(box.x, box.y);
+    const tip = await page.evaluate(() => {
+      const t = document.querySelector<HTMLElement>('.screen.over .ctip');
+      const legend = [...document.querySelectorAll('.screen.over .clegend span')].map((e) => e.textContent ?? '');
+      return { text: t?.textContent ?? '', shown: !!t && !t.classList.contains('hidden'), tags: [...(t?.querySelectorAll('*') ?? [])].map((e) => e.tagName).join(','), foe: legend[1] ?? '' };
+    });
+    check("results: the army chart's hover names both sides", !!box && tip.shown && /^\d+:\d\dYou \d+/.test(tip.text) && !!tip.foe && tip.text.includes(`${tip.foe} `) && tip.tags === 'B,SPAN,I,SPAN,I', JSON.stringify({ ...tip, box }));
+    await page.mouse.move(2, 2);
+  }
   const stored = await page.evaluate(() => {
     const j = JSON.parse(localStorage.getItem('mythwar.settings.v1') ?? '{}').journal ?? [];
     return { n: j.length as number, last: j.at(-1) };
