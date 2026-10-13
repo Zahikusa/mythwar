@@ -988,7 +988,10 @@ async function run(page: Page, label: string, viewport: { width: number; height:
         m.chronicle = Array.from({ length: 10 }, (_, i) => `${i + 1}:00 — Something worth remembering happened in this battle, in the middle lane.`);
         m.showResults(g.world, g.playerTeam, app.difficulty, g.history, g.ageUps);
         const el = document.querySelector('.screen.over') as HTMLElement;
-        const out = { scroll: el.scrollHeight, client: el.clientHeight };
+        // (Room to spare: the screen's height minus its content's, from the children's boxes.)
+        const boxes = [...el.children].map((k) => k.getBoundingClientRect()).filter((r) => r.height > 0);
+        const used = Math.max(...boxes.map((r) => r.bottom)) - Math.min(...boxes.map((r) => r.top));
+        const out = { scroll: el.scrollHeight, client: el.clientHeight, spare: Math.round(el.clientHeight - used) };
         m.featsEarned = [];
         m.newBestStars = 0;
         m.epilogue = null;
@@ -997,7 +1000,7 @@ async function run(page: Page, label: string, viewport: { width: number; height:
         m.showResults(g.world, g.playerTeam, app.difficulty, g.history, g.ageUps);
         return out;
       });
-      fits.push(`${w}×${h}: ${fit.scroll}/${fit.client}`);
+      fits.push(`${w}×${h}: ${fit.scroll}/${fit.client}, ${fit.spare} px to spare`);
       check(`results in their fullest form fit ${w}×${h}`, fit.scroll <= fit.client + 1, fits.at(-1));
     }
     await page.setViewport({ width: viewport.width, height: viewport.height, deviceScaleFactor: 1 });

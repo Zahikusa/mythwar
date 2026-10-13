@@ -27,9 +27,10 @@ the improvement backlog below (verified, committed) and add what the review find
    up to 0.8 s for the swing to end; a sandbox melee still showed 5 gestures in 12 kills.)
 6. [x] `package.json`: the new tools `scripts/servercost.ts` and `scripts/ogcard.mjs` have no npm
    aliases (economy, designcheck, puzzlecheck do). (Done: `npm run servercost`, `npm run ogcard`.)
-7. [ ] Results at 1600×900 fit with zero headroom in their fullest form (900/900): the next line
+7. [x] Results at 1600×900 fit with zero headroom in their fullest form (900/900): the next line
    added will overflow (smoke now catches it). Consider the side-by-side results layout up to
-   ~940 px instead of only ≤ 860 px.
+   ~940 px instead of only ≤ 860 px. (Done: between 861 and 1000 px the table sits beside the
+   chart, the verdict stays stacked; smoke now reports the room to spare.)
 8. [x] `scripts/ogcard.mjs`, `scripts/crop.mjs`, `scripts/shoot.ts`, `scripts/smoke.ts` hard-code
    `C:/Program Files/Google/Chrome/...`: the tools fail on macOS/Linux. Take `CHROME` from the
    environment and try the usual install paths. (Done: `scripts/chrome.ts`, used by all 15.)
