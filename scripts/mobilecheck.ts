@@ -137,7 +137,7 @@ const STEPS: Step[] = [
 ];
 
 interface Problem {
-  kind: 'scroll' | 'zoom' | 'outside' | 'clipped' | 'small' | 'panel' | 'error';
+  kind: 'scroll' | 'zoom' | 'outside' | 'clipped' | 'small' | 'panel' | 'tiny' | 'error';
   what: string;
 }
 
@@ -208,6 +208,17 @@ function inspect(safe: Insets): Problem[] {
     const size = Math.min(tw, th);
     if (size < 44 - 0.5) out.push({ kind: 'small', what: `${name(el)} ${Math.round(tw)}×${Math.round(th)}` });
   }
+  // Readable text: nothing on screen below 10 px (the HUD's small numbers are 10).
+  const tiny = new Set<string>();
+  for (const el of document.querySelectorAll<HTMLElement>('body *')) {
+    if (![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim())) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2 || r.right < 0 || r.bottom < 0 || r.left > vw || r.top > vh) continue;
+    const cs = getComputedStyle(el);
+    if (cs.visibility !== 'visible' || el.closest('.sronly') || (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true }))) continue;
+    if (parseFloat(cs.fontSize) < 9.95) tiny.add(`${name(el)} ${cs.fontSize}`);
+  }
+  for (const t of tiny) out.push({ kind: 'tiny', what: `text ${t}` });
   // A menu screen never scrolls as a whole (its title and buttons would go with it): only its body.
   for (const el of document.querySelectorAll<HTMLElement>('.screen.active')) {
     const cs = getComputedStyle(el);
@@ -375,17 +386,27 @@ async function main(): Promise<void> {
   const base = `http://127.0.0.1:${(http.address() as { port: number }).port}`;
   const { chromium, webkit } = await import('playwright');
   const chrome = findChrome();
-  const browsers: Partial<Record<Device['engine'], Browser>> = {};
+  // (A browser per view: WebKit throttles the animations of pages it doesn't consider in front,
+  // so with several views in one browser a sheet could stay at its first, invisible frame.)
+  const launch: Partial<Record<Device['engine'], () => Promise<Browser>>> = { webkit: () => webkit.launch() };
+  if (chrome) launch.chromium = () => chromium.launch({ executablePath: chrome });
+  else console.log('(no Chrome/Edge found: the Android profiles are skipped)');
   try {
-    browsers.webkit = await webkit.launch();
-    if (chrome) browsers.chromium = await chromium.launch({ executablePath: chrome });
-    else console.log('(no Chrome/Edge found: the Android profiles are skipped)');
     const jobs: (() => Promise<string[]>)[] = [];
     for (const d of DEVICES) {
-      const b = browsers[d.engine];
-      if (!b || !match(fDevice, d.name)) continue;
+      const start = launch[d.engine];
+      if (!start || !match(fDevice, d.name)) continue;
       for (const mode of ['tab', 'app'] as const)
-        for (const orient of ['p', 'l'] as const) if (match(fMode, mode) && match(fOrient, orient)) jobs.push(() => runView(b, base, d, mode, orient));
+        for (const orient of ['p', 'l'] as const)
+          if (match(fMode, mode) && match(fOrient, orient))
+            jobs.push(async () => {
+              const b = await start();
+              try {
+                return await runView(b, base, d, mode, orient);
+              } finally {
+                await b.close();
+              }
+            });
     }
     // A few views at a time (each is a fresh phone: its own storage).
     let next = 0;
@@ -394,7 +415,6 @@ async function main(): Promise<void> {
     };
     await Promise.all([worker(), worker(), worker(), worker()]);
   } finally {
-    for (const b of Object.values(browsers)) await b?.close();
     mp.close();
     http.close();
   }
