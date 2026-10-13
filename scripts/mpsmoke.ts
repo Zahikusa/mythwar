@@ -202,6 +202,8 @@ async function main(): Promise<void> {
     await waitFor(dup, 'duplicate tab connected', () => document.querySelector('.mpstatus.ok') !== null);
     // (The welcome carries the session's room: once welcomed, a taken-over seat would show.)
     await waitFor(dup, 'duplicate tab welcomed', () => (window as any).__mythwar.mp.welcomed === true);
+    // (…and A, had it been wrongly replaced, would hear so right after: give that a moment.)
+    await sleep(300);
     const dupRoom = await dup.evaluate(() => (window as any).__mythwar.mp.room?.code ?? null);
     const aStill = await a.evaluate(() => ({ online: (window as any).__mythwar.mp.state, room: (window as any).__mythwar.mp.room?.code }));
     check('duplicated tab gets its own session', dupRoom === null && aStill.online === 'online' && aStill.room === code, JSON.stringify({ dupRoom, aStill }));
@@ -232,16 +234,21 @@ async function main(): Promise<void> {
     check('countdown shows', /^[123]$/.test(countdown), countdown);
     // (Backlog 148) The number sits below the opening banner's words, not on them (both screens).
     for (const [p, who] of [[a, 'desktop'], [b, 'phone']] as const) {
+      // (Each screen counts on its own clock: wait for this one's number.)
+      await waitFor(p, `the countdown on the ${who}`, () => !!document.querySelector('.ncount.show') && /^\d$/.test(document.querySelector('.ncount')!.textContent ?? ''), 4000);
       const clear = await p.evaluate(() => {
-        const n = document.querySelector('.ncount.show');
+        const n = document.querySelector<HTMLElement>('.ncount.show');
         const words = [...document.querySelectorAll('.hud .banner.show :is(.bkick, .btitle, .bsub, .blore)')].map((e) => e.getBoundingClientRect()).filter((r) => r.height > 0);
         if (!n || !words.length) return { ok: false, why: `count ${!!n}, banner lines ${words.length}` };
+        // (Measured at rest: the pop animation scales the number up to 1.6× as it lands.)
+        n.style.animation = 'none';
         const r = n.getBoundingClientRect();
+        n.style.animation = '';
         // (Rotated phones turn the stage: compare along the stage's vertical, whichever axis that is.)
         const rotated = (window as any).__mythwar.rotated;
-        const mid = rotated ? innerWidth - (r.left + r.width / 2) : r.top + r.height / 2;
+        const top = rotated ? innerWidth - r.right : r.top;
         const end = Math.max(...words.map((w) => (rotated ? innerWidth - w.left : w.bottom)));
-        return { ok: mid > end, why: `count centre ${Math.round(mid)}, banner ends ${Math.round(end)}` };
+        return { ok: top >= end, why: `the number's box starts at ${Math.round(top)}, the banner ends at ${Math.round(end)}` };
       });
       check(`countdown below the opening banner (${who})`, clear.ok, clear.why);
     }
@@ -400,6 +407,15 @@ async function main(): Promise<void> {
       check('leaving counts as a defeat on both sides', ta.online[bName]?.w >= 1 && tb.online[aName]?.l >= 1 && tb.last?.mode === 'online' && tb.last?.won === false, JSON.stringify({ a: ta.online[bName], b: tb.online[aName], journal: tb.last?.mode }));
     }
     await waitFor(b, 'room listed', () => document.querySelectorAll('.mproom').length === 1);
+    // (Backlog 151) The list and the Hall arrived after the lobby showed: if they now run under the
+    // pinned Back, the buttons get their "more below" backdrop (it was only checked on show/scroll).
+    await waitFor(b, 'the Hall line shown', () => (document.querySelector('.mphall')?.textContent ?? '').includes('Champions'), 4000);
+    await b.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    const more = await b.evaluate(() => {
+      const s = document.querySelector<HTMLElement>('.screen.mp')!;
+      return { below: s.scrollHeight - s.scrollTop - s.clientHeight > 2, marked: s.classList.contains('more') };
+    });
+    check('lobby: the "more below" backdrop follows content that arrives later', more.below === more.marked, JSON.stringify(more));
     await shot(b, '10-lobby-phone');
     await shot(a, '9-results-desktop');
 
@@ -423,7 +439,7 @@ async function main(): Promise<void> {
     // (Backlog 145) "Bo is away" takes the intro banner's place instead of showing through it.
     await waitFor(a, 'the away notice shows', () => !!document.querySelector('.netoverlay .nbanner.show'), 4000);
     const intro = await a.evaluate(() => [...document.querySelectorAll<HTMLElement>('.hud .banner.show')].map((e) => getComputedStyle(e).visibility));
-    check('the away notice hides the intro banner under it', intro.every((v) => v === 'hidden'), JSON.stringify(intro));
+    check('the away notice hides the intro banner under it', intro.length > 0 && intro.every((v) => v === 'hidden'), JSON.stringify(intro));
     await shot(a, '12a-away-at-start');
     await b.evaluate(() => {
       Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });

@@ -117,4 +117,16 @@ describe('an online battle that ends without a fallen citadel', () => {
     expect(end(0, 0, 'citadel')).toMatch(/Victory: Ada's citadel falls\.$/);
     expect(end(1, 0)).toMatch(/Defeat: your citadel falls to Ada\.$/);
   });
+
+  it('in co-op, a lost battle without a fallen citadel is both allies away (not "you leave" to the one who stayed)', () => {
+    const w = new World({ seed: 3 });
+    for (const reason of ['forfeit', 'timeout'] as const) {
+      const c = new Chronicle(0, 'the Master AI', true);
+      c.onEvents([{ type: 'gameOver', winner: 1 }], w, reason);
+      expect(c.lines().at(-1)).toMatch(/Defeat: you and your ally were away too long\.$/);
+    }
+    const c = new Chronicle(0, 'the Master AI', true);
+    c.onEvents([{ type: 'gameOver', winner: 1 }], w, 'citadel');
+    expect(c.lines().at(-1)).toMatch(/Defeat: your citadel falls to the Master AI\.$/);
+  });
 });

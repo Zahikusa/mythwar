@@ -661,6 +661,27 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    the other player changed, in words — with audio and DOM, untested (where #142's "again" bug
    lived). (Done: `src/ui/roomnews.ts` — `roomView` / `roomNews`, pure; three fields of App became
    one `lastRoom`; tests/roomnews.test.ts (5 tests); mpsmoke unchanged and green.)
+151. [x] `src/ui/menus.ts` `moreBelow` (#110) ran on show, scroll and resize only: the lobby's list and
+   Hall arrive after it shows, so on an upright phone (`--portrait` `10-lobby-phone`) the pinned
+   Back covered "Champions of this network" with no "more below" backdrop. (Done: a
+   MutationObserver per screen re-checks once per frame of changes while it shows; mpsmoke checks
+   the backdrop matches the scroll state once the Hall arrives — failed before the fix in portrait.)
+(Items 152–: an independent review of run #9's diff, 2026-10-13: nothing serious; fixed:)
+152. [x] Co-op chronicle: a co-op battle lost by forfeit (one ally left while the other was away —
+   `server/match.ts` `forfeit`) told the ally who stayed "Defeat: you leave the battle." (Done: in
+   co-op it reads "you and your ally were away too long", as the verdict does; test.)
+153. [x] mpsmoke checks that could pass without proving anything: the countdown compared the
+   number's centre (now its box's top, at rest, after waiting for each screen's own countdown —
+   it was flaky too: the phone's count wasn't always showing yet); the away-notice check passed with
+   no banner at all (now needs one); the duplicate-tab check lost the moment a wrongly replaced A
+   would need to notice (300 ms back, said why). With the top edge measured the upright phone had
+   0 px to spare: the number now sits at 76% (16 px clear there).
+154. [x] Online results: "Room" hiding while it had keyboard focus dropped focus to the page; the
+   main button ("Back to room") takes it now.
+155. [ ] (note, from the review) A Ready rejected as stale just as the other player changes a
+   handicap (#96) now reads "Bo now fights under Glass Citadel." without "press Ready again" (the
+   Ready never registered, so `meReady` was false); the Ready visibly bounces back. Narrow timing,
+   low impact — leave unless seen.
 
 
 

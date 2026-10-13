@@ -32,10 +32,14 @@ export class Chronicle {
   private hero: { defId: string; id: number; kills: number } | null = null;
   private readonly names = new HeroNames();
 
+  /** Online co-op: two allies on one side against the server's AI. */
+  private readonly coop: boolean;
+
   /** `foe`: the opponent's name as the story calls them ("Hippolyta", "Ada"). */
-  constructor(me: Team, foe: string) {
+  constructor(me: Team, foe: string, coop = false) {
     this.me = me;
     this.foe = foe;
+    this.coop = coop;
   }
 
   /**
@@ -111,8 +115,12 @@ export class Chronicle {
         // (Only one that rose a veteran — and so has its name — is the hero.)
         if (h && h.kills >= VETERAN_KILLS && this.names.has(h.id)) this.add(t, `Hero of the battle: ${this.names.name(h.defId, h.id)}, your ${UNITS[h.defId]?.name ?? 'creature'} — ${h.kills} foes felled.`, 5);
         const won = e.winner === this.me;
+        // (Co-op ends without a fallen citadel only when neither ally is left: one left while the
+        // other was away — not "you leave" to the one who stayed.)
         const how =
-          end === 'forfeit'
+          this.coop && !won && (end === 'forfeit' || end === 'timeout')
+            ? 'Defeat: you and your ally were away too long.'
+            : end === 'forfeit'
             ? won
               ? `Victory: ${this.foe} leaves the battle.`
               : `Defeat: you leave the battle.`

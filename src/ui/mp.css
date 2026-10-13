@@ -623,7 +623,7 @@
 /* The battle's opening banner (place, "Topple their citadel", lore) shows during the first
    countdown: the number goes below it instead of onto its words. */
 #stage:has(.hud .banner.show) .ncount {
-  top: 72%;
+  top: 76%;
 }
 
 .ncount.go {

@@ -547,7 +547,7 @@ export class App {
       this.audio.ui('bless');
     });
     this.feats.start(game.world, game.playerTeam);
-    this.chronicle = new Chronicle(game.playerTeam, game instanceof NetGame ? game.foeName : PERSONAS[this.difficulty].name);
+    this.chronicle = new Chronicle(game.playerTeam, game instanceof NetGame ? game.foeName : PERSONAS[this.difficulty].name, game instanceof NetGame && !!game.coop);
     // (Continued or rejoined midway: the story and the battlefield pick up from where it stands.)
     if (game.world.time > 0) {
       this.chronicle.resume(game.world);

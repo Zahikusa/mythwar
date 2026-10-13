@@ -162,6 +162,17 @@ export class Menus {
       el!.setAttribute('aria-label', labels[k as Screen] ?? k);
       this.root.appendChild(el!);
       el!.addEventListener('scroll', () => moreBelow(el!), { passive: true });
+      // Content that changes while shown (the lobby's list and Hall arriving, a room's seats) can
+      // start or stop running under the pinned buttons too: checked once per frame of changes.
+      let queued = false;
+      new MutationObserver(() => {
+        if (queued || !el!.classList.contains('active')) return;
+        queued = true;
+        requestAnimationFrame(() => {
+          queued = false;
+          moreBelow(el!);
+        });
+      }).observe(el!, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
     }
     window.addEventListener('resize', () => this.screens[this.screen] && moreBelow(this.screens[this.screen]!));
     this.show('none');
@@ -1114,6 +1125,8 @@ export class Menus {
     if (theirs === null) this.emoteGone = true;
     this.emoteRow?.classList.toggle('hidden', this.emoteGone);
     // ("Back to room" and "Room" would be two buttons doing one thing.)
+    // (Focus on it would fall to the page: the main button, now "Back to room", takes it.)
+    if (theirs === null && this.roomBtn && document.activeElement === this.roomBtn) btn.focus();
     this.roomBtn?.classList.toggle('hidden', theirs === null);
     if (theirs === null) {
       span.textContent = 'Back to room';
