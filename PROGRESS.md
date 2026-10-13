@@ -640,6 +640,10 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    start) and falling back to the name on a miss brings the two-Adas mix-up back. Names are what
    players see and type; the Hall (server side) already tells devices apart. Revisit with accounts
    (ROADMAP's public server).
+147. [x] Online results after the opponent left (`9-results-desktop`): "Room" and the main button
+   "Back to room" sat side by side doing the same thing. (Done: "Room" hides while the other seat
+   is empty; mpsmoke checks it, and now tests "Room" where it is meant — A goes back to the room
+   from the results with the opponent still there, and leaves from the room.)
 
 
 

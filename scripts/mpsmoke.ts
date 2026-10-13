@@ -366,6 +366,9 @@ async function main(): Promise<void> {
     check('results: opponent left the room', res.note.includes('left the room'), res.note);
     // (The chronicle ends with what happened — no citadel fell.)
     const story = await a.evaluate(() => document.querySelector('.screen.over')?.textContent ?? '');
+    // (Backlog 147) The other player gone: one way back to the room, not "Room" and "Back to room".
+    const shown = await a.evaluate(() => [...document.querySelectorAll<HTMLElement>('.screen.over .mrow button')].filter((e) => e.offsetParent !== null).map((e) => e.textContent?.trim()));
+    check('results: once the opponent left, one button leads back to the room', shown.includes('Back to room') && !shown.includes('Room'), JSON.stringify(shown));
     check("results: the chronicle says the opponent left", /Victory: [^.]+ leaves the battle\./.test(story) && !story.includes('citadel falls'), story.slice(0, 120));
     await waitFor(b, 'B back in the lobby', () => (window as any).__mythwar.menus.current === 'mp');
     // (Backlog 54) Both sides count it: the leaver a defeat (and the journal notes it).
@@ -487,7 +490,11 @@ async function main(): Promise<void> {
     check('gamepad: every control on the online results is reachable with the D-pad', reach.unreachable.length === 0 && reach.all.includes('Room') && reach.all.includes('Well played!'), JSON.stringify(reach));
 
     console.log('== leaving the room ==');
-    await press(a, '.screen.over', 'Leave room');
+    // (Backlog 87) A goes back to the room from the results — still seated — and leaves from there.
+    await press(a, '.screen.over', 'Room');
+    await waitFor(a, 'A back in the room from the results', () => (window as any).__mythwar.menus.current === 'room' && (window as any).__mythwar.state === 'title', 6000);
+    check('results → Room: back in the battle room, still seated', await a.evaluate(() => (window as any).__mythwar.mp.seat !== null && !!(window as any).__mythwar.mp.room));
+    await press(a, '.screen.room', 'Leave room');
     await waitFor(a, 'A in lobby', () => (window as any).__mythwar.menus.current === 'mp');
     // The server's Hall of champions remembers both battles (Lens #86).
     await waitFor(a, 'hall shown', () => (document.querySelector('.mphall')?.textContent ?? '').includes('Champions'), 4000);
@@ -498,11 +505,11 @@ async function main(): Promise<void> {
     await waitFor(a, 'A at title', () => (window as any).__mythwar.menus.current === 'title');
 
     console.log('== co-op against the AI ==');
-    // B (still in the room, at the results) goes back to the room (backlog 87) and makes it a
+    // B (still in the room, at the results; A has left) goes back to the room and makes it a
     // co-op room; A comes back and joins.
-    await press(b, '.screen.over', 'Room');
+    await press(b, '.screen.over', 'Back to room');
     await waitFor(b, 'B back in the room from the results', () => (window as any).__mythwar.menus.current === 'room' && (window as any).__mythwar.state === 'title', 6000);
-    check('results → Room: back in the battle room, still seated', await b.evaluate(() => (window as any).__mythwar.mp.seat !== null && !!(window as any).__mythwar.mp.room));
+    check('results → Back to room (the other player gone): still seated', await b.evaluate(() => (window as any).__mythwar.mp.seat !== null && !!(window as any).__mythwar.mp.room));
     const coopCode = await b.evaluate(() => (window as any).__mythwar.mp.room.code as string);
     await b.evaluate(() => (window as any).__mythwar.mp.setCoop('novice'));
     await a.evaluate((c) => (window as any).__mythwar.openMultiplayer(c), coopCode);

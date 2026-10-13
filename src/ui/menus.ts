@@ -101,6 +101,8 @@ export class Menus {
   private pauseTitle: HTMLElement | null = null;
   private rematchBtn: HTMLButtonElement | null = null;
   private rematchNote: HTMLElement | null = null;
+  /** Online results: "Room" (hidden once the other player left: the main button says it then). */
+  private roomBtn: HTMLButtonElement | null = null;
   private emoteLine: HTMLElement | null = null;
   private emoteRow: HTMLElement | null = null;
   /** The opponent of these results has left the room (their chips stay away). */
@@ -1056,6 +1058,7 @@ export class Menus {
   private onlineResultButtons(share: HTMLButtonElement): HTMLElement {
     this.rematchBtn = this.button('Rematch', 'primary', () => this.cb.rematch(), ICONS.swords);
     this.rematchNote = h('div', { class: 'mnote rmatch' });
+    this.roomBtn = this.roomButton();
     // Say something after the battle (phase-1 backlog #25): a few chips, and what was said.
     this.emoteLine = h('div', { class: 'vemoteline', role: 'status' });
     const chips = RESULT_EMOTES.map((id) => {
@@ -1077,7 +1080,7 @@ export class Menus {
       { class: 'vbuttons' },
       this.emoteRow,
       this.rematchNote,
-      h('div', { class: 'mrow' }, this.button('Leave room', 'ghost', () => this.cb.leaveRoom()), share, this.roomButton(), this.rematchBtn),
+      h('div', { class: 'mrow' }, this.button('Leave room', 'ghost', () => this.cb.leaveRoom()), share, this.roomBtn, this.rematchBtn),
     );
   }
 
@@ -1110,6 +1113,8 @@ export class Menus {
     // (Nobody to talk to once they've left — not even a stranger who takes their seat later.)
     if (theirs === null) this.emoteGone = true;
     this.emoteRow?.classList.toggle('hidden', this.emoteGone);
+    // ("Back to room" and "Room" would be two buttons doing one thing.)
+    this.roomBtn?.classList.toggle('hidden', theirs === null);
     if (theirs === null) {
       span.textContent = 'Back to room';
       note.textContent = `${foe} left the room.`;
