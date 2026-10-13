@@ -885,6 +885,30 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   await sleep(100);
   s = await state(page);
   check('clicking a lane selects it', s.lane === 0, `lane=${s.lane}`);
+  // (Backlog 149) A coach tip lets taps through to the field under it; only "Got it" takes one.
+  const through = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    const g = app.game;
+    const hints = app.settings.hintsSeen.slice();
+    const was = g.world.players[0].stats.summoned;
+    app.settings.hintsSeen = ['summon'];
+    app.coach.attach(g);
+    g.world.players[0].stats.summoned = 3;
+    app.coach.update();
+    const coach = document.querySelector('.coach')!;
+    const mid = (e: Element) => {
+      const r = e.getBoundingClientRect();
+      return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    };
+    const shown = coach.classList.contains('show');
+    const body = mid(coach.querySelector('.ctext')!);
+    const btn = mid(coach.querySelector('.cclose')!);
+    app.settings.hintsSeen = hints;
+    g.world.players[0].stats.summoned = was;
+    app.coach.attach(g);
+    return { shown, bodyThrough: !!body && !coach.contains(body), button: !!btn && btn.classList.contains('cclose'), under: body?.tagName };
+  });
+  check('a coach tip lets taps through to the field (only "Got it" takes one)', through.shown && through.bodyThrough && through.button, JSON.stringify(through));
   await sleep(150);
   const audioOk = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.audio.ready === true);
   check('audio starts after the first interaction', audioOk);

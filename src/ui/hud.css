@@ -2547,8 +2547,13 @@ html.cbfoe .side.right .hpfill {
 
 .coach.show {
   opacity: 1;
-  pointer-events: auto;
   transform: none;
+}
+
+/* Only "Got it" takes a tap: the bubble itself lets taps through to the lane under it (the
+   lanes tip — "Tap any lane…" — sat over the very lanes it was talking about). */
+.coach.show .cclose {
+  pointer-events: auto;
 }
 
 .coach.free {

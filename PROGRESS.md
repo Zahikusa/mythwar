@@ -648,6 +648,11 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    opening banner's "VS ADA L · FAE WILDS" and lore line. (Done: while a banner shows, the number
    sits at 72% instead of 42% — the start countdown (3 s + "Fight!") ends before the 4.5-s banner,
    so it never jumps; mpsmoke checks the number is below the banner's words on both screens.)
+149. [x] `src/ui/hud.css` `.coach.show { pointer-events: auto }`: the whole tip bubble caught taps — the
+   free "Tap any lane to send creatures there…" tip sits over the top/middle lanes on a phone
+   (`6-battle-phone`) and blocked taps on the lanes it talks about, for 9 s, also online where
+   nothing pauses. (Done: only "Got it" takes a tap; smoke checks the bubble's text lets a tap
+   through to the canvas on desktop, phone and rotated phone.)
 
 
 
