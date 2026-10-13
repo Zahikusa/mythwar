@@ -1,7 +1,7 @@
 {
   "name": "Mythwar: Ages of Legend",
   "short_name": "Mythwar",
-  "description": "A three-lane, mythological take on Age of War.",
+  "description": "Three lanes. Five mythic ages. One citadel left standing. Battle the gods, or a friend on the same Wi-Fi.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

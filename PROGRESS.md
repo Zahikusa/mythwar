@@ -207,7 +207,7 @@ built, how to see each part working, and the decisions that need you.
 - [x] #92 Technology — the server remembers: a store seam (file for the LAN server, memory in tests; a database later) keeps the Hall of champions across restarts; perf re-measured (1.3–1.6 ms, the 1.97 was noise)
 - [x] #93 The Crystal Ball — "do friends come back for a second evening?": the hall counts days per player and the server reports returners at start; docs/ROADMAP.md
 - [x] #94 The Client — docs/BRIEF.md: each TASK.md requirement → what was built → how to see it yourself; what's unverified; the decisions that need the client (linked atop PROGRESS)
-- [ ] #95 The Pitch — pitch / store text
+- [x] #95 The Pitch — docs/PITCH.md (one line, elevator, 30 s, store texts); link previews: og/twitter tags + a 1200×630 card (scripts/ogcard.mjs); manifest/meta description
 - [ ] #96 Profit — sustainability notes
 - [ ] #97 Transformation — what players take away
 - [ ] #98 Responsibility — healthy play / privacy

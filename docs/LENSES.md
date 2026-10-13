@@ -1796,3 +1796,20 @@ want, deep down?*
   (physical phones) and the one-hour plan to close it; the results of phase 2 in one paragraph;
   the three decisions only the client can make (real-phone test, LAN https, a public server).
 - Checked: every command it names exists in package.json/scripts and was run this session.
+
+## #95 The Lens of the Pitch
+*Can I say what the game is in one line, one breath and thirty seconds — and does the pitch reach
+people where they first meet the game?*
+- Mythwar's tagline on the title ("Three lanes. Five mythic ages. One citadel left standing.")
+  is a good one-liner, but nothing longer existed, and the pitch never reached the places people
+  first meet the game. For this game that place is a **link pasted into a chat** — the Pages
+  link, or an invite from the battle room's Copy link (#31 backlog) — and it previewed as a bare
+  URL: no picture, a page description from run #1 ("a three-lane, mythological take on…").
+- Change: **docs/PITCH.md** — the one-liner, the elevator version, the thirty-second version for
+  someone who remembers *Age of War*, the hooks, and store texts (80-character and long); the
+  page now carries the pitch where it's seen: **Open Graph / Twitter card tags** with a
+  **1200×630 preview card** (`public/og.jpg`: the logo over a live battle, rendered
+  reproducibly by `node scripts/ogcard.mjs`), a new meta description, and the install prompt's
+  description in the web manifest.
+- Checked: the card rendered and looked at; built `dist/` contains it and the tags; facts in the
+  texts checked against the game (counters, 10 turrets, offline, battle length); full verify.
