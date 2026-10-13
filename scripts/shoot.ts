@@ -251,7 +251,15 @@ async function main(): Promise<void> {
     for (const sc of SCENARIOS) console.log(`${sc.name.padEnd(22)} ${sc.w}x${sc.h}${sc.mobile ? ' mobile' : ''}  ?${sc.query}`);
     return;
   }
-  const filter = args.find((a) => !a.startsWith('--') && !args[args.indexOf(a) - 1]?.startsWith('--'));
+  // Scenario names (several allowed): an exact name, else every scenario whose name contains it.
+  const valued = new Set(['--query', '--wait', '--size', '--cvd', '--settings']);
+  const names = args.filter((a, i) => !a.startsWith('--') && !valued.has(args[i - 1]));
+  const pick = (n: string) => {
+    const exact = SCENARIOS.filter((sc) => sc.name === n);
+    return exact.length ? exact : SCENARIOS.filter((sc) => sc.name.includes(n));
+  };
+  const unknown = names.filter((n) => !pick(n).length);
+  if (unknown.length) throw new Error(`No scenario matches ${unknown.join(', ')} (--list shows them)`);
   const qIdx = args.indexOf('--query');
   const wIdx = args.indexOf('--wait');
   const extraQuery = qIdx >= 0 ? args[qIdx + 1] : '';
@@ -283,7 +291,7 @@ async function main(): Promise<void> {
   await mkdir('screenshots', { recursive: true });
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--no-sandbox', '--disable-gpu-sandbox'] });
   try {
-    const list = SCENARIOS.filter((s) => !filter || s.name.includes(filter));
+    const list = names.length ? [...new Set(names.flatMap(pick))] : SCENARIOS;
     for (const sc of list) {
       const page = await browser.newPage();
       const errors: string[] = [];

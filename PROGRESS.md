@@ -508,6 +508,16 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 118. [x] `src/net/connection.ts` (#72): `lastClose` survived links given up locally (silence, dial
    limit, nudge) — a later restart could be told as "a fault stopped your battle". (Done: reset
    when a live link is dropped here.)
+(Items 119–121: open for the next run.)
+119. [x] `scripts/shoot.ts` takes only the first scenario name (and matches it as a substring) —
+   `node scripts/shoot.ts a b c` silently shoots one; accept several, say which matched. (Done:
+   several names, an exact name first (else substring as before); an unknown one is an error.)
+120. [ ] No `shoot` scenario for the multiplayer lobby or the battle room (the visual review
+   couldn't look at them): add `mp-lobby` / `mp-room` (a local server like mpsmoke's, or a stubbed
+   MpClient state).
+121. [ ] Phone panels (turrets, blessings): the HUD's numbers show through the panel header as ghost
+   text (`.hud.mobile .panel` at 96% — the header row has no own background). Opaque header or a
+   backdrop blur.
 
 
 
