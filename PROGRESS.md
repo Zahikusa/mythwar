@@ -154,7 +154,7 @@ complete; its log follows below the lens plan.
 - [x] #71 Freedom — start a battle in any age already reached (foe screen chip; no stars for a later start)
 - [x] #72 Indirect Control — with the power ready, the most crowded lane (4+ foes) lights its marker gold and the button glows brighter
 - [x] #73 Collusion — the coach's tips come from Mímir, keeper of the well (the player's mentor)
-- [ ] #74 The World — world lore
+- [x] #74 The World — travellers cross the far sky now and then (wisp, eagle, Odin's ravens, sky dragon, comet)
 - [ ] #75 The Avatar — the player's avatar (patron god)
 - [ ] #76 Character Function — creature roles
 - [ ] #77 Character Traits — creature personality

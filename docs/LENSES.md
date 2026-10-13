@@ -1409,3 +1409,20 @@ player wants and helps without taking control? Does the player feel that partner
   one voice in the game that colludes with the player.
 - Checked: screenshot of a tip in battle; full verify (the smoke's coach checks read the tip
   text and still pass).
+
+## #74 The Lens of the World
+*Does the game feel like a window onto a world bigger than itself — one that would go on
+existing if the game stopped?*
+- Mythwar's world is suggested in words (age lore, the bestiary's myths, named battlefields,
+  the generals' lines, the journey) and in the backdrop of each age (mountains, aurora, moon,
+  drifting motes). But everything that *moves* exists for the battle: the creatures, the
+  projectiles, the powers. Nothing happens in the world that isn't about the war.
+- Change: **travellers in the far sky** — every 30–55 s something crosses it, slowly (14 s), a
+  dark silhouette that never touches the battle: a will-o'-wisp over the Fae Wilds, an eagle
+  over Olympus, **Odin's two ravens, Huginn and Muninn**, over Asgard (the All-Father's
+  "My ravens have watched you", #44, made visible), a long sky dragon over the Jade Empire, a
+  comet across the Celestial heavens. The world goes on beyond the crossing. (Off in battery
+  saver mode.)
+- Found on the way: the first placement put them behind the top bar (the sky band is short) and
+  too small to read — now in the lower half of the sky, scaled to it.
+- Checked: screenshots of Asgard's ravens and the Jade dragon mid-crossing; full verify.

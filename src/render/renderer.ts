@@ -130,6 +130,8 @@ export class Renderer {
   /** Seconds since the previous rendered frame (0 while paused). */
   private frameDt = 0;
   private shake = 0;
+  /** The far-sky traveller (Lens #74): when the next one sets off, its direction and height. */
+  private traveller = { next: 12, dir: 1, y: 0.6 };
   /** The lane of the player's god power and how much of its moment is left (1 → 0). */
   private focusLane = -1;
   private focusT = 0;
@@ -1025,6 +1027,80 @@ export class Renderer {
     const fading = this.prevTheme >= 0 && this.themeFade < 1;
     if (fading) this.drawSkyOf(ctx, this.prevTheme, 1 - this.themeFade);
     this.drawSkyOf(ctx, this.theme, fading ? this.themeFade : 1);
+    if (!fading && this.quality !== 'low') this.drawTraveller(ctx);
+  }
+
+  /**
+   * A world bigger than the battlefield (Lens #74): now and then something crosses the far sky,
+   * never touching the battle — a will-o'-wisp over the Fae Wilds, an eagle over Olympus, Odin's
+   * two ravens over Asgard, a long sky dragon over the Jade Empire, a comet in the Celestial
+   * realm. One every 30–55 s, 14 s to cross, alternating directions.
+   */
+  private drawTraveller(ctx: CanvasRenderingContext2D): void {
+    const L = this.layout;
+    const tr = this.traveller;
+    if (this.time < tr.next) return;
+    const k = (this.time - tr.next) / 14;
+    if (k >= 1) {
+      tr.next = this.time + 30 + Math.random() * 25;
+      tr.dir = -tr.dir;
+      tr.y = 0.5 + Math.random() * 0.3;
+      return;
+    }
+    const x = tr.dir > 0 ? -60 + k * (L.width + 120) : L.width + 60 - k * (L.width + 120);
+    const y = L.horizon * tr.y + Math.sin(k * 9) * L.horizon * 0.03;
+    const s = Math.max(1, L.horizon / 150);
+    const fade = Math.min(1, k * 6, (1 - k) * 6);
+    const t = this.time;
+    ctx.save();
+    ctx.globalAlpha = 0.55 * fade;
+    ctx.strokeStyle = ctx.fillStyle = 'rgba(20, 14, 30, 0.85)';
+    ctx.lineWidth = 1.6 * s;
+    ctx.lineCap = 'round';
+    const bird = (bx: number, by: number, size: number, flap: number) => {
+      const w = Math.sin(flap) * 0.6;
+      ctx.beginPath();
+      ctx.moveTo(bx - size, by - size * w);
+      ctx.quadraticCurveTo(bx - size * 0.4, by - size * 0.2, bx, by);
+      ctx.quadraticCurveTo(bx + size * 0.4, by - size * 0.2, bx + size, by - size * w);
+      ctx.stroke();
+    };
+    switch (THEMES[this.theme].id) {
+      case 'fae':
+        ctx.globalAlpha = fade;
+        drawGlow(ctx, x, y + Math.sin(t * 3) * 6 * s, 10 * s, [170, 255, 190], 0.7);
+        break;
+      case 'olympus':
+        bird(x, y, 9 * s, t * 5);
+        break;
+      case 'asgard':
+        bird(x, y, 6 * s, t * 7);
+        bird(x - tr.dir * 16 * s, y + 7 * s, 6 * s, t * 7 + 1.3);
+        break;
+      case 'jade':
+        for (let i = 0; i < 14; i++) {
+          const px = x - tr.dir * i * 6 * s;
+          const py = y + Math.sin(t * 2 + i * 0.6) * 5 * s;
+          ctx.beginPath();
+          ctx.arc(px, py, (3.2 - i * 0.18) * s, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        break;
+      default: {
+        ctx.globalAlpha = fade * 0.9;
+        const g = ctx.createLinearGradient(x, y, x - tr.dir * 70 * s, y - 14 * s);
+        g.addColorStop(0, 'rgba(255, 244, 210, 0.9)');
+        g.addColorStop(1, 'rgba(255, 244, 210, 0)');
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 2.4 * s;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - tr.dir * 70 * s, y - 14 * s);
+        ctx.stroke();
+        drawGlow(ctx, x, y, 7 * s, [255, 240, 200], 0.9);
+      }
+    }
+    ctx.restore();
   }
 
   private drawSkyOf(ctx: CanvasRenderingContext2D, themeIndex: number, vis: number): void {
