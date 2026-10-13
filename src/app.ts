@@ -406,12 +406,14 @@ export class App {
 
   /**
    * Whose sigil flies on each keep (Lens #85): yours, and online your opponent's as they chose
-   * it (co-op: yours on the shared side). The attract battle and the AI generals carry none.
+   * it (co-op: the host's on the shared side, the same on both allies' screens). The attract
+   * battle and the AI generals carry none.
    */
   private sigilsFor(game: Game): [number, number] {
     const out: [number, number] = [-1, -1];
     if (game.options.demo) return out;
-    const seats = game instanceof NetGame && !game.coop ? this.mp?.room?.seats : null;
+    const seats = game instanceof NetGame ? this.mp?.room?.seats : null;
+    if (seats && game instanceof NetGame && game.coop) return [seats[0]?.sigil ?? -1, -1];
     if (seats) return [seats[0]?.sigil ?? -1, seats[1]?.sigil ?? -1];
     out[game.playerTeam] = this.settings.sigil;
     return out;
