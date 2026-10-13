@@ -618,7 +618,7 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
 built, how to see each part working, and the decisions that need you.
 
 ## Run #10 in short (for the morning)
-- Verification mode, backlog items 215–243. Open from run #9: #204 (smoke waits for menu
+- Verification mode, backlog items 215–250. Open from run #9: #204 (smoke waits for menu
   changes, not sleeps), #215 (Back twice leaves the room on a phone), #217 (mpsmoke cuts the
   phone's links silently through a TCP relay — CDP's offline mode turned out unfaithful: Chrome
   still answers the server's pings) done; #137 and #172 decided (reasons in the items).
@@ -641,6 +641,11 @@ built, how to see each part working, and the decisions that need you.
   warning on fast double taps (#242); mpengines checks Back in the room on WebKit (#238); a
   3-minute lagged bot soak shows no false silence holds (#237); `shoot`/`mpbot --help` print
   usage.
+- A review of mobile-browser quirks (#245–250): **a swipe that started on any button scrolled
+  nothing** on phones (all buttons were `touch-action: none`); a long press on Ascend ascended
+  instead of previewing; the automatic battery saver stuck for good after an iPhone's Low Power
+  Mode; iOS 15 got a broken layout or a crash — now a "needs a newer browser" message; iOS focus
+  zoom on the 12-px code box; text inflation on rotation. A docs-vs-code review (#244).
 - Tests 285 → 295; mpsmoke plain / latency / portrait green (a co-op Ready race in the test
   fixed, #228); mpengines, package:check green.
 

@@ -61,7 +61,7 @@ questions).
 
 Three independent reviews (the client's netcode, the server's rooms and battles, and the run's
 own changes) went looking for what goes wrong on a real network. Fixed (PROGRESS.md, items
-215–243): **a phone that reconnected after a citadel fell froze in the battle** with no results
+215–250): **a phone that reconnected after a citadel fell froze in the battle** with no results
 and no menu — now it sees how the battle ended; a phone that **walks out of the Wi-Fi mid-battle**
 holds the battle after 4 s of silence instead of the battle running on for 12 s without it; a
 player whose phone was gone when the battle ended keeps their seat (and the winner their win)
@@ -74,7 +74,11 @@ relay that freezes its links), so the server's own detection of a dead link is e
 A look at screenshots of every online screen found that **on a phone the battle room's messages
 and its "Waiting for a second player…" line were off screen** — now right under the header; a
 phone that wakes up in the room reconnects at once instead of after ~6 s; a win because the
-other player left or stayed away is called a walkover and earns no feats.
+other player left or stayed away is called a walkover and earns no feats. And a pass over
+phone-browser quirks: **a swipe that started on a button didn't scroll** (Settings, results,
+lobby); a long press on Ascend now previews instead of ascending; an iPhone in Low Power Mode no
+longer leaves the game in battery-saver mode for good; an iPhone on iOS 15 or older gets a plain
+"needs a newer browser" message instead of a broken game (the minimum is iOS 16.2).
 No rules change; the protocol is unchanged.
 
 ## Things that need your decision
