@@ -126,6 +126,8 @@ export class App {
   private pendingJoin: string | null = null;
   /** A history entry is pushed for the phone's Back button (see the constructor). */
   private backArmed = false;
+  /** The title asked "Press Back again to leave": the next Back isn't caught (a touch re-arms). */
+  private leaveOnBack = false;
   /** When the phone's Back was last pressed in the battle room (a second Back soon after leaves it). */
   private roomBackAt = -Infinity;
   /** Reconnecting after a reload: only show multiplayer if we turn out to be in a room. */
@@ -320,14 +322,20 @@ export class App {
     // session with it). One history entry is kept for it once the player has touched the page
     // (browsers skip entries added before that); on the bare title it isn't, so Back can leave.
     // (Touch devices only: a computer has Esc, and its browser's Back should still leave the page.)
-    const arm = () => this.armBack();
+    const arm = () => {
+      // (A touch after "Press Back again" means the player stayed: Back is caught again.)
+      this.leaveOnBack = false;
+      this.armBack();
+    };
     window.addEventListener('pointerdown', arm, { capture: true, passive: true });
     window.addEventListener('keydown', arm, { capture: true, passive: true });
     window.addEventListener('popstate', () => {
       if (!this.backArmed) return;
       this.backArmed = false;
       this.escape(true);
-      arm();
+      // (On the bare title the first Back only warned: the next one, untouched, leaves.)
+      if (this.leaveOnBack) this.leaveOnBack = false;
+      else arm();
     });
     // Escape on the title screens (no battle input attached) steps back through the menus.
     window.addEventListener('keydown', (e) => {
@@ -768,9 +776,9 @@ export class App {
     }
   }
 
-  /** Short vibration on phones (tied to the screen-shake setting). */
+  /** Short vibration on phones (Settings → Vibration). */
   private buzz(pattern: number | number[]): void {
-    if (this.mode !== 'mobile' || !this.settings.shake) return;
+    if (this.mode !== 'mobile' || !this.settings.haptics) return;
     // Vibration (like audio) needs the user to have touched the page at least once.
     const ua = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
     if (ua && !ua.hasBeenActive) return;
@@ -858,7 +866,7 @@ export class App {
    */
   private armBack(force = false): void {
     const touch = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
-    if (!touch || this.backArmed || (!force && this.state === 'title' && this.menus.current === 'title' && !this.install?.isOpen)) return;
+    if (!touch || this.backArmed || (!force && this.leaveOnBack)) return;
     this.backArmed = true;
     history.pushState({ mythwarBack: true }, '');
   }
@@ -879,6 +887,23 @@ export class App {
     // An open sheet (getting the app) is the top of the stack: Back / Esc closes it first.
     if (this.install.close()) return;
     const m = this.menus.current;
+    if (m === 'title' && this.state === 'title') {
+      // The phone's Back on the bare title: leaving takes a second Back (never by accident).
+      if (!back) return;
+      this.menus.titleSay('Press Back again to leave Mythwar.');
+      this.leaveOnBack = true;
+      return;
+    }
+    if (m === 'over') {
+      // The results: Back is their way out (the main menu, the riddles, the room).
+      if (back) this.menus.resultsBack();
+      return;
+    }
+    // A battle sheet (turrets, blessings) closes before the menu opens.
+    if (m === 'none' && this.hud.panelOpen) {
+      this.hud.togglePanel('none');
+      return;
+    }
     if (m === 'mp') this.closeMultiplayer();
     else if (m === 'room') {
       // Esc does nothing here (a friend may be seated); the phone's Back asks to be pressed

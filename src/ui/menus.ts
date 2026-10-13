@@ -358,6 +358,7 @@ export class Menus {
       this.button('How to play', '', () => this.show('howto'), ICONS.info),
       this.button('Bestiary', '', () => this.show('bestiary'), ICONS.book),
       this.button('Settings', '', () => this.show('settings'), ICONS.sound),
+      this.titleNotes,
     );
     const creatures = h('div', { class: 'title-creatures' });
     const showcase = ['treant', 'centaur', 'valkyrie', 'kitsune', 'phoenix'];
@@ -373,11 +374,30 @@ export class Menus {
       this.cb.sound('click');
       this.show('feats');
     });
-    return h('div', { class: 'screen title' }, logo, creatures, this.laurels, buttons, foot, this.titleNotes);
+    return h('div', { class: 'screen title' }, logo, creatures, this.laurels, buttons, foot, this.titleToast);
   }
 
-  /** Small offers in the title screen's top corner (a new version, the installed app) — never in a battle. */
+  /** Small offers among the title's buttons (a new version, the installed app) — never in a battle. */
   readonly titleNotes = h('div', { class: 'tnotes' });
+
+  /** Where the phone's Back leads from the results now on screen (the way out its buttons offer). */
+  private overBack: () => void = () => this.cb.quit();
+
+  /** The phone's Back on the results: main menu, the riddles, or (online) back to the room. */
+  resultsBack(): void {
+    this.overBack();
+  }
+
+  /** A short line at the foot of the title screen ("Press Back again to leave"). */
+  titleSay(text: string, ms = 2500): void {
+    this.titleToast.textContent = text;
+    this.titleToast.classList.add('show');
+    clearTimeout(this.titleToastTimer);
+    this.titleToastTimer = window.setTimeout(() => this.titleToast.classList.remove('show'), ms);
+  }
+
+  private titleToast = h('div', { class: 'ttoast', role: 'status' });
+  private titleToastTimer = 0;
 
   /** Settings' permanent way to the app (hidden where there's nothing to offer, or installed). */
   private installBtn = this.button('Get the app', 'small', () => this.cb.install());
@@ -703,6 +723,7 @@ export class Menus {
     const next = PUZZLES[i + 1];
     const nextOpen = !!next && next.age <= this.settings.ageSeen;
     const solvedAll = PUZZLES.every((p) => this.settings.riddles.includes(p.id));
+    this.overBack = () => this.show('riddles');
     el.append(
       h(
         'div',
@@ -773,7 +794,7 @@ export class Menus {
       if (key !== 'music') input.addEventListener('change', () => this.cb.sound('summon'));
       return h('label', { class: 'srow' }, h('span', { text: label }), input, val);
     };
-    const toggleRow = (label: string, key: 'shake' | 'hints' | 'advice' | 'lowQuality' | 'fullscreen' | 'emotes' | 'colorblind') => {
+    const toggleRow = (label: string, key: 'shake' | 'haptics' | 'hints' | 'advice' | 'lowQuality' | 'fullscreen' | 'emotes' | 'colorblind') => {
       const input = h('input', { type: 'checkbox' }) as HTMLInputElement;
       input.checked = !!s[key];
       this.syncers.push(() => (input.checked = !!s[key]));
@@ -891,7 +912,9 @@ export class Menus {
         slider('Master volume', 'master'),
         slider('Music', 'music'),
         slider('Effects', 'sfx'),
-        toggleRow('Screen shake & vibration', 'shake'),
+        toggleRow('Screen shake', 'shake'),
+        // (Only where the phone can vibrate: Android's browsers — not iPhone Safari.)
+        typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function' ? toggleRow('Vibration', 'haptics') : null,
         toggleRow('Gameplay hints', 'hints'),
         toggleRow('“Counter!” advice on cards', 'advice'),
         toggleRow('Colour-blind friendly (foe in orange)', 'colorblind'),
@@ -1011,6 +1034,7 @@ export class Menus {
     // The first victory over Ares ends the war (Lens #100): the tip hands over to "bring a friend".
     const warWon = !online && won && difficulty === 'mythic' && !!this.epilogue;
     const story = this.chronicle;
+    this.overBack = online ? () => this.cb.toRoom() : () => this.cb.quit();
     const shareText = `Mythwar: ${won ? 'Victory' : 'Defeat'} at ${place} vs ${foeName} in ${fmtTime(world.time)} — reached ${AGES[P.age].name}, ${P.stats.kills} foes slain.${story.length ? `\n${story.join('\n')}` : ''}`;
     const share = this.button('Copy result', 'ghost', () => {
       void copyText(shareText).then((ok) => (share.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed'));

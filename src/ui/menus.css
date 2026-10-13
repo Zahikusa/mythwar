@@ -37,8 +37,10 @@
   pointer-events: none;
 }
 
-/* The title and the buttons keep their size; the body between them gives way and scrolls. */
-.screen > * {
+/* The title and the buttons keep their size; the body between them gives way and scrolls —
+   and what's in the body keeps its size too (scrolled, never squeezed and cut off). */
+.screen > *,
+.screen > .sbody > * {
   flex-shrink: 0;
 }
 
@@ -304,19 +306,14 @@
   color: #ff7a8a;
 }
 
-/* Offers in the title's top-right corner (Menus.titleNotes): small, out of the way of Play. */
+/* Offers on the title (Menus.titleNotes): pills among the menu's own buttons — wrapped with
+   them, so they never cover the logo or another button on any screen. */
 .tnotes {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  max-width: min(320px, 45cqw);
+  display: contents;
 }
 
 .tnote {
+  align-self: center;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -340,6 +337,29 @@
 
 .tnote.tupdate {
   border-color: var(--gold);
+}
+
+/* "Press Back again to leave" (Menus.titleSay): a pill at the title's foot, for a moment. */
+.ttoast {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  translate: -50% 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(21, 14, 38, 0.94);
+  border: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, translate 0.2s;
+}
+
+.ttoast.show {
+  opacity: 1;
+  translate: -50% 0;
 }
 
 .title-foot {
@@ -2213,5 +2233,86 @@
 
   .isheet {
     transition: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Touch targets: ≥ 44 px under a finger (TASK goal D)                 */
+/* ------------------------------------------------------------------ */
+@media (pointer: coarse) {
+  .mbtn,
+  .mbtn.small,
+  .sprogrow .mbtn,
+  .btab,
+  .trial,
+  .sproginput {
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+
+  .srow input[type='range'] {
+    height: 44px;
+    margin: 0;
+  }
+
+  /* The how-to's page dots: a finger-sized key, the dot drawn in its middle. */
+  .hdots {
+    gap: 0;
+  }
+
+  .hdot,
+  .hdot.on {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    background: none;
+    transform: none;
+  }
+
+  .hdot::before {
+    content: '';
+    position: absolute;
+    inset: 17px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .hdot.on::before {
+    background: var(--gold);
+    transform: scale(1.3);
+  }
+
+  /* Small to look at, finger-sized to touch: the feats chip, "Face the Adept →". */
+  .laurel.featchip,
+  .vtip .mbtn.vnext {
+    position: relative;
+  }
+
+  .laurel.featchip::before,
+  .vtip .mbtn.vnext::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    right: -2px;
+    top: 50%;
+    height: 44px;
+    translate: 0 -50%;
+  }
+
+  /* The offer's "Not now" ×: a full key at the chip's end. */
+  .tclose {
+    width: 44px;
+    height: 44px;
+    margin: -8px -14px -8px -6px;
+    padding: 15px;
+  }
+}
+
+/* The shortest stages (a small phone sideways in a browser tab, ~290 px): the title's parade of
+   creatures gives way to the buttons. */
+@container stage (max-height: 330px) {
+  .screen.title .title-creatures {
+    display: none;
   }
 }

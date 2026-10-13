@@ -186,8 +186,18 @@ function inspect(safe: Insets): Problem[] {
     if (cutOff && !scroller) out.push({ kind: 'clipped', what: `${name(el)} cut by its container` });
     if (seen.l < safeBox.l - 1 || seen.t < safeBox.t - 1 || seen.r > safeBox.r + 1 || seen.b > safeBox.b + 1)
       out.push({ kind: 'outside', what: `${name(el)} at ${Math.round(seen.l)},${Math.round(seen.t)}–${Math.round(seen.r)},${Math.round(seen.b)} (safe ${safeBox.l},${safeBox.t}–${safeBox.r},${safeBox.b})` });
-    const size = Math.min(r.width, r.height);
-    if (size < 44 - 0.5) out.push({ kind: 'small', what: `${name(el)} ${Math.round(r.width)}×${Math.round(r.height)}` });
+    // The finger's target: the box, or a larger hit area drawn by a positioned ::before/::after
+    // (a small dot with a finger-sized ring around it). Measured unturned (offset sizes).
+    let tw = el.offsetWidth || r.width;
+    let th = el.offsetHeight || r.height;
+    for (const pseudo of ['::before', '::after']) {
+      const ps = getComputedStyle(el, pseudo);
+      if (ps.content === 'none' || ps.content === 'normal' || ps.position !== 'absolute' || ps.pointerEvents === 'none' || ps.display === 'none') continue;
+      tw = Math.max(tw, parseFloat(ps.width) || 0);
+      th = Math.max(th, parseFloat(ps.height) || 0);
+    }
+    const size = Math.min(tw, th);
+    if (size < 44 - 0.5) out.push({ kind: 'small', what: `${name(el)} ${Math.round(tw)}×${Math.round(th)}` });
   }
   // A menu screen never scrolls as a whole (its title and buttons would go with it): only its body.
   for (const el of document.querySelectorAll<HTMLElement>('.screen.active')) {

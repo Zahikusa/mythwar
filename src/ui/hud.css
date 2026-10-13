@@ -2466,6 +2466,8 @@ html.cbfoe .side.right .hpfill {
 
 .hud.mobile .panel > .ptitle {
   flex: none;
+  /* (A swipe down on it closes the sheet — see Hud.swipeToClose.) */
+  touch-action: none;
 }
 
 /* What a sheet holds below its title: scrolls inside the sheet when the phone is too short. */
@@ -2683,4 +2685,59 @@ html.cbfoe .side.right .hpfill {
 .coach .cicon.mimir {
   font-family: var(--title-font);
   font-weight: 700;
+}
+
+/* ------------------------------------------------------------------ */
+/* Touch targets: ≥ 44 px under a finger (TASK goal D)                 */
+/* ------------------------------------------------------------------ */
+@media (pointer: coarse) {
+  /* Speed and pause share the corner: the HP bars give up a little width for them, and each
+     key's hit area reaches 4 px above and below it (the stage's edge, the actions' gap). */
+  .hud.mobile .topbar {
+    left: calc(var(--side) + 22px);
+    right: calc(var(--side) + 22px);
+  }
+
+  .hud.mobile .sys {
+    width: calc(var(--side) + 14px);
+    right: 2px;
+  }
+
+  .hud.mobile .sysbtn::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 44px;
+    height: 44px;
+    translate: -50% -50%;
+  }
+
+  .hud.mobile .sysbtn {
+    width: calc(50% - 2px);
+  }
+
+  .hud.mobile .act.small {
+    min-height: 44px;
+  }
+
+  .hud.mobile .pclose {
+    width: 44px;
+    height: 44px;
+    margin: -6px -6px -6px auto;
+    padding: 12px;
+  }
+
+  .buy {
+    min-height: 44px;
+  }
+
+  /* The lane tab's ring of touch (see above) — finger-sized both ways. */
+  .hud.mobile .lanetab::before {
+    inset: auto;
+    right: 0;
+    bottom: -2px;
+    width: 44px;
+    height: 44px;
+  }
 }

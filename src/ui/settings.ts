@@ -53,6 +53,8 @@ export interface Settings {
   /** Preferred battle speed (1 or 2). */
   speed: number;
   shake: boolean;
+  /** Vibration on phones that can (Android): summons, powers, the verdict. */
+  haptics: boolean;
   hints: boolean;
   lowQuality: boolean;
   /** The battery saver was switched on by the game (a slow stretch), not by the player: only for that visit. */
@@ -117,6 +119,7 @@ const DEFAULTS: Settings = {
   muted: false,
   speed: 1,
   shake: true,
+  haptics: true,
   hints: true,
   lowQuality: false,
   lowQualityAuto: false,
@@ -150,6 +153,8 @@ export function loadSettings(): Settings {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object') {
+        // (Vibration used to share the screen-shake switch: whoever turned that off keeps it off.)
+        if (typeof parsed.haptics !== 'boolean') parsed.haptics = parsed.shake !== false;
         const s = sanitize({ ...DEFAULTS, ...parsed });
         mergeStored(s, PROGRESS_KEY);
         return s;
@@ -180,6 +185,7 @@ function sanitize(s: Settings): Settings {
     muted: bool(s.muted, false),
     speed: s.speed === 2 ? 2 : 1,
     shake: bool(s.shake, DEFAULTS.shake),
+    haptics: bool(s.haptics, true),
     hints: bool(s.hints, DEFAULTS.hints),
     lowQuality: bool(s.lowQuality, false),
     lowQualityAuto: bool(s.lowQualityAuto, false),

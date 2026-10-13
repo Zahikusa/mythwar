@@ -295,6 +295,7 @@ export class Hud {
     E.turretPanel = this.buildTurretPanel();
     E.blessPanel = this.buildBlessPanel();
     E.keysPanel = this.buildKeysPanel();
+    for (const p of [E.turretPanel, E.blessPanel, E.keysPanel]) this.swipeToClose(p);
 
     // Screen readers announce event toasts and banners (ascensions, Ragnarök, the verdict).
     E.toast = h('div', { class: 'toast', role: 'status', 'aria-live': 'polite' });
@@ -764,6 +765,39 @@ export class Hud {
     const row = this.turretRows[lane];
     void row.offsetWidth;
     row.classList.add('flash');
+  }
+
+  /**
+   * A sheet goes with a swipe down on its title row (the phone's idiom), following the finger.
+   * (The stage may be turned: the finger is measured in the stage's own coordinates.)
+   */
+  private swipeToClose(panel: HTMLElement): void {
+    const head = panel.querySelector<HTMLElement>('.ptitle');
+    if (!head) return;
+    let start: { id: number; y: number; t: number } | null = null;
+    let dy = 0;
+    head.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' || (e.target as Element).closest('button')) return;
+      start = { id: e.pointerId, y: this.toStage(e.clientX, e.clientY)[1], t: performance.now() };
+      dy = 0;
+      head.setPointerCapture?.(e.pointerId);
+    });
+    head.addEventListener('pointermove', (e) => {
+      if (!start || e.pointerId !== start.id) return;
+      dy = Math.max(0, this.toStage(e.clientX, e.clientY)[1] - start.y);
+      panel.style.marginTop = `${dy}px`;
+      panel.style.opacity = String(Math.max(0.4, 1 - dy / 300));
+    });
+    const end = (e: PointerEvent) => {
+      if (!start || e.pointerId !== start.id) return;
+      const fast = dy / Math.max(1, performance.now() - start.t) > 0.6;
+      start = null;
+      panel.style.marginTop = '';
+      panel.style.opacity = '';
+      if (dy > 90 || (fast && dy > 36)) this.togglePanel('none');
+    };
+    head.addEventListener('pointerup', end);
+    head.addEventListener('pointercancel', end);
   }
 
   get panelOpen(): boolean {

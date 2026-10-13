@@ -1084,3 +1084,24 @@
   font-size: 13px;
   min-height: 0;
 }
+
+/* Touch targets: ≥ 44 px under a finger (TASK goal D). */
+@media (pointer: coarse) {
+  .mpname,
+  .mpcode {
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+
+  .rseat.mine .sname {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .screen.room .trials .trial,
+  .rinvtext .rcopy {
+    min-height: 44px;
+  }
+}
