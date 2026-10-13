@@ -71,6 +71,32 @@ const APP_NAMES: Record<InApp, string> = {
 /** The phone is held sideways (the browser's bars sit elsewhere then). */
 const sideways = () => typeof window !== 'undefined' && window.innerWidth > window.innerHeight;
 
+/**
+ * How to leave this app's browser for the real one — in that app's own words where they're
+ * known (each app names the menu item a little differently), else in general terms.
+ */
+function escapeSteps(s: Situation, browser: string): Step[] {
+  const android = s.os === 'android';
+  const menu: Step = android ? { pic: 'vdots', text: 'Tap the menu ⋮ (top right).' } : { pic: 'dots', text: 'Tap ⋯ (top right).' };
+  const open = (item: string): Step => ({ pic: 'open', text: `Tap ${item}.` });
+  const steps: Partial<Record<InApp, Step[]>> = {
+    instagram: [menu, open(android ? `Open in ${browser}` : 'Open in external browser')],
+    facebook: [menu, open(android ? `Open in ${browser}` : 'Open in external browser')],
+    messenger: [menu, open(android ? `Open in ${browser}` : 'Open in external browser')],
+    tiktok: [menu, open('Open in browser')],
+    linkedin: [menu, open('Open in browser')],
+    telegram: [menu, open(`Open in ${browser}`)],
+    wechat: [menu, open(android ? 'Open in Browser' : `Open in ${browser}`)],
+    line: [menu, open('Open in default browser')],
+    x: android ? [menu, open(`Open in ${browser}`)] : [{ pic: 'open', text: 'Tap the Safari icon (bottom right).' }],
+    google: android ? [menu, open(`Open in ${browser}`)] : [{ pic: 'share', text: 'Tap the share button.' }, open('Open in Safari')],
+  };
+  const known = s.inApp ? steps[s.inApp] : undefined;
+  // (Android: the button below opens Chrome straight away — the menu is the fallback.)
+  if (android) return [{ pic: 'open', text: `Tap Open in ${browser} below.` }, ...(known ?? [menu, open(`Open in ${browser}`)]).map((st, i) => (i === 0 ? { ...st, text: `Or: ${st.text.charAt(0).toLowerCase()}${st.text.slice(1)}` } : st))];
+  return known ?? [{ pic: 'dots', text: 'Tap ⋯ or the share button (top or bottom right).' }, { pic: 'open', text: `Tap Open in ${browser} (or Open in browser).` }];
+}
+
 /** The browser to escape to, by name. */
 const realBrowser = (s: Situation) => (s.os === 'ios' ? 'Safari' : s.os === 'android' ? 'Chrome' : 'your browser');
 
@@ -149,10 +175,7 @@ export function guideFor(s: Situation, advice: Advice): Guide | null {
       return {
         title: `Open Mythwar in ${browser}`,
         lead: `You’re in ${app}’s built-in browser: here the game can’t go full screen or be installed. ${browser} can do both.`,
-        steps:
-          s.os === 'android'
-            ? [{ pic: 'open', text: `Tap Open in ${browser} below.` }, { pic: 'vdots', text: `Or: the menu ⋮ (top right) → Open in ${browser}.` }]
-            : [{ pic: 'dots', text: 'Tap ⋯ or the share button (top or bottom right).' }, { pic: 'open', text: `Tap Open in ${browser} (or Open in browser).` }],
+        steps: escapeSteps(s, browser),
         spot: { portrait: 'top-right', landscape: 'top-right' },
       };
     }

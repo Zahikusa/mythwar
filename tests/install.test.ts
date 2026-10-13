@@ -36,6 +36,14 @@ describe('guideFor: the steps for this browser', () => {
     const t = at(TELEGRAM);
     expect(text(guideFor(t, advise(t, false)))).toMatch(/Telegram.*Chrome/);
   });
+  it('each app browser in its own words', () => {
+    const ig = at(INSTAGRAM);
+    expect(text(guideFor(ig, advise(ig, false)))).toMatch(/⋯ \(top right\).*Open in external browser/);
+    const tg = at(TELEGRAM);
+    const t = guideFor(tg, advise(tg, false))!;
+    expect(t.steps[0].text).toMatch(/Open in Chrome below/);
+    expect(text(t)).toMatch(/Or: tap the menu ⋮.*Open in Chrome/);
+  });
   it('Samsung Internet: its own menu', () => {
     const s = at(SAMSUNG);
     expect(text(guideFor(s, advise(s, false)))).toMatch(/≡.*Add page to/);
