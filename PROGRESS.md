@@ -264,8 +264,10 @@ the improvement backlog below (verified, committed) and add what the review find
    (Done: `Game.blocker(cmd)` — the world's in single player, NetGame's in-flight-aware one
    online — lights cards, Ascend (+ chime), blessings and turrets; the Ascend fill and "need Ng"
    use the shown gold; unit test.)
-64. [ ] `src/ai/ai.ts` ~295/327: the gold the AI keeps for the Elder Dragon also blocks buying the
+64. [x] `src/ai/ai.ts` ~295/327: the gold the AI keeps for the Elder Dragon also blocks buying the
    Dragon (needs ~4,700–5,100 gold while calm). Low impact; leave the reserve out for the Dragon.
+   (Done: the Dragon is weighed against the bank without its own share. designcheck passes:
+   100/53/13/3%, even battles 18.6 min, left side 58%; Dragons 0% → 1% of final-age summons.)
 
 
 

@@ -289,6 +289,8 @@ export class AiController {
         reserve = next.ascendCost * 0.5 * p.ascendSkill;
       }
     }
+    // (What is kept back for anything but the Dragon: the Dragon's own bank must not stop it.)
+    const reserveBeforeDragon = reserve;
     // In the final age, able generals bank gold for the Elder Dragon (one at a time) while the
     // lanes are calm and Ragnarök hasn't begun: at equal gold it outfights any army — but only
     // if it gets bought.
@@ -301,7 +303,9 @@ export class AiController {
     if (!p.savesForBlessings || underSiege || w.time >= w.ragnarokAt - 180) this.blessGoal = null;
     else if (!this.blessGoal && me.age >= BLESSING_PRICE_FLOOR_AGE && danger <= 0) this.blessGoal = this.nextBlessing(false);
     const blessing = this.blessGoal;
-    const keep = underSiege && !saveThroughSiege ? 0 : Math.max(reserve, blessing ? blessingCost(blessing, me.blessings[blessing], me.age) : 0);
+    const blessBank = blessing ? blessingCost(blessing, me.blessings[blessing], me.age) : 0;
+    const keep = underSiege && !saveThroughSiege ? 0 : Math.max(reserve, blessBank);
+    const keepForDragon = underSiege && !saveThroughSiege ? 0 : Math.max(reserveBeforeDragon, blessBank);
 
     // 3. Turrets. A planning AI mounts one as soon as foes push past midfield in a lane without
     // an up-to-date turret, and holds further summons back until it can afford it.
@@ -324,7 +328,7 @@ export class AiController {
       const lane = this.pickLane(lanes, danger, unitCost);
       const def = this.pickUnit(lanes[lane]);
       if (!def) break;
-      const affordable = me.gold - def.cost >= keep;
+      const affordable = me.gold - def.cost >= (def.id === DRAGON.id ? keepForDragon : keep);
       if (!affordable) {
         // Weaker AIs fall back to whatever they can afford; stronger ones wait for the right unit.
         if (this.rng.chance(1 - p.counterSkill)) {
