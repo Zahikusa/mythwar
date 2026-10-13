@@ -59,6 +59,7 @@ docs/LENSES.md why each feature exists; docs/MULTIPLAYER.md the netcode.
 | UI / app | `npm run smoke` (one flow: `npm run smoke -- --only journal`; + look: `npm run shoot -- <scenario>`, `--list` for names) |
 | Netcode, server, protocol, app flows used online | `npm run mpsmoke` (`--shots` for screenshots) |
 | Simulation rules / balance | `npm run designcheck`, `npm run sim -- 120 master master` (sides ~50/50) |
+| Anything a phone shows (layout, menus, HUD, sheets) | `npm run mobilecheck -- --quick` (3 devices); the whole matrix — 8 iPhones/Androids/iPads × tab/installed × both orientations, ~25 min — before committing a layout change. Look at `screenshots/mobile/`. |
 | Rendering cost | `npm run perfcheck` (budget 3 ms of JS per frame) |
 | Server start-up, its messages, the release package | `npm run package:check` (packages, then starts the package's own `server.mjs` and plays a lobby round trip) |
 | Before committing | `npm run verify` (typecheck, tests, build, smoke, mpsmoke) |
