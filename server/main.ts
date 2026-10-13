@@ -14,7 +14,7 @@ import type { Server } from 'node:http';
 import { createServer as createHttpsServer } from 'node:https';
 import { basename, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { lanAddresses } from './lan.ts';
+import { lanInterfaces } from './lan.ts';
 import { flatWord } from './lobby.ts';
 import { attachMultiplayer } from './net.ts';
 import { serveStatic } from './static.ts';
@@ -119,7 +119,8 @@ http.listen(port, '0.0.0.0');
 http.on('listening', () => {
   // (The port actually bound: --port 0 asks the system for any free one.)
   port = (http.address() as { port: number }).port;
-  const urls = lanAddresses().map((ip) => `${scheme}://${ip}:${port}/`);
+  const nets = lanInterfaces();
+  const urls = nets.map((a) => `${scheme}://${a.ip}:${port}/`);
   console.log('\n  Mythwar is running.\n');
   const hall = mp.lobby.hallStats();
   if (hall.players) console.log(`  Hall of champions: ${hall.players} player${hall.players === 1 ? '' : 's'} remembered, ${hall.returning} came back on another day.\n`);
@@ -127,9 +128,12 @@ http.on('listening', () => {
   if (movedFrom) console.log(`  Port ${movedFrom} was busy (is Mythwar running already, in another window?) — using ${port}.\n`);
   console.log(`  On this computer:   ${scheme}://localhost:${port}/`);
   if (urls.length) {
+    // (Named by adapter: with several — wired and Wi-Fi, a VPN — the host can tell which is which.)
     console.log(`  Other devices in this Wi-Fi:`);
-    for (const u of urls) console.log(`    ${u}`);
-    console.log('\n  Scan to open on a phone:\n');
+    const wide = Math.max(...urls.map((u) => u.length));
+    urls.forEach((u, i) => console.log(`    ${u.padEnd(wide)}   (${nets[i].adapter})`));
+    if (nets[0].virtual) console.log('  (These look like virtual adapters — a VPN, virtual machines: phones may not reach them. Connect this computer to the Wi-Fi.)');
+    console.log(`\n  Scan to open on a phone${urls.length > 1 ? ` (the first address, ${nets[0].adapter} — if that's the wrong network, type another address on the phone)` : ''}:\n`);
     console.log(terminalQr(urls[0], !!process.stdout.isTTY));
   } else {
     console.log('  (No network address found — connect this computer to the Wi-Fi.)');

@@ -31,21 +31,41 @@ export function networkOf(address: string | undefined): string {
     .join(':');
 }
 
-/** IPv4 addresses of this machine's network interfaces, likely Wi-Fi / LAN first. */
-export function lanAddresses(): string[] {
-  const out: { ip: string; score: number; virtual: boolean }[] = [];
-  for (const [name, list] of Object.entries(networkInterfaces())) {
+/** A network address of this machine, with the adapter it belongs to. */
+export interface LanAddress {
+  ip: string;
+  /** The adapter's name as the system gives it ("Wi-Fi", "en0", "wlan0"). */
+  adapter: string;
+  /** Looks like a virtual adapter (VMs, containers, VPNs): phones can't reach it. */
+  virtual: boolean;
+}
+
+// Virtual adapters (WSL, Hyper-V, Docker and its networks, VirtualBox, VMware, libvirt, macOS
+// Internet-sharing bridges, VPNs and overlay networks) can't be reached from a phone.
+const VIRTUAL = /vethernet|virtual|vmware|vmnet|vbox|docker|^br-|virbr|^bridge\d|wsl|hyper-v|tailscale|zerotier|^zt|loopback|utun|tun|tap|^wg\d|wireguard|nordlynx|proton|openvpn|anyconnect|cisco|forti|hamachi|radmin|^ppp/;
+
+/**
+ * IPv4 addresses of this machine's network interfaces, likely Wi-Fi / LAN first: real adapters
+ * before virtual ones (those only if nothing else is there), private addresses first, Wi-Fi
+ * before wired, a home router's 192.168.x.x before other private ranges.
+ */
+export function lanInterfaces(interfaces: ReturnType<typeof networkInterfaces> = networkInterfaces()): LanAddress[] {
+  const out: (LanAddress & { score: number })[] = [];
+  for (const [name, list] of Object.entries(interfaces)) {
     for (const a of list ?? []) {
       if (a.family !== 'IPv4' || a.internal) continue;
       const n = name.toLowerCase();
-      // Virtual adapters (WSL, Hyper-V, Docker, VPNs) can't be reached from a phone.
-      const virtual = /vethernet|virtual|vmware|vbox|docker|wsl|hyper-v|tailscale|zerotier|loopback|utun|tun|tap/.test(n);
       const priv = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(a.address);
       const wifi = /wi-?fi|wlan|wireless|en0|en1/.test(n);
-      out.push({ ip: a.address, score: (priv ? 5 : 0) + (wifi ? 2 : 0), virtual });
+      out.push({ ip: a.address, adapter: name, virtual: VIRTUAL.test(n), score: (priv ? 5 : 0) + (wifi ? 2 : 0) + (a.address.startsWith('192.168.') ? 1 : 0) });
     }
   }
   // Virtual adapters only as a last resort.
   const real = out.filter((a) => !a.virtual);
-  return (real.length ? real : out).sort((a, b) => b.score - a.score).map((a) => a.ip);
+  return (real.length ? real : out).sort((a, b) => b.score - a.score).map(({ ip, adapter, virtual }) => ({ ip, adapter, virtual }));
+}
+
+/** IPv4 addresses of this machine, likely Wi-Fi / LAN first (see lanInterfaces). */
+export function lanAddresses(): string[] {
+  return lanInterfaces().map((a) => a.ip);
 }

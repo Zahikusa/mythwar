@@ -775,10 +775,15 @@ it prints, inviting, stopping — 2026-10-13.)
    advice still blocks every phone. Say how to check/switch the network profile (MULTIPLAYER.md
    ~69 does) in the console and README.txt.
    (Done: console, README.txt and README.md say how to set the Wi-Fi to Private.)
-176. [ ] The QR code always encodes the first address (main.ts ~124) and the console prints
+176. [x] The QR code always encodes the first address (main.ts ~124) and the console prints
    addresses without adapter names; `server/lan.ts`'s virtual-adapter filter misses virbr0,
    br-<id> (Docker), vmnet8, bridge100, wg0, NordLynx, ProtonVPN. Print the adapter name by each
    address, say which one the QR uses, and widen the filter.
+   (Done: `lanInterfaces()` in server/lan.ts — pure over an interface map, adapter names kept;
+   the filter also knows vmnet, br-<id>, virbr, bridgeN, wg, WireGuard, NordLynx, Proton,
+   OpenVPN, AnyConnect, Forti, Hamachi, ppp; 192.168.x.x first among equals. The console prints
+   "http://192.168.1.105:8787/   (WLAN)", says the QR uses the first address when there are
+   several, and warns when only virtual adapters are left. tests/lan.test.ts.)
 177. [x] Node version: no `engines` in package.json, no check in server/main.ts; README gives no
    version, MULTIPLAYER.md says 24+, the real minimum for running .ts directly is 22.18 / 23.6 —
    below it `npm run lan` builds, then fails with ERR_UNKNOWN_FILE_EXTENSION. State it once,
