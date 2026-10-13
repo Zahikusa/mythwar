@@ -709,8 +709,9 @@ battle, results — 2026-10-13.)
    clipboard` needs a secure context (http://192.168… isn't); Settings' progress code has the
    select-the-text fallback, these don't (menus.ts ~973, mpmenus.ts ~236). A shared copy helper
    with an `execCommand('copy')` fallback.
-163. [ ] The results tip (`battleTip`, menus.ts ~1240) says "click a gate or press T" on phones (the
-   coach swaps Tap/Click by device; this doesn't).
+163. [x] The results tip (`battleTip`, menus.ts ~1240) says "click a gate or press T" on phones (the
+   coach swaps Tap/Click by device; this doesn't). (Done: `battleTip(…, touch)` — "(tap a gate)" on a
+   phone stage; test.)
 164. [ ] The "turn your phone sideways before typing" tip is in the lobby only; a QR guest renaming
    in the room on an upright phone never sees it (mpmenus.ts ~194).
 165. [ ] (note) iPhone's silent switch mutes Web Audio (no `navigator.audioSession.type = 'playback'`)

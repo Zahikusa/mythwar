@@ -27,6 +27,9 @@ describe('results tip', () => {
     expect(battleTip(w, 0, 'adept', [{ t: 120, team: 1, age: 1 }, { t: 130, team: 0, age: 1 }])).toMatch(/god power/);
     w.players[0].stats.powersCast = 3;
     expect(battleTip(w, 0, 'adept', [])).toMatch(/turrets/);
+    // (Backlog 163) Said for the device: no clicks or keys on a phone.
+    expect(battleTip(w, 0, 'adept', [])).toMatch(/click a gate or press T/);
+    expect(battleTip(w, 0, 'adept', [], true, true)).toMatch(/\(tap a gate\)/);
     w.players[0].turrets[1].def = w.players[0].turrets[1].def ?? ({ id: 'thornspitter' } as never);
     // Out-drawn at the Ley Surges.
     w.players[1].stats.surgeGold = 300;

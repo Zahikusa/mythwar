@@ -1011,7 +1011,7 @@ export class Menus {
       h(
         'div',
         { class: 'vtip' },
-        h('span', { class: this.breakNote ? 'vbreak' : undefined, text: this.breakNote ?? (online && (won || online.reason !== 'citadel') ? scoreLine(online) : warWon ? 'The war is won — and a war is better shared.' : battleTip(world, me, difficulty, ageUps, this.settings.advice)) }),
+        h('span', { class: this.breakNote ? 'vbreak' : undefined, text: this.breakNote ?? (online && (won || online.reason !== 'citadel') ? scoreLine(online) : warWon ? 'The war is won — and a war is better shared.' : battleTip(world, me, difficulty, ageUps, this.settings.advice, !!this.root.closest('.mobile'))) }),
         online || this.breakNote ? null : this.flowButton(won, difficulty),
       ),
       h('div', { class: 'vstats' }, table, this.storyPanel(history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null, story, best > 0 ? champion : null)),
@@ -1213,7 +1213,8 @@ export function recommendedDifficulty(records: Settings['records']): Difficulty 
   return DIFFICULTIES.find((d) => !records[d]?.wins) ?? 'mythic';
 }
 
-export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps: { t: number; team: Team; age: number }[], advice = true): string {
+/** `touch`: the player plays by touch (no "click", no keys). */
+export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps: { t: number; team: Team; age: number }[], advice = true, touch = false): string {
   const foe: Team = me === 0 ? 1 : 0;
   const P = world.players[me];
   if (world.winner === me) {
@@ -1237,7 +1238,7 @@ export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps
     }
   }
   if (P.stats.powersCast === 0 && world.time > 90) return 'Tip: you never cast your god power. It recharges — unleash it on the lane under the most pressure.';
-  if (P.turrets.every((t) => !t.def) && world.time > 150) return 'Tip: mount turrets on your gates (click a gate or press T) — they hold a lane while you fight elsewhere.';
+  if (P.turrets.every((t) => !t.def) && world.time > 150) return `Tip: mount turrets on your gates (${touch ? 'tap a gate' : 'click a gate or press T'}) — they hold a lane while you fight elsewhere.`;
   // Countering is the core skill: say so when the creatures mostly hit the wrong classes.
   const cd = P.stats.classDamage ?? [0, 0, 0];
   if (cd[0] > 500 && cd[1] < cd[0] * 0.3 && cd[2] > cd[1]) {
