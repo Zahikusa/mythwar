@@ -583,6 +583,11 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    with the line showing (smoke's phone-menus flow checks Resume with an empty line only). (Done:
    the phone check now pauses with a line on the menu — Resume still on screen at 844×390 and
    640×360.)
+137. [ ] `src/app.ts` keeps growing (run #8 added the multiplayer glue for #48, #54, #72, #87–#90,
+   #125): the online part — openMultiplayer, onMpChanged, roomChimes, leaveRoom, rematch,
+   syncRematch, the emote routing — could move to its own module (`src/onlineapp.ts`) with a
+   narrow interface to App, so each half reads on its own. No behaviour change; verify must stay
+   green.
 
 
 
