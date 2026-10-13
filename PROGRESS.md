@@ -871,7 +871,11 @@ it prints, inviting, stopping — 2026-10-13.)
    for one ally's deed stay — split into #198.)
 198. [ ] Co-op feats: Wyrmcaller, Favoured, Among the Gods (src/ui/feats.ts ~100–113) are judged on the
    shared side, so one ally's dragon / rank-5 blessing / Celestial ascent earns them for both.
-   Judge them by the player's own orders (the turn's `seat`), or mark them "together".
+   Judge them by the player's own orders (the turn's `seat`), or mark them "together". (Note for whoever takes
+   it: sim events don't say which seat ordered; NetGame sees each applied command's `seat` in the
+   turns — count own dragon / ascend / bless orders there and credit the matching events.)
+199. [ ] Co-op HUD: after the ally left (#191 now says so in a toast), the name line still reads
+   "You & Bo · Fae Wilds" (hud.ts ~1095) — "You (Bo left)" or just "You" once their seat is empty.
 197. [ ] (minor) The co-op chronicle calls the foe by the difficulty label ("First blood to Novice")
    where single player uses the general's name (Puck); the results drop the AI's income note.
 
