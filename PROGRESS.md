@@ -500,6 +500,23 @@ server/lobby.ts and match.ts, 2026-10-13.)
 **Start here: [docs/BRIEF.md](docs/BRIEF.md)** — one page: what TASK.md asked for, what was
 built, how to see each part working, and the decisions that need you.
 
+## Run #10 in short (for the morning)
+- Verification mode, backlog items 215–228. Open from run #9: #204 (smoke waits for menu
+  changes, not sleeps), #215 (Back twice leaves the room on a phone), #217 (mpsmoke cuts the
+  phone's links silently through a TCP relay — CDP's offline mode turned out unfaithful: Chrome
+  still answers the server's pings) done; #137 and #172 decided (reasons in the items).
+- Three independent reviews (client netcode; run #10's own diff; server lobby/match): fixed —
+  a reconnecting phone froze after a citadel fell (#218); results without a verdict when 'over'
+  came late (#219); a version-refused page said "Reconnecting…" forever (#220); a stale co-op
+  "is back" (#221); a seat gone in battle lost at once at the result, the winner's win with it
+  (#225); a reconnecting host unlisted (#226); away/back within the resume countdown held a
+  duel forever (#227).
+- Own find: a phone out of the Wi-Fi mid-battle left the battle running for the heartbeat's
+  12 s — a seat silent for 4 s now counts as away (#222; three holes in it found by the diff
+  review and fixed, #223).
+- Tests 285 → 293; mpsmoke plain / latency / portrait green (a co-op Ready race in the test
+  fixed, #228); verify:all green early in the run.
+
 ## Run #9 in short (for the morning)
 - Verification mode, backlog items 138–214. Open from run #8: #138 and #142 done; #128 (DOM tests)
   and #129 (rival ids) decided against, with reasons; #137 (split app.ts) started with a pure,
