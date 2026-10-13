@@ -390,7 +390,9 @@ export class App {
   private startGame(difficulty: Difficulty, seed: number | undefined, demo: boolean, sandbox = false): Game {
     const trials = demo || sandbox ? [] : this.settings.trials;
     const quick = !demo && !sandbox && this.settings.quick;
-    return this.hookGame(new Game({ difficulty, seed, demo, sandbox, trials, quick }), demo);
+    // (A custom start only for ages this player has reached in battle.)
+    const startAge = demo || sandbox ? 0 : Math.min(this.settings.startAge, this.settings.ageSeen);
+    return this.hookGame(new Game({ difficulty, seed, demo, sandbox, trials, quick, startAge }), demo);
   }
 
   /** Makes `game` the active game: resets visuals and routes its events. */
@@ -766,12 +768,14 @@ export class App {
     }
     const P = g.world.players[g.playerTeam];
     const quick = g.world.quick;
-    const stars = battleStars(won, P.baseHp / P.baseMaxHp, g.world.time, this.difficulty, quick).stars;
+    // A custom start (a later age) is not the same race: no stars or best time for it.
+    const custom = g.world.startAge > 0;
+    const stars = custom ? 0 : battleStars(won, P.baseHp / P.baseMaxHp, g.world.time, this.difficulty, quick).stars;
     // A better rating than ever against this foe is celebrated on the results.
     this.menus.newBestStars = stars > (this.settings.records[this.difficulty]?.stars ?? 0) ? stars : 0;
     // The first victory over a general closes their chapter of the journey (Lens #70).
     this.menus.epilogue = won && !this.settings.records[this.difficulty]?.wins ? JOURNEY[this.difficulty] : null;
-    recordResult(this.settings, this.difficulty, won, g.world.time, stars, quick);
+    recordResult(this.settings, this.difficulty, won, g.world.time, stars, quick || custom);
     if (starTotal(this.settings.records) >= MAX_STARS) this.feats?.award(PINNACLE);
     clearBattle();
     this.audio.ui(won ? 'victory' : 'defeat');
@@ -1165,7 +1169,7 @@ export class App {
 
   /** Against the AI: say when a star goal slips (citadel below half) or is gone (par time). */
   private watchStars(g: Game): void {
-    if (g.options.online || g.practice || g.options.demo || g.over) return;
+    if (g.options.online || g.practice || g.options.demo || g.over || g.world.startAge > 0) return;
     const P = g.world.players[g.playerTeam];
     const frac = P.baseHp / P.baseMaxHp;
     if (!this.starWarned.half && frac <= 0.5) {

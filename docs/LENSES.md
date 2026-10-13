@@ -1364,3 +1364,20 @@ the story support the play, and the play the story?*
   the crossing is yours. The skalds have their song." Later wins return to the plain verdict.
   The ladder of difficulty is now a story with an end.
 - Checked: results screenshots (desktop, phone) of a first win; full verify.
+
+## #71 The Lens of Freedom
+*When do players feel free, and when constrained? Do they have the freedom they want — the
+freedoms that matter?*
+- Freedom in battle is wide (any creature, any lane, when to ascend, hold, rush, bless, cast).
+  Freedom *around* battles has grown this phase (quick battles #39, trials #31, sandbox #15,
+  riddles #52). One constraint stayed absolute: **every battle begins in the Fae Wilds**. A
+  player who has fought through the ages many times and wants an Asgard battle — Valkyries and
+  wolves from the first minute — had to sit through two ages first, every time.
+- Change: a **"Start: <age>"** chip on the foe screen cycles through the ages the player has
+  already reached in battle (hidden until they've reached Olympus — curiosity about unseen ages,
+  #4, stays intact). Both sides begin in that age, with its citadel and starting gold in its
+  prices. It's freedom, not a shortcut to rewards: such a battle counts a win or loss but keeps
+  no stars, no best time, no star goals on the pause screen ("Started in Asgard (no stars)" on
+  the results); feats for reaching ages still need an actual ascension.
+- Checked: unit test (both sides in the age, citadel, gold, kept in a save; default 0), the foe
+  screen with the chip lit; full verify.

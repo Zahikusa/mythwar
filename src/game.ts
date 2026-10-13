@@ -26,6 +26,8 @@ export interface GameOptions {
   quick?: boolean;
   /** A riddle of war (src/sim/puzzles.ts): no foe AI, a fixed purse, one goal. */
   puzzle?: string;
+  /** Both sides begin in this age (a custom start, Lens #71). */
+  startAge?: number;
 }
 
 export type GameListener = (events: SimEvent[]) => void;
@@ -81,7 +83,7 @@ export class Game {
     this.options = opts;
     const seed = opts.seed ?? (Math.random() * 1e9) | 0;
     this.riddle = (opts.puzzle && puzzleById(opts.puzzle)) || null;
-    this.world = world ?? (this.riddle ? puzzleWorld(this.riddle) : new World({ seed, trials: [opts.trials ?? [], []], quick: opts.quick }));
+    this.world = world ?? (this.riddle ? puzzleWorld(this.riddle) : new World({ seed, trials: [opts.trials ?? [], []], quick: opts.quick, startAge: opts.startAge }));
     this.world.endless = !!opts.sandbox;
     this.playerTeam = opts.online ? (opts.team ?? 0) : 0;
     this.ai = opts.online || opts.sandbox || this.riddle ? null : new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);

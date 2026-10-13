@@ -31,3 +31,18 @@ describe('the generals address the player by name', () => {
     for (const d of ['novice', 'adept', 'master', 'mythic'] as const) for (const ev of ['start', 'won', 'lost'] as const) expect(tauntLine(d, ev, 0, 'Q')).toContain('Q');
   });
 });
+
+describe('a custom start (Lens #71)', () => {
+  it('puts both sides in the chosen age, with its citadel and prices, and survives a save', async () => {
+    const { COST_SCALE, START_GOLD, AGES } = await import('../src/sim/data.ts');
+    const w = new World({ seed: 5, startAge: 2, trials: [[], []] });
+    for (const p of w.players) {
+      expect(p.age).toBe(2);
+      expect(p.baseMaxHp).toBe(AGES[2].baseHp);
+      expect(p.baseHp).toBe(p.baseMaxHp);
+      expect(p.gold).toBe(Math.round(START_GOLD * COST_SCALE[2]));
+    }
+    expect(World.deserialize(w.serialize()).startAge).toBe(2);
+    expect(new World({ seed: 5 }).startAge).toBe(0);
+  });
+});

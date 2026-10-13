@@ -100,6 +100,7 @@ export class Menus {
   private featList: HTMLElement | null = null;
   private riddleList: HTMLElement | null = null;
   private trialsRow: HTMLElement | null = null;
+  private startSync: (() => void) | null = null;
   private featChip: HTMLButtonElement | null = null;
 
   constructor(parent: HTMLElement, settings: Settings, cb: MenuCallbacks) {
@@ -164,7 +165,7 @@ export class Menus {
       ? `Sandbox · ${fmtTime(world.time)} · ${AGES[P.age].name}`
       : `${battleName(world.seed)} · vs ${foe} · ${fmtTime(world.time)} · ${AGES[P.age].name} vs ${AGES[E.age].name} · ${P.stats.kills} foes slain`;
     // Against the AI: the battle's star goals, while they can still be won.
-    if (this.pauseGoals) this.pauseGoals.textContent = online || sandbox ? '' : starGoals(world, me, difficulty);
+    if (this.pauseGoals) this.pauseGoals.textContent = online || sandbox || world.startAge > 0 ? '' : starGoals(world, me, difficulty);
     // Online, either player may pause and either may resume; the battle can't restart.
     this.restartBtn?.classList.toggle('hidden', !!online);
     if (this.pauseTitle) this.pauseTitle.textContent = online ? online.title : 'Paused';
@@ -364,7 +365,25 @@ export class Menus {
       this.cb.sound('select');
       syncQuick();
     });
-    trials.append(quick, h('span', { class: 'tlabel', text: 'Trials:' }));
+    // Freedom (Lens #71): begin in any age already reached in battle.
+    const start = h('button', { class: 'trial startchip', title: 'The age both sides begin in — any age you have reached in battle (no stars for a later start)' }) as HTMLButtonElement;
+    const syncStart = () => {
+      const age = Math.min(this.settings.startAge, this.settings.ageSeen);
+      start.textContent = `Start: ${AGES[age].name}`;
+      start.classList.toggle('on', age > 0);
+      start.classList.toggle('hidden', this.settings.ageSeen < 1);
+    };
+    syncStart();
+    this.syncers.push(syncStart);
+    this.startSync = syncStart;
+    onTap(start, () => {
+      const cur = Math.min(this.settings.startAge, this.settings.ageSeen);
+      this.settings.startAge = cur >= this.settings.ageSeen ? 0 : cur + 1;
+      this.cb.settingsChanged(this.settings);
+      this.cb.sound('select');
+      syncStart();
+    });
+    trials.append(quick, start, h('span', { class: 'tlabel', text: 'Trials:' }));
     for (const id of TRIAL_ORDER) {
       const t = TRIALS[id];
       const chip = h('button', { class: 'trial handicap', title: t.blurb, 'aria-pressed': 'false' }, t.name) as HTMLButtonElement;
@@ -408,6 +427,7 @@ export class Menus {
     // Trials are for a harder fight: they appear after a first victory (Lens #56) — or when some
     // are already chosen (from a progress code), so they can always be switched off again.
     this.trialsRow?.classList.toggle('notrials', fresh && this.settings.trials.length === 0);
+    this.startSync?.();
     for (const d of DIFFICULTIES) {
       this.diffCards[d].classList.toggle('sel', d === this.selected);
       // Which foe is for me? The first one not beaten yet.
@@ -857,8 +877,9 @@ export class Menus {
         'div',
         { class: 'vtime' },
         h('span', { text: `Battle length ${fmtTime(world.time)}` }),
-        online ? null : starsRow(battleStars(won, P.baseHp / P.baseMaxHp, world.time, difficulty, world.quick).parts),
+        online || world.startAge > 0 ? null : starsRow(battleStars(won, P.baseHp / P.baseMaxHp, world.time, difficulty, world.quick).parts),
         world.quick ? h('span', { class: 'vtrials', text: 'Quick battle' }) : null,
+        world.startAge > 0 ? h('span', { class: 'vtrials', text: `Started in ${AGES[world.startAge].name} (no stars)` }) : null,
         P.trials?.length ? h('span', { class: 'vtrials', text: `Trials: ${P.trials.map((t) => TRIALS[t].name).join(', ')}` }) : null,
       ),
       // Rewards of this battle, on one line: new feats and a new best rating against this foe.

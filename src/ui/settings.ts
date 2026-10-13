@@ -50,6 +50,8 @@ export interface Settings {
   colorblind: boolean;
   /** Riddles of war solved (ids, see src/sim/puzzles.ts). */
   riddles: string[];
+  /** The age battles against the AI begin in (Lens #71; only ages reached in battle). */
+  startAge: number;
 }
 
 const KEY = 'mythwar.settings.v1';
@@ -78,6 +80,7 @@ const DEFAULTS: Settings = {
   quick: false,
   colorblind: false,
   riddles: [],
+  startAge: 0,
 };
 
 export function loadSettings(): Settings {
@@ -126,6 +129,7 @@ function sanitize(s: Settings): Settings {
     ageSeen: Math.max(0, Math.min(4, Math.floor(Number(s.ageSeen) || 0))),
     quick: bool(s.quick, false),
     colorblind: bool(s.colorblind, false),
+    startAge: Math.max(0, Math.min(4, Math.floor(Number(s.startAge) || 0))),
     riddles: Array.isArray(s.riddles) ? [...new Set(s.riddles.filter((x): x is string => typeof x === 'string'))].slice(0, 50) : [],
     trials: Array.isArray(s.trials) ? TRIAL_ORDER.filter((t) => s.trials.includes(t)) : [],
     feats: Array.isArray(s.feats) ? [...new Set(s.feats.filter((x): x is string => typeof x === 'string'))].slice(0, 100) : [],

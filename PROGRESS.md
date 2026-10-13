@@ -151,7 +151,7 @@ complete; its log follows below the lens plan.
 - [x] #68 The Hero's Journey — the four generals are chapters (Call, Threshold, Ordeal, Return): on the foe cards and told at the first battles
 - [x] #69 The Weirdest Thing — riddles offered Ascend/Turrets/Blessings and a frozen XP bar: hidden there (keys too)
 - [x] #70 Story — each journey chapter closes with an ending line on the first win over its general (the last ends the war)
-- [ ] #71 Freedom — custom battle options
+- [x] #71 Freedom — start a battle in any age already reached (foe screen chip; no stars for a later start)
 - [ ] #72 Indirect Control — guide via visuals
 - [ ] #73 Collusion — a guide character
 - [ ] #74 The World — world lore

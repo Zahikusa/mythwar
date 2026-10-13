@@ -12,6 +12,7 @@ import {
   LANE_COUNT,
   LANE_LENGTH,
   MAX_AGE,
+  COST_SCALE,
   PASSIVE_XP,
   RAGNAROK_AFTER_FINAL,
   RAGNAROK_CRUMBLE,
@@ -82,6 +83,8 @@ export interface WorldOptions {
   trials?: [TrialId[], TrialId[]];
   /** A quick battle (see QUICK). */
   quick?: boolean;
+  /** Both sides begin in this age (Lens #71: a custom start; 0 = the Fae Wilds as usual). */
+  startAge?: number;
 }
 
 export function trait<K extends TraitKind>(def: UnitDef, kind: K): Extract<Trait, { kind: K }> | undefined {
@@ -123,6 +126,8 @@ export interface WorldSnapshot {
   quick?: boolean;
   /** The battle's seed (names the battlefield; absent in older saves). */
   seed?: number;
+  /** A custom start's age (absent: 0). */
+  startAge?: number;
   players: (Omit<PlayerState, 'turrets'> & { turrets: (Omit<TurretSlot, 'def'> & { def: string | null })[] })[];
   lanes: (Omit<Unit, 'def'> & { def: string })[][];
   shrines: Shrine[];
@@ -145,6 +150,8 @@ export class World {
   winner: Team | null = null;
   /** A quick battle: faster XP, more starting gold, an earlier Ragnarök (QUICK). */
   quick = false;
+  /** The age both sides began in (a custom start; 0 = the usual Fae Wilds). */
+  startAge = 0;
   /** Sandbox (single player only): citadels can't fall, the battle never ends. */
   endless = false;
   /** Sim time at which Ragnarök begins (may move earlier once both sides reach the final age). */
@@ -175,6 +182,16 @@ export class World {
       this.quick = true;
       this.ragnarokAt = QUICK.ragnarok;
       for (const p of this.players) p.gold = QUICK.gold;
+    }
+    const startAge = Math.max(0, Math.min(MAX_AGE, Math.floor(opts.startAge ?? 0)));
+    if (startAge > 0) {
+      // A later start: that age's citadel, and starting gold in that age's prices.
+      this.startAge = startAge;
+      for (const p of this.players) {
+        p.age = startAge;
+        p.gold = Math.round(p.gold * COST_SCALE[startAge]);
+        p.baseHp = p.baseMaxHp = this.baseMaxHpFor(p.team);
+      }
     }
     if (opts.trials) {
       for (const p of this.players) {
@@ -228,6 +245,7 @@ export class World {
       lastSurgeLane: this.lastSurgeLane,
       quick: this.quick,
       seed: this.seed,
+      startAge: this.startAge,
       players: this.players.map((p) => ({ ...p, turrets: p.turrets.map((t) => ({ ...t, def: t.def ? t.def.id : null })) })),
       lanes: this.lanes.map((l) => l.filter((u) => u.alive).map((u) => ({ ...u, def: u.def.id }))),
       shrines: this.shrines,
@@ -253,6 +271,7 @@ export class World {
     w.finalAgeAt = snap.finalAgeAt;
     w.quick = !!snap.quick;
     w.seed = snap.seed ?? 0;
+    w.startAge = snap.startAge ?? 0;
     if (typeof snap.nextSurgeAt === 'number') {
       w.surge = snap.surge ?? null;
       w.nextSurgeAt = snap.nextSurgeAt;
