@@ -839,9 +839,12 @@ it prints, inviting, stopping — 2026-10-13.)
 190. [x] An ally whose tab closed at the start and never came back still got the co-op victory in
    the Hall (and the room's wins). (Done: `Match.stillIn()` — only allies here or away for less
    than the grace are credited; server test.)
-191. [ ] The ally who stays is never told the other is away or has left (room news skip battles,
+191. [x] The ally who stays is never told the other is away or has left (room news skip battles,
    the net notice only shows a pause, the HUD still says "You & Bo"). A toast "Bo left — you fight
-   on alone" / "Bo is away", and the HUD's name line without them.
+   on alone" / "Bo is away", and the HUD's name line without them. (Done for the words:
+   `allyNews()` (src/ui/roomnews.ts, tested) → a toast in a co-op battle — "Bo left the battle —
+   you fight on alone.", "Bo is away — you fight on…", "Bo is back."; mpsmoke checks the first. The
+   HUD's "You & Bo" line stays as it was.)
 192. [x] After an ally left mid-battle, the room ended in phase 'over' with one seat: not listed
    in the lobby, and the old "victories together" score carried to a new ally. (Done: such a room
    is 'waiting' again with the score reset, as in a duel; server test.)
@@ -849,9 +852,10 @@ it prints, inviting, stopping — 2026-10-13.)
    A goes to Room, switches to a duel (or takes a handicap) and readies; B on the results reads
    "wants a rematch!" and accepts — now fighting the ally. Say what changed on the results' note
    ("Ada wants a duel / now fights under Glass Citadel") — or route Accept through the room.
-194. [ ] Both allies away: the notice names the ally ("Bo is away… you win") with duel wording and
+194. [x] Both allies away: the notice names the ally ("Bo is away… you win") with duel wording and
    may offer "Claim victory", which the server refuses in co-op (netoverlay.ts ~91–97). Co-op
-   wording: "Bo is away — the battle waits for you both"; no claim button.
+   wording: "Bo is away — the battle waits for you both"; no claim button. (Done: in co-op, "Bo is
+   away — … The battle goes on as soon as one of you is here.", no claim, no "you win".)
 195. [ ] Co-op room: under the ally's seat "2 – 2 here · you 3 – 1 overall" frames the ally as an
    opponent (mpmenus.ts ~441–447). In co-op: "Victories together: 2".
 196. [ ] Co-op leaving and credit: the leaver's journal records a defeat and the pause note says

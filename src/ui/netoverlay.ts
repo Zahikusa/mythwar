@@ -88,6 +88,10 @@ export class NetOverlay {
       sub = 'Reconnecting to the game server…';
     } else if (game.syncing) {
       title = 'Re-syncing the battle…';
+    } else if (pause?.reason === 'away' && pause.seat !== game.seat && game.coop) {
+      // Co-op: the battle waits only while both allies are gone — and nobody wins by waiting.
+      title = `${game.allyName} is away`;
+      sub = 'Your ally’s app is in the background or lost the Wi-Fi. The battle goes on as soon as one of you is here.';
     } else if (pause?.reason === 'away' && pause.seat !== game.seat) {
       const waited = (now - game.netPauseAt) / 1000;
       const left = Math.max(0, (pause.forfeitIn ?? 0) - waited);

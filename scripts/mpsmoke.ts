@@ -688,6 +688,8 @@ async function main(): Promise<void> {
     await a.evaluate(() => (window as any).__mythwar.leaveRoom());
     // (B is told A left — the seat empties — and the battle must keep running after that.)
     await waitFor(b, 'B sees the ally leave', () => (window as any).__mythwar.mp.room?.seats.filter(Boolean).length === 1, 6000);
+    // (Backlog 191) …and is told: the battle doesn't wait for one ally.
+    await waitFor(b, 'B told the ally left', () => /left the battle — you fight on alone/.test(document.querySelector('.hud .toast.show')?.textContent ?? ''), 4000);
     const leftAt = (await info(b)).tick;
     await until('B plays on', async () => (await info(b)).tick > leftAt + 60, 6000);
     const solo = await info(b);

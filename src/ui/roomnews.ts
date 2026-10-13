@@ -7,7 +7,7 @@ import type { Team } from '../sim/types.ts';
 
 /** The battle room as one player saw it at one moment (to tell what the other player changed). */
 export interface RoomView {
-  foe: { name: string; ready: boolean; trials: TrialId[] } | null;
+  foe: { name: string; ready: boolean; trials: TrialId[]; away?: boolean; connected?: boolean } | null;
   /** This player's own seat is Ready. */
   meReady: boolean;
   coop: Difficulty | null;
@@ -16,7 +16,7 @@ export interface RoomView {
 export function roomView(room: RoomInfo, seat: Team | null): RoomView {
   const foe = seat === null ? null : room.seats[seat === 0 ? 1 : 0];
   return {
-    foe: foe ? { name: foe.name, ready: foe.ready, trials: foe.trials.slice() } : null,
+    foe: foe ? { name: foe.name, ready: foe.ready, trials: foe.trials.slice(), away: foe.away || !foe.connected, connected: foe.connected } : null,
     meReady: seat !== null && !!room.seats[seat]?.ready,
     coop: room.coop,
   };
@@ -50,6 +50,20 @@ export function roomNews(prev: RoomView | null, now: RoomView, ownMode: boolean)
     said = `${foe?.name ?? 'The other player'} switched to ${now.coop ? `co-op against the ${AI_PROFILES[now.coop].name} AI` : 'a duel'} — the score starts over.`;
   }
   return { chime, said };
+}
+
+/**
+ * In a co-op battle, what the ally just did ('' = nothing new): the one who stays must know they
+ * now fight alone (the battle doesn't wait for one ally — backlog 191).
+ */
+export function allyNews(prev: RoomView | null, now: RoomView): string {
+  const was = prev?.foe ?? null;
+  const ally = now.foe;
+  if (was && !ally) return `${was.name} left the battle — you fight on alone.`;
+  if (!was || !ally || ally.name !== was.name) return '';
+  if (ally.away && !was.away) return `${ally.name} is away — you fight on; the battle waits only if you go too.`;
+  if (!ally.away && was.away) return `${ally.name} is back.`;
+  return '';
 }
 
 /** What to do when the server no longer seats us in the room we had (MpClient.sessionLost). */

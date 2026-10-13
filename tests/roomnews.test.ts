@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RoomInfo, SeatInfo } from '../src/net/protocol.ts';
-import { emoteRoute, lostSessionPlan, roomNews, roomView } from '../src/ui/roomnews.ts';
+import { allyNews, emoteRoute, lostSessionPlan, roomNews, roomView } from '../src/ui/roomnews.ts';
 import type { RoomView } from '../src/ui/roomnews.ts';
 
 const seat = (name: string, over: Partial<SeatInfo> = {}): SeatInfo => ({ name, connected: true, ready: false, away: false, wins: 0, ping: 0, trials: [], rank: 0, sigil: -1, ...over });
@@ -11,8 +11,10 @@ const bo = (over: Partial<NonNullable<RoomView['foe']>> = {}) => ({ name: 'Bo', 
 describe('roomView', () => {
   it('reads the other seat and our own Ready from either side', () => {
     const r = room([seat('Ada', { ready: true }), seat('Bo', { trials: ['glass'] })], 'adept');
-    expect(roomView(r, 0)).toEqual({ foe: { name: 'Bo', ready: false, trials: ['glass'] }, meReady: true, coop: 'adept' });
-    expect(roomView(r, 1)).toEqual({ foe: { name: 'Ada', ready: true, trials: [] }, meReady: false, coop: 'adept' });
+    expect(roomView(r, 0)).toEqual({ foe: { name: 'Bo', ready: false, trials: ['glass'], away: false, connected: true }, meReady: true, coop: 'adept' });
+    expect(roomView(r, 1)).toEqual({ foe: { name: 'Ada', ready: true, trials: [], away: false, connected: true }, meReady: false, coop: 'adept' });
+    // (A lost connection counts as away.)
+    expect(roomView(room([seat('Ada'), seat('Bo', { connected: false })]), 0).foe).toMatchObject({ away: true, connected: false });
     expect(roomView(room([seat('Ada'), null]), 0).foe).toBeNull();
     expect(roomView(r, null)).toEqual({ foe: null, meReady: false, coop: 'adept' });
   });
@@ -96,5 +98,15 @@ describe("emoteRoute (where the other player's quick message shows)", () => {
     expect(emoteRoute({ ...base, mine: true })).toBeNull();
     expect(emoteRoute({ ...base, enabled: false })).toBeNull();
     expect(emoteRoute({ ...base, state: 'title', menu: 'room' })).toBeNull();
+  });
+});
+
+describe('allyNews (co-op: what the ally just did — backlog 191)', () => {
+  it('says the ally left, went away, came back; nothing otherwise', () => {
+    expect(allyNews(view(bo()), view(null))).toBe('Bo left the battle — you fight on alone.');
+    expect(allyNews(view(bo()), view(bo({ away: true })))).toMatch(/^Bo is away — you fight on/);
+    expect(allyNews(view(bo({ away: true })), view(bo()))).toBe('Bo is back.');
+    expect(allyNews(view(bo()), view(bo({ ready: true })))).toBe('');
+    expect(allyNews(null, view(bo()))).toBe('');
   });
 });

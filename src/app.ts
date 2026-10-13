@@ -40,7 +40,7 @@ import { JOURNEY, PERSONAS, tauntLine } from './ui/personas.ts';
 import { Sitting } from './ui/wellbeing.ts';
 import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
-import { emoteRoute, lostSessionPlan, roomNews, roomView } from './ui/roomnews.ts';
+import { allyNews, emoteRoute, lostSessionPlan, roomNews, roomView } from './ui/roomnews.ts';
 import type { RoomView } from './ui/roomnews.ts';
 
 type AppState = 'title' | 'playing' | 'over';
@@ -1183,6 +1183,11 @@ export class App {
     const prev = this.lastRoom;
     const now = mp.room ? roomView(mp.room, mp.seat) : null;
     this.lastRoom = now;
+    // In a co-op battle: the ally away, back, or gone — the battle runs on for the one who stays.
+    if (this.state === 'playing' && now && this.game instanceof NetGame && this.game.coop) {
+      const said = allyNews(prev, now);
+      if (said) this.hud.toast(said, 'info');
+    }
     if (this.state === 'playing' || !now) return;
     const news = roomNews(prev, now, performance.now() - this.ownCoopAt <= 2000);
     if (news.chime) this.audio.ui(news.chime);
