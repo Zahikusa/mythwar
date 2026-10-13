@@ -464,6 +464,26 @@ describe('lobby', () => {
     expect(lobby.roomCount).toBe(1);
   });
 
+  it('busy (the transport drives it fast) only while a battle is on (backlog 291)', () => {
+    const { lobby, run } = setup();
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    a.hello('Ada');
+    b.hello('Bo');
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    expect(lobby.busy).toBe(false);
+    a.send({ type: 'ready', ready: true });
+    b.send({ type: 'ready', ready: true });
+    // (From the countdown on.)
+    expect(lobby.busy).toBe(true);
+    run(4000);
+    b.send({ type: 'leave' });
+    run(100);
+    expect(a.last('over')).toBeDefined();
+    expect(lobby.busy).toBe(false);
+  });
+
   it('a connection that never says hello is closed after 10 s (backlog 285)', () => {
     const { lobby, run } = setup();
     const quiet = new FakeClient(lobby);

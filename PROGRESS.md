@@ -201,9 +201,13 @@ last; server heap flat.)
    the results — on phone B 194 ms of work per second in the room, 166 in battle. A phone never
    idles between battles all evening (heat, battery). Cap rendering (~30 fps) or freeze the
    backdrop while a menu covers the canvas, on touch devices at least.
-291. [ ] `server/net.ts` ~126: the lobby loop runs every 4 ms even with no rooms — 2.3% of a core
+291. [x] `server/net.ts` ~126: the lobby loop runs every 4 ms even with no rooms — 2.3% of a core
    for hours on the host's laptop (keeps it out of deep idle). Tick fast only while a match is
    counting down, running or resuming; otherwise ~100 ms does for grace, sweeps and lists.
+   (Done: `Lobby.busy` (a room in 'playing'); the transport drives it every 4 ms then, every
+   100 ms otherwise, and a message that starts a battle wakes it at once. 250 → 10 wake-ups a
+   second when idle (here 0.77 → 0.52% of a core — the review's machine saw 2.3%). Test;
+   mpsmoke green, no desyncs.)
 292. [ ] A page that goes back to the title forgets its session, but the server keeps it (and its
    last battle's snapshot, 2–16 kB) for SESSION_TTL (10 min): 12 exits left 13 sessions.
    Harmless on a LAN; on a public server drop the snapshot on 'leave' or add a "forget me".

@@ -264,6 +264,15 @@ export class Lobby {
   }
 
   /**
+   * A battle is on somewhere (counting down, running or held): `update` is needed every few
+   * milliseconds. Otherwise rooms only wait — seats' grace, sweeps and lists keep for ~0.1 s.
+   */
+  get busy(): boolean {
+    for (const room of this.rooms.values()) if (room.phase === 'playing') return true;
+    return false;
+  }
+
+  /**
    * A new connection. Returns the handlers the transport calls for its messages and close.
    * `network`: see networkOf; `quota`: the key per-address limits count against ('' = none, for
    * trusted local-network clients).

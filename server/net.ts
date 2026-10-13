@@ -39,6 +39,9 @@ const MAX_SOCKETS = 5000;
 /** Seconds without any sign of life before a connection is considered dead. */
 const DEAD_AFTER = 12;
 const HEARTBEAT = 4;
+/** How often (ms) the lobby is driven while a battle is on — the simulation runs at 60 Hz — and while none is. */
+const BUSY_TICK = 4;
+const IDLE_TICK = 100;
 /**
  * Bytes waiting to go out on one socket before it is closed: a client that stops reading (a
  * script; nothing a phone does — a stalled link is held as away after 4 s) would otherwise have
@@ -118,8 +121,11 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
       alive.set(ws, performance.now());
       if (isBinary) return;
       const text = data.toString();
-      if (lag) lag.up(() => handlers.message(text));
-      else handlers.message(text);
+      if (lag) lag.up(() => (handlers.message(text), wake()));
+      else {
+        handlers.message(text);
+        wake();
+      }
     });
     ws.on('pong', () => alive.set(ws, performance.now()));
     ws.on('close', () => {
@@ -129,8 +135,23 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
     });
   });
 
-  // Rooms and battles advance on a fast timer (the simulation runs at 60 Hz).
-  const loop = setInterval(() => lobby.update(), 4);
+  // Rooms and battles advance on a fast timer while a battle is on, a slow one otherwise: an idle
+  // server (rooms waiting, nobody there) mustn't keep the host's laptop from resting.
+  let loop: ReturnType<typeof setTimeout>;
+  let idle = false;
+  const tick = () => {
+    lobby.update();
+    idle = !lobby.busy;
+    loop = setTimeout(tick, idle ? IDLE_TICK : BUSY_TICK);
+  };
+  // (A message that starts a battle — both Ready — needn't wait for the slow tick.)
+  const wake = () => {
+    if (!idle || !lobby.busy) return;
+    clearTimeout(loop);
+    idle = false;
+    loop = setTimeout(tick, BUSY_TICK);
+  };
+  loop = setTimeout(tick, BUSY_TICK);
   // Phones that lose Wi-Fi or get suspended don't always close their sockets: ping them.
   const deadAfter = opts.deadAfter ?? DEAD_AFTER;
   const heartbeat = setInterval(() => {
@@ -145,7 +166,7 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
     lobby,
     close() {
       lobby.flush(true);
-      clearInterval(loop);
+      clearTimeout(loop);
       clearInterval(heartbeat);
       http.off('upgrade', onUpgrade);
       for (const ws of wss.clients) ws.terminate();
