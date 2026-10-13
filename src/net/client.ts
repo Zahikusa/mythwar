@@ -96,9 +96,7 @@ export class MpClient {
     this.conn.onState = (s) => this.onState(s);
     this.conn.onRefused = (code) => {
       // 4001: another tab took over this session; 4000: a different game version.
-      if (code === 4001) this.replaced = true;
-      else this.versionMismatch = true;
-      if (this.game && !this.game.over) this.game.abandon();
+      this.refused(code === 4001);
       this.emit((l) => l.changed?.());
     };
   }
@@ -310,7 +308,7 @@ export class MpClient {
         break;
       case 'error':
         if (msg.code === 'version') {
-          this.versionMismatch = true;
+          this.refused(false);
           this.conn.close();
         }
         this.emit((l) => l.error?.(msg.code, msg.message));
@@ -323,6 +321,18 @@ export class MpClient {
         return;
     }
     this.emit((l) => l.changed?.());
+  }
+
+  /**
+   * This page won't hear from the server again (another tab took over, or it runs another
+   * version): no battle or room is left to wait for — the lobby says why and to reload.
+   */
+  private refused(replaced: boolean): void {
+    if (replaced) this.replaced = true;
+    else this.versionMismatch = true;
+    if (this.game && !this.game.over) this.game.abandon();
+    this.room = null;
+    this.seat = null;
   }
 
   private startGame(game: NetGame): void {

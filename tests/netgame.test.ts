@@ -340,6 +340,22 @@ describe('NetGame over a simulated network', () => {
     expect(a.room!.seats[1]).toMatchObject({ name: 'Bo', connected: true });
   });
 
+  it('refused for good (another version, another tab): no battle or room left waiting (backlog 220)', () => {
+    const { a, b, ga, gb } = twoPlayers();
+    net.run(2000);
+    // The server was restarted with another build: it refuses this page's hello.
+    (b as unknown as { onMessage(m: unknown, at: number): void }).onMessage({ type: 'error', code: 'version', message: 'reload' }, net.now);
+    expect(b.versionMismatch).toBe(true);
+    expect(gb.over).toBe(true);
+    expect(b.room).toBeNull();
+    expect(b.seat).toBeNull();
+    // Another tab took over this session (close code 4001).
+    (a.conn as unknown as { onRefused(code: number): void }).onRefused(4001);
+    expect(a.replaced).toBe(true);
+    expect(ga.over).toBe(true);
+    expect(a.room).toBeNull();
+  });
+
   it('a phone that missed the end of the battle sees the result when it reconnects', () => {
     const { a, b, ga, gb } = twoPlayers();
     net.run(3000);

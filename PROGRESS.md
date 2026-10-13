@@ -425,13 +425,19 @@ the overlay and the app's online wiring — 2026-10-13.)
    journal and the feats as for a server restart, and `onOver` later has nothing to emit. Hold
    back `gameOver` while `result` is null; emit it from `onOver` (with #218: exactly once).
    (Done: `NetGame.emit` holds a gameOver back until the verdict is in; test — failed before.)
-220. [ ] After a version mismatch (`error` code `version` → `conn.close()` clears `onclose`) or a
+220. [x] After a version mismatch (`error` code `version` → `conn.close()` clears `onclose`) or a
    takeover by another tab (4001), `mp.room` stays: the battle overlay says "Reconnecting…"
    forever, the room says "Reconnecting…" with Ready dimmed, and the "reload" explanation is only
    in the lobby's status line. Drop room/seat on both and say "reload" where the player is.
-221. [ ] `allyAwaySaid` (app.ts ~1230) carries over between battles: a battle that ends while the
+   (Done: `MpClient.refused()` — both paths abandon the battle and drop room and seat; the app
+   takes a refused page from a battle or the results to the lobby (it did so for 4001 only),
+   whose status line says "reload". Test in netgame.test.ts; mpsmoke green.)
+221. [x] `allyAwaySaid` (app.ts ~1230) carries over between battles: a battle that ends while the
    ally is away leaves it true, so in the rematch a short blip says "Bo is back." without an
    "away". Reset it (and its timer) when a battle starts and on toTitle.
+   (Done in `onNetBattle` — every online battle, rematches included, starts there; the flag
+   only counts in a battle, so toTitle needs nothing. Too small and DOM-bound for a unit test;
+   mpsmoke's co-op checks green.)
 222. [x] (Own find) A phone that walks out of the Wi-Fi mid-battle (not backgrounded) leaves its
    socket open; the server only calls it dead after the transport heartbeat's 12 s — that long the
    battle runs on without the player. Pages ping every second: a seat silent for 4 s could count

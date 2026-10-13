@@ -1203,7 +1203,8 @@ export class App {
       this.lobbyNote = plan.note;
       if (this.state === 'title') this.flushLobbyNote();
     }
-    if (mp.replaced && this.game instanceof NetGame && this.state !== 'title') {
+    // (Refused for good — another tab, another version: the lobby says why and to reload.)
+    if ((mp.replaced || mp.versionMismatch) && this.game instanceof NetGame && this.state !== 'title') {
       this.toTitle();
       this.openMultiplayer();
     }
@@ -1269,6 +1270,10 @@ export class App {
     };
     this.mp?.watchRooms(false);
     this.netMenuLocal = false;
+    // (The ally's "away" said in the last battle — which may have ended with them away — is
+    // not this one's: a blip now mustn't say "back".)
+    clearTimeout(this.allyAwayTimer);
+    this.allyAwaySaid = false;
     this.enterBattle(g);
     this.menus.show('none');
     if (g.world.time < 1) this.hud.opening(g.foeName);
