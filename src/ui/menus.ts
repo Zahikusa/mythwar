@@ -14,6 +14,8 @@ import { Bestiary } from './bestiary.ts';
 import { PERSONAS } from './personas.ts';
 import { battleName, placeName } from './places.ts';
 import { FEATS, MAX_STARS, PINNACLE, starTotal } from './feats.ts';
+import { PUZZLES } from '../sim/puzzles.ts';
+import type { Puzzle } from '../sim/puzzles.ts';
 import { exportProgress, importProgress } from './progress.ts';
 import type { Feat } from './feats.ts';
 import type { MpMenuCallbacks } from './mpmenus.ts';
@@ -33,6 +35,8 @@ export interface MenuCallbacks {
   play(difficulty: Difficulty): void;
   /** The goal-free sandbox. */
   sandbox(): void;
+  /** A riddle of war (src/sim/puzzles.ts). */
+  riddle(id: string): void;
   continueSaved(): void;
   resume(): void;
   restart(): void;
@@ -47,7 +51,7 @@ export interface MenuCallbacks {
   toRoom(): void;
 }
 
-type Screen = 'none' | 'title' | 'difficulty' | 'howto' | 'settings' | 'bestiary' | 'feats' | 'pause' | 'over' | 'mp' | 'room';
+type Screen = 'none' | 'title' | 'difficulty' | 'howto' | 'settings' | 'bestiary' | 'feats' | 'riddles' | 'pause' | 'over' | 'mp' | 'room';
 
 /** Full-screen menus: title, difficulty, how-to-play, settings, pause and results. */
 export class Menus {
@@ -89,6 +93,7 @@ export class Menus {
   /** A new best star rating against this foe (0 = not a new best). */
   newBestStars = 0;
   private featList: HTMLElement | null = null;
+  private riddleList: HTMLElement | null = null;
   private featChip: HTMLButtonElement | null = null;
 
   constructor(parent: HTMLElement, settings: Settings, cb: MenuCallbacks) {
@@ -104,6 +109,7 @@ export class Menus {
     this.bestiary = new Bestiary(this.button('Back', 'primary', () => this.goBack()), (k) => this.cb.sound(k));
     this.screens.bestiary = this.bestiary.el;
     this.screens.feats = this.buildFeats();
+    this.screens.riddles = this.buildRiddles();
     this.screens.pause = this.buildPause();
     this.screens.over = h('div', { class: 'screen over' });
     this.mp = new MpScreens((label, cls, onClick, icon) => this.button(label, cls, onClick, icon), cb.mp);
@@ -116,6 +122,7 @@ export class Menus {
       settings: 'Settings',
       bestiary: 'Bestiary',
       feats: 'Feats',
+      riddles: 'Riddles of war',
       pause: 'Paused',
       over: 'Battle results',
       mp: 'Multiplayer',
@@ -134,8 +141,16 @@ export class Menus {
   }
 
   /** One-line battle summary shown on the pause screen. `foe`: the other player's name online. */
-  setPauseSummary(world: World, me: Team, difficulty: Difficulty, online?: { foe: string; title: string }, sandbox = false): void {
+  setPauseSummary(world: World, me: Team, difficulty: Difficulty, online?: { foe: string; title: string }, sandbox = false, riddle: Puzzle | null = null): void {
     if (!this.pauseSummary) return;
+    if (riddle) {
+      this.pauseSummary.textContent = `Riddle: ${riddle.name} · ${fmtTime(world.time)} of ${fmtTime(riddle.limit)}`;
+      if (this.pauseGoals) this.pauseGoals.textContent = `${riddle.brief} Clear the field before any foe reaches your citadel.`;
+      this.restartBtn?.classList.remove('hidden');
+      if (this.pauseTitle) this.pauseTitle.textContent = 'Paused';
+      if (this.pauseNote) this.pauseNote.textContent = 'Riddles keep no score — restart or leave any time.';
+      return;
+    }
     const P = world.players[me];
     const E = world.players[me === 0 ? 1 : 0];
     const foe = online ? online.foe : `${PERSONAS[difficulty].name} (${AI_PROFILES[difficulty].name})`;
@@ -195,6 +210,7 @@ export class Menus {
   /** Return from how-to / settings / difficulty to whichever screen opened them. */
   goBack(): void {
     if (this.screen === 'howto' || this.screen === 'settings' || this.screen === 'bestiary' || this.screen === 'feats') this.show(this.back);
+    else if (this.screen === 'riddles') this.show('difficulty');
     else if (this.screen === 'difficulty') this.show(this.diffBack);
   }
 
@@ -224,6 +240,7 @@ export class Menus {
     if (screen === 'title') this.refreshLaurels();
     if (screen === 'bestiary') this.bestiary.open(this.settings.ageSeen);
     if (screen === 'feats') this.refreshFeats();
+    if (screen === 'riddles') this.refreshRiddles();
     if (screen === 'settings') for (const f of this.syncers) f();
   }
 
@@ -322,6 +339,9 @@ export class Menus {
     // The toy: no foe, endless gold — play with the creatures and try match-ups.
     const sandbox = this.button('Sandbox', 'ghost', () => this.cb.sandbox());
     sandbox.title = 'No foe, endless gold: summon for either side and watch any match-up';
+    // Riddles: small hand-made battles with one question each.
+    const riddles = this.button('Riddles', 'ghost', () => this.show('riddles'));
+    riddles.title = 'Small battles with one question each: a fixed purse, a known foe, one answer';
     this.saveNote = h('div', { class: 'dnote hidden', text: 'A new battle replaces your saved one (after its first minute, that counts as a defeat).' });
     // Battle length, then trials: optional handicaps for players who want a harder fight.
     const trials = h('div', { class: 'trials' });
@@ -359,7 +379,7 @@ export class Menus {
       });
       trials.appendChild(chip);
     }
-    return h('div', { class: 'screen difficulty' }, h('h2', { text: 'Choose your foe' }), grid, trials, this.saveNote, h('div', { class: 'mrow' }, back, sandbox, begin));
+    return h('div', { class: 'screen difficulty' }, h('h2', { text: 'Choose your foe' }), grid, trials, this.saveNote, h('div', { class: 'mrow' }, back, sandbox, riddles, begin));
   }
 
   /** Start a battle — first-timers see the five-page how-to first (skippable). */
@@ -500,6 +520,62 @@ export class Menus {
   private buildFeats(): HTMLElement {
     this.featList = h('div', { class: 'featlist' });
     return h('div', { class: 'screen feats' }, h('h2', { text: 'Feats' }), this.featList, h('div', { class: 'mrow' }, this.button('Back', 'primary', () => this.goBack())));
+  }
+
+  private buildRiddles(): HTMLElement {
+    this.riddleList = h('div', { class: 'riddlelist' });
+    return h(
+      'div',
+      { class: 'screen riddles' },
+      h('h2', { text: 'Riddles of war' }),
+      h('div', { class: 'mnote', text: 'A fixed purse, no income, no walls — the foe already on the field. Clear it before any foe reaches your citadel.' }),
+      this.riddleList,
+      h('div', { class: 'mrow' }, this.button('Back', 'primary', () => this.goBack())),
+    );
+  }
+
+  /** The riddles, in order; those of ages never reached in battle stay sealed (Lens #4). */
+  private refreshRiddles(): void {
+    const list = this.riddleList!;
+    list.innerHTML = '';
+    PUZZLES.forEach((pz, i) => {
+      const open = pz.age <= this.settings.ageSeen;
+      const solved = this.settings.riddles.includes(pz.id);
+      const card = h(
+        'button',
+        { class: `riddle${solved ? ' solved' : ''}${open ? '' : ' sealed'}`, 'aria-label': open ? `Riddle ${i + 1}: ${pz.name}${solved ? ' (solved)' : ''}` : `Riddle ${i + 1}: sealed` },
+        h('div', { class: 'rhead' }, h('b', { text: open ? `${i + 1}. ${pz.name}` : `${i + 1}. ???` }), h('span', { class: 'rage', text: open ? AGES[pz.age].name : '' }), solved ? h('span', { class: 'rsolved', text: '✓ Solved' }) : null),
+        h('span', { class: 'rbrief', text: open ? pz.brief : `Reach ${AGES[pz.age].name} in battle to unseal this riddle.` }),
+      ) as HTMLButtonElement;
+      card.disabled = !open;
+      if (open) onTap(card, () => {
+        this.cb.sound('select');
+        this.cb.riddle(pz.id);
+      });
+      list.appendChild(card);
+    });
+  }
+
+  /** After a riddle: solved (on to the next) or not yet (with a hint). */
+  showRiddleResult(pz: Puzzle, won: boolean): void {
+    const el = this.screens.over!;
+    el.innerHTML = '';
+    const i = PUZZLES.indexOf(pz);
+    const next = PUZZLES[i + 1];
+    const nextOpen = !!next && next.age <= this.settings.ageSeen;
+    const solvedAll = PUZZLES.every((p) => this.settings.riddles.includes(p.id));
+    el.append(
+      h('div', { class: 'vhead' }, h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Solved' : 'Not yet' }), h('div', { class: 'vs', text: pz.name }))),
+      h('div', { class: 'vtip' }, h('span', { text: won ? (solvedAll ? 'Every riddle of war is solved. The rest is a real battle.' : next && !nextOpen ? `The next riddle waits in ${AGES[next.age].name} — reach it in battle.` : 'The field is clear.') : `Hint: ${pz.hint}` })),
+      h(
+        'div',
+        { class: 'mrow' },
+        this.button('Riddles', 'ghost', () => this.show('riddles')),
+        this.button('Try again', won && nextOpen ? '' : 'primary', () => this.cb.riddle(pz.id)),
+        won && nextOpen ? this.button(`Next: ${next.name}`, 'primary', () => this.cb.riddle(next.id), ICONS.swords) : null,
+      ),
+    );
+    this.show('over');
   }
 
   private refreshFeats(): void {

@@ -1,5 +1,6 @@
 import { Audio } from './audio/audio.ts';
 import { Game } from './game.ts';
+import { puzzleById } from './sim/puzzles.ts';
 import { DIFFICULTIES } from './ai/ai.ts';
 import type { SimEvent } from './sim/types.ts';
 import type { Difficulty } from './ai/ai.ts';
@@ -141,11 +142,14 @@ export class App {
     this.menus = new Menus(this.stage, this.settings, {
       play: (d) => this.play(d),
       sandbox: () => this.play(this.settings.difficulty, undefined, true),
+      riddle: (id) => this.playRiddle(id),
       continueSaved: () => this.continueSaved(),
       resume: () => this.resume(),
       restart: () => {
         this.forfeit();
-        this.play(this.difficulty, undefined, !!this.game?.options.sandbox);
+        const riddle = this.game?.riddle;
+        if (riddle) this.playRiddle(riddle.id);
+        else this.play(this.difficulty, undefined, !!this.game?.options.sandbox);
       },
       quit: () => {
         // Online: leaving the battle forfeits it and leaves the room.
@@ -314,7 +318,7 @@ export class App {
     this.renderer.shakeEnabled = s.shake;
     this.renderer.setColorblind(s.colorblind);
     document.documentElement.classList.toggle('cbfoe', s.colorblind);
-    this.hud.advice = s.advice;
+    this.hud.advice = s.advice && !this.game?.riddle;
     const q = s.lowQuality ? 'low' : 'high';
     if (this.renderer.quality !== q && this.width > 0) this.resize();
   }
@@ -383,7 +387,7 @@ export class App {
       if (this.state === 'playing') {
         this.hud.onEvents(ev);
         this.coach.onEvents(ev);
-        if (!demo && !game.options.sandbox) this.feats?.onEvents(ev, game.world);
+        if (!demo && !game.practice) this.feats?.onEvents(ev, game.world);
         if (!demo) this.tauntEvents(game, ev);
         for (const e of ev) {
           if (e.type === 'ageUp' && e.team === game.playerTeam) {
@@ -409,16 +413,7 @@ export class App {
     this.difficulty = difficulty;
     this.settings.difficulty = difficulty;
     saveSettings(this.settings);
-    // A new battle from the title abandons the autosaved one: like leaving it from the pause
-    // menu, that counts as a defeat once it had properly started (the difficulty screen says so).
-    // (Restart from the pause menu has already recorded its forfeit.)
-    const saved = this.state === 'title' ? loadBattle() : null;
-    const savedTime = saved?.world?.time;
-    if (saved && typeof savedTime === 'number' && savedTime >= 60 && DIFFICULTIES.includes(saved.difficulty)) {
-      recordResult(this.settings, saved.difficulty, false, savedTime);
-    }
-    clearBattle();
-    this.menus.setContinue(null);
+    this.abandonSaved();
     const game = this.startGame(difficulty, seed, false, sandbox);
     game.speed = this.settings.speed === 2 ? 2 : 1;
     this.enterBattle(game);
@@ -434,6 +429,33 @@ export class App {
       // The general speaks once the opening banner has had its moment.
       window.setTimeout(() => this.taunt('start', true), 3200);
     }
+  }
+
+  /**
+   * A new battle from the title abandons the autosaved one: like leaving it from the pause menu,
+   * that counts as a defeat once it had properly started (the difficulty screen says so).
+   * (Restart from the pause menu has already recorded its forfeit.)
+   */
+  private abandonSaved(): void {
+    const saved = this.state === 'title' ? loadBattle() : null;
+    const savedTime = saved?.world?.time;
+    if (saved && typeof savedTime === 'number' && savedTime >= 60 && DIFFICULTIES.includes(saved.difficulty)) {
+      recordResult(this.settings, saved.difficulty, false, savedTime);
+    }
+    clearBattle();
+    this.menus.setContinue(null);
+  }
+
+  /** A riddle of war (Lens #52): a small hand-made battle with one question. */
+  playRiddle(id: string): void {
+    const pz = puzzleById(id);
+    if (!pz) return;
+    this.abandonSaved();
+    const game = this.hookGame(new Game({ difficulty: this.settings.difficulty, puzzle: id }), false);
+    this.enterBattle(game);
+    this.hud.setFoeName('The riddle');
+    this.menus.show('none');
+    this.hud.banner(pz.name, `A riddle of war · ${pz.gold} gold${pz.power ? ' · one god power' : ''}`, 'gold', `${pz.brief} Clear the field before any foe reaches your citadel.`);
   }
 
   private enterBattle(game: Game): void {
@@ -457,10 +479,12 @@ export class App {
     this.audio.startMusic(game.world.players[game.playerTeam].age);
     this.hud.ageSeen = this.settings.ageSeen;
     this.hud.holdKnown = !this.settings.hints || this.settings.hintsSeen.includes('hold');
+    // (A riddle is solved by reading the lane yourself: no "Counter!" badge there.)
+    this.hud.advice = this.settings.advice && !game.riddle;
     this.hud.attach(game);
     this.input.attach(game);
     // (The sandbox is a toy: battle tips would only be used up there.)
-    this.coach.attach(game.options.sandbox ? null : game);
+    this.coach.attach(game.practice ? null : game);
     this.coinTarget = this.hud.goldTarget();
   }
 
@@ -487,7 +511,7 @@ export class App {
   /** Autosave the battle in progress. */
   private persist(): void {
     const g = this.game;
-    if (this.state !== 'playing' || !g || g.over || g.world.winner !== null || g.options.demo || g.options.online || g.options.sandbox) return;
+    if (this.state !== 'playing' || !g || g.over || g.world.winner !== null || g.options.demo || g.options.online || g.practice) return;
     saveBattle(g.toSave());
     this.lastSave = g.world.time;
   }
@@ -558,7 +582,7 @@ export class App {
   /** Abandoning a battle that has properly started counts as a loss in the records. */
   private forfeit(): void {
     const g = this.game;
-    if (this.state !== 'playing' || !g || g.over || g.options.demo || g.options.online || g.options.sandbox || g.world.time < 60) return;
+    if (this.state !== 'playing' || !g || g.over || g.options.demo || g.options.online || g.practice || g.world.time < 60) return;
     recordResult(this.settings, this.difficulty, false, g.world.time);
   }
 
@@ -567,7 +591,7 @@ export class App {
     const m = this.menus.current;
     if (m === 'mp') this.closeMultiplayer();
     else if (m === 'room') return;
-    else if (m === 'howto' || m === 'settings' || m === 'bestiary' || m === 'feats' || m === 'difficulty') this.menus.goBack();
+    else if (m === 'howto' || m === 'settings' || m === 'bestiary' || m === 'feats' || m === 'difficulty' || m === 'riddles') this.menus.goBack();
     else if (this.state !== 'playing') return;
     else if (this.game instanceof NetGame) {
       // Online the battle may be held for other reasons (countdown, someone away): Esc
@@ -599,7 +623,7 @@ export class App {
       return;
     }
     this.game.paused = true;
-    this.menus.setPauseSummary(this.game.world, this.game.playerTeam, this.difficulty, undefined, !!this.game.options.sandbox);
+    this.menus.setPauseSummary(this.game.world, this.game.playerTeam, this.difficulty, undefined, !!this.game.options.sandbox, this.game.riddle);
     this.hud.cancelTargeting();
     this.hud.hideTooltip();
     if (this.hud.panelOpen) this.hud.togglePanel('none');
@@ -624,6 +648,18 @@ export class App {
     const g = this.game!;
     const won = g.world.winner === g.playerTeam;
     // (A battle abandoned by a server restart has no result: no feats for it either.)
+    if (g.riddle) {
+      // Riddles keep no records or feats — only which ones are solved.
+      if (won && !this.settings.riddles.includes(g.riddle.id)) {
+        this.settings.riddles.push(g.riddle.id);
+        saveSettings(this.settings);
+      }
+      this.audio.ui(won ? 'victory' : 'defeat');
+      this.overTimer = 1.8;
+      this.hud.cancelTargeting();
+      this.hud.banner(won ? 'Solved!' : 'Not yet', won ? 'The field is clear' : g.world.players[g.playerTeam].baseHp < g.world.players[g.playerTeam].baseMaxHp ? 'A foe reached your citadel' : 'The riddle stands', won ? 'gold' : 'red');
+      return;
+    }
     if (!(g instanceof NetGame) || g.result) this.feats?.onEnd(g.world, g instanceof NetGame ? null : this.difficulty, g instanceof NetGame && !!g.coop);
     this.menus.featsEarned = this.feats?.earned ?? [];
     if (g instanceof NetGame) {
@@ -708,7 +744,8 @@ export class App {
               score: seats?.[g.seat === 0 ? 1 : 0] ? [seats?.[g.seat]?.wins ?? 0, seats[g.seat === 0 ? 1 : 0]!.wins] : null,
             });
             this.syncRematch();
-          } else this.menus.showResults(g.world, g.playerTeam, this.difficulty, g.history, g.ageUps);
+          } else if (g.riddle) this.menus.showRiddleResult(g.riddle, g.world.winner === g.playerTeam);
+          else this.menus.showResults(g.world, g.playerTeam, this.difficulty, g.history, g.ageUps);
         }
       }
       if (g instanceof NetGame) {
@@ -975,7 +1012,7 @@ export class App {
 
   /** Against the AI: the general reacts to what happens (ascending, casting, taking a shrine). */
   private tauntEvents(g: Game, events: SimEvent[]): void {
-    if (g.options.online || g.options.sandbox) return;
+    if (g.options.online || g.practice) return;
     const foe = g.playerTeam === 0 ? 1 : 0;
     for (const e of events) {
       if (e.type === 'ageUp' && e.team === foe) this.taunt('ageUp');
@@ -998,7 +1035,7 @@ export class App {
   /** The AI general says a line by their side of the field (at most one every 25 s unless `urgent`). */
   private taunt(event: TauntEvent, urgent = false): void {
     const g = this.game;
-    if (!g || g.options.online || g.options.sandbox || g.options.demo || !this.settings.emotes || this.state === 'title') return;
+    if (!g || g.options.online || g.practice || g.options.demo || !this.settings.emotes || this.state === 'title') return;
     const now = g.world.time;
     if (!urgent && now - this.taunts.at < 25) return;
     this.taunts.at = now;
@@ -1007,7 +1044,7 @@ export class App {
 
   /** Against the AI: say when a star goal slips (citadel below half) or is gone (par time). */
   private watchStars(g: Game): void {
-    if (g.options.online || g.options.sandbox || g.options.demo || g.over) return;
+    if (g.options.online || g.practice || g.options.demo || g.over) return;
     const P = g.world.players[g.playerTeam];
     const frac = P.baseHp / P.baseMaxHp;
     if (!this.starWarned.half && frac <= 0.5) {

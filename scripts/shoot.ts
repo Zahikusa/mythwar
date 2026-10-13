@@ -160,6 +160,9 @@ const SCENARIOS: Scenario[] = [
   { name: 'gallery', query: 'gallery&scale=2', w: 1440, h: 2000, wait: 1200 },
   { name: 'mobile-play-start', query: 'play=novice&seed=4', w: 844, h: 390, mobile: true, dpr: 2, wait: 2500 },
   { name: 'play-start', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 3000 },
+  { name: 'riddles', query: 'screen=difficulty', w: 1600, h: 900, wait: 1500, script: `window.__mythwar.menus.show('riddles')`, after: 500 },
+  { name: 'mobile-riddles', query: 'screen=difficulty', w: 844, h: 390, mobile: true, dpr: 2, wait: 1500, script: `window.__mythwar.menus.show('riddles')`, after: 500 },
+  { name: 'riddle-start', query: 'screen=difficulty', w: 1600, h: 900, wait: 1500, script: `window.__mythwar.playRiddle('pack')`, after: 1500 },
   // Each gate trains its own: three lanes' creatures training at once (progress on three chips).
   {
     name: 'queue-parallel',

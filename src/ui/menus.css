@@ -660,6 +660,78 @@
   filter: drop-shadow(0 0 4px rgba(183, 164, 255, 0.9));
 }
 
+/* Riddles of war: one card per riddle, sealed until its age has been reached in battle. */
+.riddlelist {
+  width: min(760px, 94cqw);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+
+.riddle {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  text-align: left;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(21, 14, 38, 0.9);
+  border: 1px solid var(--line);
+  color: #e4dcff;
+  font-size: 13px;
+  line-height: 1.35;
+  pointer-events: auto;
+}
+
+.riddle:not(.sealed):hover {
+  border-color: var(--gold);
+}
+
+.riddle .rhead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.riddle b {
+  font-family: var(--title-font);
+  font-size: 16px;
+  color: var(--gold-l);
+}
+
+.riddle .rage {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.riddle .rsolved {
+  margin-left: auto;
+  color: var(--good);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.riddle.solved {
+  border-color: rgba(126, 224, 138, 0.5);
+}
+
+.riddle.sealed {
+  opacity: 0.6;
+  border-style: dashed;
+  cursor: default;
+}
+
+.riddle.sealed b {
+  color: var(--muted);
+}
+
+.riddle .rbrief {
+  color: var(--muted);
+}
+
 /* The pinnacle: across both columns, framed in gold even before it is won. */
 .feat.pinnacle {
   grid-column: 1 / -1;
@@ -705,7 +777,8 @@
 }
 
 @container stage (max-width: 620px) {
-  .featlist {
+  .featlist,
+  .riddlelist {
     grid-template-columns: minmax(0, 1fr);
   }
 }

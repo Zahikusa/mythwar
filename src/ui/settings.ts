@@ -48,6 +48,8 @@ export interface Settings {
   /** Colour-blind friendly: the foe is orange instead of red (blue vs orange reads for every
    *  common colour-vision deficiency; red turns grey for protanopes). */
   colorblind: boolean;
+  /** Riddles of war solved (ids, see src/sim/puzzles.ts). */
+  riddles: string[];
 }
 
 const KEY = 'mythwar.settings.v1';
@@ -75,6 +77,7 @@ const DEFAULTS: Settings = {
   trials: [],
   quick: false,
   colorblind: false,
+  riddles: [],
 };
 
 export function loadSettings(): Settings {
@@ -89,7 +92,7 @@ export function loadSettings(): Settings {
   }
   // First run: respect the OS "reduce motion" preference.
   const calm = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  return { ...DEFAULTS, shake: !calm, hintsSeen: [], records: {}, online: {}, feats: [], trials: [] };
+  return { ...DEFAULTS, shake: !calm, hintsSeen: [], records: {}, online: {}, feats: [], trials: [], riddles: [] };
 }
 
 /** Stored settings may come from an older build or be hand-edited: keep only sane values. */
@@ -123,6 +126,7 @@ function sanitize(s: Settings): Settings {
     ageSeen: Math.max(0, Math.min(4, Math.floor(Number(s.ageSeen) || 0))),
     quick: bool(s.quick, false),
     colorblind: bool(s.colorblind, false),
+    riddles: Array.isArray(s.riddles) ? [...new Set(s.riddles.filter((x): x is string => typeof x === 'string'))].slice(0, 50) : [],
     trials: Array.isArray(s.trials) ? TRIAL_ORDER.filter((t) => s.trials.includes(t)) : [],
     feats: Array.isArray(s.feats) ? [...new Set(s.feats.filter((x): x is string => typeof x === 'string'))].slice(0, 100) : [],
   };

@@ -5,6 +5,8 @@ import type { TrialId } from './sim/data.ts';
 import type { Command, CommandResult, SimEvent, Team } from './sim/types.ts';
 import { World } from './sim/world.ts';
 import type { WorldSnapshot } from './sim/world.ts';
+import { puzzleById, puzzleRules, puzzleStatus, puzzleWorld } from './sim/puzzles.ts';
+import type { Puzzle } from './sim/puzzles.ts';
 import type { Renderer, ViewState } from './render/renderer.ts';
 
 export interface GameOptions {
@@ -22,6 +24,8 @@ export interface GameOptions {
   trials?: TrialId[];
   /** A quick battle (faster XP, more gold, earlier Ragnarök). */
   quick?: boolean;
+  /** A riddle of war (src/sim/puzzles.ts): no foe AI, a fixed purse, one goal. */
+  puzzle?: string;
 }
 
 export type GameListener = (events: SimEvent[]) => void;
@@ -68,16 +72,24 @@ export class Game {
   protected nextSample = 0;
   protected acc = 0;
   private listeners: GameListener[] = [];
+  /** The riddle being solved (null in a battle). */
+  readonly riddle: Puzzle | null;
 
   constructor(opts: GameOptions, world?: World) {
     this.options = opts;
     const seed = opts.seed ?? (Math.random() * 1e9) | 0;
-    this.world = world ?? new World({ seed, trials: [opts.trials ?? [], []], quick: opts.quick });
+    this.riddle = (opts.puzzle && puzzleById(opts.puzzle)) || null;
+    this.world = world ?? (this.riddle ? puzzleWorld(this.riddle) : new World({ seed, trials: [opts.trials ?? [], []], quick: opts.quick }));
     this.world.endless = !!opts.sandbox;
     this.playerTeam = opts.online ? (opts.team ?? 0) : 0;
-    this.ai = opts.online || opts.sandbox ? null : new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);
+    this.ai = opts.online || opts.sandbox || this.riddle ? null : new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);
     this.demoAi = opts.demo ? new AiController(this.world, 0, AI_PROFILES[opts.difficulty], seed ^ 0x1234567) : null;
     this.view = { playerTeam: this.playerTeam, selectedLane: opts.demo ? -1 : 1, hoverLane: -1, targeting: 'none', paused: false };
+  }
+
+  /** Practice, not a battle: the sandbox or a riddle (no records, feats, autosave or taunts). */
+  get practice(): boolean {
+    return !!this.options.sandbox || !!this.riddle;
   }
 
   toSave(): GameSave {
@@ -129,7 +141,9 @@ export class Game {
       this.sandboxRules();
       return r;
     }
-    return this.world.apply(cmd);
+    const r = this.world.apply(cmd);
+    if (this.riddle) puzzleRules(this.world, this.riddle);
+    return r;
   }
 
   /** Sandbox: endless gold, XP and god powers; citadels can't fall; both sides in one age. */
@@ -146,6 +160,13 @@ export class Game {
     while (b.age < a.age && w.apply({ type: 'ageUp', team: 1 }).ok);
   }
 
+  /** A riddle: its purse and rules, and the end once it is solved or lost (the player is team 0). */
+  private riddleRules(pz: Puzzle): void {
+    puzzleRules(this.world, pz);
+    const s = puzzleStatus(this.world, pz);
+    if (s) this.world.declare(s === 'won' ? 0 : 1);
+  }
+
   /** Advances the simulation by real time `dt` (seconds). Returns the interpolation alpha. */
   advance(dt: number): number {
     if (!this.paused && !this.over) {
@@ -156,6 +177,7 @@ export class Game {
         this.demoAi?.update(TICK);
         this.world.step();
         if (this.options.sandbox) this.sandboxRules();
+        if (this.riddle) this.riddleRules(this.riddle);
         this.acc -= TICK;
         steps++;
       }

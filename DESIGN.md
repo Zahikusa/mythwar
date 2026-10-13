@@ -173,3 +173,12 @@ gold for them (calibrated against the scripted bots in `scripts/bots.ts`).
   Space power, G hold, T turrets, B blessings, U ascend, Backspace undo, Esc/P pause, H or ? for
   the key list); every action also works by tap; buttons carry aria-labels and a visible
   keyboard focus ring.
+
+## Riddles of war (Lens #52)
+Small hand-made battles with one question each (foe screen → Riddles): a fixed purse (no income,
+kills pay nothing), no gate wards or turrets, the foe's creatures already on the field, and one
+goal — clear the field before any foe reaches your citadel. No "Counter!" badge (reading the lane
+is the riddle), no records or feats; solved riddles are remembered. Riddles of ages the player
+hasn't reached in battle stay sealed. Each is brute-forced by `npm run puzzlecheck` (every mix
+of creatures within the purse, every power timing): The Redcap Pack 3/28 answers win, The
+Labyrinth's Guard 1/28, The Giants' Wall 2/23, Fimbulwinter 26/138 — none without the power.

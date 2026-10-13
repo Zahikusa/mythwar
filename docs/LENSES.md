@@ -1027,3 +1027,26 @@ rare, unique? Do the elements at the lower levels contribute to it?*
   each record without the stars added by #20) — committed separately, with a test.
 - Checked: unit tests (star total, awarded once, completed by a merged code), feats screen on
   desktop and a 667×375 phone; full verify.
+
+## #52 The Lens of the Puzzle
+*What are the puzzles in my game? Do they make players stop and think? Is the goal clear, the
+problem easy to understand, is progress visible, can the player tell they're close?*
+- Mythwar's central puzzle is "what answers this lane?" — but in a battle it is never posed
+  cleanly: it is tangled with economy, timing, three lanes and an AI that adapts. A player who
+  loses can't tell whether they mis-read the lane or simply ran out of gold.
+- Change: **Riddles of war** (foe screen → Riddles): four hand-made battles, each one question.
+  A fixed purse, no income, kills pay nothing, no wards or turrets, the foe already on the field;
+  the goal is to clear the field before any foe reaches your citadel. *The Redcap Pack* (a hunter
+  pack; 120 gold), *The Labyrinth's Guard* (Minotaurs with Gorgons behind; 260), *The Giants'
+  Wall* (Jötnar and wolves; 500 — Valkyries need a Guardian in front), *Fimbulwinter* (a warband
+  too strong for the purse; the god power once — freeze them where they meet your creatures).
+  A failed attempt shows a hint; a solved one offers the next riddle. Riddles of ages never
+  reached stay sealed (#4); the "Counter!" badge is off (reading the lane is the riddle).
+- Each riddle is **brute-forced** (`npm run puzzlecheck`, `src/sim/puzzles.ts` is pure sim): every
+  mix of creatures within the purse, every power timing. First drafts failed the check — a
+  "Three Fronts" riddle let mirror match-ups win, the Wall and Winter let 42% and 53% of answers
+  win (Winter without even using the power) — and were re-cut until only a few answers win:
+  3/28, 1/28, 2/23, 26/138 (all of those with the power). The unit test keeps it that way.
+- Checked: unit tests (setup, each intended answer wins, < 25% of answers win, doing nothing
+  loses, the power riddle needs the power), a smoke flow (foe screen → Riddles → solve the first
+  by tapping cards → "Solved", remembered), screenshots (list on desktop and phone, opening).

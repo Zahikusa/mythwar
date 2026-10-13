@@ -1299,6 +1299,13 @@ export class World {
     }
   }
 
+  /** Ends the battle with a winner decided outside the citadels (puzzles). */
+  declare(winner: Team): void {
+    if (this.winner !== null) return;
+    this.winner = winner;
+    this.emit({ type: 'gameOver', winner });
+  }
+
   private checkWin(): void {
     if (this.winner !== null || this.endless) return;
     const [p0, p1] = this.players;

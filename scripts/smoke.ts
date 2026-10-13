@@ -178,6 +178,42 @@ async function serviceWorkerFlow(page: Page): Promise<void> {
   check('service worker keeps lazily loaded chunks', keys.some((k) => k.includes('lazy-ABCDEFGH')), JSON.stringify(keys));
 }
 
+/** Riddles of war: foe screen → Riddles → the first riddle, solved by tapping cards → its result. */
+async function riddleFlow(page: Page): Promise<void> {
+  console.log('== riddles ==');
+  await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
+  await page.evaluateOnNewDocument(() => localStorage.setItem('mythwar.settings.v1', JSON.stringify({ tutorialSeen: true, hintsSeen: [] })));
+  await page.goto(`${base}/?screen=difficulty`, { waitUntil: 'load' });
+  await sleep(900);
+  const btn = await centerText(page, '.screen.difficulty', 'Riddles');
+  await page.mouse.click(btn.x, btn.y);
+  await sleep(400);
+  const list = await page.evaluate(() => [...document.querySelectorAll('.riddle')].map((r) => `${(r as HTMLButtonElement).disabled ? 'sealed' : 'open'}`));
+  check('the riddles screen lists the riddles, later ages sealed', list.length >= 4 && list[0] === 'open' && list.at(-1) === 'sealed', JSON.stringify(list));
+  const first = await center(page, '.riddle');
+  await page.mouse.click(first.x, first.y);
+  await sleep(600);
+  const st = await page.evaluate(() => {
+    const g = (window as unknown as { __mythwar: any }).__mythwar.game;
+    return { riddle: g.riddle?.id, gold: g.world.players[0].gold, foes: g.world.lanes[1].filter((u: any) => u.alive && u.team === 1).length, counter: !!document.querySelector('.card.advised') };
+  });
+  check('a riddle starts with its purse and the foe on the field, no "Counter!" badge', st.riddle === 'pack' && st.gold === 120 && st.foes === 6 && !st.counter, JSON.stringify(st));
+  // The answer: four Treant Wardens down the middle (the selected lane), by tapping the card.
+  const card = await center(page, '.card.cls-guardian');
+  for (let i = 0; i < 4; i++) {
+    await page.mouse.click(card.x, card.y);
+    await sleep(120);
+  }
+  await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.speed = 2));
+  let menu = '';
+  for (let i = 0; i < 60 && menu !== 'over'; i++) {
+    await sleep(500);
+    menu = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current);
+  }
+  const res = await page.evaluate(() => ({ verdict: document.querySelector('.screen.over .vt')?.textContent, solved: JSON.parse(localStorage.getItem('mythwar.settings.v1')!).riddles }));
+  check('four Guardians solve the Redcap Pack; the result says so and it is remembered', menu === 'over' && res.verdict === 'Solved' && res.solved.includes('pack'), JSON.stringify({ menu, ...res }));
+}
+
 /** Esc out of the first-run how-to must not leave its "then start a battle" hand-off behind. */
 async function tutorialHandoffFlow(page: Page): Promise<void> {
   console.log('== first-run tutorial hand-off ==');
@@ -863,6 +899,10 @@ async function main(): Promise<void> {
     page4.on('pageerror', (e) => errors.push(pageError('tutorial', e)));
     await tutorialHandoffFlow(page4);
     await page4.close();
+    const page7 = await browser.newPage();
+    page7.on('pageerror', (e) => errors.push(pageError('riddles', e)));
+    await riddleFlow(page7);
+    await page7.close();
     const page3 = await browser.newPage();
     page3.on('pageerror', (e) => errors.push(pageError('large desktop', e)));
     page3.on('console', (m) => {

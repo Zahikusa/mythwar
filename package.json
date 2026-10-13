@@ -20,6 +20,7 @@
     "mpbot": "node scripts/mpbot.ts",
     "designcheck": "node scripts/designcheck.ts",
     "economy": "node scripts/economy.ts",
+    "puzzlecheck": "node scripts/puzzlecheck.ts",
     "perfcheck": "vite build && node scripts/perfcheck.ts",
     "enginecheck": "vite build && node scripts/enginecheck.ts",
     "mpengines": "vite build && node scripts/mpengines.ts",
