@@ -10,9 +10,9 @@
  */
 import { createServer } from 'node:http';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 import puppeteer from 'puppeteer-core';
+import { findChrome } from './chrome.ts';
 
 interface Scenario {
   name: string;
@@ -231,10 +231,7 @@ const CVD: Record<string, string> = {
   tritanopia: '1.255528 -0.076749 -0.178779 0 0  -0.078411 0.930809 0.147602 0 0  0.004733 0.691367 0.303900 0 0  0 0 0 1 0',
 };
 
-const CHROME = [
-  'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-].find((p) => existsSync(p));
+const CHROME = findChrome();
 
 const MIME: Record<string, string> = {
   '.html': 'text/html',

@@ -12,10 +12,11 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
 import puppeteer from 'puppeteer-core';
+import { chromePath } from './chrome.ts';
 
 const seconds = Number(process.argv[2] ?? 8);
 const BUDGET_MS = 3;
-const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const CHROME = chromePath();
 const root = resolve('dist');
 const TYPES: Record<string, string> = { '.js': 'text/javascript', '.css': 'text/css', '.html': 'text/html', '.svg': 'image/svg+xml', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
 const server = createServer(async (req, res) => {

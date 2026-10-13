@@ -5,11 +5,11 @@
  */
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 import puppeteer from 'puppeteer-core';
+import { findChrome } from './chrome.ts';
 
-const CHROME = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].find((p) => existsSync(p));
+const CHROME = findChrome();
 const MIME: Record<string, string> = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' };
 
 async function main(): Promise<void> {

@@ -14,6 +14,7 @@ import { join, resolve } from 'node:path';
 import type { Browser, Page } from 'playwright';
 import { attachMultiplayer } from '../server/net.ts';
 import { serveStatic } from '../server/static.ts';
+import { findChrome } from './chrome.ts';
 
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= '0';
 const seconds = Number(process.argv[2] ?? 90);
@@ -96,7 +97,7 @@ async function main(): Promise<void> {
   await new Promise<void>((r) => http.listen(0, '127.0.0.1', () => r()));
   const base = `http://127.0.0.1:${(http.address() as { port: number }).port}`;
   const { chromium, firefox, webkit } = await import('playwright');
-  const chrome = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].find((p) => existsSync(p));
+  const chrome = findChrome();
   try {
     if (chrome) await duel('Chrome', () => chromium.launch({ executablePath: chrome }), () => webkit.launch(), base);
     await duel('Firefox', () => firefox.launch(), () => webkit.launch(), base);

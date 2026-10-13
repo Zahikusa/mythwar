@@ -30,11 +30,11 @@ the improvement backlog below (verified, committed) and add what the review find
 7. [ ] Results at 1600×900 fit with zero headroom in their fullest form (900/900): the next line
    added will overflow (smoke now catches it). Consider the side-by-side results layout up to
    ~940 px instead of only ≤ 860 px.
-8. [ ] `scripts/ogcard.mjs`, `scripts/crop.mjs`, `scripts/shoot.ts`, `scripts/smoke.ts` hard-code
+8. [x] `scripts/ogcard.mjs`, `scripts/crop.mjs`, `scripts/shoot.ts`, `scripts/smoke.ts` hard-code
    `C:/Program Files/Google/Chrome/...`: the tools fail on macOS/Linux. Take `CHROME` from the
-   environment and try the usual install paths.
-9. [ ] `src/ui/settings.ts` `playerLabel` + HUD: a sigil without a name shows "♛ · Celestial"
-   (glyph, then a separator with nothing before it); show "♛ Celestial".
+   environment and try the usual install paths. (Done: `scripts/chrome.ts`, used by all 15.)
+9. [x] `src/ui/settings.ts` `playerLabel` + HUD: a sigil without a name shows "♛ · Celestial"
+   (glyph, then a separator with nothing before it); show "♛ Celestial". (Done.)
 10. [ ] Names are identity for the Hall of champions and rival records: two different people
    called "Ada" on one LAN share a line, and renaming yourself to the champion's name inherits
    their record. A per-device id (localStorage, not the per-tab session token) would fix it.

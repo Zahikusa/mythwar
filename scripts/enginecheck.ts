@@ -13,6 +13,7 @@ import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { serveStatic } from '../server/static.ts';
 import { battleHashes } from '../src/selftest.ts';
+import { findChrome } from './chrome.ts';
 
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= '0';
 const minutes = Number(process.argv[2] ?? 12);
@@ -26,7 +27,7 @@ async function main(): Promise<void> {
   await new Promise<void>((r) => http.listen(0, '127.0.0.1', () => r()));
   const base = `http://127.0.0.1:${(http.address() as { port: number }).port}/?norotate`;
   const { chromium, firefox, webkit } = await import('playwright');
-  const chrome = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].find((p) => existsSync(p));
+  const chrome = findChrome();
   const engines: [string, () => Promise<import('playwright').Browser>][] = [
     ['webkit (JavaScriptCore)', () => webkit.launch()],
     ['firefox (SpiderMonkey)', () => firefox.launch()],

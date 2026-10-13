@@ -3,6 +3,7 @@
 // the central safe zone (launchers crop maskable icons to circles / squircles).
 import puppeteer from 'puppeteer-core';
 import { readFile } from 'node:fs/promises';
+import { chromePath } from './chrome.ts';
 const svg = await readFile('public/icon.svg', 'utf-8');
 const art = svg.indexOf('<path');
 const end = svg.lastIndexOf('</svg>');
@@ -11,7 +12,7 @@ const maskable =
   '<g transform="translate(256 256) scale(0.72) translate(-256 -274)">' +
   svg.slice(art, end) +
   '</g></svg>';
-const browser = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+const browser = await puppeteer.launch({ executablePath: chromePath(), headless: true });
 const page = await browser.newPage();
 for (const [size, name, src] of [
   [180, 'apple-touch-icon.png', svg],

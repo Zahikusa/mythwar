@@ -13,8 +13,9 @@ import puppeteer from 'puppeteer-core';
 import type { Page } from 'puppeteer-core';
 import { attachMultiplayer } from '../server/net.ts';
 import { serveStatic } from '../server/static.ts';
+import { findChrome } from './chrome.ts';
 
-const CHROME = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].find((p) => existsSync(p));
+const CHROME = findChrome();
 const args = process.argv.slice(2);
 const SHOTS = args.includes('--shots');
 const num = (name: string) => Number(args[args.indexOf(`--${name}`) + 1] ?? 0) || 0;

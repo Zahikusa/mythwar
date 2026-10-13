@@ -5,6 +5,7 @@ import puppeteer from 'puppeteer-core';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, extname, resolve } from 'node:path';
+import { chromePath } from './chrome.ts';
 
 const [wait = '9000'] = process.argv.slice(2);
 const root = resolve('dist');
@@ -23,7 +24,7 @@ const server = createServer(async (req, res) => {
   }
 });
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
-const browser = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+const browser = await puppeteer.launch({ executablePath: chromePath(), headless: true });
 try {
   const page = await browser.newPage();
   await page.setViewport({ width: 1200, height: 630, deviceScaleFactor: 1 });

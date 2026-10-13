@@ -53,7 +53,8 @@ docs/LENSES.md why each feature exists; docs/MULTIPLAYER.md the netcode.
 | Rendering cost | `npm run perfcheck` (budget 3 ms of JS per frame) |
 | Before committing | `npm run verify` (typecheck, tests, build, smoke, mpsmoke) |
 
-The smoke tests drive the real game in Chrome (`puppeteer-core` with the installed Chrome;
+The smoke tests drive the real game in Chrome (`puppeteer-core` with the installed Chrome, Edge
+or Chromium — found in the usual places on Windows, macOS and Linux, or set `CHROME=/path`;
 Playwright's browsers for Firefox/WebKit live in `node_modules`). Add a check when you add a flow
 — `mpsmoke` reads the DOM and the app object (`window.__mythwar`).
 

@@ -3,6 +3,7 @@ import puppeteer from 'puppeteer-core';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { join, extname, resolve } from 'node:path';
+import { chromePath } from './chrome.ts';
 const [query, x, y, w, h, scale = '3', wait = '1500', script = '', after = '700'] = process.argv.slice(2);
 const root = resolve('dist');
 const server = createServer(async (req, res) => {
@@ -19,7 +20,7 @@ const server = createServer(async (req, res) => {
   }
 });
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
-const browser = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: true });
+const browser = await puppeteer.launch({ executablePath: chromePath(), headless: true });
 const page = await browser.newPage();
 await page.setViewport({ width: 1600, height: 900, deviceScaleFactor: Number(scale) });
 await page.goto(`http://127.0.0.1:${server.address().port}/?${query}`);
