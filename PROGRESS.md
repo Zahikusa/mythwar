@@ -641,6 +641,28 @@ on screen.)
    by the champion picture — while the lines below centre on the screen: ragged by 70–100 px.
    (Done on short stages, CSS only: the verdict box is `display: contents`, so the title and the
    champion share a row and the subtitle takes its own, centred. Re-shot at 844×390.)
+258. [x] mpsmoke had no check of #234 or #254: it now checks the walkover's line ("A win by
+   walkover.", no Worthy Rival / first-victory feat) and the phone room's chips (≥ 37 px on the
+   scaled stage, none overlapping), landscape and upright.
+(Items 259–: open for the next run.)
+259. [ ] README's and docs' pictures (`docs/*.jpg`, `npm run docshot`) predate run #10's visible
+   changes: "How to play" / "Begin battle", the room's note under its header on phones, the
+   results' subtitle line. Re-shoot the ones that show them (title, room, results) and check
+   each still says what its caption says.
+260. [ ] The server logs "went quiet" / "heard from again" for every Wi-Fi blip of 4 s+ (#222) —
+   a flaky phone could fill the host's console in a long session. Keep the first of each in a
+   battle and sum the rest at the battle's end ("Bo went quiet 5 times, 23 s in all").
+261. [ ] `scripts/smoke.ts` keeps ~60 fixed sleeps (after #204/#241): the rest are drag steps,
+   "nothing should happen" checks and effects that take time. Review once more on the CI runner
+   when `.github/workflows/browser-tests.yml` first runs (Open questions) — flakes there name
+   the next ones to turn into waits.
+262. [ ] The phone's message line in the room (`.mpflash`) is a single line for all news: two
+   quick events (Bo leaves, Cy joins) overwrite each other within 4.5 s, so the first is never
+   read. Queue them (each at least ~2 s) or show the latest two.
+263. [ ] `menus.ts` `scoreLine` / `verdictLine` and the results wording now span four cases
+   (citadel, forfeit, timeout, co-op alone) × won/lost × score/no score; only `verdictLine` has a
+   unit test (via the chronicle tests). A table-driven test of `scoreLine(o, won)` — export it —
+   pins #234's walkover wording and the co-op lines.
 
 
 

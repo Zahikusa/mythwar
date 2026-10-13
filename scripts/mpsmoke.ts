@@ -296,7 +296,16 @@ async function main(): Promise<void> {
     await waitFor(b, 'B reads the how-to', () => (window as any).__mythwar.menus.current === 'howto', 4000);
     await press(b, '.screen.howto', 'Back');
     await waitFor(b, 'B back in the room from the how-to', () => (window as any).__mythwar.menus.current === 'room', 4000);
-    check('room: How to play and back, still seated', await b.evaluate(() => (window as any).__mythwar.mp.seat === 1 && !!(window as any).__mythwar.mp.room));
+    // (Backlog 254) The room's mode and handicap chips are finger-sized on the phone, rows apart.
+    const chips = await b.evaluate(() => {
+      const rs = [...document.querySelectorAll('.screen.room .trials .trial')].map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0);
+      // (Measured across the rotated stage too: the smaller side is the chip's height.)
+      const tall = Math.min(...rs.map((r) => Math.min(r.width, r.height)));
+      const overlap = rs.some((r, i) => rs.some((q, j) => j > i && r.left < q.right && q.left < r.right && r.top < q.bottom && q.top < r.bottom));
+      return { n: rs.length, tall: Math.round(tall), overlap };
+    });
+    check('room: the phone gets finger-sized mode and handicap chips', chips.n >= 8 && chips.tall >= 37 && !chips.overlap, JSON.stringify(chips));
+    check('room: How to play and back, still seated',await b.evaluate(() => (window as any).__mythwar.mp.seat === 1 && !!(window as any).__mythwar.mp.room));
     // (Backlog 160) B's phone locks in the room (no wake lock over http): its link is gone for longer
     // than the server keeps a seat (3 s here, a minute for real). Back, it joins the room again.
     // (Backlog 217) A sleeping phone rarely closes its socket — it just goes silent, and the server
@@ -585,6 +594,12 @@ async function main(): Promise<void> {
     const shown = await a.evaluate(() => [...document.querySelectorAll<HTMLElement>('.screen.over .mrow button')].filter((e) => e.offsetParent !== null).map((e) => e.textContent?.trim()));
     check('results: once the opponent left, one button leads back to the room', shown.includes('Back to room') && !shown.includes('Room'), JSON.stringify(shown));
     check("results: the chronicle says the opponent left", /Victory: [^.]+ leaves the battle\./.test(story) && !story.includes('citadel falls'), story.slice(0, 120));
+    // (Backlog 234) A walkover is called one — no "Well fought!" — and earns no victory feats.
+    const walk = await a.evaluate(() => ({
+      line: [...document.querySelectorAll('.screen.over span')].map((e) => e.textContent ?? '').find((t) => /walkover|Well fought/.test(t)) ?? '',
+      feats: ((window as any).__mythwar.menus.featsEarned as { id: string }[]).map((f) => f.id),
+    }));
+    check('results: a walkover is called one and earns no victory feats', walk.line === 'A win by walkover.' && !walk.feats.includes('online') && !walk.feats.includes('first'), JSON.stringify(walk));
     await waitFor(b, 'B back in the lobby', () => (window as any).__mythwar.menus.current === 'mp');
     // (Backlog 54) Both sides count it: the leaver a defeat (and the journal notes it).
     {
