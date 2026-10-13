@@ -103,6 +103,16 @@ the improvement backlog below (verified, committed) and add what the review find
 28. [x] Gamepad (#54): nothing checks that D-pad navigation reaches the new results controls (the
    report tabs, the quick-message chips, "Now bring a friend →"). (Done: smoke walks the app's own
    D-pad moves breadth-first over the results — all 8 controls, tabs included, reachable.)
+29. [ ] `src/app.ts` break note (#98): "a sitting" never ends while the tab stays open — an hour
+   today and a minute tomorrow add up. Start a new sitting after 30 minutes without a battle.
+30. [ ] Co-op (#85): each ally sees *their own* sigil on the shared keep, so the two screens
+   disagree; show the host's (or both) the same way on both.
+31. [ ] Lobby (#85): the open-battle list shows the host's standing but not their sigil — the
+   emblem a player chose isn't seen until the battle.
+32. [ ] `server/main.ts` flags (`--data`, `--no-save`, `--names`) are only tested through the
+   Lobby class; nothing starts the real server process with them (a typo in main.ts would pass
+   every test). A small end-to-end check: start, battle via two clients, restart, Hall is back.
+
 
 
 
