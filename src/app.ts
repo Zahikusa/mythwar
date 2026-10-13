@@ -40,7 +40,7 @@ import { JOURNEY, PERSONAS, tauntLine } from './ui/personas.ts';
 import { Sitting } from './ui/wellbeing.ts';
 import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
-import { roomNews, roomView } from './ui/roomnews.ts';
+import { lostSessionPlan, roomNews, roomView } from './ui/roomnews.ts';
 import type { RoomView } from './ui/roomnews.ts';
 
 type AppState = 'title' | 'playing' | 'over';
@@ -1162,24 +1162,14 @@ export class App {
     const lost = mp.sessionLost;
     if (lost) {
       mp.sessionLost = null;
-      const shown = this.game instanceof NetGame && this.state !== 'title';
-      // (An expired seat mid-battle first gets the battle's ending replayed: results follow.)
-      if (shown && (lost !== 'expired' || this.state === 'over')) {
+      const plan = lostSessionPlan(lost, this.state, this.menus.current, this.game instanceof NetGame, mp.lostRoom);
+      if (plan.toLobby) {
         this.toTitle();
         this.openMultiplayer();
       }
-      // A phone that locked while waiting in the room (over plain http there's no wake lock) lost
-      // its seat after a minute: back on the room's screens, it takes it again if still free.
-      const rejoin = lost === 'expired' && !!mp.lostRoom && this.state === 'title' && (this.menus.current === 'mp' || this.menus.current === 'room');
-      if (rejoin) mp.join(mp.lostRoom!);
+      if (plan.rejoin) mp.join(mp.lostRoom!);
       // (Shown when the lobby is next on screen — after the results, if a battle was replayed.)
-      this.lobbyNote = rejoin
-        ? 'You were away a while and lost your seat — joining the room again…'
-        : lost === 'fault'
-          ? 'The game server ran into a fault and stopped your battle — sorry. It doesn’t count for anyone.'
-          : lost === 'restart'
-            ? 'The game server no longer knows your session (it restarted, or you were away a long time).'
-            : 'You were away too long and lost your seat in the room.';
+      this.lobbyNote = plan.note;
       if (this.state === 'title') this.flushLobbyNote();
     }
     if (mp.replaced && this.game instanceof NetGame && this.state !== 'title') {

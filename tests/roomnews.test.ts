@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RoomInfo, SeatInfo } from '../src/net/protocol.ts';
-import { roomNews, roomView } from '../src/ui/roomnews.ts';
+import { lostSessionPlan, roomNews, roomView } from '../src/ui/roomnews.ts';
 import type { RoomView } from '../src/ui/roomnews.ts';
 
 const seat = (name: string, over: Partial<SeatInfo> = {}): SeatInfo => ({ name, connected: true, ready: false, away: false, wins: 0, ping: 0, trials: [], rank: 0, sigil: -1, ...over });
@@ -48,5 +48,30 @@ describe('roomNews', () => {
     expect(roomNews(view(bo()), view(bo(), false, 'master'), true).said).toBe('');
     // Arriving in a co-op room is no change.
     expect(roomNews(null, view(bo(), false, 'master'), false).said).toBe('');
+  });
+});
+
+describe('lostSessionPlan (the server no longer seats us)', () => {
+  it('a seat lost while locked in the room (or on its lobby) is taken again (backlog 160)', () => {
+    expect(lostSessionPlan('expired', 'title', 'room', false, 'ABCD')).toMatchObject({ toLobby: false, rejoin: true });
+    expect(lostSessionPlan('expired', 'title', 'mp', false, 'ABCD')).toMatchObject({ toLobby: false, rejoin: true });
+    expect(lostSessionPlan('expired', 'title', 'room', false, 'ABCD').note).toMatch(/joining the room again/);
+    // (Not from elsewhere — the title, settings — and not without a room to go back to.)
+    expect(lostSessionPlan('expired', 'title', 'settings', false, 'ABCD').rejoin).toBe(false);
+    expect(lostSessionPlan('expired', 'title', 'room', false, null)).toMatchObject({ rejoin: false, note: 'You were away too long and lost your seat in the room.' });
+  });
+
+  it('mid-battle an expired seat waits for the replayed ending; on the results it goes back to the room', () => {
+    expect(lostSessionPlan('expired', 'playing', 'none', true, 'ABCD')).toMatchObject({ toLobby: false, rejoin: false });
+    expect(lostSessionPlan('expired', 'over', 'over', true, 'ABCD')).toMatchObject({ toLobby: true, rejoin: true });
+  });
+
+  it('a restart or a fault ends the battle at once and rejoins nothing', () => {
+    for (const lost of ['restart', 'fault'] as const) {
+      expect(lostSessionPlan(lost, 'playing', 'none', true, 'ABCD')).toMatchObject({ toLobby: true, rejoin: false });
+      expect(lostSessionPlan(lost, 'title', 'room', false, 'ABCD')).toMatchObject({ toLobby: false, rejoin: false });
+    }
+    expect(lostSessionPlan('fault', 'playing', 'none', true, 'ABCD').note).toMatch(/fault/);
+    expect(lostSessionPlan('restart', 'title', 'room', false, 'ABCD').note).toMatch(/restarted/);
   });
 });

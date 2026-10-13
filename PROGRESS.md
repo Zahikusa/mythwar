@@ -749,9 +749,11 @@ battle, results — 2026-10-13.)
 170. [x] `scripts/mpsmoke.ts` ~168: the wait for `mp.name === 'Ada'` proves nothing — the client sets
    the name before anything is sent. Wait for the server's echo instead (the open-battles list or
    the room seat shows "Ada"). (Done: checked on the server's room seat once A hosts.)
-171. [ ] (#137, next slice) `src/app.ts` `onMpChanged`'s lost-session branch (which note, whether to
+171. [x] (#137, next slice) `src/app.ts` `onMpChanged`'s lost-session branch (which note, whether to
    rejoin, whether to leave the results) is decision logic mixed with DOM — a pure
-   `sessionLostAction(lost, state, menu, lostRoom)` with tests, like #150/#156.
+   `sessionLostAction(lost, state, menu, lostRoom)` with tests, like #150/#156. (Done: `lostSessionPlan()` in src/ui/roomnews.ts —
+   toLobby / rejoin / note; 3 tests (8 in the file); behaviour unchanged, mpsmoke green. Made
+   explicit on the way: a seat that expired while the phone sat on the results also rejoins.)
 172. [ ] Back (#166) on the online results does nothing (Esc does nothing there either); on a phone,
    Back from the results could mean "Room" (the friend-facing next step) — or leave it: the
    buttons are right there. Decide after a playtest (docs/PLAYTEST.md).

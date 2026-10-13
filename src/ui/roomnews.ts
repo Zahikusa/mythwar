@@ -51,3 +51,34 @@ export function roomNews(prev: RoomView | null, now: RoomView, ownMode: boolean)
   }
   return { chime, said };
 }
+
+/** What to do when the server no longer seats us in the room we had (MpClient.sessionLost). */
+export interface LostSessionPlan {
+  /** Put the battle or its results away and show the lobby. */
+  toLobby: boolean;
+  /** Join the lost room again (its seat may still be free). */
+  rejoin: boolean;
+  /** Said on the lobby (or the room, once rejoined). */
+  note: string;
+}
+
+/**
+ * `state`: the app's ('title' | 'playing' | 'over'), `menu`: the screen showing, `netBattle`: an
+ * online battle is loaded, `lostRoom`: the room's code. An expired seat mid-battle first gets the
+ * battle's ending replayed (results follow), so the lobby waits; after a restart or a fault the
+ * battle is gone at once. A phone that locked in the room (no wake lock over plain http) — or on
+ * the results — lost its seat after a minute: it joins the same room again.
+ */
+export function lostSessionPlan(lost: 'restart' | 'expired' | 'fault', state: 'title' | 'playing' | 'over', menu: string, netBattle: boolean, lostRoom: string | null): LostSessionPlan {
+  const toLobby = netBattle && state !== 'title' && (lost !== 'expired' || state === 'over');
+  const onRoomScreens = toLobby || (state === 'title' && (menu === 'mp' || menu === 'room'));
+  const rejoin = lost === 'expired' && !!lostRoom && onRoomScreens;
+  const note = rejoin
+    ? 'You were away a while and lost your seat — joining the room again…'
+    : lost === 'fault'
+      ? 'The game server ran into a fault and stopped your battle — sorry. It doesn’t count for anyone.'
+      : lost === 'restart'
+        ? 'The game server no longer knows your session (it restarted, or you were away a long time).'
+        : 'You were away too long and lost your seat in the room.';
+  return { toLobby, rejoin, note };
+}
