@@ -68,6 +68,8 @@ export class App {
   private fpsAcc = 0;
   private fpsFrames = 0;
   private overTimer = -1;
+  /** Seconds to the next heartbeat while the citadel is in danger. */
+  private beatIn = 0;
   /** Gamepads (Lens #54) and the menu button they have highlighted. */
   private pads: Pads;
   private padFocus: HTMLElement | null = null;
@@ -805,6 +807,7 @@ export class App {
         this.hud.pulseGold();
       }
       if (this.state === 'playing') this.watchStars(g);
+      this.heartbeat(g, dt);
       if (this.state === 'playing') this.coach.update(this.hud.panelOpen || this.hud.bannerShowing || this.menus.current !== 'none' || this.netOverlay.busy);
       if (this.overTimer > 0) {
         this.overTimer -= dt;
@@ -1116,6 +1119,29 @@ export class App {
     if (!urgent && now - this.taunts.at < 25) return;
     this.taunts.at = now;
     this.hud.showEmote('theirs', tauntLine(this.difficulty, event, this.taunts.n++));
+  }
+
+  /**
+   * Below 30% health your citadel has a heartbeat (Lens #59): the danger on the sound channel
+   * (and, on phones, a soft pulse) — quickening as it falls, heard while your eyes are on a lane.
+   */
+  private heartbeat(g: Game, dt: number): void {
+    if (this.state !== 'playing' || g.paused || g.over || g.view.demo || this.menus.current !== 'none') {
+      this.beatIn = 0;
+      return;
+    }
+    const P = g.world.players[g.playerTeam];
+    const frac = P.baseHp / P.baseMaxHp;
+    if (frac >= 0.3 || frac <= 0) {
+      this.beatIn = 0;
+      return;
+    }
+    this.beatIn -= dt;
+    if (this.beatIn > 0) return;
+    const k = 1 - frac / 0.3;
+    this.beatIn = 1.5 - 0.95 * k;
+    this.audio.heartbeat(k);
+    this.buzz(12);
   }
 
   /** Against the AI: say when a star goal slips (citadel below half) or is gone (par time). */

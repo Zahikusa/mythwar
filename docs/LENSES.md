@@ -1154,3 +1154,23 @@ Where does a meaningful action get a flat response?*
   warning that their army just got stronger.
 - Checked: screenshots of Might and Bastion mid-battle (a first version with motes only was
   barely visible on snow — now shockwave + flash); full verify.
+
+## #59 The Lens of Channels and Dimensions
+*What data must reach the player? Which channels do I have (where on screen, sound, touch, motion)?
+Is each piece of data on the channel that suits it — and are channels used for more than one
+dimension?*
+- Mapped: the counter triangle → card colour + icon + "Counter!" + sparks/puffs + words (#57);
+  lanes → position, ▶ markers, danger pulses, portal flares; team → colour, facing, stereo pan
+  (each side's sounds lean to its side); ages → art, music mode, HUD accent, badge rings (#55);
+  a creature's identity → silhouette and its own cry (#10); gold → counter, "+N" popups, coin
+  sounds. Phones add vibration for summons, powers, errors and routs.
+- The gap: the one piece of data that decides the battle — *your citadel is about to fall* —
+  had a single channel, the health bar at the top edge, while the player's eyes are in a lane.
+  Hits on the citadel thud, but a thud says "hit", not "nearly dead".
+- Change: below 30% health **your citadel has a heartbeat** — a low "lub-dub" leaning to your
+  side, every 1.5 s at 30% and quickening to every 0.55 s near zero, louder as it goes; on phones
+  each beat is also a short vibration (under the "Screen shake & vibration" setting). Silent
+  while paused, in menus, after the battle and in the title's attract battle. One continuous
+  dimension (health) mapped to tempo — the channel the player can follow without looking.
+- Checked: smoke (a spy on the heartbeat: none at 80%, beats at 25%, more at 3% in the same
+  time); full verify.

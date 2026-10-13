@@ -133,7 +133,7 @@ complete; its log follows below the lens plan.
 - [x] #56 Transparency — the foe screen hides the Trials (handicaps) until a first victory
 - [x] #57 Feedback — countered blows glance off (grey puff, dull tock); "Effective!" / "Resisted" over your creatures now and then
 - [x] #58 Juiciness — a blessing is felt on the field: shockwaves and flashes through the blessed army (Bastion: the gates)
-- [ ] #59 Channels and Dimensions — map info to new channels (low-HP heartbeat)
+- [x] #59 Channels and Dimensions — below 30% your citadel has a heartbeat (sound + phone pulse) that quickens as it falls
 - [ ] #60 Modes — mode clarity (targeting)
 - [ ] #61 The Interest Curve — battle pacing / music intensity
 - [ ] #62 Inherent Interest — spectacle moments

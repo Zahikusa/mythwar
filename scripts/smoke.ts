@@ -259,6 +259,21 @@ async function armedFlow(page: Page): Promise<void> {
   await sleep(150);
   const off = await page.evaluate(() => !!document.querySelector('.card.armed'));
   check('tapping the armed card again disarms it', !off, String(off));
+  // A citadel below 30% has a heartbeat that quickens as it falls.
+  const beats = await page.evaluate(async () => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    const P = app.game.world.players[0];
+    let n = 0;
+    app.audio.heartbeat = () => n++;
+    const count = async (frac: number) => {
+      n = 0;
+      P.baseHp = P.baseMaxHp * frac;
+      await new Promise((r) => setTimeout(r, 3000));
+      return n;
+    };
+    return { healthy: await count(0.8), low: await count(0.25), dire: await count(0.03) };
+  });
+  check('a citadel in danger has a heartbeat, faster as it falls', beats.healthy === 0 && beats.low >= 1 && beats.dire > beats.low, JSON.stringify(beats));
 }
 
 /** Riddles of war: foe screen → Riddles → the first riddle, solved by tapping cards → its result. */

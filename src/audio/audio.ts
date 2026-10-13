@@ -252,6 +252,15 @@ export class Audio {
    * Each creature answers the summons with its own cry (a few synth strokes): the oak creaks,
    * the redcap cackles, the wolf howls, the dragon roars. The foe's are quieter.
    */
+  /** One heartbeat ("lub-dub") — the citadel in danger (Lens #59). `k`: 0..1 urgency. */
+  heartbeat(k: number): void {
+    if (!this.ctx || this.ctx.state !== 'running') return;
+    const pan = this.sidePan(this.playerTeam, 0.3);
+    const vol = 0.16 + 0.14 * k;
+    this.tone({ freq: 62, to: 42, dur: 0.15, vol, pan, attack: 0.008 });
+    this.tone({ freq: 56, to: 38, dur: 0.17, vol: vol * 0.7, pan, attack: 0.008, delay: 0.17 });
+  }
+
   private cry(defId: string, team: Team): void {
     const pan = this.sidePan(team, 0.7);
     const k = team === this.playerTeam ? 1 : 0.6;
