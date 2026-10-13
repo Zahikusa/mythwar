@@ -55,7 +55,9 @@ complete; its log follows below the lens plan.
   Hunters beat them) — the triangle working, but watch it (#47).
 
 - perfcheck reads 1.97 ms of game JS per frame (budget 3 ms; renderer 1.81) — #14 measured
-  0.93. Within budget, but find out what grew (Lens #92 Technology at the latest).
+  0.93. Within budget, but find out what grew (Lens #92 Technology at the latest). Measured:
+  the run-5 checkpoint (34752bb) does 1.64 ms on this machine today, run 6 ~1.85 ms (likely
+  more creatures on the field with parallel training; the attract battle has no new callouts).
 
 ## Phase 2 — how each iteration works
 - One iteration = one lens (numbering of the book's first edition / the 100-card deck).
