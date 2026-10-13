@@ -199,6 +199,71 @@ async function sandboxFlow(page: Page): Promise<void> {
   check('sandbox: X again switches back to your side', back, String(back));
 }
 
+/**
+ * (Backlog 39) Healthy play and playtests in the real flow: after an hour in battle the results
+ * suggest a break, once; each battle lands in the playtest journal, and Settings → Copy
+ * playtest journal copies it.
+ */
+async function journalFlow(page: Page): Promise<void> {
+  console.log('== break note and playtest journal ==');
+  await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
+  await page.goto(`${base}/?play=novice&seed=6`, { waitUntil: 'load' });
+  await sleep(900);
+  const before = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.settings.journal.length as number);
+  const win = async () => {
+    await page.evaluate(() => {
+      const app = (window as unknown as { __mythwar: any }).__mythwar;
+      app.game.world.players[1].baseHp = 1;
+      app.game.world.damageBase(1, 10, 0, 0);
+    });
+    await sleep(3600);
+    return page.evaluate(() => {
+      const el = document.querySelector('.screen.over');
+      return {
+        menu: (window as unknown as { __mythwar: any }).__mythwar.menus.current as string,
+        note: el?.querySelector('.vbreak')?.textContent ?? '',
+        next: !!el?.querySelector('.vtip button'),
+      };
+    });
+  };
+  // An hour of battle in this sitting so far (frames keep the sitting alive).
+  await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.sitting.played = 3605));
+  const first = await win();
+  check('after an hour of battle the results suggest a break (instead of the next foe)', first.menu === 'over' && /over an hour/.test(first.note) && !first.next, JSON.stringify(first));
+  const stored = await page.evaluate(() => {
+    const j = JSON.parse(localStorage.getItem('mythwar.settings.v1') ?? '{}').journal ?? [];
+    return { n: j.length as number, last: j.at(-1) };
+  });
+  check('the battle is noted in the saved playtest journal', stored.n === Math.min(before + 1, 30) && stored.last?.mode === 'ai' && stored.last?.foe === 'novice' && stored.last?.won === true && stored.last?.secs >= 0, JSON.stringify(stored));
+  const rm = await center(page, '.screen.over .mbtn.primary');
+  await page.mouse.click(rm.x, rm.y);
+  await sleep(600);
+  const second = await win();
+  check('the break note is said once per hour (not after the next battle)', second.menu === 'over' && second.note === '' && second.next, JSON.stringify(second));
+  // Main menu → Settings → Copy playtest journal (the clipboard stubbed to see what's copied).
+  await page.evaluate(() => {
+    const copied = ((window as unknown as { __copied: string[] }).__copied = [] as string[]);
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async (t: string) => void copied.push(t) } });
+  });
+  for (const [scope, text] of [['.screen.over', 'Main menu'], ['.screen.title', 'Settings'], ['.screen.settings', 'Copy playtest journal']]) {
+    await page.evaluate((scope, text) => [...document.querySelectorAll(`${scope} button`)].find((el) => el.textContent?.trim() === text)?.scrollIntoView({ block: 'center' }), scope, text);
+    const p = await centerText(page, scope, text);
+    await page.mouse.click(p.x, p.y);
+    await sleep(300);
+  }
+  const copy = await page.evaluate(() => ({
+    text: (window as unknown as { __copied: string[] }).__copied[0] ?? '',
+    status: document.querySelector('.screen.settings .sprog > .sprogstatus:last-child')?.textContent ?? '',
+    n: (window as unknown as { __mythwar: any }).__mythwar.settings.journal.length as number,
+  }));
+  const lines = copy.text.split('\n');
+  check(
+    'Settings → Copy playtest journal copies every noted battle',
+    /^Mythwar playtest journal/.test(lines[0]) && lines.length === copy.n + 1 && /\| ai vs novice \| WON in \d+:\d\d \| \d★/.test(lines.at(-1) ?? '') && copy.status.startsWith(`${copy.n} battle(s) copied`),
+    JSON.stringify({ head: lines[0], last: lines.at(-1), n: copy.n, status: copy.status }),
+  );
+}
+
 /** A stubbed standard gamepad: menus by D-pad and A, then a battle by buttons. */
 async function gamepadFlow(page: Page): Promise<void> {
   console.log('== gamepad ==');
@@ -1141,6 +1206,10 @@ async function main(): Promise<void> {
     page7.on('pageerror', (e) => errors.push(pageError('riddles', e)));
     await riddleFlow(page7);
     await page7.close();
+    const page11 = await browser.newPage();
+    page11.on('pageerror', (e) => errors.push(pageError('journal', e)));
+    await journalFlow(page11);
+    await page11.close();
     const page3 = await browser.newPage();
     page3.on('pageerror', (e) => errors.push(pageError('large desktop', e)));
     page3.on('console', (m) => {
