@@ -66,3 +66,29 @@ describe('feats', () => {
     expect(b.got).toEqual(['first', 'online']);
   });
 });
+
+describe('the pinnacle', () => {
+  it('counts the best stars against every general, and is awarded once', async () => {
+    const { FeatTracker, MAX_STARS, PINNACLE, starTotal } = await import('../src/ui/feats.ts');
+    expect(MAX_STARS).toBe(12);
+    expect(starTotal({})).toBe(0);
+    expect(starTotal({ novice: { stars: 3 }, adept: { stars: 2 }, mythic: { stars: 9 } })).toBe(8);
+    const got: string[] = [];
+    const t = new FeatTracker([], (f) => got.push(f.id));
+    t.award(PINNACLE);
+    t.award(PINNACLE);
+    expect(got).toEqual([PINNACLE]);
+    expect(t.earned.map((f) => f.id)).toEqual([PINNACLE]);
+  });
+
+  it('can be completed by merging a progress code', async () => {
+    const { exportProgress, importProgress } = await import('../src/ui/progress.ts');
+    const { loadSettings } = await import('../src/ui/settings.ts');
+    const pc = loadSettings();
+    pc.records = { master: { wins: 2, losses: 0, best: 600, stars: 3 }, mythic: { wins: 1, losses: 9, best: 700, stars: 3 } };
+    const phone = loadSettings();
+    phone.records = { novice: { wins: 2, losses: 0, best: 400, stars: 3 }, adept: { wins: 2, losses: 0, best: 500, stars: 3 } };
+    importProgress(phone, exportProgress(pc));
+    expect(phone.feats).toContain('legend');
+  });
+});

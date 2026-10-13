@@ -104,7 +104,7 @@ complete; its log follows below the lens plan.
 - [x] #48 Accessibility — `shoot --cvd` simulation: class cues safe (icons), but the foe turned grey for protanopes; Colour-blind friendly setting (foe in orange)
 - [x] #49 Visible Progress — the title shows the whole ladder of generals (unbeaten ones dimmed with ☆☆☆), not only the beaten ones
 - [x] #50 Parallelism — one trainer for three gates blocked emergencies (4.9 s waits, p90 12 s): each gate now trains its own creature (queue of 5 in all)
-- [ ] #51 The Pyramid — a pinnacle goal
+- [x] #51 The Pyramid — capstone feat "Legend of the Ages" (★★★ vs every general) heads the feats with per-general progress; fixed progress codes dropping stars
 - [ ] #52 The Puzzle — puzzle-like challenge scenarios
 - [ ] #53 Control — input responsiveness / cancel
 - [ ] #54 Physical Interface — gamepad support

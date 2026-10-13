@@ -20,7 +20,7 @@ import { hasMpServer } from './net/connection.ts';
 import { NetGame } from './net/netgame.ts';
 import { EMOTES, cleanCode, cleanName, emoteLane } from './net/protocol.ts';
 import { randomName } from './ui/mpmenus.ts';
-import { FeatTracker } from './ui/feats.ts';
+import { FeatTracker, MAX_STARS, PINNACLE, starTotal } from './ui/feats.ts';
 
 /** Questions the sandbox opens with: match-ups worth staging. */
 const SANDBOX_PROMPTS = [
@@ -647,6 +647,7 @@ export class App {
     // A better rating than ever against this foe is celebrated on the results.
     this.menus.newBestStars = stars > (this.settings.records[this.difficulty]?.stars ?? 0) ? stars : 0;
     recordResult(this.settings, this.difficulty, won, g.world.time, stars, quick);
+    if (starTotal(this.settings.records) >= MAX_STARS) this.feats?.award(PINNACLE);
     clearBattle();
     this.audio.ui(won ? 'victory' : 'defeat');
     this.overTimer = 2.6;

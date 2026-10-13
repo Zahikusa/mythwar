@@ -13,7 +13,7 @@ import { MpScreens } from './mpmenus.ts';
 import { Bestiary } from './bestiary.ts';
 import { PERSONAS } from './personas.ts';
 import { battleName, placeName } from './places.ts';
-import { FEATS } from './feats.ts';
+import { FEATS, MAX_STARS, PINNACLE, starTotal } from './feats.ts';
 import { exportProgress, importProgress } from './progress.ts';
 import type { Feat } from './feats.ts';
 import type { MpMenuCallbacks } from './mpmenus.ts';
@@ -505,7 +505,29 @@ export class Menus {
   private refreshFeats(): void {
     const list = this.featList!;
     list.innerHTML = '';
+    // The pinnacle heads the list, with the stars that build toward it, general by general.
+    const top = FEATS.find((f) => f.id === PINNACLE)!;
+    const got = this.settings.feats.includes(PINNACLE);
+    const n = starTotal(this.settings.records);
+    list.appendChild(
+      h(
+        'div',
+        { class: `feat pinnacle${got ? ' got' : ''}` },
+        h('i', { html: ICONS.crown }),
+        h(
+          'div',
+          null,
+          h('b', { text: top.name }),
+          h('span', { text: `${top.desc} ${got ? 'Achieved.' : `${n} of ${MAX_STARS} stars so far:`}` }),
+          got ? null : h('span', { class: 'pstars' }, ...DIFFICULTIES.map((d) => {
+            const s = Math.min(3, this.settings.records[d]?.stars ?? 0);
+            return h('small', { text: `${PERSONAS[d].name} ${'★'.repeat(s)}${'☆'.repeat(3 - s)}` });
+          })),
+        ),
+      ),
+    );
     for (const f of FEATS) {
+      if (f.id === PINNACLE) continue;
       const got = this.settings.feats.includes(f.id);
       list.appendChild(h('div', { class: `feat${got ? ' got' : ''}` }, h('i', { html: ICONS.xp }), h('div', null, h('b', { text: f.name }), h('span', { text: f.desc }))));
     }

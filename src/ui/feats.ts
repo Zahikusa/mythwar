@@ -1,3 +1,4 @@
+import { DIFFICULTIES } from '../ai/ai.ts';
 import type { Difficulty } from '../ai/ai.ts';
 import { BLESSING_MAX_RANK, MAX_AGE } from '../sim/data.ts';
 import type { SimEvent, Team } from '../sim/types.ts';
@@ -28,7 +29,20 @@ export const FEATS: Feat[] = [
   { id: 'unbreached', name: 'Unbreached', desc: 'Defeat the Adept or harder with your citadel above 75% health.' },
   { id: 'comeback', name: 'Back from the Brink', desc: 'Win after your citadel fell below 15% health.' },
   { id: 'trials', name: 'Trial by Fire', desc: 'Defeat the Adept or harder under all three trials.' },
+  { id: 'legend', name: 'Legend of the Ages', desc: 'Earn all three stars against every general.' },
 ];
+
+/**
+ * The top of the pyramid (Lens #51): one rare goal every battle against the AI builds toward —
+ * three stars from Puck, Hippolyta, Odin and Ares alike.
+ */
+export const PINNACLE = 'legend';
+export const MAX_STARS = DIFFICULTIES.length * 3;
+
+/** Best stars earned against all generals together (0–12). */
+export function starTotal(records: Partial<Record<Difficulty, { stars?: number }>>): number {
+  return DIFFICULTIES.reduce((n, d) => n + Math.min(3, records[d]?.stars ?? 0), 0);
+}
 
 /**
  * Watches one battle for feats. `unlock` is called once per newly earned feat (already-earned
@@ -55,6 +69,11 @@ export class FeatTracker {
     this.surgesDrawn = 0;
     this.lowest = world.players[me].baseHp / world.players[me].baseMaxHp;
     this.earned = [];
+  }
+
+  /** Grants a feat earned outside the battle's events (the pinnacle, after the records update). */
+  award(id: string): void {
+    this.give(id);
   }
 
   private give(id: string): void {

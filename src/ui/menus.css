@@ -660,6 +660,36 @@
   filter: drop-shadow(0 0 4px rgba(183, 164, 255, 0.9));
 }
 
+/* The pinnacle: across both columns, framed in gold even before it is won. */
+.feat.pinnacle {
+  grid-column: 1 / -1;
+  border: 1px solid rgba(242, 196, 90, 0.55);
+  background: linear-gradient(180deg, rgba(60, 40, 20, 0.9), rgba(21, 14, 38, 0.9));
+}
+
+.feat.pinnacle i {
+  color: var(--gold);
+  filter: none;
+  opacity: 0.7;
+}
+
+.feat.pinnacle.got i {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px rgba(255, 215, 106, 0.9));
+}
+
+.feat .pstars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin-top: 2px;
+}
+
+.feat .pstars small {
+  color: var(--gold-l);
+  font-size: 12px;
+}
+
 .vfeats {
   display: flex;
   align-items: center;

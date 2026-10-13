@@ -1007,3 +1007,23 @@ at once — and can the game do several things at once for them?*
 - Checked: unit tests (parallel lanes, one at a time per lane, cancel resets only its lane, old
   save conversion), designcheck, a screenshot with three lanes training, full verify (smoke,
   multiplayer smoke — the server and replicas share the rule).
+
+## #51 The Lens of the Pyramid
+*Is there a single element at the top of my pyramid that players strive for? Is it challenging,
+rare, unique? Do the elements at the lower levels contribute to it?*
+- Mythwar had many goals and no apex: 17 feats in a flat list ("First Victory" next to
+  "Godslayer"), stars per foe, trials. Each is fine; nothing gathered them into one summit.
+- The summit was already there, unnamed: the three-star rating (#20). Three stars against every
+  general — a win within par time with the citadel above half, against Ares too (the scripted
+  "competent" player never manages it) — is rare and hard, and every battle against the AI
+  feeds it, star by star, foe by foe. Lower layers (victories, ratings per general, the ladder on
+  the title, #49) all point up to it.
+- Change: the capstone feat **Legend of the Ages** — "Earn all three stars against every
+  general." It heads the feats screen across both columns in a gold frame, with progress shown
+  general by general ("4 of 12 stars so far: Puck ★★★ Hippolyta ★☆☆ Odin ☆☆☆ Ares ☆☆☆"),
+  is awarded the moment the twelfth star is recorded (named on that battle's results), and is
+  completed by a progress code too when two devices' stars add up.
+- Fixed on the way: loading a progress code **erased the best star ratings** (#19's merge rebuilt
+  each record without the stars added by #20) — committed separately, with a test.
+- Checked: unit tests (star total, awarded once, completed by a merged code), feats screen on
+  desktop and a 667×375 phone; full verify.

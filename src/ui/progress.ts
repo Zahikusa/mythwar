@@ -1,5 +1,6 @@
 import { DIFFICULTIES } from '../ai/ai.ts';
 import type { Settings } from './settings.ts';
+import { MAX_STARS, PINNACLE, starTotal } from './feats.ts';
 
 /**
  * Progress codes: a player's records, feats, discovered ages and online tallies as one line of
@@ -48,6 +49,8 @@ export function importProgress(s: Settings, code: string): boolean {
     s.records[d] = { wins: Math.max(mine.wins, num(theirs.wins)), losses: Math.max(mine.losses, num(theirs.losses)), best: best.length ? Math.min(...best) : 0, streak: mine.streak ?? 0, stars };
   }
   if (Array.isArray(p.f)) for (const f of p.f) if (typeof f === 'string' && !s.feats.includes(f) && s.feats.length < 100) s.feats.push(f);
+  // Stars from both devices together may complete the pinnacle.
+  if (starTotal(s.records) >= MAX_STARS && !s.feats.includes(PINNACLE)) s.feats.push(PINNACLE);
   s.ageSeen = Math.max(s.ageSeen, Math.min(4, num(p.a)));
   if (p.o && typeof p.o === 'object') {
     for (const [name, r] of Object.entries(p.o)) {
