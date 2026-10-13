@@ -94,7 +94,8 @@ picks another port.
 | A player presses Pause | The battle pauses for both; either player can resume. Each player has **3 pauses per battle** (so nobody can grief with a pause/resume loop); after that Pause opens the menu just for them and the battle goes on. Being away uses up no pauses; it has its own clock (see above). |
 | A player leaves the battle | They forfeit; the other player wins (both devices count it). The room stays open for a new opponent. |
 | The server hits a bug | A fault while handling one message is logged and that message dropped; a fault inside one battle stops that battle alone — its two players are sent back to the lobby with a note saying so (no result counts; a player offline at that moment is told the server restarted). Every other battle goes on. |
-| After a battle | Both press **Rematch** to play again in the same room (wins are counted). |
+| After a battle | Both press **Rematch** to play again in the same room (wins are counted) — or **Room** to change the mode or handicaps first; Ready there is the rematch. The other phone is told what changed ("Ada now fights under Glass Citadel — press Ready again"). |
+| A phone drops the page and its player scans the QR again | Outside a battle, the same device takes its own seat back (score and handicaps kept) instead of being told the room is full. |
 | The game server restarts | Clients notice their session is gone and return to the lobby. |
 | Old page against a newer server | The client is told to reload: the protocol version **and** a fingerprint of the game rules (balance tables + a short scripted battle) must match. |
 

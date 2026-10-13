@@ -604,6 +604,11 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    for a second player" / "offline") would say it (the note below says it only visually nearby).
    (Done: title + aria-description — waits for a second player / connecting / battle under way;
    mpsmoke checks it.)
+141. [x] docs/MULTIPLAYER.md's "What happens when…" lacked #87 (Room after a battle, what changed is
+   said) and #89 (a re-scanned QR takes its own seat back). (Done.)
+142. [ ] `shoot` has no two-player room scenario (seats both filled, Ready states, handicap chips on
+   the other seat) — the visual review couldn't look at it; a second puppeteer page joining the
+   room in the scenario's script would do.
 
 
 
@@ -613,8 +618,8 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #8 in short (for the morning)
-- Verification mode, backlog items 38–140: done except the notes #23, #94 and the open
-  #128, #129, #137, #138 (for the next run — start there; add new ones from a fresh review). Ten independent reviews (netcode; app state;
+- Verification mode, backlog items 38–142: done except the notes #23, #94 and the open
+  #128, #129, #137, #138, #142 (for the next run — start there; add new ones from a fresh review). Ten independent reviews (netcode; app state;
   simulation/AI/HUD; rendering/persistence; accessibility; docs; two players' flows; data across
   versions; a visual review from screenshots; a review of this run's own diff — which caught
   three regressions, #116–118) found most of them; each was reproduced by a new test or smoke
