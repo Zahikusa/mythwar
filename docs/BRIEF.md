@@ -81,6 +81,21 @@ longer leaves the game in battery-saver mode for good; an iPhone on iOS 15 or ol
 "needs a newer browser" message instead of a broken game (the minimum is iOS 16.2).
 No rules change; the protocol is unchanged.
 
+## Phase 3 — a native-app feel on phones (run #12)
+
+| You asked for | What there is | See it yourself |
+|---|---|---|
+| A. No scrolling page | Every menu is title / scrolling middle / buttons — only the middle scrolls, with momentum; the page itself never moves (no bounce, pull-to-refresh, zoom, selection or callout); the game fits the *visible* area (Safari's bars, the keyboard, a turn) | `npm run mobilecheck` (8 phones and tablets × tab and installed × both ways; real swipes and pinches on the Androids); `screenshots/mobile/` |
+| B. Installed = native | Launch images (no white flash), notch and home bar handled — a blurred continuation of the scene fills the strips beside the notch, a new version is offered as a restart (never mid-battle), offline start tested | Add it to an iPhone's Home Screen and open it |
+| C. Guide every player | The game knows where it runs (iPhone Safari incl. iOS 26, other iPhone browsers, Android browsers, WhatsApp/Instagram/…, computers, the LAN page) and offers the one right step: Android's real install dialog, pictured iPhone steps with an arrow to the button, "Open in Chrome/Safari" from app browsers, a QR code on computers; once after the first battle, a permanent entry in the menu and Settings, a welcome in the installed app (with one-tap "Paste my progress" — the iPhone app has its own storage) | "Get the app" on the title screen |
+| D. Phone navigation | One Back model everywhere (sheets first, results → menu, the title asks before leaving), swipe-down sheets, every touch target ≥ 44 px, an upright box for typing while the game is turned, a Vibration switch | `npm run smoke -- --only phone-back` |
+| E. Small screens | iPhone SE (also in a 292-px-tall Chrome tab on a small Samsung) up to iPads | the contact sheets in `screenshots/mobile/` |
+| F. An Android APK | Decided against for now (Chrome already makes the installed game a real Android app; a TWA needs your asset-links file; signing in CI is yours to set up) — reasons in PROGRESS.md | — |
+
+**Not verified by me:** real phones. Please run the 10-minute check in docs/PLAYTEST.md
+("Phones: the native-app check") — Safari's real bars (iOS 26's floating one), the keyboard and
+the install dialogs can only be seen there.
+
 ## Things that need your decision
 1. **Try it on two real phones** (docs/PLAYTEST.md). If anything feels off, that beats any
    further lens.
