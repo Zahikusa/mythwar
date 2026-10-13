@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RoomInfo, SeatInfo } from '../src/net/protocol.ts';
-import { lostSessionPlan, roomNews, roomView } from '../src/ui/roomnews.ts';
+import { emoteRoute, lostSessionPlan, roomNews, roomView } from '../src/ui/roomnews.ts';
 import type { RoomView } from '../src/ui/roomnews.ts';
 
 const seat = (name: string, over: Partial<SeatInfo> = {}): SeatInfo => ({ name, connected: true, ready: false, away: false, wins: 0, ping: 0, trials: [], rank: 0, sigil: -1, ...over });
@@ -73,5 +73,28 @@ describe('lostSessionPlan (the server no longer seats us)', () => {
     }
     expect(lostSessionPlan('fault', 'playing', 'none', true, 'ABCD').note).toMatch(/fault/);
     expect(lostSessionPlan('restart', 'title', 'room', false, 'ABCD').note).toMatch(/restarted/);
+  });
+});
+
+describe("emoteRoute (where the other player's quick message shows)", () => {
+  const base = { mine: false, state: 'playing' as const, menu: 'none', enabled: true, speaker: 'Bo', ally: null, phrase: 'Good luck!' };
+
+  it('in a duel: a bubble by their citadel, just the words', () => {
+    expect(emoteRoute(base)).toEqual({ to: 'bubble', text: 'Good luck!', sound: 'select' });
+  });
+
+  it('under a menu or on the results: a line with their name (bubbles hide there — backlog 3, 125)', () => {
+    expect(emoteRoute({ ...base, menu: 'pause' })).toEqual({ to: 'menu', text: 'Bo: Good luck!', sound: 'select' });
+    expect(emoteRoute({ ...base, state: 'over', menu: 'over', phrase: 'Well played!' })).toEqual({ to: 'results', text: 'Bo: Well played!', sound: 'select' });
+  });
+
+  it('in co-op: an ally’s call by our own side, with their name', () => {
+    expect(emoteRoute({ ...base, ally: 'Cy', phrase: 'Help middle!' })).toEqual({ to: 'ally', text: 'Cy: Help middle!', sound: 'ready' });
+  });
+
+  it('not at all: our own echo, quick messages off, back at the title', () => {
+    expect(emoteRoute({ ...base, mine: true })).toBeNull();
+    expect(emoteRoute({ ...base, enabled: false })).toBeNull();
+    expect(emoteRoute({ ...base, state: 'title', menu: 'room' })).toBeNull();
   });
 });

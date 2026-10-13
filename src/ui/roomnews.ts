@@ -82,3 +82,27 @@ export function lostSessionPlan(lost: 'restart' | 'expired' | 'fault', state: 't
         : 'You were away too long and lost your seat in the room.';
   return { toLobby, rejoin, note };
 }
+
+/** Where the other player's quick message shows, and with which sound (null: not at all). */
+export interface EmoteRoute {
+  /** results: by the results' chips; menu: on the menu over the battle; ally: a co-op call by our side; bubble: by their citadel. */
+  to: 'results' | 'menu' | 'ally' | 'bubble';
+  text: string;
+  sound: 'select' | 'ready';
+}
+
+/**
+ * `mine`: our own message echoed back; `state` / `menu`: the app's; `enabled`: the quick-messages
+ * setting; `speaker`: the sender's seat name; `ally`: our co-op ally's name (null in a duel).
+ */
+export function emoteRoute(o: { mine: boolean; state: 'title' | 'playing' | 'over'; menu: string; enabled: boolean; speaker: string; ally: string | null; phrase: string }): EmoteRoute | null {
+  if (o.mine || o.state === 'title' || !o.enabled) return null;
+  // After the battle the results cover the HUD: their words appear by the result chips.
+  if (o.state === 'over' && o.menu === 'over') return { to: 'results', text: `${o.speaker}: ${o.phrase}`, sound: 'select' };
+  // A menu covers the battle (online it may run on behind it): their words on the menu, as the
+  // speech bubbles hide under menus.
+  if (o.menu === 'pause') return { to: 'menu', text: `${o.speaker}: ${o.phrase}`, sound: 'select' };
+  // An ally's call: by our own side, with their name (a lane call also lights the lane).
+  if (o.ally !== null) return { to: 'ally', text: `${o.ally}: ${o.phrase}`, sound: 'ready' };
+  return { to: 'bubble', text: o.phrase, sound: 'select' };
+}

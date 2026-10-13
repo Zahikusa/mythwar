@@ -40,7 +40,7 @@ import { JOURNEY, PERSONAS, tauntLine } from './ui/personas.ts';
 import { Sitting } from './ui/wellbeing.ts';
 import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
-import { lostSessionPlan, roomNews, roomView } from './ui/roomnews.ts';
+import { emoteRoute, lostSessionPlan, roomNews, roomView } from './ui/roomnews.ts';
 import type { RoomView } from './ui/roomnews.ts';
 
 type AppState = 'title' | 'playing' | 'over';
@@ -1032,29 +1032,22 @@ export class App {
         error: (code, message) => this.onMpError(code, message),
         emote: (seat, id) => {
           const g = this.game;
-          if (!(g instanceof NetGame) || seat === g.seat || this.state === 'title' || !this.settings.emotes) return;
-          // After the battle the results cover the HUD: their words appear by the result chips.
-          if (this.state === 'over' && this.menus.current === 'over') {
-            this.menus.resultEmote(`${this.mp?.room?.seats[seat]?.name ?? (g.coop ? g.allyName : g.foeName)}: ${EMOTES[id] ?? ''}`);
-            this.audio.ui('select');
-            return;
-          }
-          // A menu covers the battle (online it may run on behind it): their words on the menu, as
-          // the speech bubbles hide under menus.
-          if (this.menus.current === 'pause') {
-            this.menus.pauseSay(`${this.mp?.room?.seats[seat]?.name ?? (g.coop ? g.allyName : g.foeName)}: ${EMOTES[id] ?? ''}`);
-            this.audio.ui('select');
-            return;
-          }
-          if (g.coop) {
-            // An ally's call: by our own side, with their name — and a lane call lights the lane.
-            this.hud.showEmote('mine', `${g.allyName}: ${EMOTES[id] ?? ''}`);
-            if (emoteLane(id) >= 0) this.renderer.pingLane(emoteLane(id));
-            this.audio.ui('ready');
-            return;
-          }
-          this.hud.showEmote('theirs', EMOTES[id] ?? '');
-          this.audio.ui('select');
+          if (!(g instanceof NetGame)) return;
+          const route = emoteRoute({
+            mine: seat === g.seat,
+            state: this.state,
+            menu: this.menus.current,
+            enabled: this.settings.emotes,
+            speaker: this.mp?.room?.seats[seat]?.name ?? (g.coop ? g.allyName : g.foeName),
+            ally: g.coop ? g.allyName : null,
+            phrase: EMOTES[id] ?? '',
+          });
+          if (!route) return;
+          if (route.to === 'results') this.menus.resultEmote(route.text);
+          else if (route.to === 'menu') this.menus.pauseSay(route.text);
+          else this.hud.showEmote(route.to === 'ally' ? 'mine' : 'theirs', route.text);
+          if (route.to === 'ally' && emoteLane(id) >= 0) this.renderer.pingLane(emoteLane(id));
+          this.audio.ui(route.sound);
         },
       });
       mp.start();

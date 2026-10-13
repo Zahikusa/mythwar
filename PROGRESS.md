@@ -757,6 +757,11 @@ battle, results — 2026-10-13.)
    `sessionLostAction(lost, state, menu, lostRoom)` with tests, like #150/#156. (Done: `lostSessionPlan()` in src/ui/roomnews.ts —
    toLobby / rejoin / note; 3 tests (8 in the file); behaviour unchanged, mpsmoke green. Made
    explicit on the way: a seat that expired while the phone sat on the results also rejoins.)
+174. [x] (#137, fourth slice) Where the other player's quick message shows (results line, menu
+   line, co-op call, bubble) was a branchy listener inside `openMultiplayer`. (Done: `emoteRoute()`
+   in src/ui/roomnews.ts; 4 tests; mpsmoke's emote checks green.) With #150, #156, #171 the online
+   glue's decisions are pure and tested; what stays in app.ts is wiring. #137 itself (moving the
+   wiring to its own module) stays open — the remaining code is short and touches App's privates.
 172. [ ] Back (#166) on the online results does nothing (Esc does nothing there either); on a phone,
    Back from the results could mean "Room" (the friend-facing next step) — or leave it: the
    buttons are right there. Decide after a playtest (docs/PLAYTEST.md).
