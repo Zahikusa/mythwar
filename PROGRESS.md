@@ -514,9 +514,10 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 119. [x] `scripts/shoot.ts` takes only the first scenario name (and matches it as a substring) —
    `node scripts/shoot.ts a b c` silently shoots one; accept several, say which matched. (Done:
    several names, an exact name first (else substring as before); an unknown one is an error.)
-120. [ ] No `shoot` scenario for the multiplayer lobby or the battle room (the visual review
+120. [x] No `shoot` scenario for the multiplayer lobby or the battle room (the visual review
    couldn't look at them): add `mp-lobby` / `mp-room` (a local server like mpsmoke's, or a stubbed
-   MpClient state).
+   MpClient state). (Done: shoot's server hosts multiplayer too; `mp-lobby`, `mp-room`,
+   `mobile-mp-room`.)
 121. [x] Phone panels (turrets, blessings): the HUD's numbers show through the panel header as ghost
    text (`.hud.mobile .panel` at 96% — the header row has no own background). Opaque header or a
    backdrop blur. (Done: the phone panel is opaque; its outer width kept at 444 px after #111's
@@ -557,6 +558,9 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    could send, with the seats, an opaque per-pair rival id (a hash of both devices and the
    server's salt — never the device id itself), and the client key its tallies by it (falling back
    to the name for old lines). Protocol change (v16).
+130. [ ] `mobile-mp-room` (844×390): your own seat's name is cut with an ellipsis ("Jade Valkyrie
+   (you)…" — the " ✎" edit mark pushes it over) although the seat box has room to spare; let the
+   name wrap or drop "(you)" on phones (the seat is outlined as yours anyway).
 
 
 

@@ -13,6 +13,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
 import puppeteer from 'puppeteer-core';
 import { findChrome } from './chrome.ts';
+import { attachMultiplayer } from '../server/net.ts';
 
 interface Scenario {
   name: string;
@@ -27,6 +28,9 @@ interface Scenario {
   /** Extra wait after the script ran. */
   after?: number;
 }
+
+/** Opens Multiplayer and hosts a battle room (the shoot server hosts rooms too). */
+const hostRoom = `(async () => { const a = window.__mythwar; a.openMultiplayer(); for (let i = 0; i < 40 && !a.mp?.welcomed; i++) await new Promise((r) => setTimeout(r, 100)); a.mp.host(); })()`;
 
 const cast = (age: number, lane: number) =>
   `(() => { const a = window.__mythwar; const w = a.game.world; const p = w.players[0]; p.age = ${age}; p.powerCooldown = 0; a.game.command({ type: 'power', team: 0, lane: ${lane} }); })()`;
@@ -134,6 +138,35 @@ const SCENARIOS: Scenario[] = [
     wait: 1200,
     script: `(() => { const a = window.__mythwar; a.game.world.players[0].gold = 900; a.hud.togglePanel('bless'); })()`,
     after: 400,
+  },
+  {
+    name: 'mp-lobby',
+    query: '',
+    w: 1600,
+    h: 900,
+    wait: 1200,
+    script: 'window.__mythwar.openMultiplayer()',
+    after: 1200,
+  },
+  {
+    name: 'mp-room',
+    query: '',
+    w: 1600,
+    h: 900,
+    wait: 1200,
+    script: hostRoom,
+    after: 1200,
+  },
+  {
+    name: 'mobile-mp-room',
+    query: '',
+    w: 844,
+    h: 390,
+    mobile: true,
+    dpr: 2,
+    wait: 1200,
+    script: hostRoom,
+    after: 1200,
   },
   {
     name: 'mobile-results',
@@ -286,6 +319,8 @@ async function main(): Promise<void> {
       res.end();
     }
   });
+  // (Multiplayer next to the game, as `npm run lan` has it: the lobby and room scenarios.)
+  const mp = attachMultiplayer(server);
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', () => r()));
   const port = (server.address() as { port: number }).port;
   await mkdir('screenshots', { recursive: true });
@@ -336,6 +371,7 @@ async function main(): Promise<void> {
     }
   } finally {
     await browser.close();
+    mp.close();
     server.close();
   }
   await writeFile('screenshots/.last', new Date().toISOString());
