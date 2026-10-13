@@ -361,11 +361,12 @@
 }
 
 /* "Press Back again to leave" (Menus.titleSay): a pill at the title's foot, for a moment. */
+/* (At the top, over the logo's small line: at the foot it covered the buttons a phone needs.) */
 .ttoast {
   position: absolute;
-  bottom: 16px;
+  top: 10px;
   left: 50%;
-  translate: -50% 8px;
+  translate: -50% -8px;
   padding: 8px 16px;
   border-radius: 20px;
   background: rgba(21, 14, 38, 0.94);

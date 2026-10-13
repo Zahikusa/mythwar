@@ -305,6 +305,10 @@ Already in the code before Phase 3, and kept:
    a switch that does nothing) and in the installed app (full screen already). (Done: the row
    shows only where a battle can go full screen and the game isn't installed — checked on an
    iPhone tab/app, an Android tab/app and a desktop.)
+35. [x] (run #13) The title's "Press Back again to leave Mythwar." (Android Back) sat at the
+   foot, over "Get the app" and — upright on an SE — Bestiary and Settings, just as the player
+   decides whether to stay. (Done: it shows at the top, over the logo's small line; mobilecheck
+   `title-back`, green on every device.)
 
 ## Decisions
 
