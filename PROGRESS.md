@@ -477,9 +477,12 @@ how-to, bestiary, feats and desktop battles showed nothing worth reporting.)
    last stats row and the sigil button half under the buttons, no backdrop (dropped on purpose
    earlier: a fade looked odd where nothing scrolls). (Done: a `more` class while content waits
    below — kept on scroll and resize — gives the pinned row a full-width fade; checked in shots.)
-111. [ ] `mobile-blesspanel` (844×390): the blessing panel is taller than the screen — its top
+111. [x] `mobile-blesspanel` (844×390): the blessing panel is taller than the screen — its top
    covers the HP bars, its bottom edge is off-screen (`.hud.mobile .panel { max-height }`,
    hud.css ~2426, isn't holding); the HUD's numbers show through its header as ghost text.
+   (Done for the size: `max-height` measured the content box — 370 + padding + border = 394 px on
+   a 390-px screen; `box-sizing: border-box` → 10…380 px, scrolling. The see-through header is
+   left: the HUD behind is meant to stay faintly visible.)
 112. [ ] `mobile-land`: the hold shield of the selected lane covers its lane-strength bar (`.lbar`
    at `top: calc(100% + 5px)`, the tab scaled 1.18 when selected; shield at `g.y + 10·s`).
 113. [ ] Battle intro banner ("VS HIPPOLYTA, QUEEN OF THE AMAZONS" + the chapter line): no backing
@@ -489,6 +492,18 @@ how-to, bestiary, feats and desktop battles showed nothing worth reporting.)
    `.lanetab`, hud.css ~1375); only a queue badge makes them noticeable.
 115. [ ] Results over a battle: the HUD shows faintly through the overlay (a "Counter!" badge behind
    Copy result) and the general's faded taunt bubble is unreadable behind it.
+(Items 116–118: an independent review of this run's own diff, 2026-10-13 — three regressions in
+run #8's changes, each reproduced by a test that failed before the fix.)
+116. [x] `server/lobby.ts`: an away/back change held back by the coalescing (#71) survived the link
+   closing — a stale "back" applied after the disconnect marked the gone player present, the
+   battle resumed against nobody and no claim came. (Done: held changes are dropped on disconnect
+   and on a reconnect's hello.)
+117. [x] `server/lobby.ts` `join` (#89): the device's own seat was only looked for when the room was
+   full — a host whose page dropped, rejoining by link, became their own guest ("Ada (2)") and
+   the friend got "two players". (Done: own seat first, whether or not the other is free.)
+118. [x] `src/net/connection.ts` (#72): `lastClose` survived links given up locally (silence, dial
+   limit, nudge) — a later restart could be told as "a fault stopped your battle". (Done: reset
+   when a live link is dropped here.)
 
 
 

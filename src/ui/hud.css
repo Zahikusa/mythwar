@@ -2423,6 +2423,9 @@ html.cbfoe .side.right .hpfill {
   bottom: auto;
   transform: translate(-50%, -50%);
   width: min(420px, calc(100cqw - 2 * var(--side) - 16px));
+  /* (The whole box — padding and border too: as a content-box height the blessing panel ran
+     24 px past a 390-px-high phone.) */
+  box-sizing: border-box;
   max-height: calc(100cqh - 20px);
   overflow-y: auto;
   padding: 10px 12px 12px;
