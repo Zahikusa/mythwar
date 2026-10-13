@@ -1143,11 +1143,17 @@ export class Hud {
       if (c.el.dataset.why !== label) c.el.dataset.why = label;
       toggle(c.el, 'advised', advice === c.def.cls);
       toggle(c.el, 'armed', this.armed?.unitId === c.def.id);
-      // What the card shows by colour and badges, in words for screen readers.
-      const base = (c.el.dataset.base ??= c.el.getAttribute('aria-label') ?? '');
-      const state = [advice === c.def.cls ? 'counters this lane' : '', label ? label.toLowerCase() : poor ? 'not enough gold yet' : '', this.armed?.unitId === c.def.id ? 'armed: summons when the gold is there' : ''].filter(Boolean).join('; ');
-      const aria = state ? `${base} — ${state}` : base;
-      if (c.el.getAttribute('aria-label') !== aria) c.el.setAttribute('aria-label', aria);
+      // What the card shows by colour and badges, in words for screen readers (rebuilt only when
+      // one of them changes).
+      const advised = advice === c.def.cls;
+      const armed = this.armed?.unitId === c.def.id;
+      const sig = `${advised}|${label}|${poor}|${armed}`;
+      if (c.el.dataset.ariaSig !== sig) {
+        c.el.dataset.ariaSig = sig;
+        const base = (c.el.dataset.base ??= c.el.getAttribute('aria-label') ?? '');
+        const state = [advised ? 'counters this lane' : '', label ? label.toLowerCase() : poor ? 'not enough gold yet' : '', armed ? 'armed: summons when the gold is there' : ''].filter(Boolean).join('; ');
+        c.el.setAttribute('aria-label', state ? `${base} — ${state}` : base);
+      }
     }
 
     // Queue
