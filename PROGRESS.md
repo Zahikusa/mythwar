@@ -567,9 +567,10 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    re-rendered when the rooms changed, and going online doesn't change them (seen in the new
    `mp-lobby` shot). (Done: being online is part of the list's signature; mpsmoke checks for
    "None yet…".)
-132. [ ] README screenshots are made by hand (shoot → resize to JPEG; run #8 used a scratch canvas
+132. [x] README screenshots are made by hand (shoot → resize to JPEG; run #8 used a scratch canvas
    script): a `npm run docshots` that renders `docs/*.jpg` from named shoot scenarios would keep
-   them current with one command.
+   them current with one command. (Done as a tool rather than a fixed list: `npm run docshot --
+   <scenario> <docs/name.jpg> [width]` turns a `shoot` PNG into a README JPEG; README says so.)
 
 
 

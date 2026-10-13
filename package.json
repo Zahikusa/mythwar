@@ -23,6 +23,7 @@
     "puzzlecheck": "node scripts/puzzlecheck.ts",
     "servercost": "node scripts/servercost.ts",
     "ogcard": "vite build && node scripts/ogcard.mjs",
+    "docshot": "node scripts/docshot.ts",
     "perfcheck": "vite build && node scripts/perfcheck.ts",
     "enginecheck": "vite build && node scripts/enginecheck.ts",
     "mpengines": "vite build && node scripts/mpengines.ts",

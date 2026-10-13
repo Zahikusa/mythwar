@@ -150,6 +150,7 @@ npm run perfcheck                # per-frame JavaScript cost of a busy late-game
 node scripts/calib.ts counter adept 90  # a scripted "follow the Counter! badge" bot vs an AI
 node scripts/icons.mjs           # re-render PNG app icons (incl. maskable) from public/icon.svg
 npm run ogcard                   # re-render the link-preview card public/og.jpg
+npm run docshot -- mobile-land docs/mobile.jpg   # a README picture from a `shoot` screenshot
 npm run servercost               # bandwidth and CPU one online battle costs a server
 ```
 
