@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { loadSettings, recordResult, resetRecords, saveSettings } from '../src/ui/settings.ts';
+import { loadSettings, mergeFromOtherTab, recordResult, resetRecords, saveSettings } from '../src/ui/settings.ts';
 
 /** localStorage for one browser profile (shared by its tabs). */
 let store: Map<string, string>;
@@ -40,6 +40,19 @@ describe('settings saved by several tabs and builds (backlog 92)', () => {
     const back = loadSettings();
     expect(back.riddles.sort()).toEqual(['pack', 'wall']);
     expect(back.records.adept?.stars).toBe(2);
+  });
+
+  it('a storage event from another tab brings its progress into this tab (backlog 95)', () => {
+    const tabA = loadSettings();
+    const tabB = loadSettings();
+    recordResult(tabA, 'mythic', true, 900, 1, false);
+    tabA.feats.push('mythic');
+    saveSettings(tabA);
+    expect(mergeFromOtherTab(tabB, 'some.other.key')).toBe(false);
+    expect(tabB.records.mythic).toBeUndefined();
+    expect(mergeFromOtherTab(tabB, 'mythwar.settings.v1')).toBe(true);
+    expect(tabB.records.mythic).toMatchObject({ wins: 1 });
+    expect(tabB.feats).toContain('mythic');
   });
 
   it('Reset records does take records back (the one save without a merge)', () => {

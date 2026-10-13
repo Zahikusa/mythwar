@@ -310,6 +310,16 @@ function write(s: Settings): void {
   }
 }
 
+/**
+ * Another tab saved (a `storage` event for `key`): its progress joins this tab's settings, so the
+ * screens here show it too. True when the key was one of ours.
+ */
+export function mergeFromOtherTab(s: Settings, key: string | null): boolean {
+  if (key !== KEY && key !== PROGRESS_KEY) return false;
+  mergeStored(s, key);
+  return true;
+}
+
 /** Settings → Reset records: the one save that does take progress back (no merge). */
 export function resetRecords(s: Settings): void {
   s.records = {};

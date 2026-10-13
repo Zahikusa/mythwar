@@ -14,7 +14,7 @@ import { Renderer } from './render/renderer.ts';
 import { Coach } from './ui/coach.ts';
 import { Hud, RAG_WARN } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
-import { addJournal, battleStars, loadSettings, onlineRecord, parTime, recordOnline, recordResult, saveSettings, playerLabel } from './ui/settings.ts';
+import { addJournal, battleStars, loadSettings, mergeFromOtherTab, onlineRecord, parTime, recordOnline, recordResult, saveSettings, playerLabel } from './ui/settings.ts';
 import { clearBattle, loadBattle, saveBattle } from './save.ts';
 import { AGES, TRIALS, UNITS } from './sim/data.ts';
 import { fmtTime } from './ui/dom.ts';
@@ -246,6 +246,11 @@ export class App {
       if (final) this.buzz(30);
     };
     window.addEventListener('resize', () => this.resize());
+    // Another tab of the game saved: its records, feats and riddles show here too (the title's
+    // laurels at once; other screens the next time they open).
+    window.addEventListener('storage', (e) => {
+      if (mergeFromOtherTab(this.settings, e.key) && this.menus.current === 'title') this.menus.refreshLaurels();
+    });
     // Moving the window to a screen with another pixel density doesn't fire 'resize'.
     const watchDpr = () => {
       if (typeof matchMedia === 'undefined') return;
