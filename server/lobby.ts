@@ -30,6 +30,8 @@ export interface LobbyOptions {
   claimAfter?: number;
   /** Seconds a disconnected player keeps their seat in a room that isn't fighting (default SEAT_GRACE). */
   seatGrace?: number;
+  /** Seconds a player in a battle may send nothing before counting as away (default SILENT_AWAY; 0: never). */
+  silentAway?: number;
   log?: (line: string) => void;
   /** Where other devices in the network can open the game (shown as invite link / QR code). */
   lanUrls?: () => string[];
@@ -73,6 +75,12 @@ const SAVE_EVERY = 5000;
 
 /** Seconds a disconnected player keeps their seat in a room that isn't fighting. */
 const SEAT_GRACE = 60;
+/**
+ * Seconds a connected player in a battle may be silent before they count as away. Pages ping every
+ * second; a phone that walked out of the Wi-Fi leaves its socket open, and the transport's
+ * heartbeat takes 12 s to call it dead — the battle would run on without them all that while.
+ */
+const SILENT_AWAY = 4;
 /** Seconds a session without connection and room is remembered (reconnect token). */
 const SESSION_TTL = 10 * 60;
 /** Commands per second a player may send (a human manages a handful). */
@@ -121,6 +129,11 @@ interface Session {
   /** When this player's away/back last took effect, and a change waiting for AWAY_GAP. */
   awayAt: number;
   awayWanted: boolean | null;
+  /** Away as the page last said it (app in the background), whatever its link does. */
+  saysAway: boolean;
+  /** When anything was last heard from this player, and whether that's long enough ago to count as away. */
+  heardAt: number;
+  silent: boolean;
   /** The client's own round-trip measurement (ms). */
   rtt: number;
   /** How the session's last battle ended (final snapshot + result), for a client that missed it. */
@@ -267,6 +280,7 @@ export class Lobby {
           }
           if (!session || session.conn !== conn) return this.error(conn, 'bad-request', 'Say hello first');
           if (msg.type === 'cmd' && ++rate.cmds > CMD_RATE) return this.error(conn, 'rate', 'Too many commands');
+          this.heard(session, now);
           this.handle(session, msg);
         } catch (e) {
           this.fault(`error handling "${msg.type}" from ${session?.name ?? 'a new connection'}: ${(e as Error)?.stack ?? e}`);
@@ -289,6 +303,7 @@ export class Lobby {
         this.matchFault(room, e);
         continue;
       }
+      if (room.phase === 'playing' && room.match) this.checkSilence(room, room.match, now);
       if (room.phase !== 'playing') {
         for (const seat of [0, 1] as Team[]) {
           const s = room.seats[seat];
@@ -307,6 +322,32 @@ export class Lobby {
       this.lastRoomList = now;
       this.sendRoomLists();
     }
+  }
+
+  /** A connected player in a battle who has gone quiet (see SILENT_AWAY) counts as away. */
+  private checkSilence(room: Room, match: Match, now: number): void {
+    const limit = (this.opts.silentAway ?? SILENT_AWAY) * 1000;
+    if (!limit) return;
+    for (const seat of [0, 1] as Team[]) {
+      const s = room.seats[seat]?.session;
+      if (!s || !s.conn || s.silent || now - s.heardAt <= limit) continue;
+      s.silent = true;
+      if (match.isAway(seat)) continue;
+      match.setAway(seat, true, now);
+      this.broadcastRoom(room);
+      this.log(`${s.name} went quiet in room ${room.code}: away until heard from again`);
+    }
+  }
+
+  /** Something arrived from this player: one who had gone quiet is back (unless their page says it's away). */
+  private heard(s: Session, now: number): void {
+    s.heardAt = now;
+    if (!s.silent) return;
+    s.silent = false;
+    const room = s.room;
+    if (!room?.match || s.seat === null || room.phase !== 'playing' || s.saysAway || !room.match.isAway(s.seat)) return;
+    room.match.setAway(s.seat, false, now);
+    this.broadcastRoom(room);
   }
 
   /** A player's away/back takes effect (see 'away'). */
@@ -363,6 +404,8 @@ export class Lobby {
       s.conn = conn;
       s.goneAt = null;
       s.network = network;
+      s.heardAt = this.now();
+      s.silent = false;
       // (Held away/back changes belong to the old link.)
       s.awayWanted = null;
       this.awayWaiting.delete(s);
@@ -397,6 +440,9 @@ export class Lobby {
         lastEmote: -Infinity,
         awayAt: -Infinity,
         awayWanted: null,
+        saysAway: false,
+        heardAt: this.now(),
+        silent: false,
         rtt: 0,
         lastOver: null,
       };
@@ -404,6 +450,7 @@ export class Lobby {
     }
     const room = s.room;
     this.send(s, { type: 'welcome', v: PROTOCOL_VERSION, token: s.token, room: room ? this.info(room) : null, seat: s.seat, lan: this.opts.lanUrls?.() ?? [], resumed });
+    s.saysAway = msg.away === true;
     const m = room?.match;
     if (room && s.seat !== null && m && room.phase === 'playing') {
       this.send(s, m.snapshotFor(s.seat, this.now()));
@@ -538,6 +585,7 @@ export class Lobby {
         if (room?.match && seat !== null && room.phase === 'playing') room.match.requestResume(now);
         return;
       case 'away':
+        s.saysAway = !!msg.away;
         if (room?.match && seat !== null && room.phase === 'playing') {
           // (Each change pauses or resumes both screens: a client flipping it many times a
           // second has the latest wish applied once AWAY_GAP has passed.)

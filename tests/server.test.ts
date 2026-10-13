@@ -86,7 +86,7 @@ class FakeClient {
   }
 }
 
-function setup(opts: { awayGrace?: number; store?: ServerStore; today?: () => number; hallKeysMax?: number; hallHash?: (network: string, salt: string) => string } = {}) {
+function setup(opts: { awayGrace?: number; silentAway?: number; store?: ServerStore; today?: () => number; hallKeysMax?: number; hallHash?: (network: string, salt: string) => string } = {}) {
   let now = 1000;
   let r = 0.37;
   const lobby = new Lobby({
@@ -94,6 +94,8 @@ function setup(opts: { awayGrace?: number; store?: ServerStore; today?: () => nu
     random: () => (r = (r * 9301 + 49297) % 233280 / 233280),
     countdown: 3,
     awayGrace: opts.awayGrace ?? 90,
+    // (These fake clients don't ping as pages do: silence means nothing unless a test says so.)
+    silentAway: opts.silentAway ?? 0,
     store: opts.store,
     today: opts.today,
     hallKeysMax: opts.hallKeysMax,
@@ -109,7 +111,7 @@ function setup(opts: { awayGrace?: number; store?: ServerStore; today?: () => nu
 }
 
 /** Two players in a running battle. */
-function battle(opts: { awayGrace?: number; store?: ServerStore; today?: () => number } = {}) {
+function battle(opts: { awayGrace?: number; silentAway?: number; store?: ServerStore; today?: () => number } = {}) {
   const { lobby, run } = setup(opts);
   const a = new FakeClient(lobby);
   const b = new FakeClient(lobby);
@@ -560,6 +562,39 @@ describe('battle', () => {
     const got = b.inbox.slice(before).map((m) => m.type);
     expect(got.slice(0, 3)).toEqual(['welcome', 'snapshot', 'over']);
     expect(b.last('over')).toMatchObject({ winner: 1, reason: 'forfeit' });
+  });
+
+  it('a player gone quiet in a battle counts as away until heard from again (backlog 222)', () => {
+    const { run, a, b } = battle({ silentAway: 4 });
+    // Pages ping every second; a phone out of the Wi-Fi leaves its socket open and says nothing.
+    const step = (secs: number, quiet: FakeClient | null = null) => {
+      for (let i = 0; i < secs; i++) {
+        for (const c of [a, b]) if (c !== quiet) c.send({ type: 'ping', t: 0, rtt: 20 });
+        run(1000);
+      }
+    };
+    step(3);
+    expect(a.last('paused')).toBeUndefined();
+    step(3, b);
+    expect(a.last('paused')).toBeUndefined(); // (a blip)
+    step(2, b);
+    expect(a.last('paused')!.state).toMatchObject({ reason: 'away', seat: 1 });
+    const held = a.world!.tick;
+    step(3, b);
+    expect(a.world!.tick).toBe(held);
+    b.send({ type: 'ping', t: 0, rtt: 20 });
+    expect(a.last('resuming')).toBeDefined();
+    step(4);
+    expect(a.world!.tick).toBeGreaterThan(held);
+    // A page that said it's in the background and went quiet stays away when it's heard from.
+    b.send({ type: 'away', away: true });
+    step(6, b);
+    const before = a.inbox.length;
+    b.send({ type: 'ping', t: 0, rtt: 20 });
+    step(1);
+    expect(a.inbox.slice(before).some((m) => m.type === 'resuming')).toBe(false);
+    b.send({ type: 'away', away: false });
+    expect(a.last('resuming')).toBeDefined();
   });
 
   it('a tab reconnecting in the background stays away', () => {

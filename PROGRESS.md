@@ -409,7 +409,34 @@ it prints, inviting, stopping — 2026-10-13.)
    and drop them on thaw; `AttachOptions.deadAfter` (3 s in mpsmoke). The room's #160 step uses
    it: the server finds the link dead after ~3.6 s (not at once), gives up the seat, the phone
    rejoins. Plain, latency and portrait green.)
-(Items 218–: run #10.)
+(Items 218–221: an independent review of the client netcode — connection, client, NetGame,
+the overlay and the app's online wiring — 2026-10-13.)
+218. [ ] **A phone that missed a citadel-fall ending freezes in the battle.** Reconnecting with
+   `battle: true`, the server replays `lastOver` (snapshot with `winner` set, then `over`);
+   `NetGame.onOver` (src/net/netgame.ts ~314) emits `gameOver` only when the world's winner is
+   unset or different — a freshly loaded world queued no events, so no results, `game.over`
+   true, and `pause()` refuses (no menu) — stuck until a reload. Likely in co-op (a phone locks,
+   the ally finishes). Emit `gameOver` once per battle in `onOver` if it hasn't gone out.
+219. [ ] The replica can step to the final tick before `over` arrives (two frames; a late
+   packet): `gameOver` fires with `g.result === null`, so app.ts skips the online record, the
+   journal and the feats as for a server restart, and `onOver` later has nothing to emit. Hold
+   back `gameOver` while `result` is null; emit it from `onOver` (with #218: exactly once).
+220. [ ] After a version mismatch (`error` code `version` → `conn.close()` clears `onclose`) or a
+   takeover by another tab (4001), `mp.room` stays: the battle overlay says "Reconnecting…"
+   forever, the room says "Reconnecting…" with Ready dimmed, and the "reload" explanation is only
+   in the lobby's status line. Drop room/seat on both and say "reload" where the player is.
+221. [ ] `allyAwaySaid` (app.ts ~1230) carries over between battles: a battle that ends while the
+   ally is away leaves it true, so in the rematch a short blip says "Bo is back." without an
+   "away". Reset it (and its timer) when a battle starts and on toTitle.
+222. [x] (Own find) A phone that walks out of the Wi-Fi mid-battle (not backgrounded) leaves its
+   socket open; the server only calls it dead after the transport heartbeat's 12 s — that long the
+   battle runs on without the player. Pages ping every second: a seat silent for 4 s could count
+   as away (battle held, "is away" shown) until anything is heard from it again.
+   (Done: `server/lobby.ts` `checkSilence` / `heard` — a connected seat in a battle silent for
+   `SILENT_AWAY` = 4 s counts as away; the next message brings it back unless the page itself
+   said it's away (`saysAway`, from hello and 'away'). `LobbyOptions.silentAway` (0 = never: the
+   server tests' fake clients don't ping); server test; MULTIPLAYER.md. mpsmoke plain and
+   with latency green.)
 
 
 
