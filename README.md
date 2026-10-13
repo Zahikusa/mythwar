@@ -28,11 +28,20 @@ For battles against a friend in the same Wi-Fi, see [Multiplayer](#multiplayer-s
 ## Install it as an app
 
 The game at [zahikusa.github.io/mythwar](https://zahikusa.github.io/mythwar/) installs like an
-app (own icon, fullscreen, landscape) and then also works offline. It updates itself.
+app (own icon, full screen, no browser bars) and then also works offline. A new version is
+offered as a restart on the title screen — never in the middle of a battle. The game shows each
+player the steps for their own browser ("Get the app" on the title screen, in Settings, and once
+after the first battle), so nobody needs to know these by heart:
 
-- **iPhone / iPad:** open it in Safari → Share → *Add to Home Screen*.
-- **Android:** open it in Chrome → ⋮ → *Add to Home screen* / *Install app*.
+- **iPhone / iPad (iOS 26):** Safari → ⋯ → Share → *Add to Home Screen* → keep *Open as Web
+  App* on → Add. Older iOS: the Share button in Safari's toolbar → *Add to Home Screen*.
+  (Chrome, Edge and Firefox on iOS 16.4+ can do it too, through their Share menu.) The app
+  keeps its own records: copy your progress in Safari first, then paste it in the app's welcome.
+- **Android:** Chrome → *Install app* (or ⋮ → *Add to Home screen*); Samsung Internet → ≡ →
+  *Add page to* → *Home screen*.
 - **Windows / Mac:** Chrome or Edge → the install icon at the right of the address bar.
+- Opened from a link in WhatsApp, Instagram & co.? Open it in Safari or Chrome first — the
+  game offers that button itself.
 
 ## Multiplayer (same Wi-Fi)
 
