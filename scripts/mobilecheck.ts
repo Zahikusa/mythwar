@@ -203,6 +203,8 @@ const STEPS: Step[] = [
   { name: 'online-pause', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, script4: `a.pause()`, ready4: `a.menus.current === 'pause'`, after: 900 },
   // The friend's app went to the background: the battle waits, then offers to claim the victory.
   { name: 'online-away', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, guestAway: true, ready4: `!document.querySelector('.nclaim').classList.contains('hidden')`, after: 900 },
+  // Our own link drops mid-battle (a tunnel, a Wi-Fi switch): "Connection lost", held there.
+  { name: 'online-lost', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, script4: `a.mp.conn.dial = () => {}; a.mp.conn.ws.close()`, ready4: `/Connection lost/.test(document.querySelector('.nbanner.show')?.textContent ?? '')`, after: 900 },
   { name: 'online-over', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, guestLeaves: `a.menus.current === 'over'`, after: 1200 },
 ];
 

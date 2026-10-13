@@ -88,6 +88,9 @@ down the model, the iOS/Android version and anything that looks wrong (a photo h
 - [ ] The lobby, upright: tap "Your name" — the keyboard opens and an upright box at the top
       shows what you type (the field itself is on the turned game); Done closes it. Close the
       keyboard — the game sits exactly where it was (no gap, nothing shifted).
+- [ ] Sound: play music in another app, then start a battle — note whether your music keeps
+      playing under the game's or stops. Flip the ring/silent switch to silent: note whether
+      the game goes quiet. (Native games: the music keeps playing, silent mutes the game.)
 - [ ] The "Get the app" offer on the title opens the sheet; the steps match what Safari
       shows (iOS 26: ⋯ → Share → Add to Home Screen → Open as Web App); the arrow points at
       the right button. Swipe the sheet down: it goes.

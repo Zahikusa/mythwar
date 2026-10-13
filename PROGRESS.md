@@ -1,7 +1,7 @@
 # PROGRESS — Phase 3: a native-app feel on phones
 
 Status: Phase 3 complete, in verification mode (run #12, 2026-10-13). A–E done and verified
-(`npm run mobilecheck`: 7 devices × tab/installed × both orientations × 29 screens, all green;
+(`npm run mobilecheck`: 7 devices × tab/installed × both orientations × 37 screens, all green;
 `npm run verify` green), F decided against. From here: only mobile UX defects seen in
 screenshots or nameable on a real device (backlog below); what needs a physical phone is under
 "Open questions for the human".
@@ -293,6 +293,9 @@ Already in the code before Phase 3, and kept:
    Snare. (Done: the HUD publishes its side columns' width on the stage (`--hud-side`) and the
    online notices keep between them — upright, Claim victory goes under the text. mobilecheck
    `online-away` (the check's server offers the claim after 2 s).)
+32. [x] (run #13) mobilecheck never showed "Connection lost — Reconnecting…" (our own link
+   dropping mid-battle). (Done: `online-lost` closes the page's socket and holds the redial.
+   The full matrix — 7 devices, ~33 screens each way — is green: 920 views.)
 
 ## Decisions
 
@@ -349,6 +352,9 @@ Already in the code before Phase 3, and kept:
   - The keyboard in the lobby on an iPhone (the stage follows `visualViewport` while typing).
   - The install sheet's steps and arrow match what each browser shows (backlog 5).
   - The first launch of the installed app is dark (launch images) and shows the welcome.
+  - Sound on an iPhone (backlog 28): does the game stop your own music, and does the silent
+    switch mute it? (A line in PLAYTEST.md's check; then `navigator.audioSession.type` can be
+    set to match native games.)
 - The installed iPhone app keeps its own records (iOS gives a home-screen app its own storage):
   the sheet offers "Copy my progress" and the welcome explains where to paste it. If that is
   too clumsy in practice, the next step would be passing the progress code in the URL when the
