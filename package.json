@@ -31,6 +31,7 @@
     "sim": "node scripts/sim.ts",
     "smoke": "vite build && node scripts/smoke.ts",
     "verify": "tsc --noEmit && vitest run && vite build && node scripts/smoke.ts && node scripts/mpsmoke.ts",
+    "verify:all": "npm run verify && node scripts/enginecheck.ts && node scripts/designcheck.ts && node scripts/puzzlecheck.ts && node scripts/perfcheck.ts",
     "mpsmoke": "vite build && node scripts/mpsmoke.ts",
     "shoot": "vite build && node scripts/shoot.ts"
   },

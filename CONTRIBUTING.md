@@ -61,6 +61,7 @@ docs/LENSES.md why each feature exists; docs/MULTIPLAYER.md the netcode.
 | Simulation rules / balance | `npm run designcheck`, `npm run sim -- 120 master master` (sides ~50/50) |
 | Rendering cost | `npm run perfcheck` (budget 3 ms of JS per frame) |
 | Before committing | `npm run verify` (typecheck, tests, build, smoke, mpsmoke) |
+| A rules change, before committing | `npm run verify:all` (verify, then enginecheck, designcheck, puzzlecheck, perfcheck — one build) |
 
 The smoke tests drive the real game in Chrome (`puppeteer-core` with the installed Chrome, Edge
 or Chromium — found in the usual places on Windows, macOS and Linux, or set `CHROME=/path`;

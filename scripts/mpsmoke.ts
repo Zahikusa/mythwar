@@ -415,6 +415,33 @@ async function main(): Promise<void> {
     await b.evaluate(() => (window as any).__mythwar.mp.conn.open());
     await waitFor(a, 'B back: the note clears', () => !(document.querySelector('.screen.over .rmatch')?.textContent ?? '').includes('lost the connection'), 8000);
 
+    // (Backlog 109) Every control on the online results — the chips, Leave room, Share, Room,
+    // Rematch — can be reached with a gamepad's D-pad (a breadth-first walk over the app's moves).
+    const reach = await a.evaluate(() => {
+      const app = (window as any).__mythwar;
+      const screen = document.querySelector('.screen.over') as HTMLElement;
+      const all = [...screen.querySelectorAll<HTMLElement>('button')].filter((b) => b.offsetParent !== null && !(b as HTMLButtonElement).disabled);
+      const label = (b: HTMLElement) => b.textContent?.trim() ?? '';
+      const start = screen.querySelector<HTMLElement>('.mbtn.primary')!;
+      const seen = new Set<HTMLElement>([start]);
+      const queue = [start];
+      while (queue.length) {
+        const from = queue.shift()!;
+        for (const dir of ['up', 'down', 'left', 'right']) {
+          app.setPadFocus(from);
+          app.padMenu(dir);
+          const to = app.padFocus as HTMLElement | null;
+          if (to && !seen.has(to)) {
+            seen.add(to);
+            queue.push(to);
+          }
+        }
+      }
+      app.setPadFocus(null);
+      return { all: all.map(label), unreachable: all.filter((b) => !seen.has(b)).map(label) };
+    });
+    check('gamepad: every control on the online results is reachable with the D-pad', reach.unreachable.length === 0 && reach.all.includes('Room') && reach.all.includes('Well played!'), JSON.stringify(reach));
+
     console.log('== leaving the room ==');
     await press(a, '.screen.over', 'Leave room');
     await waitFor(a, 'A in lobby', () => (window as any).__mythwar.menus.current === 'mp');

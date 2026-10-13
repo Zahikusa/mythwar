@@ -449,8 +449,9 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
    with a screen reader). (Done: three on-purpose checks under "What to watch" — the seat back
    after a re-scan, Room → co-op → Ready, the shield beside the gate on a small phone.)
 (Items 104–107: open for the next run.)
-104. [ ] The playtest journal isn't merged between tabs (#92 merges what only grows, the journal
-   too could: by `at`, the last 30) — two tabs playing in turn keep only the last saver's.
+104. [x] The playtest journal isn't merged between tabs (#92 merges what only grows, the journal
+   too could: by `at`, the last 30) — two tabs playing in turn keep only the last saver's. (Done:
+   merged by end time on every save, never from before a reset; test.)
 105. [x] Online results on a 360-px-tall phone now have four buttons in a row (Leave room · Share ·
    Room · Rematch, #87): check they fit (mpsmoke's phone is 844×390; smoke's results-fit check
    covers single-player results only) — add a check, wrap to two rows if needed. (Done: mpsmoke
@@ -462,6 +463,14 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
    rule 4 says v15.)
 107. [x] docs/BRIEF.md (the morning page) doesn't mention run #8's hardening — a short "since the
    last brief" paragraph: server crash fixes, fairness fix (rules changed), protocol v15. (Done.)
+(Items 108–109: open for the next run.)
+108. [x] `package.json`: `verify` covers typecheck, tests, build, smoke, mpsmoke — the engine,
+   design, puzzle and perf checks each need their own command (and rebuild). A `verify:all`
+   (one build, then enginecheck + designcheck + puzzlecheck + perfcheck) for rules changes.
+   (Done: `npm run verify:all`; CONTRIBUTING's table says when.)
+109. [x] Gamepad: smoke's D-pad walk (#28) covers the single-player results; the online results
+   (emote chips, Leave room · Share · Room · Rematch) have no reachability check. (Done: the same
+   walk in mpsmoke on the online results — all seven reachable.)
 
 
 
