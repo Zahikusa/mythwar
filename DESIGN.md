@@ -241,6 +241,7 @@ goal — clear the field before any foe reaches your citadel. No "Counter!" badg
 is the riddle), no records or feats; solved riddles are remembered. Riddles of ages the player
 hasn't reached in battle stay sealed. Each is brute-forced by `npm run puzzlecheck` (every mix
 of creatures within the purse, every power timing): The Redcap Pack 3/28 answers win, The
-Labyrinth's Guard 1/28, The Giants' Wall 2/23, Fimbulwinter 26/138 — none without the power;
-since Lens #66 one for each later age too: The White Tigers (Jade) 2/17, Sky and Stone
-(Celestial, Starfall once) 26/297 — none without the power.
+Labyrinth's Guard 1/28, The Giants' Wall 2/23, Fimbulwinter 30/138 — none without the power;
+since Lens #66 one for each later age too: The White Tigers (Jade) 3/17 (every answer at least
+two Oni), Sky and Stone (Celestial, Starfall once) 26/297 — none without the power. (Re-run
+after veterans, Lens #81: Fimbulwinter 26 → 30 and The White Tigers 2 → 3 winning answers.)
