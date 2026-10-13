@@ -150,6 +150,9 @@ async function resumeFlow(page: Page): Promise<void> {
     return { menu: app.menus.current, cont: !document.querySelector('.mbtn.continue')!.classList.contains('hidden'), master: app.settings.master, diff: app.settings.difficulty, saved: localStorage.getItem('mythwar.battle.v1') };
   });
   check('a malformed autosave / settings still boots to the title', boot.menu === 'title' && !boot.cont && boot.master === 0.8 && boot.diff === 'novice' && boot.saved === null, JSON.stringify(boot));
+  // The whole ladder of generals is on the title from the start, unbeaten ones dimmed.
+  const ladder = await page.evaluate(() => [...document.querySelectorAll('.laurels .laurel:not(.featchip)')].map((l) => `${l.textContent}${l.classList.contains('dim') ? ':dim' : ''}`));
+  check('the title shows all four generals, none beaten yet', ladder.length === 4 && ladder.every((l) => l.endsWith('☆☆☆:dim')), JSON.stringify(ladder));
   await page.evaluate(() => localStorage.clear());
 }
 

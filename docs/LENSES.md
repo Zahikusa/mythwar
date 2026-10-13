@@ -970,3 +970,19 @@ differently (about 1 in 12 men).
   default off, CSS animations stop), every action has a key and a tap, aria-labels and focus rings.
 - Checked: CVD renders before/after (protanopia, deuteranopia, tritanopia), unit test (swap,
   idempotent, mirrored seat, back to red), settings on desktop and a 667×375 phone; full verify.
+
+## #49 The Lens of Visible Progress
+*What counts as progress in my game? Do players have enough of it? Can I make it more visible?
+Where is the player's progress lost?*
+- Progress in a battle is visible on its own terms: the citadels' health bars, the XP bar toward
+  the next age, the age badges, the Ragnarök countdown. Progress across battles lives in records,
+  stars per foe (#20), feats (#17), the bestiary (#11) and the "Next challenge" ribbon (#16).
+- Where it got lost: the title screen. Its laurels showed only foes already beaten — a newcomer
+  saw nothing at all, and after a first win a single "Novice ★☆☆" chip. Progress is a position on
+  a path; with the path invisible, there is no "two of four, five stars of twelve" to feel.
+- Change: the title always shows **the whole ladder** — Novice, Adept, Master, Mythic — beaten
+  generals crowned in their colour with their best stars, the rest dimmed with a dashed border and
+  empty stars (tooltip/aria: "Odin, the All-Father (Master) — not defeated yet"). The road ahead
+  is now part of the screen, and every star earned fills a visible gap.
+- Checked: title on a 667×375 phone (two beaten, two not) and on desktop (fresh profile); new
+  smoke check (a fresh profile sees all four generals, all dimmed with ☆☆☆); full verify.

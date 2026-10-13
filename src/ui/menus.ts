@@ -161,11 +161,15 @@ export class Menus {
       this.featChip.querySelector('span')!.textContent = `Feats ${n}/${FEATS.length}`;
       el.appendChild(this.featChip);
     }
+    // The whole ladder, always: beaten foes crowned with their best stars, the rest dimmed with
+    // empty stars — the road ahead is part of the progress (Lens #49).
     for (const d of DIFFICULTIES) {
       const r = this.settings.records[d];
-      if (!r || !r.wins) continue;
-      const stars = r.stars ? `${'★'.repeat(r.stars)}${'☆'.repeat(3 - r.stars)}` : '';
-      el.appendChild(h('span', { class: `laurel l-${d}`, title: `${AI_PROFILES[d].name} defeated ${r.wins}×${r.best ? ` · fastest ${fmtTime(r.best)}` : ''}${stars ? ` · best rating ${stars}` : ''}` }, h('i', { html: ICONS.crown }), AI_PROFILES[d].name, stars ? h('small', { class: 'lstars', text: stars }) : null));
+      const won = !!r?.wins;
+      const n = won ? (r?.stars ?? 0) : 0;
+      const stars = `${'★'.repeat(n)}${'☆'.repeat(3 - n)}`;
+      const title = won ? `${PERSONAS[d].title} (${AI_PROFILES[d].name}) defeated ${r!.wins}×${r!.best ? ` · fastest ${fmtTime(r!.best)}` : ''} · best rating ${stars}` : `${PERSONAS[d].title} (${AI_PROFILES[d].name}) — not defeated yet`;
+      el.appendChild(h('span', { class: `laurel l-${d}${won ? '' : ' dim'}`, title, 'aria-label': title }, h('i', { html: ICONS.crown }), AI_PROFILES[d].name, h('small', { class: 'lstars', text: stars })));
     }
   }
 

@@ -1062,6 +1062,16 @@
   text-shadow: 0 0 12px rgba(242, 196, 90, 0.9);
 }
 
+.laurel.dim {
+  color: #9d93bd;
+  border-style: dashed;
+}
+
+.laurel.dim i,
+.laurel.dim .lstars {
+  color: #7d7399;
+}
+
 .laurel .lstars {
   margin-left: 4px;
   color: var(--gold);
