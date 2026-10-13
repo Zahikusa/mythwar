@@ -678,9 +678,13 @@ server changes found sound.)
    (Done: `endQuiet()` — a spell is open only once counted, and closes on a word or on the
    link's end.)
 (Items 269–: open for the next run.)
-269. [ ] mpsmoke's wall time grew with run #10's steps (two silent-link waits of ~3–6 s, the news
+269. [x] mpsmoke's wall time grew with run #10's steps (two silent-link waits of ~3–6 s, the news
    queue's 2.3 s, the WebKit-free chip checks): print the section times again (#214) and trim
    where a shorter `deadAfter` / a condition wait would do.
+   (Done in part: 88 → 85 s. `deadAfter` 5 → 4 s (the heartbeat still found the link dead after
+   ~4.3 s, the silence rule held the battle at ~2.2 s); the mid-battle step waits for the room to
+   show B back, not for the 3-s resume countdown (the next section waits for the battle). The
+   rest of run #10's growth is the checks themselves. Plain, latency, portrait green.)
 270. [ ] Several run #10 tests in tests/netgame.test.ts reach into private fields (`conn.ws`,
    `conn.lastHeard`, `lobby.rooms`, a match's world): a few test-only accessors on SimNet
    (`socketOf(client)`, `matchOf(code)`, `suspend(client, ms)`) would make them read as the

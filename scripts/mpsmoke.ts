@@ -25,7 +25,7 @@ const latency = args.includes('--latency') ? num('latency') : 0;
 const jitter = args.includes('--jitter') ? num('jitter') : 0;
 const shotDir = resolve('screenshots/mp');
 /** The server's link timeouts here (12 s and 4 s for real): a dead link, a silent seat in battle. */
-const DEAD_AFTER = 5;
+const DEAD_AFTER = 4;
 const SILENT_AWAY = 2.5;
 
 let failures = 0;
@@ -309,7 +309,7 @@ async function main(): Promise<void> {
     // (Backlog 160) B's phone locks in the room (no wake lock over http): its link is gone for longer
     // than the server keeps a seat (3 s here, a minute for real). Back, it joins the room again.
     // (Backlog 217) A sleeping phone rarely closes its socket — it just goes silent, and the server
-    // only learns by its heartbeat (5 s here, 12 s for real): B's network is cut, not its socket.
+    // only learns by its heartbeat (4 s here, 12 s for real): B's network is cut, not its socket.
     const cut = Date.now();
     netCut = true;
     net.freeze();
@@ -551,8 +551,10 @@ async function main(): Promise<void> {
       const heldIn = Date.now() - cut;
       check('a silent phone holds the battle before its link is found dead', heldIn > (SILENT_AWAY - 1.2) * 1000 && heldIn < DEAD_AFTER * 1000, `${heldIn} ms`);
       net.thaw();
-      await waitFor(b, 'B back in the battle', () => (window as any).__mythwar.mp.state === 'online' && !(window as any).__mythwar.game.paused, 10_000);
-      await waitFor(a, 'A runs on', () => !(window as any).__mythwar.game.paused, 8000);
+      // (Back and seen back; the resume countdown runs on into the next section, which waits for
+      // the battle to run.)
+      await waitFor(b, 'B back in the battle', () => (window as any).__mythwar.mp.state === 'online' && (window as any).__mythwar.mp.welcomed, 10_000);
+      await waitFor(a, 'A sees B back', () => (window as any).__mythwar.mp.room?.seats[1]?.away === false, 8000);
       netCut = false;
     }
 
