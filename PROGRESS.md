@@ -108,7 +108,7 @@ complete; its log follows below the lens plan.
 - [x] #52 The Puzzle — Riddles of war: 4 hand-made one-question battles (fixed purse, foe on the field), brute-forced so only a few answers win
 - [x] #53 Control — tapping a card you cannot afford yet arms it: it summons itself once the gold is there (tap again to cancel)
 - [x] #54 Physical Interface — gamepads: face buttons summon the cards as they sit on the pad (X A B, Y), D-pad lanes, shoulders power/hold/ascend/undo; menus by D-pad + A/B
-- [ ] #55 Virtual Interface — HUD information
+- [x] #55 Virtual Interface — the age race was invisible until the foe could ascend: XP rings around both age badges
 - [ ] #56 Transparency — declutter the interface
 - [ ] #57 Feedback — feedback for counters/hits
 - [ ] #58 Juiciness — more juice

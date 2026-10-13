@@ -1031,7 +1031,16 @@ export class Hud {
     const canAscend = (p: typeof me) => p.age < MAX_AGE && p.xp >= AGES[p.age + 1].xpRequired;
     toggle(E.ageL, 'ripe', canAscend(me));
     toggle(E.ageR, 'ripe', canAscend(foe));
-    const foeTitle = canAscend(foe) ? `The enemy has the XP to ascend to ${AGES[foe.age + 1].name}!` : `Enemy age: ${AGES[foe.age].name}`;
+    // A ring around each badge fills with that side's XP toward its next age (Lens #55): the
+    // age race at a glance — "they will ascend soon" before it happens, not only when it can.
+    const xpFrac = (p: typeof me) => (p.age >= MAX_AGE ? 0 : Math.min(1, p.xp / AGES[p.age + 1].xpRequired));
+    setStyle(E.ageL, '--xp', xpFrac(me).toFixed(3));
+    setStyle(E.ageR, '--xp', xpFrac(foe).toFixed(3));
+    const foeTitle = canAscend(foe)
+      ? `The enemy has the XP to ascend to ${AGES[foe.age + 1].name}!`
+      : foe.age < MAX_AGE
+        ? `Enemy age: ${AGES[foe.age].name} — ${Math.round(xpFrac(foe) * 100)}% of the XP for ${AGES[foe.age + 1].name}`
+        : `Enemy age: ${AGES[foe.age].name}`;
     if (E.ageR.title !== foeTitle) E.ageR.title = foeTitle;
     setText(E.ageLn, this.allyName ? `You & ${this.allyName} · ${AGES[me.age].name}` : AGES[me.age].name);
     // Online, the right-hand side says who it is.

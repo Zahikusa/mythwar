@@ -1090,3 +1090,20 @@ it feel like in their hands?*
   B goes back, X/A summon the first two cards, ↑ changes lane, Start pauses and resumes);
   full verify. Not tried with a physical controller (none here) — the mapping follows the W3C
   standard layout every browser reports for known pads.
+
+## #55 The Lens of the Virtual Interface
+*What information does the player need that isn't obvious from the world? What do they need to
+do — and does the interface tell them, or get in the way?*
+- The world shows a lot by itself (creatures, shrines, flaring portals, banners); the HUD adds
+  what it can't: health, gold and income, XP, cooldowns, the queue, star goals in the pause menu.
+- One decision had no information behind it: **the age race**. Falling behind in the ages is the
+  first thing the results tip checks (#18/#43), rushing an age (#33) is a bet on timing — yet the
+  foe's progress was invisible until their badge started pulsing ("they can ascend *now*"). Your
+  own XP had a bar; theirs had nothing.
+- Change: a **ring around each age badge** fills with that side's XP toward its next age, in the
+  side's colour (blue / red, orange in colour-blind mode). Both rings sit at the screen's top
+  corners, so "who is closer" is one glance; the foe's badge tooltip gives the percentage; the
+  pulse when an ascension is possible stays. The how-to's ages paragraph says to watch it.
+  (First version: a 2-px ring nobody would notice — the mask's percentages were measured to the
+  corner; now 5 px.)
+- Checked: screenshots (desktop, phone landscape), how-to page on a 667×375 phone; full verify.

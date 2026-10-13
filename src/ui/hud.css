@@ -354,6 +354,30 @@ html.cbfoe .side.right .hpfill {
   border: 2px solid #2a1a06;
 }
 
+.agebadge {
+  position: relative;
+}
+
+/* XP toward the next age: a ring in the side's colour around the badge (Lens #55). */
+.agebadge::before {
+  content: '';
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  background: conic-gradient(var(--ring, var(--gold-l)) calc(var(--xp, 0) * 1turn), rgba(10, 6, 20, 0.55) 0);
+  -webkit-mask: radial-gradient(closest-side, transparent 79%, #000 81%);
+  mask: radial-gradient(closest-side, transparent 79%, #000 81%);
+  pointer-events: none;
+}
+
+.side.left .agebadge {
+  --ring: var(--blue);
+}
+
+.side.right .agebadge {
+  --ring: var(--red);
+}
+
 .agebadge.ripe {
   animation: ripe 1.1s ease-in-out infinite alternate;
 }

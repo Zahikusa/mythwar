@@ -444,7 +444,7 @@ export class Menus {
         body: [
           art(['treant', 'minotaur', 'jotunn', 'oni', 'titan'], 0),
           p('Gold flows in over time and from every kill — a fallen creature pays its killer three quarters of its cost, so creatures thrown away one by one feed the enemy. Stand at a lane’s <b>Ley Shrine</b> with no foes nearby to capture it: it pays extra income until the enemy takes it back. Now and then a <b>Ley Surge</b> flares under one shrine: hold it while it lasts for a flood of gold.'),
-          p('<b>XP</b> comes from kills, blows against the enemy citadel and the passing of time. With enough XP and a gold tithe you can <b>Ascend</b> (or, with three quarters of the XP, <b>rush</b> it for a double tithe) through five mythic ages — Fae Wilds, Olympus, Asgard, the Jade Empire and the Celestial realm — each with stronger creatures and a sturdier citadel.'),
+          p('<b>XP</b> comes from kills, blows against the enemy citadel and the passing of time. With enough XP and a gold tithe you can <b>Ascend</b> (or, with three quarters of the XP, <b>rush</b> it for a double tithe) through five mythic ages — Fae Wilds, Olympus, Asgard, the Jade Empire and the Celestial realm — each with stronger creatures and a sturdier citadel. The ring around each side’s age badge fills with its XP: watch the enemy’s.'),
         ],
       },
       {
