@@ -125,14 +125,19 @@ interface Step {
   /** Only in a tab, or only installed. */
   only?: 'tab' | 'app';
   /**
-   * A friend (a client run here) joins the room the page hosts and readies up; then `script3`
-   * runs and `ready3` is waited for. With `guestLeaves`, the friend then leaves (mid-battle: a
-   * forfeit) and that predicate is waited for.
+   * A friend (a client run here) joins the room the page hosts and readies up. With
+   * `guestLeaves`, after `ready4`, the friend leaves (mid-battle: a forfeit) and that predicate
+   * is waited for.
    */
   guest?: boolean;
+  /** Then `script3` runs and `ready3` is waited for (with or without a friend). */
   script3?: string;
   ready3?: string;
   guestLeaves?: string;
+  /** Then (in the battle): the friend sends this quick message, `script4` runs, `ready4` is waited for. */
+  guestSays?: 'gl' | 'thx';
+  script4?: string;
+  ready4?: string;
   /**
    * Turned once it's ready: the phone is rotated (the other orientation's viewport) and the
    * screen checked again as it is then. (Only where both orientations have the same insets:
@@ -164,6 +169,8 @@ const STEPS: Step[] = [
   { name: 'card', query: battle, ready: inBattle, script: `a.hud.showTooltip(window.__mythwarData.UNITS.treant, document.querySelector('.card'))`, ready2: `!document.querySelector('.tooltip').classList.contains('hidden')`, after: 500 },
   { name: 'pause', query: battle, ready: inBattle, script: `a.pause()`, ready2: `a.menus.current === 'pause'`, after: 700 },
   { name: 'results', query: battle, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, after: 1200 },
+  // The full offer to get the app, once after the first finished battle (over the results).
+  { name: 'results-offer', query: battle, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, script3: `a.settings.installSheet = false; a.install.afterBattle(() => true)`, ready3: `!!document.querySelector('.isheetback.show')`, after: 900, only: 'tab' },
   { name: 'lobby', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, after: 900 },
   // Getting the app (ui/install.ts): the sheet in a tab, the first launch's welcome installed.
   { name: 'install', query: '', ready: `a.menus.current === 'title'`, script: `a.install.open()`, ready2: `!!document.querySelector('.isheetback.show')`, after: 700, only: 'tab' },
@@ -183,6 +190,11 @@ const STEPS: Step[] = [
   // messages, the connection) and its results (rematch, quick messages).
   { name: 'room2', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, ready3: `!!a.mp.room?.seats[1]?.ready`, after: 1000 },
   { name: 'online', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, after: 1500 },
+  // In the online battle: the quick messages open, one from the friend showing; the online pause.
+  { name: 'online-chat', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, guestSays: 'gl', script4: `document.querySelector('.emotes').classList.remove('hidden')`, ready4: `!!document.querySelector('.ebubble.theirs.show')`, after: 900 },
+  // (Co-op: the ally's call shows on our own side.)
+  { name: 'coop-chat', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.setCoop('novice'); a.mp.ready(true)`, ready3: inBattle, guestSays: 'thx', script4: `document.querySelector('.emotes').classList.remove('hidden')`, ready4: `!!document.querySelector('.ebubble.mine.show')`, after: 900 },
+  { name: 'online-pause', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, script4: `a.pause()`, ready4: `a.menus.current === 'pause'`, after: 900 },
   { name: 'online-over', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, guestLeaves: `a.menus.current === 'over'`, after: 1200 },
 ];
 
@@ -266,6 +278,8 @@ function inspect(safe: Insets): Problem[] {
       const a = touchable[i];
       const b = touchable[j];
       if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+      // (A pop-up menu the player opened — the quick messages — lies over the HUD on purpose.)
+      if (a.el.closest('[role="menu"]') || b.el.closest('[role="menu"]')) continue;
       const o = cut(a.b, b.b);
       if (o.r - o.l > 4 && o.b - o.t > 4) out.push({ kind: 'overlap', what: `${name(a.el)} and ${name(b.el)} overlap by ${Math.round(o.r - o.l)}×${Math.round(o.b - o.t)}` });
     }
@@ -488,7 +502,10 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
     let guest: MpClient | null = null;
     try {
       await page.goto(`${base}/?${q}`);
-      const wait = (expr: string) => page.waitForFunction(`(() => { const a = window.__mythwar; return !!a && (${expr}); })()`, undefined, { timeout: 45000 });
+      const wait = (expr: string) =>
+        page.waitForFunction(`(() => { const a = window.__mythwar; return !!a && (${expr}); })()`, undefined, { timeout: 45000 }).catch(() => {
+          throw new Error(`waited 45 s for ${expr.slice(0, 70)}`);
+        });
       await wait(s.ready);
       if (s.script) await page.evaluate(`(() => { const a = window.__mythwar; ${s.script}; })()`);
       if (s.ready2) await wait(s.ready2);
@@ -497,12 +514,15 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
         guest = friend(base, code);
         // (Seated and ready first: a newcomer takes both seats out of Ready.)
         await wait(`!!a.mp.room?.seats[1]?.ready`);
-        if (s.script3) await page.evaluate(`(() => { const a = window.__mythwar; ${s.script3}; })()`);
-        if (s.ready3) await wait(s.ready3);
-        if (s.guestLeaves) {
-          guest.leave();
-          await wait(s.guestLeaves);
-        }
+      }
+      if (s.script3) await page.evaluate(`(() => { const a = window.__mythwar; ${s.script3}; })()`);
+      if (s.ready3) await wait(s.ready3);
+      if (s.guestSays) guest?.emote(s.guestSays);
+      if (s.script4) await page.evaluate(`(() => { const a = window.__mythwar; ${s.script4}; })()`);
+      if (s.ready4) await wait(s.ready4);
+      if (s.guestLeaves && guest) {
+        guest.leave();
+        await wait(s.guestLeaves);
       }
       if (s.turn) {
         await page.waitForTimeout(400);

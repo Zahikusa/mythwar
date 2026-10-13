@@ -277,6 +277,9 @@ Already in the code before Phase 3, and kept:
    mobilecheck `online-chat` (a message from the friend showing), `coop-chat`, `online-pause`;
    pop-up menus the player opened don't count as overlapping the HUD; a timed-out wait now says
    what it waited for.)
+29. [x] (run #13) mobilecheck never showed the after-battle offer to get the app (the full sheet
+   over the results, the one place the sheet appears uninvited). (Done: `results-offer`, in a
+   tab; fits on the SE, Galaxy, Pro Max and iPad mini.)
 28. [ ] iPhone sound: whether the game's music stops the player's own music/podcast and whether
    the ring/silent switch mutes it depends on WebKit's audio session (`navigator.audioSession
    .type`, Safari 17+; field reports disagree on the default). Native games mix with other
