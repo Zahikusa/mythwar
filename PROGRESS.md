@@ -367,6 +367,10 @@ it prints, inviting, stopping — 2026-10-13.)
    (Seen in mpsmoke: the gamepad walk had to run before B's sleep.) (Done: `updateRematch(…, same)` — the seat holds
    the player the battle was fought with (by name) → the chips come back; a stranger still gets
    none; mpsmoke checks A's chips return once B is back.)
+214. [ ] mpsmoke grew from 53 s (#138) to ~80 s with run #9's checks — two waits for a seat to expire
+   (`seatGrace: 6`), the tab-closed rejoin, the co-op away/both-away steps. Time each section
+   (print it), then trim: seatGrace 3 where the quick reconnect checks still hold, run the
+   co-op section's two away waits together.
 
 
 
@@ -376,7 +380,7 @@ it prints, inviting, stopping — 2026-10-13.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #9 in short (for the morning)
-- Verification mode, backlog items 138–212. Open from run #8: #138 and #142 done; #128 (DOM tests)
+- Verification mode, backlog items 138–214. Open from run #8: #138 and #142 done; #128 (DOM tests)
   and #129 (rival ids) decided against, with reasons; #137 (split app.ts) started with a pure,
   tested `src/ui/roomnews.ts`.
 - A look at the online flows through screenshots (mpsmoke `--shots`, landscape and upright phone,
@@ -413,7 +417,7 @@ built, how to see each part working, and the decisions that need you.
 - Late in the run: the WebKit (iPhone engine) pass in `mpengines` checks the http copy fallback and
   Back (#201); Back is guarded on touch devices only (#209); PROGRESS.md split — history in
   docs/PROGRESS-archive.md (#202); README's two multiplayer pictures re-shot (#187, #206); a flaky
-  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #197, #204 (and #211 done at the very end).
+  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #197, #204, #214 (#211 and #213 done at the very end).
 - **Open question added:** the downloadable release (v1.0.0) is ~280 commits old.
 - Tests 256 → 285; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
   frame); `mpengines` (WebKit vs Chrome/Firefox) in sync.
