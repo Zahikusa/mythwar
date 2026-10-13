@@ -1249,6 +1249,24 @@ html.cbfoe .side.right .hpfill {
   animation: readyglow 1.2s ease-in-out infinite alternate;
 }
 
+/* A lane crowded enough to be worth the power (Lens #72): a stronger, quicker glow. */
+.act.power.ready.prime {
+  animation: primeglow 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes primeglow {
+  from {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), 0 0 12px rgba(255, 214, 110, 0.55);
+  }
+  to {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(255, 231, 166, 0.9), 0 0 34px rgba(255, 214, 110, 0.95);
+  }
+}
+
+.lanetab.prime {
+  box-shadow: 0 0 0 3px var(--gold-l), 0 0 18px rgba(255, 214, 110, 0.8);
+}
+
 .act.power.targeting {
   border-color: #fff;
   box-shadow: 0 0 0 3px var(--gold), 0 0 26px rgba(255, 214, 110, 0.8);

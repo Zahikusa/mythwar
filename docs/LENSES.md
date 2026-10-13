@@ -1381,3 +1381,17 @@ freedoms that matter?*
   the results); feats for reaching ages still need an actual ascension.
 - Checked: unit test (both sides in the age, citadel, gold, kept in a save; default 0), the foe
   screen with the chip lit; full verify.
+
+## #72 The Lens of Indirect Control
+*What do I want players to do — and how can I make them want to do it, without telling them?
+(Constraints, goals, interface, visual design, characters, music.)*
+- What we want and players often don't do: spend the god power where it's worth the most. The
+  results tip nags those who never cast (#18); the AIs aim well (powerSkill); a power refused on
+  an empty lane (#41) stops the worst waste. Between "never" and "well" lies the common case:
+  casting on whatever lane is selected, the moment it recharges, at two stragglers.
+- Change (no words): while the power is ready, **the most crowded lane calls for it** — when a
+  lane holds four or more foes, the power button's glow quickens and brightens and that lane's
+  ▶ marker gains a gold ring. The eye goes from the button to the lane; the player still decides.
+  When the crowd thins, the hint fades by itself.
+- Checked: screenshot (five redcaps in the bottom lane: marker ringed, button glowing); full
+  verify.

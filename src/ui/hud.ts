@@ -1141,8 +1141,24 @@ export class Hud {
     // Lane tabs
     const counts = [0, 0, 0];
     for (const q of me.queue) counts[q.lane]++;
+    // Indirect control (Lens #72): with the god power ready, the most crowded lane (4+ foes)
+    // lights up — the power button glows brighter and that lane's marker turns gold. No words.
+    let prime = -1;
+    if (me.powerCooldown <= 0 && !me.trials.includes('godless') && !g.over) {
+      let best = 3;
+      for (let i = 0; i < LANE_COUNT; i++) {
+        let n = 0;
+        for (const u of w.lanes[i]) if (u.alive && u.team !== g.playerTeam) n++;
+        if (n > best) {
+          best = n;
+          prime = i;
+        }
+      }
+    }
+    toggle(E.power, 'prime', prime >= 0);
     for (let i = 0; i < LANE_COUNT; i++) {
       const tab = this.laneTabs[i];
+      toggle(tab, 'prime', i === prime);
       // Danger: enemies close to our gate in this lane.
       let danger = false;
       for (const u of w.lanes[i]) {
