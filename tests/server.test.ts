@@ -508,6 +508,35 @@ describe('battle', () => {
     expect(a.last('over')).toMatchObject({ winner: 0, reason: 'timeout' });
   });
 
+  it('going away and back over and over cannot hold the battle forever (backlog 46)', () => {
+    const { run, a, b } = battle();
+    run(2000);
+    // 19 s away, a moment back, away again: the claim clock does not start over.
+    b.send({ type: 'away', away: true });
+    run(19_000);
+    b.send({ type: 'away', away: false });
+    run(100);
+    b.send({ type: 'away', away: true });
+    run(1500);
+    a.send({ type: 'claim' });
+    expect(a.last('over')).toMatchObject({ winner: 0, reason: 'timeout' });
+  });
+
+  it('a short absence long after another starts its clocks afresh', () => {
+    const { run, a, b } = battle();
+    run(2000);
+    b.send({ type: 'away', away: true });
+    run(19_000);
+    b.send({ type: 'away', away: false });
+    // Back for longer than the absence: it is forgotten.
+    run(25_000);
+    b.send({ type: 'away', away: true });
+    run(5000);
+    a.send({ type: 'claim' });
+    expect(a.last('over')).toBeUndefined();
+    expect(a.last('paused')!.state).toMatchObject({ reason: 'away', seat: 1, claimIn: 20 });
+  });
+
   it('relays quick messages to the opponent, rate-limited, known phrases only', () => {
     const { run, a, b } = battle();
     a.send({ type: 'emote', id: 'gl' });

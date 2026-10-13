@@ -85,7 +85,7 @@ picks another port.
 
 | Situation | Behaviour |
 |---|---|
-| A player switches apps / locks the phone | The battle pauses for both ("… is away"). When they come back it resumes after a 3-2-1 countdown. After **90 s** away they forfeit — or after 20 s the other player may **claim the victory** instead of waiting. |
+| A player switches apps / locks the phone | The battle pauses for both ("… is away"). When they come back it resumes after a 3-2-1 countdown. After **90 s** away they forfeit — or after 20 s the other player may **claim the victory** instead of waiting. Absences close together add up (the clock picks up where it stopped, less the time back), so going away and back over and over can't hold a battle forever. |
 | Wi-Fi drops for a moment | The client reconnects on its own (backoff 0.25–3 s; at once when the device reports its network back; a dial that hangs is given up after 5–15 s and tried again), receives a snapshot of the battle and carries on. The other player sees the same away pause meanwhile. |
 | A player reloads the page | The tab remembers its session: it rejoins the room and the battle where it was. |
 | The battle ended while a phone was offline | On reconnect it is shown how the battle ended (final state and result). |

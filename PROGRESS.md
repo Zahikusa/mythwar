@@ -180,10 +180,12 @@ the improvement backlog below (verified, committed) and add what the review find
    closed in standalone mode (no timeout, not counted per address) — 50 such sockets stayed open.
    Destroy them when not running under Vite (Vite's HMR socket needs them). (Done: refused unless
    `sharedUpgrades` (vite.config sets it); tested.)
-46. [ ] `server/match.ts` ~114 / `server/lobby.ts` ~443: `away` toggled (19 s away, 0.1 s back,
+46. [x] `server/match.ts` ~114 / `server/lobby.ts` ~443: `away` toggled (19 s away, 0.1 s back,
    away again) restarts `awaySince` every time — the opponent can never claim (20 s) and the 90 s
    forfeit never comes; also bypasses the 3-pause cap. Count away time per battle (or don't
-   reset when back for only a moment); rate-limit toggles.
+   reset when back for only a moment); rate-limit toggles. (Done: an absence soon after another
+   continues its clocks, less the time back — to stall, a player must be back as long as away,
+   and the opponent can claim at any point the clock reaches 20 s; tests; MULTIPLAYER.md.)
 47. [ ] `server/lobby.ts` ~679–702: past 4096 networks `hallKeys.clear()` empties the whole cache —
    every connected network's Hall shows empty until a reconnect, and every battle end runs a
    `scryptSync` (~20 ms) on the 4-ms loop. Evict oldest-first; re-warm keys of live sessions.

@@ -75,6 +75,8 @@ export class Match {
   readonly pausesLeft: [number, number] = [PAUSES_PER_BATTLE, PAUSES_PER_BATTLE];
   /** Wall time each seat went away (null = present). */
   private awaySince: [number | null, number | null] = [null, null];
+  /** Each seat's last absence: how long it lasted and when it ended (ms). */
+  private lastAbsence: [{ length: number; endedAt: number } | null, { length: number; endedAt: number } | null] = [null, null];
 
   constructor(opts: MatchOptions, now: number, host: MatchHost) {
     this.seed = opts.seed;
@@ -114,7 +116,16 @@ export class Match {
   setAway(seat: Team, away: boolean, now: number): void {
     if (this.state === 'over') return;
     if (away === this.isAway(seat)) return;
-    this.awaySince[seat] = away ? now : null;
+    if (away) {
+      // Away again soon after coming back: the clocks (claim, forfeit) pick up where they stopped,
+      // less the time back — going away and back over and over can't hold the battle forever.
+      const last = this.lastAbsence[seat];
+      this.awaySince[seat] = now - (last ? Math.max(0, last.length - (now - last.endedAt)) : 0);
+    } else {
+      const since = this.awaySince[seat]!;
+      this.lastAbsence[seat] = Number.isFinite(since) ? { length: now - since, endedAt: now } : null;
+      this.awaySince[seat] = null;
+    }
     this.refreshPause(now);
   }
 
