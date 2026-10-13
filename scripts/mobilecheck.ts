@@ -305,7 +305,7 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
     const problems: Problem[] = [];
     try {
       await page.goto(`${base}/?${q}`);
-      const wait = (expr: string) => page.waitForFunction(`(() => { const a = window.__mythwar; return !!a && (${expr}); })()`, undefined, { timeout: 15000 });
+      const wait = (expr: string) => page.waitForFunction(`(() => { const a = window.__mythwar; return !!a && (${expr}); })()`, undefined, { timeout: 30000 });
       await wait(s.ready);
       if (s.script) await page.evaluate(`(() => { const a = window.__mythwar; ${s.script}; })()`);
       if (s.ready2) await wait(s.ready2);

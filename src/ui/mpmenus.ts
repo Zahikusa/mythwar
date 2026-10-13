@@ -70,6 +70,8 @@ export class MpScreens {
   private nameInput!: HTMLInputElement;
   private codeInput!: HTMLInputElement;
   private status!: HTMLElement;
+  /** Reload, beside a status that asks for one (an installed app has no browser button for it). */
+  private reloadBtn!: HTMLButtonElement;
   private help!: HTMLElement;
   private list!: HTMLElement;
   private hostBtn!: HTMLButtonElement;
@@ -207,7 +209,8 @@ export class MpScreens {
       e.stopPropagation();
       if (e.key === 'Enter') this.nameInput.blur();
     });
-    this.status = h('div', { class: 'mpstatus', role: 'status', 'aria-live': 'polite' }, h('i'), h('span'));
+    this.reloadBtn = this.button('Reload', 'ghost small hidden', () => location.reload());
+    this.status = h('div', { class: 'mpstatus', role: 'status', 'aria-live': 'polite' }, h('i'), h('span'), this.reloadBtn);
     this.help = h('div', {
       class: 'mphelp hidden',
       html:
@@ -428,8 +431,9 @@ export class MpScreens {
     const stuck = !online && now - this.offlineSince > HELP_AFTER;
     const old = c.versionMismatch || c.replaced;
     this.status.className = `mpstatus ${online ? 'ok' : stuck || old ? 'bad' : 'wait'}`;
+    toggle(this.reloadBtn, 'hidden', !old);
     setText(
-      this.status.lastElementChild!,
+      this.status.querySelector('span')!,
       c.replaced
         ? 'You’re playing in another tab or window now — reload here to play here'
         : old

@@ -2,12 +2,18 @@
   "name": "Mythwar: Ages of Legend",
   "short_name": "Mythwar",
   "description": "Three lanes. Five mythic ages. One citadel left standing. Battle the gods, or a friend on the same Wi-Fi.",
+  "id": "./",
   "start_url": "./",
   "scope": "./",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["games"],
   "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
   "orientation": "landscape",
   "background_color": "#0b0716",
   "theme_color": "#140f24",
+  "related_applications": [{ "platform": "webapp", "url": "https://zahikusa.github.io/mythwar/manifest.webmanifest" }],
   "icons": [
     {
       "src": "icon-192.png",

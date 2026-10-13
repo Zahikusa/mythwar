@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import type { Plugin } from 'vite';
 import { attachMultiplayer } from './server/net.ts';
+import { splashLinks } from './scripts/splashsizes.ts';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8')) as { version: string };
 
@@ -23,9 +24,18 @@ function multiplayer(): Plugin {
   };
 }
 
+/** The installed app's launch images on iPhone and iPad (scripts/splash.ts draws them). */
+function launchImages(): Plugin {
+  return {
+    name: 'mythwar-launch-images',
+    transformIndexHtml: () =>
+      splashLinks().map((s) => ({ tag: 'link', attrs: { rel: 'apple-touch-startup-image', media: s.media, href: `./${s.file}` }, injectTo: 'head' as const })),
+  };
+}
+
 export default defineConfig({
   base: './',
-  plugins: [multiplayer()],
+  plugins: [multiplayer(), launchImages()],
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },

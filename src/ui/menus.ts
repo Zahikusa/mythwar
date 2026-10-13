@@ -372,7 +372,18 @@ export class Menus {
       this.cb.sound('click');
       this.show('feats');
     });
-    return h('div', { class: 'screen title' }, logo, creatures, this.laurels, buttons, foot);
+    return h('div', { class: 'screen title' }, logo, creatures, this.laurels, buttons, foot, this.titleNotes);
+  }
+
+  /** Small offers in the title screen's top corner (a new version, the installed app) — never in a battle. */
+  readonly titleNotes = h('div', { class: 'tnotes' });
+
+  /** A newer build is on the server (see update.ts): restarting the game takes it. */
+  updateReady(): void {
+    if (this.titleNotes.querySelector('.tupdate')) return;
+    const b = h('button', { class: 'tnote tupdate' }, h('i', { html: ICONS.play }), h('span', { text: 'New version ready — restart' })) as HTMLButtonElement;
+    onTap(b, () => location.reload());
+    this.titleNotes.prepend(b);
   }
 
   // -------------------------------------------------------------------------

@@ -294,6 +294,12 @@ async function serviceWorkerFlow(page: Page): Promise<void> {
   await page.goto(`${base}/?hang`, { waitUntil: 'domcontentloaded', timeout: 20_000 }).catch(() => {});
   const shown = await page.evaluate(() => !!document.querySelector('.screen.title')).catch(() => false);
   check('a page load the server never answers shows the saved page after a few seconds', shown && Date.now() - t0 < 9000, `${Date.now() - t0} ms, shown ${shown}`);
+  // No network at all (an installed app on a plane): it still starts, from the saved copy.
+  await page.setOfflineMode(true);
+  await page.goto(`${base}/`, { waitUntil: 'load', timeout: 20_000 }).catch(() => {});
+  const offline = await page.waitForFunction(() => (window as any).__mythwar?.menus?.current === 'title', { timeout: 8000 }).then(() => true, () => false);
+  await page.setOfflineMode(false);
+  check('offline, the game still starts (title screen)', offline);
   check('service worker drops older copies of a lazily loaded chunk', !lazy.some((k) => k.includes('qrcode-OLDBUILD')) && lazy.some((k) => k.endsWith(qr)) && lazy.some((k) => k.includes('lazy-ABCDEFGH')), JSON.stringify(lazy));
 }
 
