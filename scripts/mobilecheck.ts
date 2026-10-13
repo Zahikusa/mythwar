@@ -262,7 +262,13 @@ async function gestures(page: Page): Promise<Problem[]> {
     if (!b || b.scrollHeight <= b.clientHeight + 40) return null;
     b.scrollTop = 0;
     const r = b.getBoundingClientRect();
-    return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2, rotated: !!document.querySelector('#stage.rotated') };
+    // (Not on a text field: a sideways drag there moves the caret — the player swipes elsewhere.)
+    for (const [fx, fy] of [[0.5, 0.5], [0.3, 0.5], [0.7, 0.5], [0.5, 0.3], [0.5, 0.7], [0.2, 0.2], [0.8, 0.8]]) {
+      const x = r.left + r.width * fx;
+      const y = r.top + r.height * fy;
+      if (!document.elementFromPoint(x, y)?.closest('input, textarea')) return { x, y, rotated: !!document.querySelector('#stage.rotated') };
+    }
+    return null;
   });
   if (body) {
     // (Finger towards the stage's top: up the screen, or rightwards on a turned stage.)

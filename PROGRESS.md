@@ -31,7 +31,7 @@ Already in the code before Phase 3, and kept:
   screen and asserts: the document doesn't scroll (scrollHeight == clientHeight, scrollY stays 0
   after wheel/touch drags), no interactive element outside the viewport/safe area, targets ≥ 44
   px, overflowing panels scroll inside themselves. Screenshots to `screenshots/mobile/`.
-- [ ] **A** No scrolling page: stage sized to `visualViewport` (bars, keyboard, rotation),
+- [x] **A** No scrolling page: stage sized to `visualViewport` (bars, keyboard, rotation),
   a document scroll lock (touchmove outside a scrollable panel is cancelled; scroll reset to 0),
   panels scroll inside themselves with a fixed header/close and `overscroll-behavior: contain`,
   no callouts/selection/zoom.
@@ -42,7 +42,7 @@ Already in the code before Phase 3, and kept:
   strings), the install sheet (per browser, with a picture and an arrow), the title hint, the
   sheet after the first finished battle, a permanent "Install app" in the menu and Settings,
   in-app browser escape, desktop QR, the LAN origin's one-liner, the installed app's welcome.
-- [ ] **D** Navigation and gestures: one history model for Back on every screen/sheet, swipe
+- [x] **D** Navigation and gestures: one history model for Back on every screen/sheet, swipe
   down to dismiss sheets, ≥ 44-pt targets, no hover dependence, smooth screen changes, a
   haptics switch in Settings.
 - [ ] **E** Small-screen polish (375×667 up to tablets), from the screenshots.
@@ -94,6 +94,20 @@ Already in the code before Phase 3, and kept:
   sheet offers "Copy my progress" and the welcome says where to paste it. Safe-area insets
   reach page-level UI as `--safe-t/r/b/l` (set in `App.resize`, honouring `?safe=`).
   MULTIPLAYER.md explains the LAN-origin trade-off.
+
+- (run #12) D: Back — an open "get the app" sheet, then a battle sheet, closes first; the
+  results go back the way their ghost button does (main menu / riddles / the room); the bare
+  title asks "Press Back again to leave Mythwar." and only the next untouched Back leaves (a
+  touch re-arms). Battle sheets close with a swipe down on their title row; the install sheet
+  with a swipe down anywhere. Touch targets ≥ 44 px under `(pointer: coarse)` — buttons grow,
+  small marks (page dots, lane tabs, speed/pause, the feats chip) get positioned `::before`
+  hit areas (mobilecheck counts those). Speed/pause: the HP bar gives 14 px per side. A
+  Vibration switch of its own (`haptics`, migrated from the old shake+vibration switch; shown
+  where `navigator.vibrate` exists). Nothing depends on hover (tooltips also on long press /
+  focus). smoke's `phone-back` flow covers the Back model.
+- (run #12) Full mobilecheck: every screen on 5 phones × tab/app × both orientations passes
+  (document still, controls inside the safe area, targets ≥ 44, panels scroll themselves,
+  real swipes and pinches on the Androids).
 
 ## Decisions
 
