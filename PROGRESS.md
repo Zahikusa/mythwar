@@ -558,9 +558,10 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    could send, with the seats, an opaque per-pair rival id (a hash of both devices and the
    server's salt — never the device id itself), and the client key its tallies by it (falling back
    to the name for old lines). Protocol change (v16).
-130. [ ] `mobile-mp-room` (844×390): your own seat's name is cut with an ellipsis ("Jade Valkyrie
+130. [x] `mobile-mp-room` (844×390): your own seat's name is cut with an ellipsis ("Jade Valkyrie
    (you)…" — the " ✎" edit mark pushes it over) although the seat box has room to spare; let the
-   name wrap or drop "(you)" on phones (the seat is outlined as yours anyway).
+   name wrap or drop "(you)" on phones (the seat is outlined as yours anyway). (Done: on phones the
+   seat name wraps; checked with `--settings '{"playerName":"Jade Valkyrie"}'`.)
 
 
 
