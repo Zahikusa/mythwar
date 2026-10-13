@@ -116,6 +116,26 @@ Phones keep their screen on during a battle where the browser allows it (Screen 
 needs `https` or `localhost`; on a plain `http://192.168…` address the system's auto-lock
 applies — the away pause covers that).
 
+### The installed app and the LAN address
+
+The game installs as an app (Home Screen, full screen, offline) from its **public address**,
+https://zahikusa.github.io/mythwar/ — the game itself shows each player how (see
+`src/ui/install.ts`). The LAN server's page (`http://192.168…:8787`) is deliberately *not*
+pushed as an app:
+
+- It is another origin and not a secure context: no service worker (no offline start), and
+  Android offers no install dialog there.
+- Its address can change (a new IP from the router, another PC hosting): a Home Screen icon
+  pointing at it would one day open nothing.
+- The installed app can't reach the LAN server either: an https page may not open a plain
+  `ws://192.168…` connection (mixed content). So battles against friends happen in the browser
+  tab that the room's QR code opens — which is built to feel like an app too (nothing scrolls,
+  the stage fits the visible area, Back steps through the screens).
+
+On the LAN page the game therefore offers only **Play full screen** (Android; iPhone Safari has
+no full screen for pages) and says in one line that the installable app comes from the public
+address. With https on the LAN (below) the LAN page could be installed too, with the IP caveat.
+
 ### Optional: https on the LAN
 
 With a certificate the server speaks https/wss, which also lets phones keep the screen awake

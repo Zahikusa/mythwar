@@ -35,10 +35,10 @@ Already in the code before Phase 3, and kept:
   a document scroll lock (touchmove outside a scrollable panel is cancelled; scroll reset to 0),
   panels scroll inside themselves with a fixed header/close and `overscroll-behavior: contain`,
   no callouts/selection/zoom.
-- [ ] **B** Installed = native: manifest (`display`, orientation, ids), iOS startup background
+- [x] **B** Installed = native: manifest (`display`, orientation, ids), iOS startup background
   (no white flash), status bar, safe areas on both sides in landscape, update flow that never
   reloads during a battle, offline start.
-- [ ] **C** Install guidance: `src/platform.ts` (situation detection, unit-tested with real UA
+- [x] **C** Install guidance: `src/platform.ts` (situation detection, unit-tested with real UA
   strings), the install sheet (per browser, with a picture and an arrow), the title hint, the
   sheet after the first finished battle, a permanent "Install app" in the menu and Settings,
   in-app browser escape, desktop QR, the LAN origin's one-liner, the installed app's welcome.
@@ -75,6 +75,26 @@ Already in the code before Phase 3, and kept:
     `#app` follows the visual viewport's offset while typing (`follow()`, also in `toStage`), and
     the focused field is scrolled into view after a resize.
 
+- (run #12) B: iPhone/iPad launch images (`scripts/splash.ts` draws 40 into public/splash/ from
+  `scripts/splashsizes.ts`; a Vite plugin writes the `apple-touch-startup-image` links), an
+  inline dark background + `color-scheme: dark` for the first frame, manifest `id`,
+  `display_override`, `related_applications`; `src/update.ts` notices a newer build when the game
+  returns to the foreground and offers "New version ready — restart" in the title's corner
+  (never reloads by itself); the lobby's reload messages get a Reload button (an installed app
+  has none); smoke starts the game offline.
+- (run #12) C: `src/platform.ts` (detect + advise, tests/platform.test.ts with real UAs incl.
+  Safari 26's frozen "18_6" OS token) and `src/ui/install.ts` (InstallGuide): title corner offer
+  (× = remembered, a small 44-px button stays, the full offer returns once after 4 days), an
+  upright bottom sheet drawn on the page (not the turned stage) with pictured steps for this
+  browser/iOS version and a bouncing arrow at the button's screen edge, the real install dialog
+  (`beforeinstallprompt`), "Play full screen" on Android and the LAN page, "Open in Chrome"
+  (`intent://`) / Copy link in app browsers, a QR code on computers, the sheet once after the
+  first finished AI battle, a Settings row, a first-launch welcome in the installed app, "You
+  have the app" via `getInstalledRelatedApps`. iPhone: the app keeps separate storage, so the
+  sheet offers "Copy my progress" and the welcome says where to paste it. Safe-area insets
+  reach page-level UI as `--safe-t/r/b/l` (set in `App.resize`, honouring `?safe=`).
+  MULTIPLAYER.md explains the LAN-origin trade-off.
+
 ## Decisions
 
 - **Portrait:** keep rotating the stage 90° on an upright phone (the game is a side-view
@@ -85,6 +105,16 @@ Already in the code before Phase 3, and kept:
   keep an explicit dark background); opaque full-screen `position: fixed` layers can be clipped
   at the floating bottom bar; "Add to Home Screen" opens as a web app by default ("Open as Web
   App" toggle, on); the route is ⋯ → Share → Add to Home Screen.
+
+- Battle sheets and menu screens keep head/buttons fixed with a scrolling body rather than
+  `position: sticky` (see Approaches that failed).
+- The install sheet and its arrow live on the page (`document.body`), upright, not in the
+  turned stage: they talk about the browser's buttons, which never turn.
+- The after-battle offer follows AI battles only (an online results screen has its own
+  rematch flow), once ever; the title offer comes back once after 4 days, then only the small
+  button remains (plus Settings).
+- Edge-to-edge drawing under the notch (installed, landscape) is left for E: the stage stays
+  inside the safe area, the notch strips show the page's dark background.
 
 ## Approaches that failed
 
