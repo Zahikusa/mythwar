@@ -4,7 +4,7 @@
  * restart — with a blocked name shown as "Player". (Everything else about the server is tested on
  * the Lobby class; this checks main.ts wires the flags through.)
  */
-import { execFileSync, spawn } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -12,9 +12,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PROTOCOL_VERSION } from '../src/net/protocol.ts';
 import type { ServerMsg } from '../src/net/protocol.ts';
-// (The rules fingerprint as plain Node computes it — like the server and the browser bundle.
-// Vitest's module transform presents the data module's exports differently to JSON.stringify.)
-const SIM = Number(execFileSync(process.execPath, ['-e', "import('./src/sim/fingerprint.ts').then((m) => console.log(m.simFingerprint()))"], { encoding: 'utf8' }).trim());
+// (The same rules fingerprint as the server process computes: since backlog 33 it no longer
+// depends on how the test runner lays out the data module's exports.)
+import { simFingerprint } from '../src/sim/fingerprint.ts';
 
 const dir = mkdtempSync(join(tmpdir(), 'mythwar-server-'));
 writeFileSync(join(dir, 'index.html'), '<!doctype html><title>test</title>');
@@ -50,7 +50,7 @@ function open(name: string): Promise<{ ws: WebSocket; inbox: ServerMsg[] }> {
     ws.onmessage = (e) => inbox.push(JSON.parse(String(e.data)));
     ws.onerror = reject;
     ws.onopen = () => {
-      ws.send(JSON.stringify({ type: 'hello', v: PROTOCOL_VERSION, sim: SIM, name }));
+      ws.send(JSON.stringify({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint(), name }));
       resolve({ ws, inbox });
     };
   });

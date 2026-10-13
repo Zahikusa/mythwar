@@ -30,7 +30,9 @@ export function simFingerprint(): number {
     w.drainEvents();
   }
   let h = hashWorld(w);
-  const text = JSON.stringify(DATA);
+  // (Keys in sorted order, as a native module namespace lists them: test runners and bundlers may
+  // present the namespace in declaration order, which would change the fingerprint.)
+  const text = JSON.stringify(Object.fromEntries(Object.keys(DATA).sort().map((k) => [k, (DATA as Record<string, unknown>)[k]])));
   for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
   cached = h >>> 0;
   return cached;

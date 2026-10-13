@@ -114,7 +114,11 @@ the improvement backlog below (verified, committed) and add what the review find
    Lobby class; nothing starts the real server process with them (a typo in main.ts would pass
    every test). A small end-to-end check: start, battle via two clients, restart, Hall is back.
    (Done: tests/server-process.test.ts — the real process with --data/--names over real sockets;
-   found on the way: Vitest computes a different rules fingerprint than Node, so it asks Node.)
+   found on the way: Vitest computed a different rules fingerprint than Node — item 33.)
+33. [x] `src/sim/fingerprint.ts` hashed `JSON.stringify` of the data module's namespace, whose key
+   order is the environment's business (Node and the browser bundle: sorted, as the spec says;
+   Vitest: declaration order). A bundler change could have split online play by fingerprint.
+   (Done: keys sorted explicitly — the value is unchanged for Node and the browser, Vitest agrees.)
 
 
 
