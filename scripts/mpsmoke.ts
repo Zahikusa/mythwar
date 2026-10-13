@@ -233,6 +233,16 @@ async function main(): Promise<void> {
     await a.keyboard.press('Enter');
     // (Backlog 131) Connected with nothing open: the list says so (not the offline "—").
     await waitFor(a, 'the empty list says None yet', () => (document.querySelector('.mplist')?.textContent ?? '').includes('None yet'), 4000);
+    // (Backlog 278) A code that can't be one is explained in words, and marked invalid.
+    await a.click('.mpcode', { count: 3 });
+    await a.keyboard.type('ZZZZ');
+    await press(a, '.screen.mp', 'Join');
+    const bad = await a.evaluate(() => ({ said: document.querySelector('.screen.mp .mpflash.show')?.textContent ?? '', invalid: document.querySelector('.mpcode')?.getAttribute('aria-invalid') }));
+    check('lobby: an impossible room code is explained and marked invalid', /room code is 4 letters and digits/.test(bad.said) && bad.invalid === 'true', JSON.stringify(bad));
+    await a.evaluate(() => {
+      (document.querySelector('.mpcode') as HTMLInputElement).value = '';
+      (window as any).__mythwar.menus.mp.unflash();
+    });
     await shot(a, '1-lobby-desktop');
     // A has taken the moon as sigil (Lens #85): B should see it on A's keep and by A's name.
     await a.evaluate(() => {

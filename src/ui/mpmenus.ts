@@ -136,14 +136,27 @@ export class MpScreens {
   }
 
   private showFlash(text: string, o: FlashOptions): void {
+    // Only the line on the screen showing gets it: both are alerts, and a message written while
+    // both are visible (a fade from the room to the lobby) would be read out twice. (Neither
+    // showing — an error on the title — both keep it for whichever opens.)
+    const here = this.flashes.filter((f) => f.closest('.screen')?.classList.contains('active'));
+    const to = here.length === 1 ? here : this.flashes;
     for (const f of this.flashes) {
-      setText(f, text);
-      f.classList.add('show');
+      const on = to.includes(f);
+      setText(f, on ? text : '');
+      f.classList.toggle('show', on);
       f.classList.toggle('calm', !!o.calm);
     }
     clearTimeout(this.flashTimer);
     // (Its time up, the line closes; news still waiting keeps its turn.)
-    this.flashTimer = window.setTimeout(() => this.flashes.forEach((f) => f.classList.remove('show')), o.ms ?? 4500);
+    this.flashTimer = window.setTimeout(() => this.closeFlash(), o.ms ?? 4500);
+  }
+
+  /** The line closes — and, once it has, its words leave the accessibility tree too. */
+  private closeFlash(): void {
+    this.flashes.forEach((f) => f.classList.remove('show'));
+    clearTimeout(this.flashTimer);
+    this.flashTimer = window.setTimeout(() => this.flashes.forEach((f) => f.classList.contains('show') || setText(f, '')), 300);
   }
 
   private nextNews(): void {
@@ -161,7 +174,7 @@ export class MpScreens {
     clearTimeout(this.newsTimer);
     this.newsTimer = 0;
     this.newsQueue = [];
-    this.flashes.forEach((f) => f.classList.remove('show'));
+    this.closeFlash();
   }
 
   /** Pre-fills the join code (from an invite link). */
@@ -214,6 +227,7 @@ export class MpScreens {
       const v = this.codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, CODE_LENGTH);
       if (v !== this.codeInput.value) this.codeInput.value = v;
       toggle(this.joinBtn, 'primary', !!cleanCode(v));
+      this.codeInput.removeAttribute('aria-invalid');
     });
     this.codeInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
@@ -274,6 +288,10 @@ export class MpScreens {
     const code = cleanCode(this.codeInput.value);
     if (!code) {
       this.cb.sound('error');
+      // (In words too — a shake and a sound say nothing to a screen reader, or to a player who
+      // typed an O for a 0.)
+      this.codeInput.setAttribute('aria-invalid', 'true');
+      this.flash(`A room code is ${CODE_LENGTH} letters and digits, as the host's screen shows it (no O, I, L, S, Z, 0, 1, 2 or 5).`);
       this.codeInput.focus();
       this.codeInput.classList.remove('shake');
       void this.codeInput.offsetWidth;
@@ -380,7 +398,8 @@ export class MpScreens {
       this.trialChips.push({ id, el: chip });
       handicap.appendChild(chip);
     }
-    this.roomNote = h('div', { class: 'mnote rnote' });
+    // (A status: "Bo is ready — press Ready to begin!" is read out as it changes.)
+    this.roomNote = h('div', { class: 'mnote rnote', role: 'status' });
     const leave = this.button('Leave room', 'ghost', () => this.cb.leaveRoom());
     const howto = this.button('How to play', 'ghost', () => this.cb.howto(), ICONS.info);
     return h(

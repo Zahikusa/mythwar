@@ -919,8 +919,29 @@
   .ncount.pop,
   .mpstatus i,
   .mnote.hot,
-  .mproom {
+  .mproom,
+  .nspin,
+  .vemoteline.pop,
+  .mpcode.shake {
     animation: none !important;
+  }
+
+  /* (The speech bubble's animation is also how it shows and goes: a fade, without the pop.) */
+  .ebubble.show {
+    animation-name: ebubblefade;
+  }
+}
+
+@keyframes ebubblefade {
+  0% {
+    opacity: 0;
+  }
+  8%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
 

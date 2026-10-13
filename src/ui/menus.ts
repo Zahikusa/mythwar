@@ -1069,7 +1069,7 @@ export class Menus {
 
   private onlineResultButtons(share: HTMLButtonElement): HTMLElement {
     this.rematchBtn = this.button('Rematch', 'primary', () => this.cb.rematch(), ICONS.swords);
-    this.rematchNote = h('div', { class: 'mnote rmatch' });
+    this.rematchNote = h('div', { class: 'mnote rmatch', role: 'status' });
     this.roomBtn = this.roomButton();
     // Say something after the battle (phase-1 backlog #25): a few chips, and what was said.
     this.emoteLine = h('div', { class: 'vemoteline', role: 'status' });

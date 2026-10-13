@@ -161,7 +161,9 @@ export class Hud {
     for (let i = 0; i < LANE_COUNT; i++) E.shrines.appendChild(h('i', { html: ICONS.shrine }));
     E.rag = h('div', { class: 'ragnarok' });
     // Online battles: who you're fighting and how good the connection is.
-    E.net = h('div', { class: 'netinfo hidden', role: 'status' }, h('i', { class: 'nsig', html: ICONS.wifi }), h('span', { class: 'nfoe' }), h('span', { class: 'nping' }));
+    // (Not a live region itself: the ping changes every second. Its quality, when that changes,
+    // is said by the hidden line — a <b>, which phones don't hide with the visible spans.)
+    E.net = h('div', { class: 'netinfo hidden' }, h('i', { class: 'nsig', html: ICONS.wifi }), h('span', { class: 'nfoe' }), h('span', { class: 'nping' }), h('b', { class: 'sronly nsay', role: 'status' }));
     E.speed = h('button', { class: 'sysbtn speed', title: 'Game speed (F)', 'aria-label': 'Game speed', html: ICONS.fast + '<span>1×</span>' });
     E.pause = h('button', { class: 'sysbtn', title: 'Pause (Esc)', html: ICONS.pause });
     // Online: quick messages to the opponent.
@@ -704,8 +706,11 @@ export class Hud {
     // Unsteady Wi-Fi shows up as a deeper jitter buffer (more delay) even when pings look fine.
     const q = !online ? 'off' : rtt > 250 || bufferMs > 250 ? 'bad' : rtt > 120 || bufferMs > 120 ? 'ok' : 'good';
     if (E.net.dataset.q !== q) {
+      const first = !E.net.dataset.q;
       E.net.dataset.q = q;
       E.net.title = online ? `Connection to the game server: ${q === 'good' ? 'good' : q === 'ok' ? 'fair — a little delay' : 'unsteady — orders arrive late'}` : 'Reconnecting…';
+      // (Said when it changes — a battle starting on a good link needs no word.)
+      if (!first) setText(E.net.querySelector('.nsay')!, E.net.title);
     }
   }
 
