@@ -1499,3 +1499,23 @@ dominant ↔ submissive? Are they spread out, or all in one corner?*
 - The circumplex is in DESIGN.md (AI generals), with the open corner noted: nobody is hostile
   and submissive (a sulking villain) — left open on purpose.
 - Checked: unit test (every general has lines for every moment); full verify.
+
+## #79 The Lens of the Character Web
+*How are my characters related to each other? Does each relationship show, and does it give the
+characters something to say?*
+- Mythwar's characters were five islands: four generals in a ladder and Mímir the mentor, each
+  talking only about the battle in front of them. Yet the myths they come from tie them
+  together tightly: in Greek myth **Hippolyta is the daughter of Ares**, whose gift her famous
+  girdle was; in Norse myth **Odin gave an eye to drink from Mímir's well** and kept Mímir as his
+  counsellor; Shakespeare's **Puck is Oberon's jester**. The game had the web and didn't use it.
+- Change: at a **first meeting** (until the general is beaten) the general's opening line tells
+  who they are to the others — Puck: "Oberon says I may play with you! He never lets me play.";
+  Hippolyta: "My father Ares gave me this girdle. You will not take it."; Odin: "Mímir counsels
+  you, I hear. My old friend has chosen a side."; Ares: "So you are the one my daughter speaks
+  of." / "Odin watches. Mímir whispers. I simply kill." The journey chapters name the ties too
+  (Odin's chapter: the eye he gave at Mímir's well, and Mímir now counselling the player against
+  him; Ares': "the god of war — Hippolyta's father"). The player's mentor turns out to be the
+  third general's old friend, which makes Mímir's help a choice he made.
+- The web is written down in DESIGN.md beside the circumplex (#78).
+- Checked: screenshots of Odin's opening chapter and his first-meeting line; unit test (every
+  general has `meet` lines); full verify.

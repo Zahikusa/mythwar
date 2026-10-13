@@ -2,9 +2,10 @@ import type { Difficulty } from '../ai/ai.ts';
 
 /**
  * When a general speaks: at their own deeds, and at the player's (`foe…`: the player ascends,
- * strikes them with a god power, takes a shrine back from them).
+ * strikes them with a god power, takes a shrine back from them). `meet` opens a battle against a
+ * general not beaten yet: who they are to the others (Lens #79, the character web).
  */
-export type TauntEvent = 'start' | 'ageUp' | 'power' | 'shrine' | 'foeAge' | 'foePower' | 'foeShrine' | 'losing' | 'winning' | 'won' | 'lost';
+export type TauntEvent = 'start' | 'meet' | 'ageUp' | 'power' | 'shrine' | 'foeAge' | 'foePower' | 'foeShrine' | 'losing' | 'winning' | 'won' | 'lost';
 
 export interface Persona {
   /** The general's name ("Puck"). */
@@ -32,6 +33,7 @@ export const PERSONAS: Record<Difficulty, Persona> = {
     title: 'Puck, the Wandering Spirit',
     lines: {
       start: ['Oh, a game! I love games.', 'Shall we play at war?'],
+      meet: ['Oberon says I may play with you! He never lets me play.', 'The fairy king is watching. Let’s give him a show!'],
       ageUp: ['Look, I can do it too!', 'Ooh, shiny new friends!'],
       power: ['Whee! Brambles for everyone!', 'Hee hee — surprise!'],
       shrine: ['Finders keepers!', 'Mine now, mine now!'],
@@ -50,6 +52,7 @@ export const PERSONAS: Record<Difficulty, Persona> = {
     title: 'Hippolyta, Queen of the Amazons',
     lines: {
       start: ['Draw your line, then. I will cross it.', 'Show me what your gods are worth.'],
+      meet: ['Puck says you play rough. Good.', 'My father Ares gave me this girdle. You will not take it.'],
       ageUp: ['My warband grows.', 'New blades for an old queen.'],
       power: ['Feel the favour of the gods!', 'Break, and run!'],
       shrine: ['This ground is mine.', 'Hold it, sisters!'],
@@ -68,6 +71,7 @@ export const PERSONAS: Record<Difficulty, Persona> = {
     title: 'Odin, the All-Father',
     lines: {
       start: ['I gave an eye for wisdom. What will you give?', 'My ravens have watched you.'],
+      meet: ['Mímir counsels you, I hear. My old friend has chosen a side.', 'I gave Mímir an eye for one drink from his well. What did he ask of you?'],
       ageUp: ['The ravens bring me new allies.', 'Another saga begins.'],
       power: ['Huginn saw this coming.', 'As the runes foretold.'],
       shrine: ['Every crossing is watched.', 'The ley lines answer me.'],
@@ -86,6 +90,7 @@ export const PERSONAS: Record<Difficulty, Persona> = {
     title: 'Ares, God of War',
     lines: {
       start: ['War. At last.', 'I have waited for you.'],
+      meet: ['So you are the one my daughter speaks of.', 'Odin watches. Mímir whispers. I simply kill.'],
       ageUp: ['More. Bring me more.', 'Rise, my legions!'],
       power: ['Burn!', 'Feel war itself!'],
       shrine: ['Bleed for it.', 'Take it back — if you can.'],
@@ -118,6 +123,6 @@ export function tauntLine(d: Difficulty, event: TauntEvent, n: number, name = ''
 export const JOURNEY: Record<Difficulty, { chapter: string; text: string; close: string }> = {
   novice: { chapter: 'I · The Call', text: 'A wandering spirit has claimed the old crossing, and the ley lines answer whoever holds it. Someone must go. You go.', close: 'The spirit flits away, laughing. The crossing is quiet — for now.' },
   adept: { chapter: 'II · The Threshold', text: 'Word of your victory has reached the Amazons. Their queen does not believe it. Cross into her lands and prove it.', close: 'The queen lowers her spear. Her sisters will speak your name.' },
-  master: { chapter: 'III · The Ordeal', text: 'The All-Father has watched every battle through his ravens’ eyes. He knows how you fight. Fight better.', close: 'The ravens fly home with news the All-Father did not foresee.' },
-  mythic: { chapter: 'IV · The Return', text: 'Only the god of war stands between you and the end of this war. Win, and the crossing is yours for good.', close: 'Ares falls silent. The war is over and the crossing is yours. The skalds have their song.' },
+  master: { chapter: 'III · The Ordeal', text: 'The All-Father once gave an eye to drink from Mímir’s well — and now Mímir counsels you against him. His ravens know how you fight. Fight better.', close: 'The ravens fly home with news the All-Father did not foresee.' },
+  mythic: { chapter: 'IV · The Return', text: 'Only the god of war — Hippolyta’s father — stands between you and the end of this war. Win, and the crossing is yours for good.', close: 'Ares falls silent. The war is over and the crossing is yours. The skalds have their song.' },
 };

@@ -452,8 +452,10 @@ export class App {
       // Facing a general not yet beaten: their chapter of the journey (Lens #68).
       this.hud.opening(PERSONAS[difficulty].title, this.settings.records[difficulty]?.wins ? undefined : JOURNEY[difficulty]);
       this.hud.setFoeName(PERSONAS[difficulty].name);
-      // The general speaks once the opening banner has had its moment.
-      window.setTimeout(() => this.taunt('start', true), 3200);
+      // The general speaks once the opening banner has had its moment — at a first meeting, of
+      // who they are to the others (Lens #79).
+      const meet = !this.settings.records[difficulty]?.wins;
+      window.setTimeout(() => this.taunt(meet ? 'meet' : 'start', true), 3200);
     }
   }
 

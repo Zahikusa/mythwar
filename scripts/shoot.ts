@@ -187,6 +187,9 @@ const SCENARIOS: Scenario[] = [
     script: `(() => { const g = window.__mythwar.game; g.world.players[0].gold = 1e4; for (const [u, l] of [['redcap', 0], ['redcap', 0], ['treant', 1], ['pixie', 2]]) g.command({ type: 'train', team: 0, unitId: u, lane: l }); })()`,
     after: 700,
   },
+  // Lens #79: a first meeting with Odin — the chapter that names Mímir, then his line about him.
+  { name: 'meet-odin', query: 'play=master&seed=4', w: 1600, h: 900, wait: 1200 },
+  { name: 'meet-odin-line', query: 'play=master&seed=4', w: 1600, h: 900, wait: 4200 },
   // Lens #77: creatures frozen mid-gesture after a kill (roar, hop, twirl, rear, loom; both sides).
   {
     name: 'temper-gestures',

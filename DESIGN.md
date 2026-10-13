@@ -157,6 +157,17 @@ their place on the interpersonal circumplex (Lens #78) shows:
 | **dominant** | Hippolyta (respects, then commands); Mímir the mentor | Ares (threatens); Odin (cold, aloof — between the two) |
 | **submissive** | Puck (admires, whimpers) | — (left open: no sulking villain yet) |
 
+The character web (Lens #79) — the ties come from the myths themselves and are told at first
+meetings (each general's `meet` line) and in the journey chapters:
+- **Puck** is the fairy king Oberon's jester ("Oberon says I may play with you!").
+- **Hippolyta** is the daughter of **Ares**, who gave her the girdle she wears; she has heard of
+  the player from Puck.
+- **Odin** once gave an eye for a drink from **Mímir**'s well — and Mímir, his old counsellor,
+  now advises the player against him ("My old friend has chosen a side").
+- **Ares** fights for his daughter's honour, and scorns Odin's watching and Mímir's whispering.
+- **Mímir** (the coach's tips) is the player's mentor; the player is the stranger who walks
+  through all of their stories.
+
 ## AI
 Same command API as the player. Four difficulties: Novice, Adept, Master, Mythic.
 Evaluates per-lane threat, picks counters, contests shrines, saves to ascend,

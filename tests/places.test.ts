@@ -33,7 +33,7 @@ describe('the generals address the player by name', () => {
 
   it('every general has words for every moment, the player’s deeds too (Lens #78)', async () => {
     const { PERSONAS } = await import('../src/ui/personas.ts');
-    const events = ['start', 'ageUp', 'power', 'shrine', 'foeAge', 'foePower', 'foeShrine', 'losing', 'winning', 'won', 'lost'] as const;
+    const events = ['start', 'meet', 'ageUp', 'power', 'shrine', 'foeAge', 'foePower', 'foeShrine', 'losing', 'winning', 'won', 'lost'] as const;
     for (const p of Object.values(PERSONAS)) for (const ev of events) expect(p.lines[ev].length, `${p.name} ${ev}`).toBeGreaterThan(0);
   });
 });
