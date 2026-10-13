@@ -150,7 +150,7 @@ complete; its log follows below the lens plan.
 - [x] #67 Simplicity and Transcendence — your god power is a god's moment: time slows to a third and the field darkens around the struck lane
 - [x] #68 The Hero's Journey — the four generals are chapters (Call, Threshold, Ordeal, Return): on the foe cards and told at the first battles
 - [x] #69 The Weirdest Thing — riddles offered Ascend/Turrets/Blessings and a frozen XP bar: hidden there (keys too)
-- [ ] #70 Story — story framing
+- [x] #70 Story — each journey chapter closes with an ending line on the first win over its general (the last ends the war)
 - [ ] #71 Freedom — custom battle options
 - [ ] #72 Indirect Control — guide via visuals
 - [ ] #73 Collusion — a guide character

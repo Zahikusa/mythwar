@@ -1346,3 +1346,21 @@ ordeal, a return? Does the game tell it?*
   the riddle *cards* on the menu also use — so their dark card background painted over the whole
   battlefield. Renamed (`inriddle`); a reminder that CSS class names are global.
 - Checked: riddle screenshots before/after; full verify.
+
+## #70 The Lens of Story
+*Does the game need a story — and if so, does it have a beginning, a middle and an end? Does
+the story support the play, and the play the story?*
+- Mythwar's story is deliberately thin (#45: leave room for imagination) and lives in its
+  framing: age lore (#7), generals with voices (#44), named battlefields (#45), the chronicle of
+  each battle (#65), and since #68 a journey of four chapters that *open* when you first face
+  each general. But a story needs endings: a chapter never closed. Beating Ares — the end of the
+  war — produced the same verdict line as beating him the tenth time ("The enemy citadel has
+  fallen at …").
+- Change: **each chapter closes** with the first victory over its general: the results' verdict
+  line becomes the chapter's ending — "I · The Call — The spirit flits away, laughing. The
+  crossing is quiet — for now." … "II · The Threshold — The queen lowers her spear. Her sisters
+  will speak your name." … "III · The Ordeal — The ravens fly home with news the All-Father
+  did not foresee." … and the last: "IV · The Return — Ares falls silent. The war is over and
+  the crossing is yours. The skalds have their song." Later wins return to the plain verdict.
+  The ladder of difficulty is now a story with an end.
+- Checked: results screenshots (desktop, phone) of a first win; full verify.

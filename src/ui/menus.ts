@@ -91,6 +91,8 @@ export class Menus {
   private pauseGoals: HTMLElement | null = null;
   /** Feats earned in the battle whose results are shown next. */
   featsEarned: Feat[] = [];
+  /** A journey chapter closed by this battle (its first win over that general), else null. */
+  epilogue: { chapter: string; close: string } | null = null;
   /** The battle's chronicle (src/ui/chronicle.ts) for the results shown next. */
   chronicle: string[] = [];
   /** A new best star rating against this foe (0 = not a new best). */
@@ -848,7 +850,7 @@ export class Menus {
       h(
         'div',
         { class: 'vhead' },
-        h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: verdictLine(won, online, place) })),
+        h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Victory' : 'Defeat' }), h('div', { class: 'vs', text: !online && this.epilogue ? `${this.epilogue.chapter} — ${this.epilogue.close}` : verdictLine(won, online, place) })),
         h('div', { class: 'vportrait' }, portrait(champion.id, 96, 0, 1.3), best > 0 ? h('div', { class: 'vcap', text: `Your champion: ${champion.name} ×${best}` }) : null),
       ),
       h(

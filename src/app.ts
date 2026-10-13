@@ -769,6 +769,8 @@ export class App {
     const stars = battleStars(won, P.baseHp / P.baseMaxHp, g.world.time, this.difficulty, quick).stars;
     // A better rating than ever against this foe is celebrated on the results.
     this.menus.newBestStars = stars > (this.settings.records[this.difficulty]?.stars ?? 0) ? stars : 0;
+    // The first victory over a general closes their chapter of the journey (Lens #70).
+    this.menus.epilogue = won && !this.settings.records[this.difficulty]?.wins ? JOURNEY[this.difficulty] : null;
     recordResult(this.settings, this.difficulty, won, g.world.time, stars, quick);
     if (starTotal(this.settings.records) >= MAX_STARS) this.feats?.award(PINNACLE);
     clearBattle();
