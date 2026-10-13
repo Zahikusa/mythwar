@@ -374,6 +374,9 @@ it prints, inviting, stopping — 2026-10-13.)
    19.4 s were the big ones; `seatGrace: 3` (the quick results-drop reconnect still holds, also
    with `--latency 60 --jitter 80` and `--portrait`) → 72 s. The co-op section's rest is its 3-s
    countdown, the AI's first summons and #203's 2-s away hold — needed.)
+215. [ ] Back in the battle room (phones, #166/#209) does nothing — like Esc, so a stray swipe can't
+   drop a friend's seat. But an Android player pressing Back there expects to go back: offer a
+   small "Leave the room?" confirm (Leave / Stay) on Back instead of nothing; Esc unchanged.
 
 
 
@@ -420,7 +423,7 @@ built, how to see each part working, and the decisions that need you.
 - Late in the run: the WebKit (iPhone engine) pass in `mpengines` checks the http copy fallback and
   Back (#201); Back is guarded on touch devices only (#209); PROGRESS.md split — history in
   docs/PROGRESS-archive.md (#202); README's two multiplayer pictures re-shot (#187, #206); a flaky
-  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #197, #204 (#211, #213, #214 done at the very end).
+  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #197, #204, #215 (#211, #213, #214 done at the very end).
 - **Open question added:** the downloadable release (v1.0.0) is ~280 commits old.
 - Tests 256 → 285; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
   frame); `mpengines` (WebKit vs Chrome/Firefox) in sync.
