@@ -296,6 +296,11 @@ Already in the code before Phase 3, and kept:
 32. [x] (run #13) mobilecheck never showed "Connection lost — Reconnecting…" (our own link
    dropping mid-battle). (Done: `online-lost` closes the page's socket and holds the redial.
    The full matrix — 7 devices, ~33 screens each way — is green: 920 views.)
+33. [x] (run #13) A phone was told about keys it doesn't have: How to play's "Keys: 1–4 summon,
+   W/S or ↑/↓ change lane", "(on a keyboard, Space casts it…)", "(or G)", "(or hover it)", and
+   the sandbox's opening banner "…the “For:” button (X)". (Done: key hints are `.kbonly`, hidden
+   on a touch-only screen (`hover: none` and `pointer: coarse`); the banner leaves out "(X)"
+   there. mobilecheck now visits all six how-to pages (`howto-2` … `howto-6`).)
 
 ## Decisions
 

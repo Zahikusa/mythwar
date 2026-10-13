@@ -104,6 +104,13 @@
   text-shadow: 0 0 20px rgba(255, 200, 100, 0.45), 0 3px 6px #000;
 }
 
+/* Key hints ("Keys: 1–4 summon"): not on a touch screen, where there are no keys to press. */
+@media (hover: none) and (pointer: coarse) {
+  .kbonly {
+    display: none;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Buttons                                                             */
 /* ------------------------------------------------------------------ */

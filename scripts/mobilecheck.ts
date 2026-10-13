@@ -157,6 +157,8 @@ const STEPS: Step[] = [
   { name: 'journey', query: 'screen=difficulty', ready: `a.menus.current === 'difficulty'`, after: 700 },
   { name: 'riddles', query: 'screen=difficulty', ready: `a.menus.current === 'difficulty'`, script: `a.menus.show('riddles')`, ready2: `a.menus.current === 'riddles'`, after: 700 },
   { name: 'howto', query: 'screen=howto', ready: `a.menus.current === 'howto'`, after: 700 },
+  // The how-to's other pages (the first is `howto`): each a different picture and text length.
+  ...[1, 2, 3, 4, 5].map((k): Step => ({ name: `howto-${k + 1}`, query: 'screen=howto', ready: `a.menus.current === 'howto'`, script: `a.menus.setHowtoPage(${k})`, after: 700 })),
   { name: 'settings', query: 'screen=settings', ready: `a.menus.current === 'settings'`, after: 700 },
   { name: 'bestiary', query: 'screen=bestiary', ready: `a.menus.current === 'bestiary'`, after: 700 },
   { name: 'feats', query: 'screen=feats', ready: `a.menus.current === 'feats'`, after: 700 },

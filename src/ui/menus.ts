@@ -580,7 +580,7 @@ export class Menus {
         body: [
           lanesArt(),
           p('<b>Pick a lane</b> by clicking or tapping it (or the ▶ marker at your gate), then <b>tap a creature card</b> to summon it there.'),
-          p('Press and hold a creature (or hover it) to see what it is. You can also <b>drag a card onto any lane</b>. Summons wait in a short queue (five in all); each gate trains its own. Tap a creature you can’t afford yet and it summons itself once the gold is there. Keys: <b>1–4</b> summon, <b>W/S</b> or <b>↑/↓</b> change lane.'),
+          p('Press and hold a creature<span class="kbonly"> (or hover it)</span> to see what it is. You can also <b>drag a card onto any lane</b>. Summons wait in a short queue (five in all); each gate trains its own. Tap a creature you can’t afford yet and it summons itself once the gold is there.<span class="kbonly"> Keys: <b>1–4</b> summon, <b>W/S</b> or <b>↑/↓</b> change lane.</span>'),
         ],
       },
       {
@@ -603,7 +603,7 @@ export class Menus {
         title: 'Powers, turrets & blessings',
         body: [
           powersArt(),
-          p('Each age grants a <b>god power</b>. Press it, then choose a lane to unleash it (on a keyboard, <b>Space</b> casts it on the selected lane). <b>Turrets</b> guard one lane each from your gates; <b>Blessings</b> permanently strengthen your army.'),
+          p('Each age grants a <b>god power</b>. Press it, then choose a lane to unleash it<span class="kbonly"> (on a keyboard, <b>Space</b> casts it on the selected lane)</span>. <b>Turrets</b> guard one lane each from your gates; <b>Blessings</b> permanently strengthen your army.'),
           p('At 18:00 — or 3 minutes after both sides reach the Celestial age — <b>Ragnarök</b> comes: the citadels’ wards fall silent, their turrets falter, and every blow against them grows deadlier, minute by minute.'),
         ],
       },
@@ -611,7 +611,7 @@ export class Menus {
         title: 'Tactics',
         body: [
           art(['jotunn', 'fenrir', 'valkyrie'], 0),
-          p('<b>Hold the line:</b> the shield under a lane’s ▶ marker (or <b>G</b>) stops that lane’s creatures just past its shrine. Gather a wave outside the enemy gate’s reach — the dashed line in front of it — then let it loose together.'),
+          p('<b>Hold the line:</b> the shield under a lane’s ▶ marker<span class="kbonly"> (or <b>G</b>)</span> stops that lane’s creatures just past its shrine. Gather a wave outside the enemy gate’s reach — the dashed line in front of it — then let it loose together.'),
           p('<b>Ley sight:</b> while you hold a lane’s shrine you see the enemy’s next summons for that lane above their gate. <b>Brittle frost:</b> frozen foes take 50% more damage — strike while they are frozen.'),
           p('<b>Veterans:</b> a creature that fells three foes rises a veteran (a gold chevron over its head): it strikes 20% harder and its wounds partly close. Keep your veterans alive.'),
         ],

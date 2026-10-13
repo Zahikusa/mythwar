@@ -49,6 +49,8 @@ type AppState = 'title' | 'playing' | 'over';
 
 /** How long the player's god power slows time (seconds, real time). */
 const SLOWMO = 0.6;
+/** A touch screen only (phones, tablets without a keyboard): no key hints in what it says. */
+const TOUCH_ONLY = '(hover: none) and (pointer: coarse)';
 /** The phone's Back in the battle room: a second press within this long (ms) leaves the room. */
 const ROOM_BACK_WINDOW = 4000;
 /**
@@ -656,7 +658,7 @@ export class App {
     if (sandbox) {
       // A question to try, each time: the sandbox is for imagining match-ups.
       const prompt = SANDBOX_PROMPTS[Math.floor(Math.random() * SANDBOX_PROMPTS.length)];
-      this.hud.banner('Sandbox', 'No foe · endless gold · try anything', 'gold', `${prompt}${prompt.endsWith('?') ? '' : '.'} Summon for either side with the “For:” button (X).`);
+      this.hud.banner('Sandbox', 'No foe · endless gold · try anything', 'gold', `${prompt}${prompt.endsWith('?') ? '' : '.'} Summon for either side with the “For:” button${matchMedia(TOUCH_ONLY).matches ? '' : ' (X)'}.`);
     }
     else {
       // Facing a general not yet beaten: their chapter of the journey (Lens #68).
