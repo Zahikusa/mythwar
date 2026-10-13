@@ -464,6 +464,23 @@
   color: var(--muted);
 }
 
+/* The player's standing; the higher, the brighter (Lens #80). */
+.srank {
+  font-weight: 700;
+  color: #cbbfe6;
+}
+
+.srank[data-rank='2'],
+.srank[data-rank='3'] {
+  color: var(--gold-l);
+}
+
+.srank[data-rank='4'],
+.srank[data-rank='5'] {
+  color: #ffd76a;
+  text-shadow: 0 0 8px rgba(255, 200, 90, 0.55);
+}
+
 .sstate {
   margin-top: 4px;
   font-size: 14px;

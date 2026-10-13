@@ -1,4 +1,4 @@
-import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName, cleanTrials } from '../src/net/protocol.ts';
+import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName, cleanRank, cleanTrials } from '../src/net/protocol.ts';
 import type { ClientMsg, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
 import type { TrialId } from '../src/sim/data.ts';
 import { DIFFICULTIES } from '../src/ai/ai.ts';
@@ -55,6 +55,8 @@ const MSG_RATE = 120;
 interface Session {
   token: string;
   name: string;
+  /** Standing (RANKS index), as the client declares it. */
+  rank: number;
   conn: Conn | null;
   room: Room | null;
   seat: Team | null;
@@ -198,6 +200,7 @@ export class Lobby {
       s.goneAt = null;
       s.network = network;
       if (msg.name !== undefined) s.name = cleanName(msg.name);
+      if (msg.rank !== undefined) s.rank = cleanRank(msg.rank);
     } else {
       // Full (overall, or for this address): make room by forgetting the oldest idle session.
       const max = this.opts.maxSessions ?? MAX_SESSIONS;
@@ -212,6 +215,7 @@ export class Lobby {
       s = {
         token: this.makeToken(),
         name: cleanName(msg.name),
+        rank: cleanRank(msg.rank),
         conn,
         room: null,
         seat: null,
@@ -249,6 +253,7 @@ export class Lobby {
     switch (msg.type) {
       case 'name':
         s.name = cleanName(msg.name);
+        if (msg.rank !== undefined) s.rank = cleanRank(msg.rank);
         if (room) {
           this.broadcastRoom(room);
           // (Only an open room's host name appears in the lists.)
@@ -471,7 +476,7 @@ export class Lobby {
     const seat = (i: Team) => {
       const x = room.seats[i];
       if (!x) return null;
-      return { name: this.nameIn(room, i), connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins, ping: x.session.rtt, trials: x.trials };
+      return { name: this.nameIn(room, i), connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins, ping: x.session.rtt, trials: x.trials, rank: x.session.rank };
     };
     return { code: room.code, phase: room.phase, seats: [seat(0), seat(1)], coop: room.coop };
   }
@@ -498,7 +503,7 @@ export class Lobby {
       if (r.phase !== 'waiting') continue;
       const seated = r.seats.filter((x) => x !== null);
       if (seated.length !== 1 || !seated[0]!.session.conn || seated[0]!.session.network !== network) continue;
-      out.push({ code: r.code, host: seated[0]!.session.name, age: Math.round((now - r.createdAt) / 1000) });
+      out.push({ code: r.code, host: seated[0]!.session.name, rank: seated[0]!.session.rank, age: Math.round((now - r.createdAt) / 1000) });
     }
     return out.sort((a, b) => a.age - b.age);
   }

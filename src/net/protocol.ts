@@ -17,7 +17,7 @@ import { World } from '../sim/world.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 8;
+export const PROTOCOL_VERSION = 9;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -87,6 +87,8 @@ export interface SeatInfo {
   ping: number;
   /** Handicaps this player takes in the next battle (to give a less experienced friend a chance). */
   trials: TrialId[];
+  /** The player's standing (index into RANKS). */
+  rank: number;
 }
 
 /** waiting: seats filling / getting ready; playing: a battle runs (incl. its countdown); over: results, rematch. */
@@ -105,6 +107,8 @@ export interface RoomInfo {
 export interface OpenRoom {
   code: string;
   host: string;
+  /** The host's standing (index into RANKS). */
+  rank: number;
   /** Seconds since the room was opened. */
   age: number;
 }
@@ -145,6 +149,8 @@ export type ClientMsg =
       /** simFingerprint() of the client's build: both sides must run the very same rules. */
       sim: number;
       name: string;
+      /** The player's standing (index into RANKS). */
+      rank?: number;
       /** Session token from an earlier welcome (reconnect). */
       token?: string;
       /** The client still shows a battle in progress (it may have missed how it ended). */
@@ -152,7 +158,7 @@ export type ClientMsg =
       /** The app is in the background right now (a reconnect from a hidden tab). */
       away?: boolean;
     }
-  | { type: 'name'; name: string }
+  | { type: 'name'; name: string; rank?: number }
   | { type: 'watchRooms'; on: boolean }
   | { type: 'host' }
   | { type: 'join'; code: string }
@@ -243,6 +249,19 @@ export function battleWorld(seed: number, trials: [TrialId[], TrialId[]] | undef
 /** Keeps only known trials, once each, in their usual order. */
 export function cleanTrials(raw: unknown): TrialId[] {
   return Array.isArray(raw) ? TRIAL_ORDER.filter((t) => raw.includes(t)) : [];
+}
+
+/**
+ * A player's standing among players (Lens #80): how far up the ladder of generals their own
+ * journey has taken them — none beaten, then Puck, Hippolyta, Odin, Ares, and Legend of the Ages
+ * (three stars against every general). Shown by their name in the battle room and the open-battle
+ * list. Self-declared: progress lives on the player's device (an internet server with accounts
+ * would keep it itself).
+ */
+export const RANKS = ['Recruit', 'Warden', 'Champion', 'Warlord', 'Conqueror', 'Legend'] as const;
+
+export function cleanRank(raw: unknown): number {
+  return typeof raw === 'number' && Number.isInteger(raw) && raw >= 0 && raw < RANKS.length ? raw : 0;
 }
 
 /** Sanitizes a player name (printable, trimmed, at most NAME_MAX characters). */

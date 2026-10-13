@@ -24,7 +24,7 @@ import { hasMpServer } from './net/connection.ts';
 import { NetGame } from './net/netgame.ts';
 import { EMOTES, cleanCode, cleanName, emoteLane } from './net/protocol.ts';
 import { randomName } from './ui/mpmenus.ts';
-import { FeatTracker, MAX_STARS, PINNACLE, starTotal } from './ui/feats.ts';
+import { FeatTracker, MAX_STARS, PINNACLE, playerRank, starTotal } from './ui/feats.ts';
 
 /** Questions the sandbox opens with: match-ups worth staging. */
 const SANDBOX_PROMPTS = [
@@ -877,12 +877,13 @@ export class App {
       saveSettings(this.settings);
     }
     this.menus.mp.setName(this.settings.playerName);
+    this.mp?.setRank(playerRank(this.settings.records, this.settings.feats));
     if (join) {
       this.pendingJoin = join;
       this.menus.mp.setCode(join);
     }
     if (!this.mp) {
-      const mp = new MpClient({ name: this.settings.playerName });
+      const mp = new MpClient({ name: this.settings.playerName, rank: playerRank(this.settings.records, this.settings.feats) });
       this.mp = mp;
       this.mpOff = mp.listen({
         changed: () => this.onMpChanged(),

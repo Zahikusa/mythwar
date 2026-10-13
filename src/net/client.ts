@@ -5,11 +5,13 @@ import type { Difficulty } from '../ai/ai.ts';
 import { Connection } from './connection.ts';
 import type { ConnState, SocketLike } from './connection.ts';
 import { NetGame } from './netgame.ts';
-import { PROTOCOL_VERSION, cleanName } from './protocol.ts';
+import { PROTOCOL_VERSION, cleanName, cleanRank } from './protocol.ts';
 import type { EmoteId, ErrorCode, OpenRoom, RoomInfo, ServerMsg } from './protocol.ts';
 
 export interface MpClientOptions {
   name: string;
+  /** The player's standing (RANKS index). */
+  rank?: number;
   url?: string;
   socket?: (url: string) => SocketLike;
   /** Where the session token lives (per tab, so two tabs are two players). */
@@ -36,6 +38,7 @@ const TOKEN_KEY = 'mythwar.mp.session';
 export class MpClient {
   readonly conn: Connection;
   name: string;
+  rank: number;
   room: RoomInfo | null = null;
   seat: Team | null = null;
   openRooms: OpenRoom[] = [];
@@ -60,6 +63,7 @@ export class MpClient {
 
   constructor(opts: MpClientOptions) {
     this.name = cleanName(opts.name);
+    this.rank = cleanRank(opts.rank);
     this.storage = opts.storage === undefined ? safeSessionStorage() : opts.storage;
     this.now = opts.now ?? (() => performance.now());
     this.token = this.storage?.getItem(TOKEN_KEY) ?? null;
@@ -72,6 +76,7 @@ export class MpClient {
         v: PROTOCOL_VERSION,
         sim: simFingerprint(),
         name: this.name,
+        rank: this.rank,
         token: this.token ?? undefined,
         battle: !!this.game && !this.game.over,
         away: typeof document !== 'undefined' && document.hidden,
@@ -148,7 +153,14 @@ export class MpClient {
 
   setName(name: string): void {
     this.name = cleanName(name);
-    this.conn.send({ type: 'name', name: this.name });
+    this.conn.send({ type: 'name', name: this.name, rank: this.rank });
+  }
+
+  /** The player's standing changed (a general beaten since the lobby was opened). */
+  setRank(rank: number): void {
+    if (cleanRank(rank) === this.rank) return;
+    this.rank = cleanRank(rank);
+    this.conn.send({ type: 'name', name: this.name, rank: this.rank });
   }
 
   watchRooms(on: boolean): void {

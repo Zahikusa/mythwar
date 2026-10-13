@@ -170,7 +170,7 @@ complete; its log follows below the lens plan.
 - [x] #77 Character Traits — each creature has a temper (word in the Bestiary) and a gesture when it fells a foe (roar, hop, twirl, rear, loom)
 - [x] #78 The Interpersonal Circumplex — the generals answer the player's deeds (ascending, a god power on them, a shrine taken back) from their place on the circumplex
 - [x] #79 The Character Web — the myths' own ties (Hippolyta is Ares' daughter, Odin drank from Mímir's well, Puck is Oberon's) in first-meeting lines and the chapters
-- [ ] #80 Status — status among players
+- [x] #80 Status — a standing earned on the journey (Recruit → Warden → Champion → Warlord → Conqueror → Legend) by each seat and in the open-battle list (protocol v9)
 - [ ] #81 Character Transformation — veteran creatures
 - [ ] #82 Inner Contradiction — character depth
 - [ ] #83 The Nameless Quality — feel polish

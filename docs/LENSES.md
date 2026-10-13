@@ -1519,3 +1519,23 @@ characters something to say?*
 - The web is written down in DESIGN.md beside the circumplex (#78).
 - Checked: screenshots of Odin's opening chapter and his first-meeting line; unit test (every
   general has `meet` lines); full verify.
+
+## #80 The Lens of Status
+*What are the status relationships among the players? How does a player show — and see — who
+stands where?*
+- Single player has plenty of status markers for the player alone (feats, stars, laurels, the
+  ladder of generals, Legend of the Ages). Among *players* there were none: in the battle room
+  and the open-battle list a veteran who has beaten Ares and a first-timer looked exactly alike
+  ("Ada L — Host — Not ready"). Status is what tells a friend "go easy" or "bring your best",
+  and the room already has the tool to act on it (handicaps, #36) — but nothing to read it from.
+- Change: every player has a **standing**, earned on their own journey: **Recruit** (no general
+  beaten), **Warden** (Puck), **Champion** (Hippolyta), **Warlord** (Odin), **Conqueror** (Ares),
+  **Legend** (three stars against every general). It stands by the seat in the battle room
+  ("Host · Champion", brighter the higher it is; the tooltip says what it means) and under the
+  host's name in the open-battle list ("Warlord · Room 3NCR"). It's updated when the lobby opens,
+  so a general beaten in between counts at once.
+- Protocol v9: `hello` and `name` carry `rank`; seats and open rooms report it; the server
+  sanitizes it. Self-declared — progress lives on the device; an internet server with accounts
+  would keep it itself (noted in the protocol).
+- Checked: server test (ranks in seats and lists, sanitized, kept on a rename), `playerRank`
+  test; mpsmoke screenshots of the room and the lobby list; full verify.

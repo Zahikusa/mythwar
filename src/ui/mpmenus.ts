@@ -1,6 +1,6 @@
 import qrcode from 'qrcode-generator';
 import type { MpClient } from '../net/client.ts';
-import { CODE_LENGTH, NAME_MAX, cleanCode } from '../net/protocol.ts';
+import { CODE_LENGTH, NAME_MAX, RANKS, cleanCode } from '../net/protocol.ts';
 import type { SeatInfo } from '../net/protocol.ts';
 import { h, onTap, setText, toggle } from './dom.ts';
 import { ICONS } from './icons.ts';
@@ -36,6 +36,16 @@ const SERVER_DOWNLOAD = 'https://github.com/Zahikusa/mythwar/releases/latest';
  * The multiplayer screens: the lobby (name, host, join by code, open battles on this network)
  * and the battle room (room code, invite QR code, both players' readiness).
  */
+/** What each standing means (the seat's tooltip). */
+const RANK_NOTE = [
+  'Recruit: has not beaten a general yet',
+  'Warden: has beaten Puck, the Wandering Spirit',
+  'Champion: has beaten Hippolyta, Queen of the Amazons',
+  'Warlord: has beaten Odin, the All-Father',
+  'Conqueror: has beaten Ares, God of War',
+  'Legend: three stars against every general',
+];
+
 export class MpScreens {
   readonly lobby: HTMLElement;
   readonly room: HTMLElement;
@@ -52,7 +62,7 @@ export class MpScreens {
   private invite!: HTMLElement;
   private qr!: HTMLElement;
   private link!: HTMLElement;
-  private seats: { el: HTMLElement; name: HTMLElement; side: HTMLElement; state: HTMLElement; wins: HTMLElement; edit: HTMLInputElement; trials: HTMLElement }[] = [];
+  private seats: { el: HTMLElement; name: HTMLElement; side: HTMLElement; rank: HTMLElement; state: HTMLElement; wins: HTMLElement; edit: HTMLInputElement; trials: HTMLElement }[] = [];
   /** My handicap chips in the room, and the trials they currently show. */
   private trialChips: { id: TrialId; el: HTMLButtonElement }[] = [];
   private myTrials: TrialId[] = [];
@@ -235,7 +245,9 @@ export class MpScreens {
     for (let i = 0; i < 2; i++) {
       const name = h('div', { class: 'sname' });
       // (No "left / right" here: in battle everyone sees their own citadel on the left.)
-      const side = h('div', { class: 'sside', text: i === 0 ? 'Host' : 'Guest' });
+      // ...but each player's standing (Lens #80): how far their own journey has taken them.
+      const rank = h('b', { class: 'srank' });
+      const side = h('div', { class: 'sside' }, i === 0 ? 'Host' : 'Guest', rank);
       const state = h('div', { class: 'sstate' });
       const wins = h('div', { class: 'swins' });
       const trials = h('div', { class: 'strials' });
@@ -265,7 +277,7 @@ export class MpScreens {
         edit.select();
       });
       const el = h('div', { class: 'rseat' }, name, edit, side, state, wins, trials);
-      this.seats.push({ el, name, side, state, wins, edit, trials });
+      this.seats.push({ el, name, side, rank, state, wins, edit, trials });
       seatsBox.appendChild(el);
       if (i === 0) {
         this.vs = h('div', { class: 'rvs', text: 'VS' });
@@ -345,7 +357,7 @@ export class MpScreens {
 
     // Lobby: open battles.
     const rooms = c.openRooms;
-    const sig = rooms.map((r) => r.code + r.host).join('|');
+    const sig = rooms.map((r) => r.code + r.host + r.rank).join('|');
     if (this.list.dataset.sig !== sig || !this.list.childElementCount) {
       this.list.dataset.sig = sig;
       this.list.innerHTML = '';
@@ -354,7 +366,7 @@ export class MpScreens {
       }
       for (const r of rooms) {
         const join = this.button('Join', 'primary', () => this.cb.join(r.code), ICONS.play);
-        this.list.appendChild(h('div', { class: 'mproom', role: 'listitem' }, h('i', { html: ICONS.swords }), h('div', { class: 'mphost' }, h('b', { text: r.host }), h('span', { text: `Room ${r.code}` })), join));
+        this.list.appendChild(h('div', { class: 'mproom', role: 'listitem' }, h('i', { html: ICONS.swords }), h('div', { class: 'mphost' }, h('b', { text: r.host }), h('span', { text: `${RANKS[r.rank] ?? RANKS[0]} · Room ${r.code}` })), join));
       }
     }
 
@@ -410,6 +422,9 @@ export class MpScreens {
     toggle(v.el, 'ready', !!s?.ready);
     setText(v.name, s ? s.name + (mine ? ' (you) ✎' : '') : 'Open seat');
     v.name.title = mine ? 'Tap to change your name' : '';
+    setText(v.rank, s ? ` · ${RANKS[s.rank] ?? RANKS[0]}` : '');
+    v.rank.dataset.rank = String(s?.rank ?? 0);
+    v.side.title = s ? RANK_NOTE[s.rank] ?? '' : '';
     const ping = s?.connected && s.ping ? ` · ${s.ping} ms` : '';
     setText(v.state, (!s ? 'Waiting for a player…' : !s.connected ? 'Connecting…' : s.ready ? 'Ready!' : 'Not ready') + ping);
     // A weak link shows before the battle: amber / red ping.

@@ -62,7 +62,7 @@ class FakeClient {
     this.handlers.message(JSON.stringify(m));
   }
 
-  hello(name: string, token?: string, extra: { battle?: boolean; away?: boolean } = {}): void {
+  hello(name: string, token?: string, extra: { battle?: boolean; away?: boolean; rank?: number } = {}): void {
     this.send({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint(), name, token, ...extra });
   }
 
@@ -253,6 +253,27 @@ describe('lobby', () => {
     a.send({ type: 'ready', ready: true });
     b.send({ type: 'ready', ready: true });
     expect(b.last('start')!.names).toEqual(['Ada', 'ada (2)']);
+  });
+
+  it("each seat shows the player's standing (Lens #80), sanitized, and updated with the name", () => {
+    const { lobby } = setup();
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    const watcher = new FakeClient(lobby);
+    a.hello('Ada', undefined, { rank: 3 });
+    b.hello('Bo', undefined, { rank: 99 });
+    watcher.hello('Cy');
+    watcher.send({ type: 'watchRooms', on: true });
+    a.send({ type: 'host' });
+    lobby.update();
+    expect(watcher.last('rooms')!.rooms.map((r) => r.rank)).toEqual([3]);
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    expect(a.last('room')!.room.seats.map((s) => s!.rank)).toEqual([3, 0]);
+    b.send({ type: 'name', name: 'Bo', rank: 2 });
+    expect(a.last('room')!.room.seats.map((s) => s!.rank)).toEqual([3, 2]);
+    // A rename without a rank keeps it.
+    b.send({ type: 'name', name: 'Bob' });
+    expect(a.last('room')!.room.seats.map((s) => s!.rank)).toEqual([3, 2]);
   });
 
   it('lists only rooms from the same network (LAN = all private addresses)', () => {

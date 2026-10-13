@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FEATS, FeatTracker } from '../src/ui/feats.ts';
+import { FEATS, FeatTracker, playerRank } from '../src/ui/feats.ts';
 import { World } from '../src/sim/world.ts';
 import type { SimEvent } from '../src/sim/types.ts';
 
@@ -90,5 +90,15 @@ describe('the pinnacle', () => {
     phone.records = { novice: { wins: 2, losses: 0, best: 400, stars: 3 }, adept: { wins: 2, losses: 0, best: 500, stars: 3 } };
     importProgress(phone, exportProgress(pc));
     expect(phone.feats).toContain('legend');
+  });
+});
+
+describe('standing among players (Lens #80)', () => {
+  it('is the highest general beaten, or Legend with the pinnacle feat', () => {
+    expect(playerRank({}, [])).toBe(0);
+    expect(playerRank({ novice: { wins: 2 } }, ['first'])).toBe(1);
+    expect(playerRank({ novice: { wins: 2 }, master: { wins: 1 }, adept: { wins: 0 } }, [])).toBe(3);
+    expect(playerRank({ mythic: { wins: 1 } }, [])).toBe(4);
+    expect(playerRank({}, ['legend'])).toBe(5);
   });
 });

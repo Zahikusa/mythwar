@@ -45,6 +45,19 @@ export function starTotal(records: Partial<Record<Difficulty, { stars?: number }
 }
 
 /**
+ * The player's standing among players (index into RANKS, Lens #80): the highest general beaten
+ * (0 = none yet, 1 = Puck … 4 = Ares), or 5 once Legend of the Ages is earned.
+ */
+export function playerRank(records: Partial<Record<Difficulty, { wins?: number }>>, feats: string[]): number {
+  if (feats.includes(PINNACLE)) return DIFFICULTIES.length + 1;
+  let rank = 0;
+  DIFFICULTIES.forEach((d, i) => {
+    if (records[d]?.wins) rank = i + 1;
+  });
+  return rank;
+}
+
+/**
  * Watches one battle for feats. `unlock` is called once per newly earned feat (already-earned
  * ones are skipped). Not for attract mode or the sandbox.
  */
