@@ -1,4 +1,5 @@
 import { DIFFICULTIES } from '../ai/ai.ts';
+import { onlineRecord, putOnline } from './settings.ts';
 import type { Settings } from './settings.ts';
 import { FEATS, MAX_STARS, PINNACLE, starTotal } from './feats.ts';
 import { PUZZLES } from '../sim/puzzles.ts';
@@ -60,10 +61,9 @@ export function importProgress(s: Settings, code: string): boolean {
   s.ageSeen = Math.max(s.ageSeen, Math.min(4, num(p.a)));
   if (p.o && typeof p.o === 'object') {
     for (const [name, r] of Object.entries(p.o)) {
-      // (JSON.parse makes "__proto__" an ordinary key; assigning it would swap the object's prototype.)
-      if (!r || typeof r !== 'object' || name.length > 40 || name === '__proto__') continue;
-      const mine = s.online[name] ?? { w: 0, l: 0 };
-      s.online[name] = { w: Math.max(mine.w, num(r.w)), l: Math.max(mine.l, num(r.l)) };
+      if (!r || typeof r !== 'object' || name.length > 40) continue;
+      const mine = onlineRecord(s, name) ?? { w: 0, l: 0 };
+      putOnline(s.online, name, { w: Math.max(mine.w, num(r.w)), l: Math.max(mine.l, num(r.l)) });
     }
   }
   return true;

@@ -163,7 +163,34 @@ the improvement backlog below (verified, committed) and add what the review find
    forged code with 100 junk ids filled the list, and the load-time cap of 100 then cut real
    feats earned later); an online name "__proto__" swapped the tallies object's prototype.
    (Done: `q` carries riddles (older codes still load), feats/riddles filtered to known ids,
-   "__proto__" skipped; tests.)
+   "__proto__" handled; tests.)
+43. [x] `src/ui/settings.ts` `recordOnline`: an online opponent named "__proto__" made it read
+   `Object.prototype` as the tally and `w++` on it — every object in the page got `w = NaN`;
+   "constructor"/"toString" bumped Object's own functions and the record was lost; the lobby's
+   old-rival lookup showed "undefined" records for such names. (Done: `onlineRecord` reads own
+   keys only, `putOnline` defines instead of assigning — in battle, on load and in progress
+   codes; such names are kept like any other; tests incl. save → load and a progress code.)
+(Items 44–49: an independent review of the netcode, 2026-10-13 — each traced, 1–3 reproduced.)
+44. [ ] `server/net.ts` ~63: a socket rejected for the per-address limit (`ws.close(1013)`) has no
+   'error' listener — a bad frame on it (e.g. unmasked) throws `WS_ERR_EXPECTED_MASK` uncaught
+   and **the server process exits**. Reproduced: 32 sockets from one address, a 33rd sends an
+   unmasked frame. Fix: `terminate()` it, or listen for 'error' first.
+45. [ ] `server/net.ts` ~48: upgrade requests for other paths than `/mp` are ignored and never
+   closed in standalone mode (no timeout, not counted per address) — 50 such sockets stayed open.
+   Destroy them when not running under Vite (Vite's HMR socket needs them).
+46. [ ] `server/match.ts` ~114 / `server/lobby.ts` ~443: `away` toggled (19 s away, 0.1 s back,
+   away again) restarts `awaySince` every time — the opponent can never claim (20 s) and the 90 s
+   forfeit never comes; also bypasses the 3-pause cap. Count away time per battle (or don't
+   reset when back for only a moment); rate-limit toggles.
+47. [ ] `server/lobby.ts` ~679–702: past 4096 networks `hallKeys.clear()` empties the whole cache —
+   every connected network's Hall shows empty until a reconnect, and every battle end runs a
+   `scryptSync` (~20 ms) on the 4-ms loop. Evict oldest-first; re-warm keys of live sessions.
+48. [ ] `src/net/client.ts` ~217–290: `leave()` only sets `leaving` when the send fails — a `room`
+   or `start` message already on its way puts the room back / starts a battle the player just
+   left (then forfeited). Set `leaving` always; clear it on `left`.
+49. [ ] `server/match.ts` ~293 / `server/lobby.ts` ~503: on forfeit, `finish()` sends `over` before
+   `ended()`→`snapshotFor()`→`flush()` sends the last `turn`; the client, already over, drops it —
+   the final board and the results chart miss the last tick. Flush at the start of `finish()`.
 
 
 

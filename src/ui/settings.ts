@@ -236,18 +236,31 @@ function sanitizeOnline(raw: unknown): Settings['online'] {
   const out: Settings['online'] = {};
   if (!raw || typeof raw !== 'object') return out;
   for (const [name, r] of Object.entries(raw as Record<string, { w?: unknown; l?: unknown }>).slice(-ONLINE_MAX)) {
-    if (r && typeof r === 'object') out[name.slice(0, 40)] = { w: Math.max(0, Number(r.w) || 0), l: Math.max(0, Number(r.l) || 0) };
+    if (r && typeof r === 'object') putOnline(out, name.slice(0, 40), { w: Math.max(0, Number(r.w) || 0), l: Math.max(0, Number(r.l) || 0) });
   }
   return out;
 }
 
+/**
+ * The tally against `name`, if any. Names are typed by players, so only own keys count: an
+ * opponent called "constructor" or "__proto__" must not find (and bump) Object's own members.
+ */
+export function onlineRecord(s: Settings, name: string): { w: number; l: number } | null {
+  return Object.hasOwn(s.online, name) ? s.online[name] : null;
+}
+
+/** Sets a tally — defined, not assigned: assigning "__proto__" would swap the object's prototype. */
+export function putOnline(online: Settings['online'], name: string, r: { w: number; l: number }): void {
+  Object.defineProperty(online, name, { value: r, enumerable: true, writable: true, configurable: true });
+}
+
 /** Counts an online battle against `foe` (kept for the most recent opponents). */
 export function recordOnline(s: Settings, foe: string, won: boolean): void {
-  const r = s.online[foe] ?? { w: 0, l: 0 };
+  const r = onlineRecord(s, foe) ?? { w: 0, l: 0 };
   delete s.online[foe]; // re-insert: most recent last
   if (won) r.w++;
   else r.l++;
-  s.online[foe] = r;
+  putOnline(s.online, foe, r);
   const names = Object.keys(s.online);
   for (const n of names.slice(0, Math.max(0, names.length - ONLINE_MAX))) delete s.online[n];
   saveSettings(s);

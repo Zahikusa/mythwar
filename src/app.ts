@@ -14,7 +14,7 @@ import { Renderer } from './render/renderer.ts';
 import { Coach } from './ui/coach.ts';
 import { Hud, RAG_WARN } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
-import { addJournal, battleStars, loadSettings, parTime, recordOnline, recordResult, saveSettings, playerLabel } from './ui/settings.ts';
+import { addJournal, battleStars, loadSettings, onlineRecord, parTime, recordOnline, recordResult, saveSettings, playerLabel } from './ui/settings.ts';
 import { clearBattle, loadBattle, saveBattle } from './save.ts';
 import { AGES, UNITS } from './sim/data.ts';
 import { fmtTime } from './ui/dom.ts';
@@ -1052,7 +1052,7 @@ export class App {
   private onMpChanged(): void {
     const mp = this.mp;
     if (!mp) return;
-    this.menus.mp.update(mp, (code) => this.inviteUrl(code, mp.lanUrls), (name) => this.settings.online[name.replace(/ \(2\)$/, '')] ?? null);
+    this.menus.mp.update(mp, (code) => this.inviteUrl(code, mp.lanUrls), (name) => onlineRecord(this.settings, name.replace(/ \(2\)$/, '')));
     if (mp.welcomed && this.pendingJoin) {
       const code = this.pendingJoin;
       this.pendingJoin = null;

@@ -51,11 +51,12 @@ describe('progress codes', () => {
     expect(old.ageSeen).toBe(2);
   });
 
-  it('a "__proto__" name in the online tallies is ignored (no prototype swap)', () => {
+  it('a "__proto__" name in the online tallies is a name like any other (no prototype swap)', () => {
     const s = loadSettings();
     expect(importProgress(s, 'MW1:' + btoa('{"r":{},"f":[],"a":0,"o":{"__proto__":{"w":3,"l":1},"Ada":{"w":1,"l":0}}}'))).toBe(true);
     expect(Object.getPrototypeOf(s.online)).toBe(Object.prototype);
-    expect(Object.keys(s.online)).toEqual(['Ada']);
+    expect(Object.keys(s.online)).toEqual(['__proto__', 'Ada']);
+    expect(s.online['__proto__']).toEqual({ w: 3, l: 1 });
   });
 
   it('rejects anything that is not a progress code', () => {
