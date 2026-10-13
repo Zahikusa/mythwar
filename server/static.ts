@@ -14,20 +14,37 @@ const COMPRESSIBLE = new Set(['.html', '.js', '.css', '.json', '.webmanifest', '
 
 /**
  * Compressed copies, one per file and encoding (a rebuild replaces the entry instead of piling up
- * old versions). Compression runs off the main thread's critical path (zlib's thread pool), so
- * serving a fresh build never stalls the battles running in the same process.
+ * old versions). Hashed bundles get new names on every build, so the oldest-used copies are
+ * dropped beyond COMPRESSED_MAX (a server left running through many rebuilds). Compression runs
+ * off the main thread's critical path (zlib's thread pool), so serving a fresh build never
+ * stalls the battles running in the same process.
  */
 const compressed = new Map<string, { mtime: number; body: Promise<Buffer> }>();
+export const COMPRESSED_MAX = 48;
 
 function compressedCopy(file: string, mtime: number, encoding: 'br' | 'gzip'): Promise<Buffer> {
   const key = `${file}|${encoding}`;
   const hit = compressed.get(key);
-  if (hit && hit.mtime === mtime) return hit.body;
+  compressed.delete(key);
+  if (hit && hit.mtime === mtime) {
+    // (Most recently used last: Map keeps insertion order.)
+    compressed.set(key, hit);
+    return hit.body;
+  }
   const body = readFile(file).then((raw) => (encoding === 'br' ? brotliAsync(raw, { params: { [constants.BROTLI_PARAM_QUALITY]: 9 } }) : gzipAsync(raw, { level: 9 })));
   compressed.set(key, { mtime, body });
+  for (const old of compressed.keys()) {
+    if (compressed.size <= COMPRESSED_MAX) break;
+    compressed.delete(old);
+  }
   // A failed read (file vanished mid-rebuild) must not stay cached.
   body.catch(() => compressed.get(key)?.body === body && compressed.delete(key));
   return body;
+}
+
+/** How many compressed copies are cached (for tests). */
+export function compressedCached(): number {
+  return compressed.size;
 }
 
 const TYPES: Record<string, string> = {

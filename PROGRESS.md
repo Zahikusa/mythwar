@@ -153,6 +153,11 @@ the improvement backlog below (verified, committed) and add what the review find
    `online` event (network back) isn't used. No unit tests for Connection at all.
    (Done: a dial is given up after 5 s, 7.5 s, … 15 s and retried; `online` dials at once;
    tests/connection.test.ts — backoff, silent link, dial limit, refusals, RTT, nudge.)
+41. [x] `server/static.ts`: compressed copies are cached per file name, and hashed bundles get a new
+   name with every build — a server left running through many rebuilds (`npm run dev` users,
+   a host updating the folder) kept every old bundle's brotli and gzip copy in memory forever.
+   No tests for the static server at all. (Done: at most 48 copies, least recently used dropped;
+   tests/static.test.ts — headers, gzip body, the cap, path escapes, bad methods and URLs.)
 
 
 
