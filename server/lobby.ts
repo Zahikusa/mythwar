@@ -1,6 +1,6 @@
 import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanDevice, cleanName, cleanRank, cleanSigil, cleanTrials } from '../src/net/protocol.ts';
 import type { ClientMsg, HallEntry, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, scryptSync } from 'node:crypto';
 import type { ServerStore } from './store.ts';
 import type { TrialId } from '../src/sim/data.ts';
 import { DIFFICULTIES } from '../src/ai/ai.ts';
@@ -143,6 +143,8 @@ export class Lobby {
   private hallDirty = false;
   /** Salt for the halls' network keys (kept with them; see hallKey). */
   private hallSalt = randomBytes(16).toString('hex');
+  /** Hall keys of the networks seen (see hallKey: each costs a slow hash once). */
+  private readonly hallKeys = new Map<string, string>();
   private lastHallSave = -Infinity;
   private readonly now: () => number;
   private readonly random: () => number;
@@ -663,7 +665,17 @@ export class Lobby {
    * public IP address, which must not end up in a file — so it is a salted hash ('lan' stays).
    */
   private hallKey(network: string): string {
-    return network === 'lan' ? 'lan' : `n:${createHash('sha256').update(this.hallSalt).update(network).digest('base64url').slice(0, 22)}`;
+    if (network === 'lan') return 'lan';
+    // A slow, memory-hard hash (scrypt, ~20 ms and 16 MB each): the salt is kept with the file,
+    // so a quick hash would let whoever has the file try all ~4 billion IPv4 addresses in
+    // minutes; this makes that years of work. Computed once per network and cached.
+    let key = this.hallKeys.get(network);
+    if (!key) {
+      key = `n:${scryptSync(network, this.hallSalt, 16, { N: 16384, r: 8, p: 1 }).toString('base64url')}`;
+      if (this.hallKeys.size >= 4096) this.hallKeys.clear();
+      this.hallKeys.set(network, key);
+    }
+    return key;
   }
 
   /** The network's champions: most head-to-head wins first (then fewest losses, co-op wins). */
