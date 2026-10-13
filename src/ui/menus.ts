@@ -31,6 +31,8 @@ export interface OnlineResult {
   ally?: string;
   /** Co-op: the ally had left by the end (this player finished it alone). */
   alone?: boolean;
+  /** Co-op: the AI's difficulty (its income handicap is shown by its name, as in single player). */
+  coop?: Difficulty;
   reason: EndReason;
   /** Wins in this room so far: [mine, theirs]. */
   score: [number, number] | null;
@@ -922,6 +924,8 @@ export class Menus {
     el.innerHTML = '';
     const won = world.winner === me;
     const foeName = online ? online.foe : PERSONAS[difficulty].name;
+    // (The AI fought: single player's, or co-op's — a duel has none.)
+    const aiFoe: Difficulty | null = online ? (online.coop ?? null) : difficulty;
     const P = world.players[me];
     const E = world.players[me === 0 ? 1 : 0];
     const row = (label: string, a: string, b: string) => h('tr', null, h('td', { text: a }), h('th', { text: label }), h('td', { text: b }));
@@ -937,7 +941,7 @@ export class Menus {
           null,
           h('td', { class: 'you', text: this.settings.sigil >= 0 ? `${SIGILS[this.settings.sigil]} You` : 'You' }),
           h('th'),
-          h('td', { class: 'foe', title: online ? '' : 'Its gold over time and from shrines, compared with yours (gold from kills is the same)' }, foeName, online || AI_PROFILES[difficulty].incomeMult === 1 ? null : h('small', { text: ` · ${Math.round(AI_PROFILES[difficulty].incomeMult * 100)}% income` })),
+          h('td', { class: 'foe', title: aiFoe ? 'Its gold over time and from shrines, compared with yours (gold from kills is the same)' : '' }, foeName, !aiFoe || AI_PROFILES[aiFoe].incomeMult === 1 ? null : h('small', { text: ` · ${Math.round(AI_PROFILES[aiFoe].incomeMult * 100)}% income` })),
         ),
       ),
       h(

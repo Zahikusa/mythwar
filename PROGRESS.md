@@ -293,8 +293,10 @@ it prints, inviting, stopping — 2026-10-13.)
    "Leaving hands the battle to your ally, who fights on"; a stayer who won alone reads "You
    toppled the Novice — after Bo had left." / "Well fought — alone at the end!". Side-wide feats
    for one ally's deed stay — split into #198.)
-197. [ ] (minor) The co-op chronicle calls the foe by the difficulty label ("First blood to Novice")
-   where single player uses the general's name (Puck); the results drop the AI's income note.
+197. [x] (minor) The co-op chronicle calls the foe by the difficulty label ("First blood to Novice")
+   where single player uses the general's name (Puck); the results drop the AI's income note. (Done:
+   the co-op chronicle names the general (`PERSONAS[coop]`); the results get `coop` and show
+   "Novice · 50% income" by the AI's name; mpsmoke checks the latter.)
 198. [x] Co-op feats: Wyrmcaller, Favoured, Among the Gods (src/ui/feats.ts ~100–113) are judged on the
    shared side, so one ally's dragon / rank-5 blessing / Celestial ascent earns them for both.
    Judge them by the player's own orders (the turn's `seat`), or mark them "together". (Note for whoever takes
@@ -423,7 +425,7 @@ built, how to see each part working, and the decisions that need you.
 - Late in the run: the WebKit (iPhone engine) pass in `mpengines` checks the http copy fallback and
   Back (#201); Back is guarded on touch devices only (#209); PROGRESS.md split — history in
   docs/PROGRESS-archive.md (#202); README's two multiplayer pictures re-shot (#187, #206); a flaky
-  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #197, #204, #215 (#211, #213, #214 done at the very end).
+  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #204, #215 (#211, #213, #214 done at the very end).
 - **Open question added:** the downloadable release (v1.0.0) is ~280 commits old.
 - Tests 256 → 285; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
   frame); `mpengines` (WebKit vs Chrome/Firefox) in sync.

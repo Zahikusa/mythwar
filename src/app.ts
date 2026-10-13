@@ -575,7 +575,8 @@ export class App {
     });
     this.feats.start(game.world, game.playerTeam, game instanceof NetGame && !!game.coop);
     if (game instanceof NetGame) game.onOwnOrder = (cmd) => this.feats?.ordered(cmd, game.world);
-    this.chronicle = new Chronicle(game.playerTeam, game instanceof NetGame ? game.foeName : PERSONAS[this.difficulty].name, game instanceof NetGame && !!game.coop);
+    // (Co-op: the AI is told by its general's name, as in single player — "Puck ascends…".)
+    this.chronicle = new Chronicle(game.playerTeam, game instanceof NetGame ? (game.coop ? PERSONAS[game.coop].name : game.foeName) : PERSONAS[this.difficulty].name, game instanceof NetGame && !!game.coop);
     // (Continued or rejoined midway: the story and the battlefield pick up from where it stands.)
     if (game.world.time > 0) {
       this.chronicle.resume(game.world);
@@ -991,6 +992,7 @@ export class App {
               foe: g.foeName,
               ally: g.allyName,
               alone: !!g.coop && !seats?.[g.seat === 0 ? 1 : 0],
+              coop: g.coop ?? undefined,
               reason: g.result?.reason ?? 'citadel',
               // (Once the other player has left the room, there's no running score.)
               score: seats?.[g.seat === 0 ? 1 : 0] ? [seats?.[g.seat]?.wins ?? 0, seats[g.seat === 0 ? 1 : 0]!.wins] : null,

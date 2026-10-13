@@ -739,6 +739,9 @@ async function main(): Promise<void> {
       ((mp.lobby as any).rooms.get(coopRoom).match as { finish(w: number, r: string): void }).finish(0, 'citadel');
       await waitFor(b, 'B co-op results', () => (window as any).__mythwar.menus.current === 'over', 8000);
       const won = await b.evaluate(() => ({ verdict: document.querySelector('.screen.over .verdict')?.textContent ?? '', btns: [...document.querySelectorAll('.screen.over .mrow button')].filter((x) => (x as HTMLElement).offsetParent !== null).map((x) => x.textContent?.trim()), phase: (window as any).__mythwar.mp.room?.phase }));
+      // (Backlog 197) The AI's income handicap stands by its name, as in single player.
+      const head = await b.evaluate(() => document.querySelector('.screen.over .stats thead')?.textContent ?? '');
+      check("co-op results: the AI's income handicap by its name", /% income/.test(head), head);
       check('co-op: a stayer who won alone is told so; the room is open again', /You toppled the .+ — after .+ had left\./.test(won.verdict) && won.btns.includes('Back to room') && won.phase === 'waiting', JSON.stringify(won));
     }
     await b.evaluate(() => (window as any).__mythwar.leaveRoom());
