@@ -164,6 +164,8 @@ async function main(): Promise<void> {
     await waitFor(a, 'A in a room', () => (window as any).__mythwar.menus.current === 'room');
     const code = (await info(a)).room!;
     check('room code', /^[A-Z0-9]{4}$/.test(code), code);
+    // (The QR library loads on demand.)
+    await waitFor(a, 'the invite QR', () => !!document.querySelector('.rqr svg'));
     const invite = await a.evaluate(() => ({ qr: !!document.querySelector('.rqr svg'), link: document.querySelector('.rlink')?.textContent ?? '' }));
     check('invite QR and link', invite.qr && invite.link.includes(`?join=${code}`), invite.link);
     await shot(a, '2-room-waiting');

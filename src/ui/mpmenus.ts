@@ -1,4 +1,3 @@
-import qrcode from 'qrcode-generator';
 import type { MpClient } from '../net/client.ts';
 import { CODE_LENGTH, NAME_MAX, RANKS, SIGILS, cleanCode } from '../net/protocol.ts';
 import type { SeatInfo } from '../net/protocol.ts';
@@ -409,7 +408,14 @@ export class MpScreens {
     toggle(this.invite, 'hidden', !!foe);
     if (!foe && this.qrFor !== url) {
       this.qrFor = url;
-      this.qr.innerHTML = qrSvg(url);
+      this.qr.innerHTML = '';
+      // (No QR if its code can't load — say, the server was updated under an open page: the link is there.)
+      qrSvg(url).then(
+        (svg) => {
+          if (this.qrFor === url) this.qr.innerHTML = svg;
+        },
+        () => {},
+      );
       setText(this.link, url.replace(/^https?:\/\//, ''));
     }
     this.mySeat = me;
@@ -472,8 +478,12 @@ export class MpScreens {
   }
 }
 
-/** An SVG QR code (dark on white with a quiet zone) for `text`. */
-export function qrSvg(text: string): string {
+/**
+ * An SVG QR code (dark on white with a quiet zone) for `text`. The QR library (a twentieth of
+ * the game's code) loads on demand: only a host waiting for a guest needs it.
+ */
+export async function qrSvg(text: string): Promise<string> {
+  const { default: qrcode } = await import('qrcode-generator');
   const qr = qrcode(0, 'M');
   qr.addData(text);
   qr.make();
