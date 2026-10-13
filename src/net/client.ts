@@ -256,8 +256,10 @@ export class MpClient {
 
   /** The app went to the background (or came back). */
   away(away: boolean): void {
-    if (!this.game || this.game.over) return;
+    // Back on the page — in a battle, the room or the lobby: a link that went quiet while the
+    // phone slept is redialled now, not after the silence limit.
     if (!away) this.conn.nudge();
+    if (!this.game || this.game.over) return;
     this.conn.send({ type: 'away', away });
   }
 

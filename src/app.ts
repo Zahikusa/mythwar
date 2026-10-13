@@ -320,6 +320,11 @@ export class App {
       this.persist();
       this.mp?.away(true);
     });
+    // Back from the browser's back-forward cache (Safari keeps pages there): the link was cut
+    // meanwhile — redial now, and say "back" in a battle.
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted && !document.hidden) this.mp?.away(false);
+    });
     this.applySettings(this.settings);
     this.resize();
   }

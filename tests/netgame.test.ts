@@ -342,6 +342,26 @@ describe('NetGame over a simulated network', () => {
     expect(a.game).not.toBeNull();
   });
 
+  it('a phone waking in the room redials at once, not after the silence limit (backlog 243)', () => {
+    net = new SimNet();
+    const a = net.client('Ada');
+    const b = net.client('Bo');
+    net.run(400);
+    a.host();
+    net.run(400);
+    b.join(a.room!.code);
+    net.run(400);
+    // Bo's phone locks: its link goes silent (no close seen); it wakes 3 s later.
+    const old = (b.conn as unknown as { ws: FakeSocket }).ws;
+    net.cut.add(old);
+    net.run(3000);
+    b.away(false); // (the page is visible again)
+    net.run(300);
+    expect((b.conn as unknown as { ws: FakeSocket }).ws).not.toBe(old);
+    expect(b.state).toBe('online');
+    expect(b.room?.code).toBe(a.room!.code);
+  });
+
   it('a phone that lost its seat while away knows which room it was (backlog 160)', () => {
     net = new SimNet();
     const a = net.client('Ada');

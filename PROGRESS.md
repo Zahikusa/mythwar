@@ -563,6 +563,12 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
    touchend event with cancelable=false" — `src/main.ts`'s double-tap-zoom blocker cancelled a
    second touchend within 300 ms even while the page scrolled (not cancelable). A player
    double-tapping a card mid-scroll logs it too. (Done: only cancelable touchends.)
+243. [x] A phone waking up in the battle room or the lobby didn't redial its quiet link:
+   `MpClient.away(false)` nudged the connection only in a battle, so the page waited for the
+   6-s silence limit plus backoff — the common QR guest who locked their phone while waiting
+   looked "Reconnecting…" for ~6–9 s. (Done: back on the page always nudges (a no-op on a link
+   heard within 2.5 s); and a page restored from the back-forward cache (`pageshow` persisted —
+   Safari keeps pages there) does the same. netgame test — failed before. mpsmoke green.)
 
 
 
