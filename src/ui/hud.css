@@ -495,6 +495,11 @@ html.cbfoe .side.right .hpfill {
   display: none;
 }
 
+.ragnarok.near {
+  color: #ff8a5a;
+  animation: lowpulse 1.1s ease-in-out infinite alternate;
+}
+
 .ragnarok.active {
   color: #ff5a3a;
   font-size: 15px;

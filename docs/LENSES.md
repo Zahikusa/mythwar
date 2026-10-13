@@ -1192,3 +1192,22 @@ player ever act in one mode believing they're in another?*
   cards sit in a side column; frames and portraits carry it there.)
 - Checked: smoke (X → cards marked, a tap summons for the foe, X → back), screenshots on desktop
   and phone; full verify.
+
+## #61 The Lens of the Interest Curve
+*What is the shape of the experience — hook, rising peaks, a climax, a resolution? Where does it
+sag? Does the player anticipate what is coming?*
+- Measured over 20 even Master battles (events per tenth of each battle, and kills per minute):
+  a hook (opening banner, horn, the first clashes: kills/min 16 → 36 by minute 2), peaks at each
+  ascension and Ley Surge, a mid-game siege bump (citadel hits peak at 40%), and a big climax —
+  Ragnarök, 46 citadel hits in the last tenth. But a **sag before the climax**: kills/min fall to
+  17, 12, 19 around minutes 11–14, citadel hits to 8, 6.5, 7 per tenth at 70–90%. It is the
+  final ages' lull: expensive armies rebuild, citadels have just grown.
+- Balance could shorten the lull, but pacing sits at its limit (#47) and the lull is also where
+  the final age's creatures arrive. What it lacked is **anticipation**: Ragnarök — the climax —
+  was announced only 2 minutes ahead, in small text.
+- Change: the climax is foretold through the lull — "Ragnarök in 3:00" appears three minutes
+  ahead (whenever it is due: at 18:00, or 3 minutes after both sides reach the final age), the
+  **war drums build** toward it whatever the lanes are doing (music intensity floor rising from
+  0.3 to 0.7), and at one minute a horn sounds with a warning ("then the wards fall silent and
+  the turrets falter") while the countdown starts to pulse.
+- Checked: smoke (countdown from 2:49 at 170 s left, the one-minute warning toast); full verify.

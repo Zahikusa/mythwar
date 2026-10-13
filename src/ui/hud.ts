@@ -67,6 +67,9 @@ interface CardEl {
 }
 
 /** The in-game heads-up display and the player's action layer (shared by mouse, touch and keys). */
+/** Seconds before Ragnarök that its countdown appears (Lens #61: anticipation through the lull). */
+export const RAG_WARN = 180;
+
 export class Hud {
   readonly root: HTMLDivElement;
   private game: Game | null = null;
@@ -79,6 +82,8 @@ export class Hud {
   private cb: HudCallbacks;
   private layoutInfo: Layout | null = null;
   private cards: CardEl[] = [];
+  /** The one-minute Ragnarök warning was given (once per battle). */
+  private ragWarned = false;
   /** A creature ordered before it could be paid for: summoned once the gold is there. */
   private armed: { unitId: string; lane: number } | null = null;
   private cardAge = -1;
@@ -348,6 +353,7 @@ export class Hud {
     this.cancelDrag();
     this.game = game;
     this.armed = null;
+    this.ragWarned = game.world.ragnarokStarted || game.world.ragnarokAt - game.world.time < 60;
     toggle(this.el.speed, 'hidden', !!game.options.online);
     toggle(this.el.net, 'hidden', !game.options.online);
     toggle(this.el.emoteBtn, 'hidden', !game.options.online);
@@ -1065,9 +1071,18 @@ export class Hud {
       const crumbleIn = w.ragnarokAt + w.crumbleAfter - w.time;
       setText(E.rag, crumbleIn <= 0 ? 'CITADELS CRUMBLE' : crumbleIn < 120 ? `Citadels crumble in ${fmtTime(crumbleIn)}` : 'RAGNARÖK');
     }
-    else if (w.ragnarokAt - w.time < 120) setText(E.rag, `Ragnarök in ${fmtTime(w.ragnarokAt - w.time)}`);
-    else setText(E.rag, '');
+    else if (w.ragnarokAt - w.time < RAG_WARN) {
+      // The climax, foretold (Lens #61): three minutes ahead, through the mid-game lull, and
+      // a horn and a word when one minute is left.
+      setText(E.rag, `Ragnarök in ${fmtTime(w.ragnarokAt - w.time)}`);
+      if (w.ragnarokAt - w.time < 60 && !this.ragWarned && w.time > 1) {
+        this.ragWarned = true;
+        this.toast('Ragnarök in one minute — then the wards fall silent and the turrets falter', 'bad');
+        this.cb.sound('horn');
+      }
+    } else setText(E.rag, '');
     toggle(E.rag, 'active', w.ragnarokStarted);
+    toggle(E.rag, 'near', !w.ragnarokStarted && w.ragnarokAt - w.time < 60);
 
     // Resources
     setText(E.gold, fmt(g.displayGold()));

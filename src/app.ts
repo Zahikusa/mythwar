@@ -11,7 +11,7 @@ import { detectMode } from './render/layout.ts';
 import type { LayoutMode } from './render/layout.ts';
 import { Renderer } from './render/renderer.ts';
 import { Coach } from './ui/coach.ts';
-import { Hud } from './ui/hud.ts';
+import { Hud, RAG_WARN } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
 import { battleStars, loadSettings, parTime, recordOnline, recordResult, saveSettings } from './ui/settings.ts';
 import { clearBattle, loadBattle, saveBattle } from './save.ts';
@@ -1168,7 +1168,10 @@ export class App {
     for (const l of w.lanes) n += l.length;
     const me = w.players[g.playerTeam];
     const besieged = w.time - me.lastBaseHit < 3 ? 0.5 : 0;
-    return Math.min(1, n / 28 + besieged);
+    // As Ragnarök nears, the war drums build whatever the lanes are doing (Lens #61).
+    const left = w.ragnarokAt - w.time;
+    const anticipation = left < RAG_WARN ? 0.3 + 0.4 * (1 - left / RAG_WARN) : 0;
+    return Math.min(1, Math.max(anticipation, n / 28 + besieged));
   }
 
   private toTitleBackdrop(): void {

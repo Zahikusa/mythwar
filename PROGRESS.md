@@ -135,7 +135,7 @@ complete; its log follows below the lens plan.
 - [x] #58 Juiciness — a blessing is felt on the field: shockwaves and flashes through the blessed army (Bastion: the gates)
 - [x] #59 Channels and Dimensions — below 30% your citadel has a heartbeat (sound + phone pulse) that quickens as it falls
 - [x] #60 Modes — the sandbox's "For: Foe" mode now shows on the cards themselves (foe portraits, frames, label)
-- [ ] #61 The Interest Curve — battle pacing / music intensity
+- [x] #61 The Interest Curve — measured a lull at minutes 11–14 before the Ragnarök climax: foretold 3 min ahead, drums build, a horn at one minute
 - [ ] #62 Inherent Interest — spectacle moments
 - [ ] #63 Beauty — art polish
 - [ ] #64 Projection — player identity (banner/colour)

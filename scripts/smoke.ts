@@ -295,6 +295,28 @@ async function armedFlow(page: Page): Promise<void> {
     return { healthy: await count(0.8), low: await count(0.25), dire: await count(0.03) };
   });
   check('a citadel in danger has a heartbeat, faster as it falls', beats.healthy === 0 && beats.low >= 1 && beats.dire > beats.low, JSON.stringify(beats));
+  // Ragnarök is foretold three minutes ahead, with a warning at one minute.
+  const rag = await page.evaluate(async () => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    const P = app.game.world.players[0];
+    P.baseHp = P.baseMaxHp;
+    const w = app.game.world;
+    const text = () => document.querySelector('.ragnarok')?.textContent ?? '';
+    w.time = w.ragnarokAt - 170;
+    await new Promise((r) => setTimeout(r, 200));
+    const early = text();
+    w.time = w.ragnarokAt - 50;
+    await new Promise((r) => setTimeout(r, 200));
+    const late = text();
+    // (Toasts queue: the jump in time also trips the par-time star toast first.)
+    let toast = '';
+    for (let i = 0; i < 25 && !toast.includes('one minute'); i++) {
+      toast = document.querySelector('.toast')?.textContent ?? '';
+      await new Promise((r) => setTimeout(r, 200));
+    }
+    return { early, late, toast };
+  });
+  check('Ragnarök is counted down from three minutes, with a one-minute warning', rag.early.startsWith('Ragnarök in 2:') && rag.late.startsWith('Ragnarök in 0:') && rag.toast.includes('one minute'), JSON.stringify(rag));
 }
 
 /** Riddles of war: foe screen → Riddles → the first riddle, solved by tapping cards → its result. */
