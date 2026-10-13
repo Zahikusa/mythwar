@@ -91,6 +91,8 @@ http.listen(port, '0.0.0.0');
 http.on('listening', () => {
   const urls = lanAddresses().map((ip) => `${scheme}://${ip}:${port}/`);
   console.log('\n  Mythwar is running.\n');
+  const hall = mp.lobby.hallStats();
+  if (hall.players) console.log(`  Hall of champions: ${hall.players} player${hall.players === 1 ? '' : 's'} remembered, ${hall.returning} came back on another day.\n`);
   console.log(`  On this computer:   ${scheme}://localhost:${port}/`);
   if (urls.length) {
     console.log(`  Other devices in this Wi-Fi:`);

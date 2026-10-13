@@ -202,7 +202,7 @@ complete; its log follows below the lens plan.
 - [x] #90 Documentation — DESIGN.md refreshed: veterans, character, the modes and meta, the multiplayer social layer, gamepad, Ragnarök filed under systems
 - [x] #91 Playtesting — a local playtest journal (last 30 battles, Settings → Copy playtest journal) and docs/PLAYTEST.md, a one-hour playtest kit
 - [x] #92 Technology — the server remembers: a store seam (file for the LAN server, memory in tests; a database later) keeps the Hall of champions across restarts; perf re-measured (1.3–1.6 ms, the 1.97 was noise)
-- [ ] #93 The Crystal Ball — roadmap
+- [x] #93 The Crystal Ball — "do friends come back for a second evening?": the hall counts days per player and the server reports returners at start; docs/ROADMAP.md
 - [ ] #94 The Client — what the client (owner) needs
 - [ ] #95 The Pitch — pitch / store text
 - [ ] #96 Profit — sustainability notes

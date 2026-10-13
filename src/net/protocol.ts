@@ -132,6 +132,9 @@ export interface HallEntry {
   w: number;
   l: number;
   coop: number;
+  /** Server-side only (Lens #93): on how many different days they battled here, and the last. */
+  days?: number;
+  last?: number;
 }
 
 export interface HistorySample {

@@ -1763,3 +1763,21 @@ decorative? And is the technology we have doing its job?*
 - Checked: server tests (a battle's result saved after 5 s and back after a "restart",
   sanitized; the file store's atomic write, missing and broken files); the real server and the
   packaged `server.mjs` start with the new options; full verify.
+
+## #93 The Lens of the Crystal Ball
+*If I could ask a crystal ball one question about the future of this game, what would it be —
+and what can I do now to find out the answer myself?*
+- The question: **do friends come back for a second evening?** Every next step (a public
+  server, accounts, a ranked ladder, more content) is only worth building if they do; if they
+  don't, the next step is reasons to return, not reach. And nothing in the game could answer it:
+  the server forgot everything at restart (until #92) and counted battles, not evenings.
+- Change: the Hall of champions now notes, per player, on how many **different days** they
+  battled on this server (kept server-side, not sent to clients), and `npm run lan` opens with
+  "Hall of champions: N players remembered, M came back on another day." — the crystal ball's
+  answer, read off the host's terminal. And **docs/ROADMAP.md** writes the future down: the
+  question and how to read it, *Now* (real-phone playtest, LAN https), *Next* (the public server,
+  identity without passwords, storage, phone-only play), *Later* (replays and spectators, a
+  ranked ladder, a weekly challenge, a sixth age only if players reach the fifth, German), and
+  what to stop doing (more battle systems).
+- Checked: server test (two battles one evening → 0 returning; another day → 2; days stay off
+  the wire); full verify.

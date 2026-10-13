@@ -35,6 +35,8 @@ export interface LobbyOptions {
   maxSessions?: number;
   /** Where the Hall of champions survives restarts (none: kept in memory only). */
   store?: ServerStore;
+  /** Today as a day number (injectable for tests; default: UTC days since 1970). */
+  today?: () => number;
 }
 
 /** The Hall of champions is saved at most this often (ms) when it changed. */
@@ -140,7 +142,7 @@ export class Lobby {
       for (const e of entries.slice(-HALL_NAMES)) {
         if (!e || typeof e !== 'object') continue;
         const name = cleanName(e.name);
-        hall.set(name.toLowerCase(), { name, sigil: cleanSigil(e.sigil), w: n(e.w), l: n(e.l), coop: n(e.coop) });
+        hall.set(name.toLowerCase(), { name, sigil: cleanSigil(e.sigil), w: n(e.w), l: n(e.l), coop: n(e.coop), days: n(e.days), last: n(e.last) });
       }
       if (hall.size) this.halls.set(network, hall);
     }
@@ -578,6 +580,12 @@ export class Lobby {
     hall.delete(key);
     e.name = s.name;
     e.sigil = s.sigil;
+    // Do players come back for another evening? (Lens #93: the question for the crystal ball.)
+    const today = this.opts.today?.() ?? Math.floor(Date.now() / 86_400_000);
+    if (e.last !== today) {
+      e.days = (e.days ?? 0) + 1;
+      e.last = today;
+    }
     hall.set(key, e);
     if (hall.size > HALL_NAMES) hall.delete(hall.keys().next().value!);
     this.hallDirty = true;
@@ -588,7 +596,23 @@ export class Lobby {
   private hallOf(network: string): HallEntry[] {
     const hall = this.halls.get(network);
     if (!hall) return [];
-    return [...hall.values()].sort((a, b) => b.w - a.w || a.l - b.l || b.coop - a.coop).slice(0, HALL_SHOWN).map((e) => ({ ...e }));
+    return [...hall.values()]
+      .sort((a, b) => b.w - a.w || a.l - b.l || b.coop - a.coop)
+      .slice(0, HALL_SHOWN)
+      .map((e) => ({ name: e.name, sigil: e.sigil, w: e.w, l: e.l, coop: e.coop }));
+  }
+
+  /** Players remembered across all halls, and how many of them battled here on more than one day. */
+  hallStats(): { players: number; returning: number } {
+    let players = 0;
+    let returning = 0;
+    for (const hall of this.halls.values()) {
+      for (const e of hall.values()) {
+        players++;
+        if ((e.days ?? 0) > 1) returning++;
+      }
+    }
+    return { players, returning };
   }
 
   private sendRoomLists(): void {

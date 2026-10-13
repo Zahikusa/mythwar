@@ -84,7 +84,7 @@ class FakeClient {
   }
 }
 
-function setup(opts: { awayGrace?: number; store?: ServerStore } = {}) {
+function setup(opts: { awayGrace?: number; store?: ServerStore; today?: () => number } = {}) {
   let now = 1000;
   let r = 0.37;
   const lobby = new Lobby({
@@ -93,6 +93,7 @@ function setup(opts: { awayGrace?: number; store?: ServerStore } = {}) {
     countdown: 3,
     awayGrace: opts.awayGrace ?? 90,
     store: opts.store,
+    today: opts.today,
   });
   const run = (ms: number) => {
     for (let t = 0; t < ms; t += 5) {
@@ -104,7 +105,7 @@ function setup(opts: { awayGrace?: number; store?: ServerStore } = {}) {
 }
 
 /** Two players in a running battle. */
-function battle(opts: { awayGrace?: number; store?: ServerStore } = {}) {
+function battle(opts: { awayGrace?: number; store?: ServerStore; today?: () => number } = {}) {
   const { lobby, run } = setup(opts);
   const a = new FakeClient(lobby);
   const b = new FakeClient(lobby);
@@ -575,6 +576,28 @@ describe('battle', () => {
     expect(hall.map((e) => [e.name, e.w, e.l])).toContainEqual(['Ada', 1, 0]);
     expect(hall.map((e) => [e.name, e.w, e.l])).toContainEqual(['Bo', 0, 1]);
     expect(hall.find((e) => e.name.includes('Eve'))).toMatchObject({ name: 'bEve/b', sigil: -1, w: 0, l: 2 });
+  });
+
+  it('the hall knows who came back on another day (Lens #93), and keeps it to itself', () => {
+    let day = 20000;
+    const store = memoryStore();
+    const play = () => {
+      const { lobby, run, b } = battle({ store, today: () => day });
+      run(2000);
+      b.send({ type: 'leave' });
+      run(5100);
+      return lobby;
+    };
+    play();
+    play(); // the same evening
+    expect(new Lobby({ store }).hallStats()).toEqual({ players: 2, returning: 0 });
+    day++;
+    const lobby = play();
+    expect(lobby.hallStats()).toEqual({ players: 2, returning: 2 });
+    const watcher = new FakeClient(lobby);
+    watcher.hello('Cy');
+    watcher.send({ type: 'watchRooms', on: true });
+    expect(Object.keys(watcher.last('rooms')!.hall![0]).sort()).toEqual(['coop', 'l', 'name', 'sigil', 'w']);
   });
 
   it('the file store writes atomically and reads back; a broken file means an empty hall', async () => {
