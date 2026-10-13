@@ -377,7 +377,8 @@ export class MpScreens {
         return { ...r, rec: rec && rec.w + rec.l > 0 ? rec : null };
       })
       .sort((a, b) => Number(!!b.rec) - Number(!!a.rec));
-    const sig = rooms.map((r) => `${r.code}${r.host}${r.rank}${r.sigil}${r.rec ? `${r.rec.w}-${r.rec.l}` : ''}`).join('|');
+    // (Online or not is part of it: the empty list says "None yet…" only once connected.)
+    const sig = `${online}|` + rooms.map((r) => `${r.code}${r.host}${r.rank}${r.sigil}${r.rec ? `${r.rec.w}-${r.rec.l}` : ''}`).join('|');
     if (this.list.dataset.sig !== sig || !this.list.childElementCount) {
       this.list.dataset.sig = sig;
       this.list.innerHTML = '';

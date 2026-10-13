@@ -153,6 +153,8 @@ async function main(): Promise<void> {
     await a.keyboard.type('Ada');
     await a.keyboard.press('Enter');
     await sleep(100);
+    // (Backlog 131) Connected with nothing open: the list says so (not the offline "—").
+    await waitFor(a, 'the empty list says None yet', () => (document.querySelector('.mplist')?.textContent ?? '').includes('None yet'), 4000);
     await shot(a, '1-lobby-desktop');
     // A has taken the moon as sigil (Lens #85): B should see it on A's keep and by A's name.
     await a.evaluate(() => {

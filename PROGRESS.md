@@ -562,6 +562,13 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    (you)…" — the " ✎" edit mark pushes it over) although the seat box has room to spare; let the
    name wrap or drop "(you)" on phones (the seat is outlined as yours anyway). (Done: on phones the
    seat name wraps; checked with `--settings '{"playerName":"Jade Valkyrie"}'`.)
+131. [x] Lobby: connected with no open battles, the list showed the offline placeholder "—" — it only
+   re-rendered when the rooms changed, and going online doesn't change them (seen in the new
+   `mp-lobby` shot). (Done: being online is part of the list's signature; mpsmoke checks for
+   "None yet…".)
+132. [ ] README screenshots are made by hand (shoot → resize to JPEG; run #8 used a scratch canvas
+   script): a `npm run docshots` that renders `docs/*.jpg` from named shoot scenarios would keep
+   them current with one command.
 
 
 
