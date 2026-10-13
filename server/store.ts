@@ -4,7 +4,7 @@
  * itself; an internet server would put a database behind the same two calls.
  */
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { mkdir, rename, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import type { HallEntry } from '../src/net/protocol.ts';
 
@@ -42,8 +42,10 @@ export function fileStore(path: string, log?: (line: string) => void): ServerSto
       try {
         await mkdir(dirname(path), { recursive: true });
         await writeFile(tmp, JSON.stringify(state));
+        // (The rename is synchronous, on the main thread: it can't overtake — or be overtaken
+        // by — a saveNow(), which also runs there. Once closed, the background write is void.)
         if (closed) await unlink(tmp).catch(() => {});
-        else await rename(tmp, path);
+        else renameSync(tmp, path);
       } catch (e) {
         fail(e);
       }
