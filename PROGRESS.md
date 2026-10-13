@@ -17,14 +17,28 @@ the improvement backlog below (verified, committed) and add what the review find
    in battle) — phase-1 backlog #25. (Done: Well played! / Good luck! / Thanks! chips on the
    online results, the other player's words shown there; hidden once they leave; on short
    screens the results' buttons are now pinned like every other screen's. mpsmoke checks it.)
-4. [ ] `scripts/smoke.ts`: nothing checks that the results screen fits a 1600×900 / 1366×768
+4. [x] `scripts/smoke.ts`: nothing checks that the results screen fits a 1600×900 / 1366×768
    window in its fullest form (new feats + new best + chapter close + break note + chronicle);
    several lenses added lines to it and two of them overflowed until spotted in screenshots.
+   (Done: smoke renders the fullest results at 1600×900 and 1366×768 — it found 922/900 at
+   once; the stacked results are tighter between 861 and 1000 px and fit, 900/900.)
 5. [x] `src/render/renderer.ts`: a temper gesture (#77) can start in the middle of an attack
    swing and overlay it (a hop mid-swing); start it when the swing ends instead. (Done: it waits
    up to 0.8 s for the swing to end; a sandbox melee still showed 5 gestures in 12 kills.)
 6. [x] `package.json`: the new tools `scripts/servercost.ts` and `scripts/ogcard.mjs` have no npm
    aliases (economy, designcheck, puzzlecheck do). (Done: `npm run servercost`, `npm run ogcard`.)
+7. [ ] Results at 1600×900 fit with zero headroom in their fullest form (900/900): the next line
+   added will overflow (smoke now catches it). Consider the side-by-side results layout up to
+   ~940 px instead of only ≤ 860 px.
+8. [ ] `scripts/ogcard.mjs`, `scripts/crop.mjs`, `scripts/shoot.ts`, `scripts/smoke.ts` hard-code
+   `C:/Program Files/Google/Chrome/...`: the tools fail on macOS/Linux. Take `CHROME` from the
+   environment and try the usual install paths.
+9. [ ] `src/ui/settings.ts` `playerLabel` + HUD: a sigil without a name shows "♛ · Celestial"
+   (glyph, then a separator with nothing before it); show "♛ Celestial".
+10. [ ] Names are identity for the Hall of champions and rival records: two different people
+   called "Ada" on one LAN share a line, and renaming yourself to the champion's name inherits
+   their record. A per-device id (localStorage, not the per-tab session token) would fix it.
+
 
 **Start here: [docs/BRIEF.md](docs/BRIEF.md)** — one page: what TASK.md asked for, what was
 built, how to see each part working, and the decisions that need you.

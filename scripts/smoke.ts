@@ -970,6 +970,39 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   check('results show Victory', verdict === 'Victory', String(verdict));
   const tip = await page.evaluate(() => document.querySelector('.screen.over .vtip')?.textContent ?? '');
   check('results suggest the next difficulty after a win', /Face the Master/.test(tip), tip);
+  // (Improvement backlog) The results in their fullest form — new feats, a new best, a closing
+  // chapter, a break note, a full chronicle — still fit a desktop and a laptop window.
+  if (!viewport.mobile) {
+    const fits: string[] = [];
+    for (const [w, h] of [[1600, 900], [1366, 768]]) {
+      await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
+      await sleep(250);
+      const fit = await page.evaluate(() => {
+        const app = (window as unknown as { __mythwar: any }).__mythwar;
+        const m = app.menus;
+        const g = app.game;
+        m.featsEarned = ['First Victory', 'Warlord Humbled', 'Swift Conquest', 'Unbreached'].map((name, i) => ({ id: `f${i}`, name, desc: '' }));
+        m.newBestStars = 3;
+        m.epilogue = { chapter: 'II · The Threshold', close: 'The queen lowers her spear. Her sisters will speak your name.' };
+        m.breakNote = 'You have been at war for over an hour. The gods will wait — a good moment for a break.';
+        m.chronicle = Array.from({ length: 10 }, (_, i) => `${i + 1}:00 — Something worth remembering happened in this battle, in the middle lane.`);
+        m.showResults(g.world, g.playerTeam, app.difficulty, g.history, g.ageUps);
+        const el = document.querySelector('.screen.over') as HTMLElement;
+        const out = { scroll: el.scrollHeight, client: el.clientHeight };
+        m.featsEarned = [];
+        m.newBestStars = 0;
+        m.epilogue = null;
+        m.breakNote = null;
+        m.chronicle = [];
+        m.showResults(g.world, g.playerTeam, app.difficulty, g.history, g.ageUps);
+        return out;
+      });
+      fits.push(`${w}×${h}: ${fit.scroll}/${fit.client}`);
+      check(`results in their fullest form fit ${w}×${h}`, fit.scroll <= fit.client + 1, fits.at(-1));
+    }
+    await page.setViewport({ width: viewport.width, height: viewport.height, deviceScaleFactor: 1 });
+    await sleep(250);
+  }
   // "Change foe", then Back: returns to the results (not a broken title over the battlefield).
   {
     const tapAt = async (p: { x: number; y: number }) => {

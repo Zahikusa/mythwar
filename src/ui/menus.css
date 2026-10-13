@@ -1783,6 +1783,14 @@
   }
 }
 
+/* A 900-px desktop window keeps the stacked results, a little tighter: in their fullest form (new
+   feats, a new best, a closing chapter, a break note) they would otherwise overflow by ~20 px. */
+@container stage (min-height: 861px) and (max-height: 1000px) {
+  .screen.over {
+    gap: 12px;
+  }
+}
+
 /* Before a first victory the foe screen offers no handicaps (Lens #56). */
 .trials.notrials .tlabel,
 .trials.notrials .handicap {
