@@ -20,6 +20,7 @@
     "lan": "node scripts/nodecheck.mjs && tsc --noEmit && vite build && node server/main.ts",
     "serve": "node scripts/nodecheck.mjs && node server/main.ts",
     "package": "tsc --noEmit && node scripts/package.ts",
+    "package:check": "npm run package && node scripts/packcheck.ts",
     "mpbot": "node scripts/mpbot.ts",
     "designcheck": "node scripts/designcheck.ts",
     "economy": "node scripts/economy.ts",

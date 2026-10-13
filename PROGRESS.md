@@ -815,10 +815,13 @@ it prints, inviting, stopping — 2026-10-13.)
    (Done: "Port 8787 was busy (is Mythwar running already, in another window?) — using 8788." — tried with two servers.)
 184. [x] main.ts ~141's comment says the starters restart the server; they don't. Fix the comment.
    (Done.)
-185. [ ] Nothing in tests or CI ever starts the bundled release server (`server.mjs` from
+185. [x] Nothing in tests or CI ever starts the bundled release server (`server.mjs` from
    `npm run package`): a bundling problem (a dependency the bundle misses) would only show on a
    user's PC. A test that packages, starts server.mjs on port 0, fetches the page and opens a
-   WebSocket hello.
+   WebSocket hello. (Done: `scripts/packcheck.ts` / `npm run package:check` — the package's server.mjs from its
+   own folder: page, its script (relative ./assets paths — the first try's regex missed them), a
+   lobby hello welcomed with this checkout's protocol and rules fingerprint, a hosted room; a step
+   in release.yml after `npm run package`.)
 
 
 
