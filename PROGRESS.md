@@ -97,8 +97,9 @@ the improvement backlog below (verified, committed) and add what the review find
    (Done: "Veterans are named Asterion, Bronzehorn, …" under each myth.)
 26. [x] Privacy: the device id (backlog 10) can't be reset — *Reset records* should also give the
    browser a new id, so its old Hall line is no longer linked to it. (Done; PRIVACY.md says so.)
-27. [ ] README screenshots (`docs/*.jpg`) date from runs #1–#4: no sigils, veterans, Hall of
-   champions, results tabs. Refresh the title, a late battle and the battle room.
+27. [x] README screenshots (`docs/*.jpg`) date from runs #1–#4: no sigils, veterans, Hall of
+   champions, results tabs. Refresh the title, a late battle and the battle room. (Done: title,
+   Jade battle, battle room, phone battle with a sigil on the keep; starfall/mobile/creatures kept.)
 28. [x] Gamepad (#54): nothing checks that D-pad navigation reaches the new results controls (the
    report tabs, the quick-message chips, "Now bring a friend →"). (Done: smoke walks the app's own
    D-pad moves breadth-first over the results — all 8 controls, tabs included, reachable.)
