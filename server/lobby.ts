@@ -134,6 +134,8 @@ interface Session {
   /** When anything was last heard from this player, and whether that's long enough ago to count as away. */
   heardAt: number;
   silent: boolean;
+  /** This battle's quiet spells (for the host's console): how many, and how long in all (ms). */
+  quiet: { n: number; ms: number; since: number };
   /** The client's own round-trip measurement (ms). */
   rtt: number;
   /** How the session's last battle ended (final snapshot + result), for a client that missed it. */
@@ -342,7 +344,18 @@ export class Lobby {
       if (match.isAway(seat)) continue;
       match.setAway(seat, true, now);
       this.broadcastRoom(room);
-      this.log(`${s.name} went quiet in room ${room.code}: away until heard from again`);
+      // (The first spell of a battle is told; later ones are summed up at its end — a flaky
+      // phone mustn't fill the host's console.)
+      s.quiet.since = now;
+      if (++s.quiet.n === 1) this.log(`${s.name} went quiet in room ${room.code}: away until heard from again`);
+    }
+  }
+
+  /** At a battle's end: the players' quiet spells after the first, in one line each. */
+  private logQuiet(room: Room): void {
+    for (const x of room.seats) {
+      const q = x?.session.quiet;
+      if (x && q && q.n > 1) this.log(`${x.session.name} went quiet ${q.n} times in room ${room.code}'s battle, ${Math.round(q.ms / 1000)} s in all`);
     }
   }
 
@@ -355,7 +368,8 @@ export class Lobby {
     if (!room?.match || s.seat === null || room.phase !== 'playing' || s.saysAway || !room.match.isAway(s.seat)) return;
     room.match.setAway(s.seat, false, now);
     this.broadcastRoom(room);
-    this.log(`${s.name} is heard from again in room ${room.code}`);
+    s.quiet.ms += now - s.quiet.since;
+    if (s.quiet.n === 1) this.log(`${s.name} is heard from again in room ${room.code}`);
   }
 
   /** A player's away/back takes effect (see 'away'). */
@@ -451,6 +465,7 @@ export class Lobby {
         saysAway: false,
         heardAt: this.now(),
         silent: false,
+        quiet: { n: 0, ms: 0, since: 0 },
         rtt: 0,
         lastOver: null,
       };
@@ -646,6 +661,7 @@ export class Lobby {
     // "back". A tab hidden as this one starts says so again.)
     a.session.saysAway = false;
     b.session.saysAway = false;
+    for (const x of [a, b]) x.session.quiet = { n: 0, ms: 0, since: 0 };
     const seed = (this.random() * 2 ** 31) | 0;
     const names: [string, string] = [this.nameIn(room, 0), this.nameIn(room, 1)];
     const countdown = this.opts.countdown ?? START_COUNTDOWN;
@@ -663,6 +679,7 @@ export class Lobby {
       },
       ended: (winner, reason) => {
         room.phase = 'over';
+        this.logQuiet(room);
         // A seat whose link went during the battle is kept for the full grace from the result —
         // not from when it went (minutes ago, maybe: it would go at once, the wins with it).
         for (const x of room.seats) if (x && x.session.goneAt !== null) x.session.goneAt = this.now();

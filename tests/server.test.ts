@@ -86,7 +86,7 @@ class FakeClient {
   }
 }
 
-function setup(opts: { awayGrace?: number; silentAway?: number; store?: ServerStore; today?: () => number; hallKeysMax?: number; hallHash?: (network: string, salt: string) => string } = {}) {
+function setup(opts: { awayGrace?: number; silentAway?: number; log?: (line: string) => void; store?: ServerStore; today?: () => number; hallKeysMax?: number; hallHash?: (network: string, salt: string) => string } = {}) {
   let now = 1000;
   let r = 0.37;
   const lobby = new Lobby({
@@ -96,6 +96,7 @@ function setup(opts: { awayGrace?: number; silentAway?: number; store?: ServerSt
     awayGrace: opts.awayGrace ?? 90,
     // (These fake clients don't ping as pages do: silence means nothing unless a test says so.)
     silentAway: opts.silentAway ?? 0,
+    log: opts.log,
     store: opts.store,
     today: opts.today,
     hallKeysMax: opts.hallKeysMax,
@@ -113,7 +114,7 @@ function setup(opts: { awayGrace?: number; silentAway?: number; store?: ServerSt
 }
 
 /** Two players in a running battle. */
-function battle(opts: { awayGrace?: number; silentAway?: number; store?: ServerStore; today?: () => number } = {}) {
+function battle(opts: { awayGrace?: number; silentAway?: number; log?: (line: string) => void; store?: ServerStore; today?: () => number } = {}) {
   const { lobby, run, stall } = setup(opts);
   const a = new FakeClient(lobby);
   const b = new FakeClient(lobby);
@@ -684,6 +685,28 @@ describe('battle', () => {
     b.reconnect();
     run(300);
     expect(b.last('welcome')!.room?.code).toBe(code);
+  });
+
+  it('quiet spells: the first is logged, the rest summed up at the battle’s end (backlog 260)', () => {
+    const lines: string[] = [];
+    const { run, a, b } = battle({ silentAway: 4, log: (l) => lines.push(l) });
+    const step = (secs: number, quiet: FakeClient | null = null) => {
+      for (let i = 0; i < secs; i++) {
+        for (const c of [a, b]) if (c !== quiet) c.send({ type: 'ping', t: 0, rtt: 20 });
+        run(1000);
+      }
+    };
+    for (let i = 0; i < 3; i++) {
+      step(6, b);
+      step(5);
+    }
+    a.send({ type: 'leave' });
+    run(100);
+    const quiet = lines.filter((l) => /quiet|heard from/.test(l));
+    expect(quiet.length).toBe(3);
+    expect(quiet[0]).toMatch(/^Bo went quiet in room/);
+    expect(quiet[1]).toMatch(/^Bo is heard from again/);
+    expect(quiet[2]).toMatch(/^Bo went quiet 3 times in room \w+'s battle, \d+ s in all$/);
   });
 
   it('a tab reconnecting in the background stays away', () => {

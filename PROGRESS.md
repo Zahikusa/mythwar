@@ -649,9 +649,11 @@ on screen.)
    changes: "How to play" / "Begin battle", the room's note under its header on phones, the
    results' subtitle line. Re-shoot the ones that show them (title, room, results) and check
    each still says what its caption says.
-260. [ ] The server logs "went quiet" / "heard from again" for every Wi-Fi blip of 4 s+ (#222) —
+260. [x] The server logs "went quiet" / "heard from again" for every Wi-Fi blip of 4 s+ (#222) —
    a flaky phone could fill the host's console in a long session. Keep the first of each in a
    battle and sum the rest at the battle's end ("Bo went quiet 5 times, 23 s in all").
+   (Done: the first spell of a battle logs "went quiet" / "heard from again"; at the battle's end
+   one line sums them ("Bo went quiet 3 times in room ABCD's battle, 14 s in all"). Server test.)
 261. [ ] `scripts/smoke.ts` keeps ~60 fixed sleeps (after #204/#241): the rest are drag steps,
    "nothing should happen" checks and effects that take time. Review once more on the CI runner
    when `.github/workflows/browser-tests.yml` first runs (Open questions) — flakes there name
