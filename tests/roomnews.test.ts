@@ -103,11 +103,11 @@ describe("emoteRoute (where the other player's quick message shows)", () => {
 
 describe('allyNews (co-op: what the ally just did — backlog 191)', () => {
   it('says the ally left, went away, came back; nothing otherwise', () => {
-    expect(allyNews(view(bo()), view(null))).toBe('Bo left the battle — you fight on alone.');
-    expect(allyNews(view(bo()), view(bo({ away: true })))).toMatch(/^Bo is away — you fight on/);
-    expect(allyNews(view(bo({ away: true })), view(bo()))).toBe('Bo is back.');
-    expect(allyNews(view(bo()), view(bo({ ready: true })))).toBe('');
-    expect(allyNews(null, view(bo()))).toBe('');
+    expect(allyNews(view(bo()), view(null))).toEqual({ kind: 'left', text: 'Bo left the battle — you fight on alone.' });
+    expect(allyNews(view(bo()), view(bo({ away: true })))?.text).toMatch(/^Bo is away — you fight on/);
+    expect(allyNews(view(bo({ away: true })), view(bo()))).toEqual({ kind: 'back', text: 'Bo is back.' });
+    expect(allyNews(view(bo()), view(bo({ ready: true })))).toBeNull();
+    expect(allyNews(null, view(bo()))).toBeNull();
   });
 });
 

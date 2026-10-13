@@ -56,14 +56,14 @@ export function roomNews(prev: RoomView | null, now: RoomView, ownMode: boolean)
  * In a co-op battle, what the ally just did ('' = nothing new): the one who stays must know they
  * now fight alone (the battle doesn't wait for one ally — backlog 191).
  */
-export function allyNews(prev: RoomView | null, now: RoomView): string {
+export function allyNews(prev: RoomView | null, now: RoomView): { kind: 'left' | 'away' | 'back'; text: string } | null {
   const was = prev?.foe ?? null;
   const ally = now.foe;
-  if (was && !ally) return `${was.name} left the battle — you fight on alone.`;
-  if (!was || !ally || ally.name !== was.name) return '';
-  if (ally.away && !was.away) return `${ally.name} is away — you fight on; the battle waits only if you go too.`;
-  if (!ally.away && was.away) return `${ally.name} is back.`;
-  return '';
+  if (was && !ally) return { kind: 'left', text: `${was.name} left the battle — you fight on alone.` };
+  if (!was || !ally || ally.name !== was.name) return null;
+  if (ally.away && !was.away) return { kind: 'away', text: `${ally.name} is away — you fight on; the battle waits only if you go too.` };
+  if (!ally.away && was.away) return { kind: 'back', text: `${ally.name} is back.` };
+  return null;
 }
 
 /** What to do when the server no longer seats us in the room we had (MpClient.sessionLost). */

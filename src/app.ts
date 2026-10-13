@@ -121,6 +121,9 @@ export class App {
   private wakeWanted = false;
   /** Online: the pause menu was opened just on this device (the battle was already held). */
   private netMenuLocal = false;
+  /** Co-op: the ally's "away" is said after a moment (a Wi-Fi blip says nothing), and "back" only after it. */
+  private allyAwayTimer = 0;
+  private allyAwaySaid = false;
   /** The room's terms when the current online battle started (see termsChange). */
   private battleTerms: RoomTerms | null = null;
   /** The battle room as last seen (null: none) — room chimes, and what the other player changed. */
@@ -1194,9 +1197,24 @@ export class App {
     const now = mp.room ? roomView(mp.room, mp.seat) : null;
     this.lastRoom = now;
     // In a co-op battle: the ally away, back, or gone — the battle runs on for the one who stays.
+    // (A blip of the ally's Wi-Fi says nothing: "away" only after 2 s, "back" only after "away".)
     if (this.state === 'playing' && now && this.game instanceof NetGame && this.game.coop) {
-      const said = allyNews(prev, now);
-      if (said) this.hud.toast(said, 'info');
+      const news = allyNews(prev, now);
+      if (news?.kind === 'away') {
+        clearTimeout(this.allyAwayTimer);
+        this.allyAwayTimer = window.setTimeout(() => {
+          if (this.state !== 'playing' || !this.lastRoom?.foe?.away) return;
+          this.allyAwaySaid = true;
+          this.hud.toast(news.text, 'info');
+        }, 2000);
+      } else if (news?.kind === 'back') {
+        clearTimeout(this.allyAwayTimer);
+        if (this.allyAwaySaid) this.hud.toast(news.text, 'info');
+        this.allyAwaySaid = false;
+      } else if (news) {
+        clearTimeout(this.allyAwayTimer);
+        this.hud.toast(news.text, 'info');
+      }
     }
     if (this.state === 'playing' || !now) return;
     const news = roomNews(prev, now, performance.now() - this.ownCoopAt <= 2000);

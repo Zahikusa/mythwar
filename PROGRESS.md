@@ -891,9 +891,11 @@ it prints, inviting, stopping — 2026-10-13.)
 202. [ ] PROGRESS.md is ~1250 lines; each run reads it first. Move the done items 1–137 and the
    run #5–#7 summaries to docs/PROGRESS-archive.md (linked), keeping the open items, decisions,
    open questions and the last two run summaries here.
-203. [ ] `allyNews` (#191) toasts "Bo is away" / "Bo is back" on every blip of the ally's link
+203. [x] `allyNews` (#191) toasts "Bo is away" / "Bo is back" on every blip of the ally's link
    (`away || !connected`): on poor Wi-Fi that could flicker a toast every few seconds. Hold "away"
-   for ~2 s before saying it (and say "back" only after an "away" was said).
+   for ~2 s before saying it (and say "back" only after an "away" was said). (Done: `allyNews` returns a kind;
+   the app says "away" after 2 s if still away, "back" only after an "away" was said; tests;
+   mpsmoke's co-op checks green.)
 204. [ ] smoke still has ~90 short fixed sleeps (100–600 ms) between taps and checks — on the CI
    runner (#127) the timing-sensitive ones may flake. Turn the ones that wait for a state into
    `waitForFunction`s (as #134/#158 did for results and page loads).
