@@ -551,6 +551,11 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 128. [ ] The menus' focus handling (#76) and the HUD's accessibility labels (#79) are covered only by
    smoke checks; unit tests can't reach DOM code (no DOM environment in vitest). Decide whether a
    DOM environment (happy-dom) is worth a dev dependency, or keep them in smoke.
+129. [ ] (#23 made concrete) Rival records on the device are keyed by the opponent's name — two Adas
+   share a line, a renamed friend starts a new one. The server knows each player's device: it
+   could send, with the seats, an opaque per-pair rival id (a hash of both devices and the
+   server's salt — never the device id itself), and the client key its tallies by it (falling back
+   to the name for old lines). Protocol change (v16).
 
 
 
