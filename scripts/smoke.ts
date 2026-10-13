@@ -194,6 +194,12 @@ async function serviceWorkerFlow(page: Page): Promise<void> {
     await new Promise((r) => setTimeout(r, 300));
     return (await c.keys()).map((r) => new URL(r.url).pathname);
   }, qr);
+  // (Backlog 85) A server that hangs (gone while the Wi-Fi is up): the saved page after ~4 s,
+  // not the browser's timeout.
+  const t0 = Date.now();
+  await page.goto(`${base}/?hang`, { waitUntil: 'domcontentloaded', timeout: 20_000 }).catch(() => {});
+  const shown = await page.evaluate(() => !!document.querySelector('.screen.title')).catch(() => false);
+  check('a page load the server never answers shows the saved page after a few seconds', shown && Date.now() - t0 < 9000, `${Date.now() - t0} ms, shown ${shown}`);
   check('service worker drops older copies of a lazily loaded chunk', !lazy.some((k) => k.includes('qrcode-OLDBUILD')) && lazy.some((k) => k.endsWith(qr)) && lazy.some((k) => k.includes('lazy-ABCDEFGH')), JSON.stringify(lazy));
 }
 
@@ -1230,6 +1236,8 @@ async function main(): Promise<void> {
   const root = resolve('dist');
   const server = createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://x');
+    // (A server that's there but never answers — see the service worker flow.)
+    if (url.searchParams.has('hang')) return;
     let path = join(root, decodeURIComponent(url.pathname));
     if (url.pathname === '/' || !extname(path)) path = join(root, 'index.html');
     try {

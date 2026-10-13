@@ -1,6 +1,8 @@
 // Offline support: cache-first for hashed build assets (they never change), network-first for
 // everything else — the page, the manifest, icons — so an update reaches installed copies too.
 const CACHE = 'mythwar-v4';
+/** How long a page load waits for the network before the saved copy is shown (ms). */
+const NAV_WAIT = 4000;
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', './manifest.webmanifest', './icon.svg', './icon-192.png'])).then(() => self.skipWaiting()));
 });
@@ -49,13 +51,26 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   if (req.mode === 'navigate') {
+    let stored = Promise.resolve();
+    const net = fetch(req).then((res) => {
+      if (res.ok) stored = storePage(res.clone()).catch(() => {});
+      return res;
+    });
+    e.waitUntil(net.then(() => stored, () => {}));
+    // The network first — but a server that's gone while the Wi-Fi is up doesn't fail, it hangs
+    // (a phone waits tens of seconds for the timeout): after NAV_WAIT the saved page is shown.
     e.respondWith(
-      fetch(req)
-        .then((res) => {
-          if (res.ok) e.waitUntil(storePage(res.clone()).catch(() => {}));
-          return res;
-        })
-        .catch(() => caches.match('./')),
+      new Promise((resolve) => {
+        let done = false;
+        const answer = (res) => {
+          if (done || !res) return;
+          done = true;
+          clearTimeout(timer);
+          resolve(res);
+        };
+        const timer = setTimeout(() => caches.match('./').then(answer), NAV_WAIT);
+        net.then(answer, () => caches.match('./').then((hit) => answer(hit || Response.error())));
+      }),
     );
     return;
   }
