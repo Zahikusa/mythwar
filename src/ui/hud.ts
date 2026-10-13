@@ -1064,7 +1064,7 @@ export class Hud {
         ? `Enemy age: ${AGES[foe.age].name} — ${Math.round(xpFrac(foe) * 100)}% of the XP for ${AGES[foe.age + 1].name}`
         : `Enemy age: ${AGES[foe.age].name}`;
     if (E.ageR.title !== foeTitle) E.ageR.title = foeTitle;
-    setText(E.ageLn, this.allyName ? `You & ${this.allyName} · ${AGES[me.age].name}` : this.myName ? `${this.myName} · ${AGES[me.age].name}` : AGES[me.age].name);
+    setText(E.ageLn, this.allyName ? `You & ${this.allyName} · ${AGES[me.age].name}` : this.myName ? `${this.myName}${/[\p{L}\p{N}]/u.test(this.myName) ? ' ·' : ''} ${AGES[me.age].name}` : AGES[me.age].name);
     // Online, the right-hand side says who it is.
     setText(E.ageRn, this.foeName ? `${this.foeName} · ${AGES[foe.age].name}` : AGES[foe.age].name);
     toggle(E.hpL.parentElement!, 'low', fracs[0] < 0.3);
