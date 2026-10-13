@@ -822,6 +822,9 @@ it prints, inviting, stopping — 2026-10-13.)
    own folder: page, its script (relative ./assets paths — the first try's regex missed them), a
    lobby hello welcomed with this checkout's protocol and rules fingerprint, a hosted room; a step
    in release.yml after `npm run package`.)
+186. [x] Gamepad: the battle room (now with How to play, #161) had no D-pad reachability check (the
+   results have one, #109). (Done: mpsmoke walks the room's 11 controls — mode and handicap chips,
+   Leave room, How to play, Ready — all reachable.)
 
 
 

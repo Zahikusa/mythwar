@@ -249,6 +249,32 @@ async function main(): Promise<void> {
     await sleep(300); // (nothing should happen: give it the chance to)
     const stay = await b.evaluate(() => ({ menu: (window as any).__mythwar.menus.current, seat: (window as any).__mythwar.mp.seat }));
     check('room: Back keeps the guest in the room and on the page', stay.menu === 'room' && stay.seat === 1 && b.url() === roomUrl, JSON.stringify(stay));
+    // (Backlog 186) A gamepad reaches every control of the battle room with the D-pad — the mode and
+    // handicap chips, Leave room, How to play, Ready (a breadth-first walk over the app's moves).
+    const roomReach = await a.evaluate(() => {
+      const app = (window as any).__mythwar;
+      const screen = document.querySelector('.screen.room') as HTMLElement;
+      const all = [...screen.querySelectorAll<HTMLElement>('button')].filter((b) => b.offsetParent !== null && !(b as HTMLButtonElement).disabled);
+      const label = (b: HTMLElement) => b.textContent?.trim() ?? '';
+      const start = screen.querySelector<HTMLElement>('.mbtn.primary') ?? all[all.length - 1];
+      const seen = new Set<HTMLElement>([start]);
+      const queue = [start];
+      while (queue.length) {
+        const from = queue.shift()!;
+        for (const dir of ['up', 'down', 'left', 'right']) {
+          app.setPadFocus(from);
+          app.padMenu(dir);
+          const to = app.padFocus as HTMLElement | null;
+          if (to && !seen.has(to)) {
+            seen.add(to);
+            queue.push(to);
+          }
+        }
+      }
+      app.setPadFocus(null);
+      return { n: all.length, unreachable: all.filter((b) => !seen.has(b)).map(label) };
+    });
+    check('gamepad: every control in the battle room is reachable with the D-pad', roomReach.unreachable.length === 0 && roomReach.n >= 10, JSON.stringify(roomReach));
     if (portrait) {
       // (Backlog 164) An upright phone renaming in the room is told to turn sideways first.
       await b.tap('.rseat.mine .sname');
