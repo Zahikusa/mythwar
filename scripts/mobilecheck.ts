@@ -22,6 +22,7 @@ import type { Browser, BrowserContext, Page } from 'playwright';
 import { attachMultiplayer } from '../server/net.ts';
 import { serveStatic } from '../server/static.ts';
 import { findChrome } from './chrome.ts';
+import { MpClient } from '../src/net/client.ts';
 
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= '0';
 
@@ -121,12 +122,29 @@ interface Step {
   after?: number;
   /** Only in a tab, or only installed. */
   only?: 'tab' | 'app';
+  /**
+   * A friend (a client run here) joins the room the page hosts and readies up; then `script3`
+   * runs and `ready3` is waited for. With `guestLeaves`, the friend then leaves (mid-battle: a
+   * forfeit) and that predicate is waited for.
+   */
+  guest?: boolean;
+  script3?: string;
+  ready3?: string;
+  guestLeaves?: string;
+  /**
+   * Turned once it's ready: the phone is rotated (the other orientation's viewport) and the
+   * screen checked again as it is then. (Only where both orientations have the same insets:
+   * `?safe=` is read once.)
+   */
+  turn?: boolean;
 }
 
 const battle = 'play=novice&seed=4';
 const inBattle = `a.state === 'playing' && a.game && a.game.world.tick > 20`;
 const STEPS: Step[] = [
   { name: 'title', query: '', ready: `a.menus.current === 'title'`, after: 900 },
+  // A returning player with a battle saved: Continue joins the title's buttons.
+  { name: 'title-continue', query: '', ready: `a.menus.current === 'title'`, script: `a.menus.setContinue('Fae Wilds · 3:12'); a.menus.show('title')`, after: 900 },
   { name: 'journey', query: 'screen=difficulty', ready: `a.menus.current === 'difficulty'`, after: 700 },
   { name: 'riddles', query: 'screen=difficulty', ready: `a.menus.current === 'difficulty'`, script: `a.menus.show('riddles')`, ready2: `a.menus.current === 'riddles'`, after: 700 },
   { name: 'howto', query: 'screen=howto', ready: `a.menus.current === 'howto'`, after: 700 },
@@ -155,6 +173,15 @@ const STEPS: Step[] = [
   // Typing a name in the lobby (upright phones: the upright echo of the turned field).
   { name: 'typing', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `const f = document.querySelector('.screen.mp .mpname'); f.focus(); f.value = 'Ada Lovelace'; f.dispatchEvent(new Event('input', { bubbles: true }))`, after: 600 },
   { name: 'room', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, after: 1000 },
+  // Rotated while open (TASK A: "after rotating"): the battle, a menu screen, the install sheet.
+  { name: 'turned-battle', query: battle, ready: inBattle, turn: true, after: 1200 },
+  { name: 'turned-settings', query: 'screen=settings', ready: `a.menus.current === 'settings'`, turn: true, after: 900 },
+  { name: 'turned-install', query: '', ready: `a.menus.current === 'title'`, script: `a.install.open()`, ready2: `!!document.querySelector('.isheetback.show')`, turn: true, after: 900, only: 'tab' },
+  // With a friend: the full room (seats, battle modes, handicaps), an online battle (quick
+  // messages, the connection) and its results (rematch, quick messages).
+  { name: 'room2', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, ready3: `!!a.mp.room?.seats[1]?.ready`, after: 1000 },
+  { name: 'online', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, after: 1500 },
+  { name: 'online-over', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, guestLeaves: `a.menus.current === 'over'`, after: 1200 },
 ];
 
 interface Problem {
@@ -357,6 +384,24 @@ const match = (f: string[] | null, v: string) => !f || f.some((x) => v.includes(
 let failures = 0;
 const tally = new Map<string, number>();
 
+/** The friend: joins room `code` on the check's server and readies up for the battle. */
+function friend(base: string, code: string): MpClient {
+  const mp = new MpClient({ name: 'Bo', url: base.replace(/^http/, 'ws') + '/mp', storage: null });
+  let asked = false;
+  mp.listen({
+    changed: () => {
+      if (mp.welcomed && !asked) {
+        asked = true;
+        mp.join(code);
+      }
+      const room = mp.room;
+      if (room && mp.seat !== null && room.phase !== 'playing' && room.phase !== 'over' && !room.seats[mp.seat]?.ready) mp.ready(true);
+    },
+  });
+  mp.start();
+  return mp;
+}
+
 async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 'app', orient: 'p' | 'l'): Promise<string[]> {
   const v = d[mode][orient === 'p' ? 0 : 1];
   const ctx: BrowserContext = await browser.newContext({
@@ -390,17 +435,37 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
   const tag = `${d.name}-${mode}-${orient}`;
   for (const s of STEPS) {
     if (!match(fScreen, s.name) || (s.only && s.only !== mode)) continue;
+    // (Turned: the screen ends up in the other orientation — checked against that one's insets.)
+    const turned = d[mode][orient === 'p' ? 1 : 0];
+    if (s.turn && JSON.stringify(turned.safe) !== JSON.stringify(v.safe)) continue;
     const page: Page = await ctx.newPage();
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
     const q = [s.query, `safe=${v.safe.t},${v.safe.r},${v.safe.b},${v.safe.l}`].filter(Boolean).join('&');
     const problems: Problem[] = [];
+    let guest: MpClient | null = null;
     try {
       await page.goto(`${base}/?${q}`);
       const wait = (expr: string) => page.waitForFunction(`(() => { const a = window.__mythwar; return !!a && (${expr}); })()`, undefined, { timeout: 45000 });
       await wait(s.ready);
       if (s.script) await page.evaluate(`(() => { const a = window.__mythwar; ${s.script}; })()`);
       if (s.ready2) await wait(s.ready2);
+      if (s.guest) {
+        const code = (await page.evaluate(`window.__mythwar.mp.room.code`)) as string;
+        guest = friend(base, code);
+        // (Seated and ready first: a newcomer takes both seats out of Ready.)
+        await wait(`!!a.mp.room?.seats[1]?.ready`);
+        if (s.script3) await page.evaluate(`(() => { const a = window.__mythwar; ${s.script3}; })()`);
+        if (s.ready3) await wait(s.ready3);
+        if (s.guestLeaves) {
+          guest.leave();
+          await wait(s.guestLeaves);
+        }
+      }
+      if (s.turn) {
+        await page.waitForTimeout(400);
+        await page.setViewportSize({ width: turned.w, height: turned.h });
+      }
       await page.waitForTimeout(s.after ?? 500);
       problems.push(...(await page.evaluate(inspect, v.safe)));
       if (shots) await page.screenshot({ path: `screenshots/mobile/${tag}-${s.name}.png` });
@@ -409,6 +474,7 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
       problems.push({ kind: 'error', what: (e as Error).message.split('\n')[0] });
     }
     for (const m of errors) problems.push({ kind: 'error', what: `page error: ${m}` });
+    guest?.stop();
     await page.close();
     const seen = new Set<string>();
     for (const p of problems) {

@@ -1949,6 +1949,19 @@
   .vstats .chart {
     width: 400px;
   }
+
+  /* The title's buttons two by two under the gold one: a column of five or six (a saved
+     battle's Continue) ran under the footer line on an iPad mini sideways, Settings off screen. */
+  .screen.title .mbuttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(560px, 90cqw);
+  }
+
+  .screen.title .mbuttons > :not(.mbtn),
+  .screen.title .mbuttons > .mbtn.big {
+    grid-column: 1 / -1;
+  }
 }
 
 /* A 900-px desktop window keeps the verdict stacked but puts the table beside the chart: in their
@@ -2349,6 +2362,14 @@
    creatures gives way to the buttons. */
 @container stage (max-height: 330px) {
   .screen.title .title-creatures {
+    display: none;
+  }
+}
+
+/* An upright small phone in a browser tab (~360–375 px across the turned stage): a saved
+   battle's Continue adds a row of buttons, and the parade gives way to it. */
+@container stage (max-height: 400px) {
+  .screen.title:has(.continue:not(.hidden)) .title-creatures {
     display: none;
   }
 }

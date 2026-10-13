@@ -244,6 +244,30 @@ Already in the code before Phase 3, and kept:
    phones held upright: headless WebKit drew them on the CPU at 3× and the battle ran at a
    third of its speed. (Done: the check uses at most 2× and plays those two screens at 4×
    game speed; the full matrix — 8 devices — is green again.)
+21. [x] (run #13) Settings' "Your name" field was 15 px on phones (the room's seat-name rule
+   `.sname` in mp.css also matched the field's class): iOS zooms the page into a field under
+   16 px on focus, with pinch off no way back. (Done: the seat rules scoped to `.rseat .sname`;
+   mobilecheck fails any text field under 16 px, hidden ones too.)
+22. [x] (run #13) The battle room on the shortest stage (Galaxy sideways in Chrome, 292 px): the
+   invite QR code was cut by the panel's edge and "Copy link" hidden below it — the friend's
+   camera needed a scroll first. (Done: under 340 px the room code sits beside its label, the
+   QR is 92 px and "Copy link" beside the address; the whole invite fits.)
+23. [x] mobilecheck saw the battle room only while it waited: never with a friend in it (seats,
+   Versus/co-op chips, handicaps), never an online battle or its results. (Done: a friend — a
+   node MpClient — joins the page's room and readies up: `room2`, `online`, `online-over` (the
+   friend leaves mid-battle: a walkover). All fit on the SE and the Galaxy.)
+24. [x] (run #13) A returning player's title (a saved battle: Continue adds a button) was never
+   checked. It overflowed: on an upright SE/Galaxy in a tab Settings and "Get the app" were cut
+   off; on an iPad mini sideways Settings was off screen. And even without Continue, the iPad
+   mini's footer line ran over Settings (no check sees text over a control — see 26).
+   (Done: on 521–860-px stages the title's small buttons go two by two under the gold one;
+   under 400 px a Continue makes the creature parade give way. mobilecheck `title-continue`.)
+25. [x] (run #13) TASK A says "after rotating", but mobilecheck only loaded each orientation
+   fresh. (Done: `turned-battle`, `turned-settings`, `turned-install`: loaded one way, the
+   viewport turned, checked again — on the devices whose insets are the same both ways.)
+26. [ ] mobilecheck's overlap check compares controls with controls only: plain text over a
+   button (the iPad title's footer line over Settings, backlog 24) passed. Check visible text
+   against the controls too (text inside a control is part of it).
 
 ## Decisions
 
