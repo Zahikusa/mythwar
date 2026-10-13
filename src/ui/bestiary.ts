@@ -2,6 +2,7 @@ import { AGES, AGE_TURRETS, AGE_UNITS, POWERS } from '../sim/data.ts';
 import { h, onTap } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, CLASS_NAME } from './icons.ts';
 import { TEMPERS } from '../render/creatures/tempers.ts';
+import { heroNamesOf } from './heroes.ts';
 import { portrait } from './portraits.ts';
 
 /** Where each creature comes from: one or two lines of the myth behind it. */
@@ -79,6 +80,8 @@ export class Bestiary {
             h('div', { class: 'bmeta', text: `${CLASS_NAME[def.cls]} · ${def.projectile ? 'Ranged' : 'Melee'} · ${def.cost} gold` }),
             def.traitText ? h('div', { class: 'btrait', text: def.traitText }) : null,
             h('div', { class: 'bmyth', text: MYTHS[def.id] ?? def.blurb }),
+            // (Lens #88: the names its veterans earn — and a hint that veterans exist.)
+            heroNamesOf(def.id).length ? h('div', { class: 'bheroes', text: `Veterans are named ${heroNamesOf(def.id).join(', ')}.` }) : null,
           ]
         : [h('div', { class: 'bname' }, h('b', { text: '???' }))];
       grid.appendChild(h('div', { class: `bentry${known ? '' : ' unknown'}` }, portrait(def.id, 64), h('div', { class: 'btext' }, ...text)));

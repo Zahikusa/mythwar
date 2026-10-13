@@ -23,6 +23,11 @@ const NAMES: Record<string, string[]> = {
   dragon: ['Fáfnir', 'Níðhöggr', 'Ladon', 'Tiamat'],
 };
 
+/** The names a kind of creature's veterans can earn (the Bestiary lists them). */
+export function heroNamesOf(defId: string): readonly string[] {
+  return NAMES[defId] ?? [];
+}
+
 /** The name a creature earns (stable for one creature: from its kind and its unit id). */
 export function heroName(defId: string, unitId: number): string {
   const list = NAMES[defId];
