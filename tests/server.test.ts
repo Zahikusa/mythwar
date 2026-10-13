@@ -611,6 +611,33 @@ describe('battle', () => {
     expect(c.last('room')!.seat).toBe(1);
   });
 
+  it('the same device in a new tab takes its dropped seat back; another device can’t (backlog 89)', () => {
+    const { lobby, run, a, b, code } = battle();
+    const bDevice = 'b0b0b0b0b0b0b0b0b0b0b0b0';
+    run(2000);
+    const rooms = (lobby as unknown as { rooms: Map<string, { seats: ({ session: { device: string } } | null)[] }> }).rooms;
+    rooms.get(code)!.seats[1]!.session.device = bDevice;
+    b.disconnect();
+    run(100);
+    const stranger = new FakeClient(lobby);
+    stranger.hello('Cy', undefined, { device: 'c0c0c0c0c0c0c0c0c0c0c0c0' });
+    // (Mid-battle the seat waits for its own tab: the battle ends — A leaves — and a host is back.)
+    a.send({ type: 'leave' });
+    run(10);
+    const host = new FakeClient(lobby);
+    host.hello('Ada');
+    host.send({ type: 'join', code });
+    run(10);
+    const again = new FakeClient(lobby);
+    again.hello('Bo', undefined, { device: bDevice });
+    stranger.send({ type: 'join', code });
+    expect(stranger.last('error')?.code).toBe('room-full');
+    again.send({ type: 'join', code });
+    expect(again.last('error')).toBeUndefined();
+    expect(again.last('room')!.seat).toBe(1);
+    expect(host.last('room')!.room.seats[1]).toMatchObject({ name: 'Bo', connected: true });
+  });
+
   it('the Hall of champions counts battles per player across rooms (Lens #86)', () => {
     const { lobby, run, b } = battle();
     const watcher = new FakeClient(lobby);

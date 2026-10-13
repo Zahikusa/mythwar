@@ -447,6 +447,23 @@ export class Lobby {
         if (!r) return this.error(s.conn, 'no-room', 'No battle with that code here.');
         if (r === room) return this.broadcastRoom(r);
         const free = r.seats[0] === null ? 0 : r.seats[1] === null ? 1 : -1;
+        // The same device back in a new tab (a phone that dropped the page, a re-scanned QR): its
+        // own seat, left without a connection, is its to take back — score and handicaps kept.
+        const own = free < 0 && r.phase !== 'playing' && s.device ? ([0, 1] as Team[]).find((i) => r.seats[i]!.session !== s && r.seats[i]!.session.conn === null && r.seats[i]!.session.device === s.device) : undefined;
+        if (own !== undefined) {
+          if (room) this.removeFromRoom(s);
+          const old = r.seats[own]!;
+          old.session.room = null;
+          old.session.seat = null;
+          r.seats[own] = { ...old, session: s, ready: false };
+          s.room = r;
+          s.seat = own;
+          if (r.phase === 'over') r.phase = 'waiting';
+          this.broadcastRoom(r);
+          this.roomsDirty = true;
+          this.log(`${s.name} took their seat in room ${r.code} back`);
+          return;
+        }
         if (free < 0 || r.phase === 'playing') return this.error(s.conn, 'room-full', 'That battle already has two players.');
         if (room) this.removeFromRoom(s);
         this.seat(s, r, free as Team);
