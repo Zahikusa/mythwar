@@ -7,7 +7,7 @@ import { h, fmt, fmtTime, onTap } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 import type { Settings } from './settings.ts';
-import { battleStars, parTime } from './settings.ts';
+import { SIGILS, battleStars, parTime } from './settings.ts';
 import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
 import { Bestiary } from './bestiary.ts';
@@ -734,6 +734,18 @@ export class Menus {
       this.cb.settingsChanged(s);
     });
     const nameRow = h('label', { class: 'srow sname-row' }, h('span', { text: 'Your name' }), nameInput);
+    // Your sigil (Lens #75): an emblem beside your name by your citadel and on the results.
+    const sigilBtn = h('button', { class: 'mbtn ghost small ssigil', 'aria-label': 'Your sigil' }) as HTMLButtonElement;
+    const syncSigil = () => (sigilBtn.textContent = s.sigil >= 0 ? SIGILS[s.sigil] : 'None');
+    syncSigil();
+    this.syncers.push(syncSigil);
+    onTap(sigilBtn, () => {
+      s.sigil = s.sigil + 1 >= SIGILS.length ? -1 : s.sigil + 1;
+      syncSigil();
+      this.cb.settingsChanged(s);
+      this.cb.sound('select');
+    });
+    const sigilRow = h('div', { class: 'srow sname-row' }, h('span', { text: 'Your sigil' }), sigilBtn);
     const progress = h('div', { class: 'sprog' }, h('span', { class: 'sproglabel', text: 'Play on another device too? Carry your records and feats over:' }), h('div', { class: 'sprogrow' }, copyProg, progInput, loadProg), progStatus);
     // Each visit starts fresh: no half-armed "erase records" left over from last time.
     this.settingsOpened = () => {
@@ -761,6 +773,7 @@ export class Menus {
         toggleRow('Fullscreen on phones', 'fullscreen'),
         toggleRow('Opponent’s messages (AI taunts too)', 'emotes'),
         nameRow,
+        sigilRow,
         progress,
         h(
           'div',
@@ -825,7 +838,7 @@ export class Menus {
         h(
           'tr',
           null,
-          h('td', { class: 'you', text: 'You' }),
+          h('td', { class: 'you', text: this.settings.sigil >= 0 ? `${SIGILS[this.settings.sigil]} You` : 'You' }),
           h('th'),
           h('td', { class: 'foe', title: online ? '' : 'Its gold over time and from shrines, compared with yours (gold from kills is the same)' }, foeName, online || AI_PROFILES[difficulty].incomeMult === 1 ? null : h('small', { text: ` · ${Math.round(AI_PROFILES[difficulty].incomeMult * 100)}% income` })),
         ),

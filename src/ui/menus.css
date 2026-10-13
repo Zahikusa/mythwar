@@ -1763,3 +1763,10 @@
 .trials.notrials .handicap {
   display: none;
 }
+
+/* The sigil button (Lens #75): a single large glyph. */
+.mbtn.ssigil {
+  justify-self: start;
+  min-width: 64px;
+  font-size: 18px;
+}

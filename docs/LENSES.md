@@ -1426,3 +1426,16 @@ existing if the game stopped?*
 - Found on the way: the first placement put them behind the top bar (the sky band is short) and
   too small to read — now in the lower half of the sky, scaled to it.
 - Checked: screenshots of Asgard's ravens and the Jade dragon mid-crossing; full verify.
+
+## #75 The Lens of the Avatar
+*Is the player's avatar an ideal the player can step into — and does it have iconic qualities,
+simple enough for the player to fill with themselves?*
+- Mythwar's "avatar" is not a body on the field (the player commands from above); it is the
+  side: blue citadel, army, name (#64). The four generals each have an iconic presence (a name, a
+  title, a voice). The player had a name — plain text — and nothing iconic.
+- Change: a **sigil** — Settings → "Your sigil": sun, moon, star, crown, crossed swords or
+  lozenge (or none) — an emblem in the simplest, most iconic form there is (one glyph, in text
+  presentation so phones don't swap in emoji). It stands before your name by your citadel
+  ("☾ Zoë · Fae Wilds") and heads your column on the results ("☾ You"). Abstract on purpose:
+  a sign the player chooses and fills with meaning, not a portrait that tells them who they are.
+- Checked: screenshots (settings, the HUD name with the moon sigil); full verify.

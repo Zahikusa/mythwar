@@ -14,7 +14,7 @@ import { Renderer } from './render/renderer.ts';
 import { Coach } from './ui/coach.ts';
 import { Hud, RAG_WARN } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
-import { battleStars, loadSettings, parTime, recordOnline, recordResult, saveSettings } from './ui/settings.ts';
+import { battleStars, loadSettings, parTime, recordOnline, recordResult, saveSettings, playerLabel } from './ui/settings.ts';
 import { clearBattle, loadBattle, saveBattle } from './save.ts';
 import { AGES } from './sim/data.ts';
 import { fmtTime } from './ui/dom.ts';
@@ -508,7 +508,7 @@ export class App {
     this.hud.holdKnown = !this.settings.hints || this.settings.hintsSeen.includes('hold');
     // (A riddle is solved by reading the lane yourself: no "Counter!" badge there.)
     this.hud.advice = this.settings.advice && !game.riddle;
-    this.hud.myName = this.settings.playerName;
+    this.hud.myName = playerLabel(this.settings);
     this.hud.attach(game);
     this.input.attach(game);
     // (The sandbox is a toy: battle tips would only be used up there.)

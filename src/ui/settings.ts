@@ -52,6 +52,17 @@ export interface Settings {
   riddles: string[];
   /** The age battles against the AI begin in (Lens #71; only ages reached in battle). */
   startAge: number;
+  /** The player's sigil (Lens #75: index into SIGILS, -1 = none). */
+  sigil: number;
+}
+
+/** Sigils a player can take as their emblem (text presentation, so phones don't draw emoji). */
+export const SIGILS = ['☀︎', '☾︎', '✦', '♛︎', '⚔︎', '❖'];
+
+/** "☀ Zoë", "☀", "Zoë" or '' — the player as the HUD and results show them. */
+export function playerLabel(s: Settings): string {
+  const sig = s.sigil >= 0 ? SIGILS[s.sigil] ?? '' : '';
+  return [sig, s.playerName].filter(Boolean).join(' ');
 }
 
 const KEY = 'mythwar.settings.v1';
@@ -81,6 +92,7 @@ const DEFAULTS: Settings = {
   colorblind: false,
   riddles: [],
   startAge: 0,
+  sigil: -1,
 };
 
 export function loadSettings(): Settings {
@@ -130,6 +142,7 @@ function sanitize(s: Settings): Settings {
     quick: bool(s.quick, false),
     colorblind: bool(s.colorblind, false),
     startAge: Math.max(0, Math.min(4, Math.floor(Number(s.startAge) || 0))),
+    sigil: Number.isInteger(s.sigil) && s.sigil >= -1 && s.sigil < SIGILS.length ? s.sigil : -1,
     riddles: Array.isArray(s.riddles) ? [...new Set(s.riddles.filter((x): x is string => typeof x === 'string'))].slice(0, 50) : [],
     trials: Array.isArray(s.trials) ? TRIAL_ORDER.filter((t) => s.trials.includes(t)) : [],
     feats: Array.isArray(s.feats) ? [...new Set(s.feats.filter((x): x is string => typeof x === 'string'))].slice(0, 100) : [],
