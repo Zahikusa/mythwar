@@ -384,6 +384,25 @@ held up: a phone locked through the countdown, a reload on the results, a full/g
    alone with "Waiting for a second player…". Flash what happened. (Done: "Ada now fights under
    Glass Citadel — press Ready again", "… switched to co-op against the Novice AI — the score
    starts over" (not for your own switch), "Ada left the room."; mpsmoke checks the first.)
+(Items 91–94: an independent review of data across versions, 2026-10-13 — old autosaves from 11
+builds back all load and play; no parseable settings value crashed; odd Hall files load.)
+91. [ ] Autosave across builds: `World.deserialize` passes any `trainProgress` shape through; a tab
+   on the released build continuing this build's save (array, not number) freezes the battle
+   (NaN progress, nothing trains), then writes `[null, null]` back, which crashes this build every
+   frame — and the save is never dropped. Validate on load; drop a save whose battle throws;
+   bump the save to v2 (older builds ignore it).
+92. [ ] `src/ui/settings.ts`: settings are written whole, last tab wins — an older build's tab drops
+   fields it doesn't know (riddles, stars, sigil, journal…) on its next save; two tabs of one
+   build undo each other's records. Keep unknown fields; before saving, merge what only grows
+   (records, feats, riddles) from storage; refresh on `storage` events.
+93. [x] `src/ui/progress.ts`: importing a code appends every online name; the load-time cap (40)
+   then keeps the imported ones and drops this device's own opponents ("nothing earned here is
+   ever lost" is broken); a code with 20,000 names stored 450 kB. Cap the import, keep own first.
+   (Done: names new here only while the list has room, the code's newest first; test with 40 own
+   and 20,000 imported.)
+94. [ ] (note) Hall files written between 7ff005c and f1c5f9c (quick-hash keys, this branch only, a
+   few hours on 2026-10-13, never released) keep orphaned networks whose keys are recoverable.
+   Only dev machines can have them — delete `mythwar-data.json` there; no code change.
 
 
 

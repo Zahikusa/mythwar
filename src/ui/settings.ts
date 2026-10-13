@@ -230,7 +230,7 @@ export function journalText(s: Settings, version = ''): string {
   return [`Mythwar playtest journal${version ? ` (v${version})` : ''} — ${s.journal.length} battle(s), oldest first`, ...lines].join('\n');
 }
 
-const ONLINE_MAX = 40;
+export const ONLINE_MAX = 40;
 
 function sanitizeOnline(raw: unknown): Settings['online'] {
   const out: Settings['online'] = {};

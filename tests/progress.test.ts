@@ -59,6 +59,18 @@ describe('progress codes', () => {
     expect(s.online['__proto__']).toEqual({ w: 3, l: 1 });
   });
 
+  it('imported rivals never push out this device’s own (backlog 93)', () => {
+    const s = loadSettings();
+    for (let i = 0; i < 40; i++) s.online[`Own ${i}`] = { w: 1, l: 0 };
+    const other = loadSettings();
+    for (let i = 0; i < 20_000; i++) other.online[`Far ${i}`] = { w: 0, l: 1 };
+    other.online['Own 3'] = { w: 5, l: 2 };
+    expect(importProgress(s, exportProgress(other))).toBe(true);
+    expect(Object.keys(s.online)).toHaveLength(40);
+    expect(Object.keys(s.online).every((n) => n.startsWith('Own '))).toBe(true);
+    expect(s.online['Own 3']).toEqual({ w: 5, l: 2 });
+  });
+
   it('rejects anything that is not a progress code', () => {
     const s = loadSettings();
     const before = JSON.stringify(s);

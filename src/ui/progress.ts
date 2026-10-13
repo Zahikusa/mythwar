@@ -1,5 +1,5 @@
 import { DIFFICULTIES } from '../ai/ai.ts';
-import { onlineRecord, putOnline } from './settings.ts';
+import { ONLINE_MAX, onlineRecord, putOnline } from './settings.ts';
 import type { Settings } from './settings.ts';
 import { FEATS, MAX_STARS, PINNACLE, starTotal } from './feats.ts';
 import { PUZZLES } from '../sim/puzzles.ts';
@@ -60,8 +60,20 @@ export function importProgress(s: Settings, code: string): boolean {
   if (starTotal(s.records) >= MAX_STARS && !s.feats.includes(PINNACLE)) s.feats.push(PINNACLE);
   s.ageSeen = Math.max(s.ageSeen, Math.min(4, num(p.a)));
   if (p.o && typeof p.o === 'object') {
-    for (const [name, r] of Object.entries(p.o)) {
-      if (!r || typeof r !== 'object' || name.length > 40) continue;
+    // Names new here only while there's room (the code's newest first): the list keeps the last
+    // ONLINE_MAX, and this device's own opponents must not be pushed out by imported ones.
+    const entries = Object.entries(p.o).filter(([name, r]) => r && typeof r === 'object' && name.length <= 40);
+    let room = ONLINE_MAX - Object.keys(s.online).length;
+    const admitted = new Set<string>();
+    for (const [name] of [...entries].reverse()) {
+      if (Object.hasOwn(s.online, name)) admitted.add(name);
+      else if (room > 0) {
+        admitted.add(name);
+        room--;
+      }
+    }
+    for (const [name, r] of entries) {
+      if (!admitted.has(name)) continue;
       const mine = onlineRecord(s, name) ?? { w: 0, l: 0 };
       putOnline(s.online, name, { w: Math.max(mine.w, num(r.w)), l: Math.max(mine.l, num(r.l)) });
     }
