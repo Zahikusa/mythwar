@@ -339,6 +339,9 @@ it prints, inviting, stopping — 2026-10-13.)
    play out to the results. (Done without a hook: mpsmoke already holds the server — it ends the co-op battle
    through the lobby's room and checks B's verdict "You toppled the Novice — after Ada L had
    left.", "Back to room", and the room open again.)
+208. [x] The lobby's "can't reach the game server" help (mpmenus.ts ~142) also said only "private
+   networks" (#175's trap). (Done: "…allows Node.js — on Windows also that the Wi-Fi is a
+   Private network, not Public.")
 
 
 

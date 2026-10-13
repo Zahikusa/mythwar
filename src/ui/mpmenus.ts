@@ -143,7 +143,7 @@ export class MpScreens {
       class: 'mphelp hidden',
       html:
         'Multiplayer needs the <b>game server</b>: on a computer in this Wi-Fi start <b>Mythwar Server</b> (or <code>npm run lan</code>) and open the address it prints — on every device. ' +
-        'Check that both devices use the same Wi-Fi (not a guest network) and that the firewall allows Node.js on private networks.',
+        'Check that both devices use the same Wi-Fi (not a guest network) and that the firewall allows Node.js — on Windows also that the Wi-Fi is a <b>Private</b> network, not Public.',
     });
     this.hostBtn = this.button('Host a battle', 'primary big', () => this.cb.host(), ICONS.swords);
     this.codeInput = h('input', {
