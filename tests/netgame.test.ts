@@ -265,6 +265,31 @@ describe('NetGame over a simulated network', () => {
     expect(a.room!.seats[1]).toBeNull();
   });
 
+  it('leaving while the start is on its way does not start that battle (backlog 48)', () => {
+    net = new SimNet();
+    net.latency = 50;
+    const a = net.client('Ada');
+    const b = net.client('Bo');
+    net.run(400);
+    a.host();
+    net.run(400);
+    b.join(a.room!.code);
+    net.run(400);
+    b.ready(true);
+    net.run(200);
+    a.ready(true); // the server starts the battle at once; 'start' reaches Ada 100 ms from now
+    net.run(70);
+    a.leave();
+    net.run(1000);
+    expect(a.game).toBeNull();
+    expect(a.room).toBeNull();
+    expect(b.room!.seats[0]).toBeNull();
+    // And she can host again straight away.
+    a.host();
+    net.run(400);
+    expect(a.room?.seats[0]?.name).toBe('Ada');
+  });
+
   it('a phone that missed the end of the battle sees the result when it reconnects', () => {
     const { a, b, ga, gb } = twoPlayers();
     net.run(3000);

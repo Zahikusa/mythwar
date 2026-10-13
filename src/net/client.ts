@@ -215,8 +215,10 @@ export class MpClient {
   }
 
   leave(): void {
-    // Offline: the server still seats us; say it as soon as we're back.
-    this.leaving = !this.conn.send({ type: 'leave' });
+    // Until the server says 'left', room news and battle starts already on their way are about
+    // the room we left: ignored. (Offline the server still seats us: we say it once we're back.)
+    this.leaving = true;
+    this.conn.send({ type: 'leave' });
     this.room = null;
     this.seat = null;
     if (this.game && !this.game.over) this.game.abandon();
