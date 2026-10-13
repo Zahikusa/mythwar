@@ -301,6 +301,10 @@ Already in the code before Phase 3, and kept:
    the sandbox's opening banner "…the “For:” button (X)". (Done: key hints are `.kbonly`, hidden
    on a touch-only screen (`hover: none` and `pointer: coarse`); the banner leaves out "(X)"
    there. mobilecheck now visits all six how-to pages (`howto-2` … `howto-6`).)
+34. [x] (run #13) Settings showed "Fullscreen on phones" on iPhones (no fullscreen for pages —
+   a switch that does nothing) and in the installed app (full screen already). (Done: the row
+   shows only where a battle can go full screen and the game isn't installed — checked on an
+   iPhone tab/app, an Android tab/app and a desktop.)
 
 ## Decisions
 

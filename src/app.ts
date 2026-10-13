@@ -305,6 +305,9 @@ export class App {
     const entry = () => this.menus.setInstallEntry(this.install.offered ? this.install.label : null, this.install.lanNote ?? undefined);
     this.install.onChange(entry);
     entry();
+    // "Fullscreen on phones" only where a battle can go full screen: not on an iPhone (no
+    // fullscreen for pages) nor in the installed app (full screen already).
+    this.menus.showFullscreenRow(canFullscreen() && !this.install.situation.installed);
     window.addEventListener('resize', () => this.resize());
     // Safari's bars and the on-screen keyboard change the visual viewport only; a turn of the
     // phone can report its new size late (iOS), so it is measured again a moment later.

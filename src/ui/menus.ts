@@ -415,6 +415,13 @@ export class Menus {
     this.installText.textContent = note ?? 'Mythwar plays best as an app: full screen, one tap from your Home Screen.';
   }
 
+  /** Settings' "Fullscreen on phones" (a battle goes full screen): hidden where it can't. */
+  private fullscreenRow: HTMLElement | null = null;
+
+  showFullscreenRow(on: boolean): void {
+    this.fullscreenRow?.classList.toggle('hidden', !on);
+  }
+
   /** A newer build is on the server (see update.ts): restarting the game takes it. */
   updateReady(): void {
     if (this.titleNotes.querySelector('.tupdate')) return;
@@ -812,6 +819,7 @@ export class Menus {
       });
       return h('label', { class: 'srow check' }, h('span', { text: label }), input, h('i', { class: 'sw' }));
     };
+    this.fullscreenRow = toggleRow('Fullscreen on phones', 'fullscreen');
     const back = this.button('Done', 'primary', () => this.show(this.back));
     const resetRecords = this.button('Reset records', 'ghost', () => {
       if (resetRecords.dataset.armed !== '1') {
@@ -925,7 +933,7 @@ export class Menus {
         toggleRow('“Counter!” advice on cards', 'advice'),
         toggleRow('Colour-blind friendly (foe in orange)', 'colorblind'),
         toggleRow('Battery saver (lower quality)', 'lowQuality'),
-        toggleRow('Fullscreen on phones', 'fullscreen'),
+        this.fullscreenRow,
         toggleRow('Opponent’s messages (AI taunts too)', 'emotes'),
         nameRow,
         sigilRow,
