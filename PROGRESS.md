@@ -393,10 +393,15 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
    bump the save to v2 (older builds ignore it). (Done, all three: `deserialize` resets a
    malformed `trainProgress`; a non-online battle that throws while stepping is put away and its
    save dropped; saves are written as v2, v1 still read; tests.)
-92. [ ] `src/ui/settings.ts`: settings are written whole, last tab wins — an older build's tab drops
+92. [x] `src/ui/settings.ts`: settings are written whole, last tab wins — an older build's tab drops
    fields it doesn't know (riddles, stars, sigil, journal…) on its next save; two tabs of one
    build undo each other's records. Keep unknown fields; before saving, merge what only grows
-   (records, feats, riddles) from storage; refresh on `storage` events.
+   (records, feats, riddles) from storage; refresh on `storage` events. (Done: every save first
+   merges what only grows from storage (the progress-code merge, now `mergeProgress`), and keeps
+   a second copy under `mythwar.progress.v1`, which no older build writes and every load merges;
+   Reset records is the one unmerged save. Not done: live refresh on `storage` events — a tab's
+   screen shows its own view until reloaded, but no save of it undoes the other's. Tests; smoke's
+   "newcomer" setups clear the progress copy too; PRIVACY lists the key.)
 93. [x] `src/ui/progress.ts`: importing a code appends every online name; the load-time cap (40)
    then keeps the imported ones and drops this device's own opponents ("nothing earned here is
    ever lost" is broken); a code with 20,000 names stored 450 kB. Cap the import, keep own first.

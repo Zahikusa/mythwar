@@ -3,6 +3,7 @@ import type { Difficulty } from '../ai/ai.ts';
 import { TRIAL_ORDER } from '../sim/data.ts';
 import { SIGILS } from '../net/protocol.ts';
 import type { TrialId } from '../sim/data.ts';
+import { mergeProgress, progressOf } from './progress.ts';
 
 export interface DifficultyRecord {
   wins: number;
@@ -132,7 +133,11 @@ export function loadSettings(): Settings {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object') return sanitize({ ...DEFAULTS, ...parsed });
+      if (parsed && typeof parsed === 'object') {
+        const s = sanitize({ ...DEFAULTS, ...parsed });
+        mergeStored(s, PROGRESS_KEY);
+        return s;
+      }
     }
   } catch {
     // ignore (private mode / corrupted)
@@ -266,12 +271,51 @@ export function recordOnline(s: Settings, foe: string, won: boolean): void {
   saveSettings(s);
 }
 
+/**
+ * Progress kept a second time, under a key no older build of the game writes: a tab still on an
+ * older build saves settings without the fields it doesn't know (riddles, stars…) — this brings
+ * them back on the next load.
+ */
+const PROGRESS_KEY = 'mythwar.progress.v1';
+
+/** Merges the progress stored under `key` (settings or the progress copy) into `s`. */
+function mergeStored(s: Settings, key: string): void {
+  try {
+    const raw = localStorage.getItem(key);
+    const v = raw ? JSON.parse(raw) : null;
+    if (!v || typeof v !== 'object') return;
+    mergeProgress(s, key === KEY ? { r: v.records, f: v.feats, a: v.ageSeen, o: v.online, q: v.riddles } : v);
+  } catch {
+    // unreadable: nothing to merge
+  }
+}
+
+/**
+ * Saves the settings. Another tab — or an older build of the game — may have saved since this
+ * one loaded: what only grows (records, feats, riddles, ages, rivals) is merged in first, so no
+ * save ever undoes another's progress.
+ */
 export function saveSettings(s: Settings): void {
+  mergeStored(s, KEY);
+  mergeStored(s, PROGRESS_KEY);
+  write(s);
+}
+
+function write(s: Settings): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(s));
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(progressOf(s)));
   } catch {
     // ignore
   }
+}
+
+/** Settings → Reset records: the one save that does take progress back (no merge). */
+export function resetRecords(s: Settings): void {
+  s.records = {};
+  s.online = {};
+  s.journal = [];
+  write(s);
 }
 
 /** Par time per foe for the third star (a little slower than a strong player's typical win). */

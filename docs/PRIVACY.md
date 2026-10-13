@@ -7,7 +7,7 @@ online battle shares only what the other player needs to see.
 ## On your device (the browser's storage)
 | What | Where | Why |
 |---|---|---|
-| Settings, your name and sigil, records and stars per general, feats, solved riddles, your record against each online opponent (by name, last 40), the playtest journal (last 30 battles) | `localStorage` → `mythwar.settings.v1` | So the game remembers you |
+| Settings, your name and sigil, records and stars per general, feats, solved riddles, your record against each online opponent (by name, last 40), the playtest journal (last 30 battles) | `localStorage` → `mythwar.settings.v1` (records, feats, riddles, ages and online records also in `mythwar.progress.v1`, so a tab on an older build can't erase them) | So the game remembers you |
 | The battle in progress | `localStorage` → `mythwar.battle.v1` | *Continue* after closing the tab |
 | The multiplayer session token | `sessionStorage` (this tab only) | Rejoin your room after a reload |
 | A random device id (24 hex digits, nothing derived from you) | `localStorage` → `mythwar.device` | The Hall of champions knows you by it, not by your name |

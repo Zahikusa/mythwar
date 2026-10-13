@@ -8,7 +8,7 @@ import { h, fmt, fmtTime, onTap } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 import type { Settings } from './settings.ts';
-import { SIGILS, battleStars, journalText, parTime } from './settings.ts';
+import { SIGILS, battleStars, journalText, parTime, resetRecords as clearRecords } from './settings.ts';
 import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
 import { Bestiary, MYTHS } from './bestiary.ts';
@@ -734,9 +734,7 @@ export class Menus {
         resetRecords.querySelector('span')!.textContent = 'Tap again to erase W/L';
         return;
       }
-      s.records = {};
-      s.online = {};
-      s.journal = [];
+      clearRecords(s);
       // (…and the Hall of champions no longer links its old line to this browser.)
       forgetDevice();
       this.cb.settingsChanged(s);

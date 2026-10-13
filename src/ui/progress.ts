@@ -13,7 +13,7 @@ import { PUZZLES } from '../sim/puzzles.ts';
  */
 const PREFIX = 'MW1:';
 
-interface Payload {
+export interface Payload {
   r: Settings['records'];
   f: string[];
   a: number;
@@ -22,8 +22,13 @@ interface Payload {
   q?: string[];
 }
 
+/** What progress codes carry — and what a save never undoes (see saveSettings). */
+export function progressOf(s: Settings): Payload {
+  return { r: s.records, f: s.feats, a: s.ageSeen, o: s.online, q: s.riddles };
+}
+
 export function exportProgress(s: Settings): string {
-  const p: Payload = { r: s.records, f: s.feats, a: s.ageSeen, o: s.online, q: s.riddles };
+  const p = progressOf(s);
   const bytes = new TextEncoder().encode(JSON.stringify(p));
   let bin = '';
   for (const b of bytes) bin += String.fromCharCode(b);
@@ -43,6 +48,15 @@ export function importProgress(s: Settings, code: string): boolean {
   } catch {
     return false;
   }
+  mergeProgress(s, p);
+  return true;
+}
+
+/**
+ * Merges progress into `s` — never losing what `s` has: the larger tallies, the faster best
+ * time, the better stars, feats / riddles / ages united. `p` is untrusted (a pasted code, storage).
+ */
+export function mergeProgress(s: Settings, p: Partial<Payload>): void {
   const num = (v: unknown) => Math.max(0, Math.floor(Number(v) || 0));
   for (const d of DIFFICULTIES) {
     const theirs = p.r?.[d];
@@ -78,5 +92,4 @@ export function importProgress(s: Settings, code: string): boolean {
       putOnline(s.online, name, { w: Math.max(mine.w, num(r.w)), l: Math.max(mine.l, num(r.l)) });
     }
   }
-  return true;
 }

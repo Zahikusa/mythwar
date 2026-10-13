@@ -143,6 +143,8 @@ async function resumeFlow(page: Page): Promise<void> {
   await page.evaluate(() => {
     localStorage.setItem('mythwar.battle.v1', JSON.stringify({ v: 1, difficulty: 'godlike', world: { players: [{ age: 42 }], time: 'soon' } }));
     localStorage.setItem('mythwar.settings.v1', JSON.stringify({ master: 'loud', difficulty: 'godlike', hintsSeen: 7, records: { novice: 3 }, speed: 9 }));
+    // (A player with no progress anywhere: the second copy of progress — backlog 92 — too.)
+    localStorage.removeItem('mythwar.progress.v1');
   });
   await page.goto(`${base}/`, { waitUntil: 'load' });
   await sleep(900);
@@ -325,6 +327,7 @@ async function gamepadFlow(page: Page): Promise<void> {
   await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
   await page.evaluateOnNewDocument(() => {
     localStorage.setItem('mythwar.settings.v1', JSON.stringify({ tutorialSeen: true, hints: false }));
+    localStorage.removeItem('mythwar.progress.v1');
     // (No autosave left by earlier flows: A would rightly press "Continue battle".)
     localStorage.removeItem('mythwar.battle.v1');
     const pad = { id: 'Test Pad (STANDARD GAMEPAD)', connected: true, mapping: 'standard', axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) };
@@ -409,7 +412,10 @@ async function gamepadFlow(page: Page): Promise<void> {
 async function armedFlow(page: Page): Promise<void> {
   console.log('== armed summons ==');
   await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
-  await page.evaluateOnNewDocument(() => localStorage.setItem('mythwar.settings.v1', JSON.stringify({ tutorialSeen: true, hints: false })));
+  await page.evaluateOnNewDocument(() => {
+    localStorage.setItem('mythwar.settings.v1', JSON.stringify({ tutorialSeen: true, hints: false }));
+    localStorage.removeItem('mythwar.progress.v1');
+  });
   await page.goto(`${base}/?play=adept&seed=4`, { waitUntil: 'load' });
   await sleep(1200);
   // (Income is a few gold a second: 5 gold stays short of a 30-gold Guardian for a while.)
@@ -477,7 +483,10 @@ async function armedFlow(page: Page): Promise<void> {
 async function riddleFlow(page: Page): Promise<void> {
   console.log('== riddles ==');
   await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
-  await page.evaluateOnNewDocument(() => localStorage.setItem('mythwar.settings.v1', JSON.stringify({ tutorialSeen: true, hintsSeen: [] })));
+  await page.evaluateOnNewDocument(() => {
+    localStorage.setItem('mythwar.settings.v1', JSON.stringify({ tutorialSeen: true, hintsSeen: [] }));
+    localStorage.removeItem('mythwar.progress.v1');
+  });
   await page.goto(`${base}/?screen=difficulty`, { waitUntil: 'load' });
   await sleep(900);
   const chips = () => page.evaluate(() => [...document.querySelectorAll('.screen.difficulty .trial')].filter((c) => (c as HTMLElement).offsetParent !== null).map((c) => c.textContent));
