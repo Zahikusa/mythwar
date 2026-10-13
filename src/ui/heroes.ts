@@ -68,4 +68,9 @@ export class HeroNames {
   name(defId: string, unitId: number): string {
     return this.byUnit.get(unitId) ?? heroName(defId, unitId);
   }
+
+  /** Whether this creature rose a veteran in this view. */
+  has(unitId: number): boolean {
+    return this.byUnit.has(unitId);
+  }
 }

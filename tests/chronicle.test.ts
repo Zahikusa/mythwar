@@ -27,3 +27,27 @@ describe('the chronicle', () => {
     expect(secs).toEqual([...secs].sort((a, b) => a - b));
   });
 });
+
+describe('the chronicle names heroes like the battlefield does (backlog 17)', () => {
+  it('registers every veteran, so the hero of the battle has the same name as on its hover label', async () => {
+    const { UNITS } = await import('../src/sim/data.ts');
+    const { HeroNames } = await import('../src/ui/heroes.ts');
+    const w = new World({ seed: 3 });
+    const first = w.spawnUnit(0, 1, UNITS.minotaur, 300);
+    const second = w.spawnUnit(0, 1, UNITS.minotaur, 320);
+    const c = new Chronicle(0, 'Odin');
+    const view = new HeroNames(); // what the renderer keeps
+    const vet = (u: typeof first) => ({ type: 'veteran' as const, unitId: u.id, team: 0 as const, lane: 1, x: u.x, defId: 'minotaur' });
+    for (const u of [first, second]) {
+      view.rise(0, 'minotaur', u.id);
+      c.onEvents([vet(u)], w);
+    }
+    second.kills = 7;
+    first.kills = 3;
+    c.onEvents([{ type: 'death', unitId: 999, team: 1, lane: 1, x: 340, defId: 'redcap', flying: false, gold: 5, killer: second.id }], w);
+    c.onEvents([{ type: 'gameOver', winner: 0 }], w);
+    const hero = c.lines().find((l) => l.includes('Hero of the battle'))!;
+    expect(hero).toContain(`Hero of the battle: ${view.name('minotaur', second.id)}, your Minotaur — 7 foes felled.`);
+    expect(view.name('minotaur', second.id)).not.toBe(view.name('minotaur', first.id));
+  });
+});

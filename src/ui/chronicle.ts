@@ -62,17 +62,20 @@ export class Chronicle {
         this.add(t, e.team === this.me ? `Your Elder Dragon takes wing in the ${LANES[e.lane]} lane.` : `${this.foe}'s Elder Dragon takes wing in the ${LANES[e.lane]} lane.`, 3);
       } else if (e.type === 'death' && e.defId === 'dragon') {
         this.add(t, e.team === this.me ? 'Your Elder Dragon is brought down.' : `${this.foe}'s Elder Dragon is brought down.`, 3);
-      } else if (e.type === 'veteran' && !this.veteran[e.team]) {
-        // Each side's first veteran (Lens #81).
+      } else if (e.type === 'veteran') {
+        // Every veteran gets its name (the renderer gives the same ones, in the same order); each
+        // side's first is told (Lens #81).
+        const called = this.names.rise(e.team, e.defId, e.unitId);
+        if (this.veteran[e.team]) continue;
         this.veteran[e.team] = true;
         const name = UNITS[e.defId]?.name ?? 'creature';
-        const called = this.names.rise(e.team, e.defId, e.unitId);
         this.add(t, e.team === this.me ? `Your ${name}${called ? `, ${called},` : ''} rises a veteran in the ${LANES[e.lane]} lane.` : `${this.foe}'s ${name} rises a veteran in the ${LANES[e.lane]} lane.`, e.team === this.me ? 2 : 1);
       } else if (e.type === 'ragnarok') {
         this.add(t, 'Ragnarök: the wards fall silent.', 2);
       } else if (e.type === 'gameOver') {
         const h = this.hero;
-        if (h && h.kills >= VETERAN_KILLS) this.add(t, `Hero of the battle: ${this.names.name(h.defId, h.id)}, your ${UNITS[h.defId]?.name ?? 'creature'} — ${h.kills} foes felled.`, 5);
+        // (Only one that rose a veteran — and so has its name — is the hero.)
+        if (h && h.kills >= VETERAN_KILLS && this.names.has(h.id)) this.add(t, `Hero of the battle: ${this.names.name(h.defId, h.id)}, your ${UNITS[h.defId]?.name ?? 'creature'} — ${h.kills} foes felled.`, 5);
         this.add(t, e.winner === this.me ? `Victory: ${this.foe}'s citadel falls.` : `Defeat: your citadel falls to ${this.foe}.`, 9);
       }
     }
