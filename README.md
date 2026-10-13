@@ -149,6 +149,8 @@ npm run designcheck              # the design's success criteria (difficulty lad
 npm run perfcheck                # per-frame JavaScript cost of a busy late-game battle (budget 3 ms)
 node scripts/calib.ts counter adept 90  # a scripted "follow the Counter! badge" bot vs an AI
 node scripts/icons.mjs           # re-render PNG app icons (incl. maskable) from public/icon.svg
+node scripts/ogcard.mjs          # re-render the link-preview card public/og.jpg (after a build)
+node scripts/servercost.ts       # bandwidth and CPU one online battle costs a server
 ```
 
 Battles autosave; "Continue" on the title screen resumes them.

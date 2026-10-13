@@ -1813,3 +1813,21 @@ people where they first meet the game?*
   description in the web manifest.
 - Checked: the card rendered and looked at; built `dist/` contains it and the tags; facts in the
   texts checked against the game (counters, 10 turrets, offline, battle length); full verify.
+
+## #96 The Lens of Profit
+*How does the game make money — or at least pay for itself — and does that fit what players
+value?*
+- Mythwar is free (a static page, a server anyone runs at home). The moment it goes online, a
+  server costs money every month, and nobody had measured what a battle costs to host — the
+  docs only said "well under 1% of a CPU core". Without that number, no decision about a public
+  server (ROADMAP *Next*) or how to pay for it can be made sensibly.
+- Change: **`scripts/servercost.ts`** measures it on the real lobby and match code with players
+  at a human pace (orders every ~2 s, pings), on a fake clock: per match ~5.5 kB/s both ways
+  (≈19 MB per hour) at the LAN's 30 turns/s, ~2.3 kB/s (≈8 MB/h) at 10 turns/s, and ~0.04% of a
+  core — so bandwidth, not CPU, is the limit, and a €5 VPS carries 10,000–20,000 monthly
+  players. **docs/PROFIT.md** turns that into the cost model and the business stance that fits
+  the design: never sell power, friend play stays free, optional one-time cosmetics, a store
+  version that can host from a phone, or simply a tip jar.
+- Found on the way: the first measurement averaged over the whole 10 minutes although every
+  simulated battle had ended after ~4.5 — rates now count each player's time in battle.
+- Checked: the script runs at both turn rates (numbers above); typecheck.

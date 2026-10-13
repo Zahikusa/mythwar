@@ -194,7 +194,8 @@ The design already separates everything that matters for that step:
    public address, message / command / emote rate limits, strict validation of every message,
    64 kB maximum frame size. Responses are brotli/gzip-compressed.
 6. **Scale:** rooms are independent, so several server processes behind sticky sessions (or one
-   process per region) scale horizontally. A match costs well under 1 % of a CPU core.
+   process per region) scale horizontally. A match costs ~0.04 % of a CPU core and ~19 MB of
+   traffic per hour (`node scripts/servercost.ts`; docs/PROFIT.md has the cost model).
 7. **Later:** accounts and persistent ratings (the Hall of champions is kept in memory per
    network and keyed by name, saved to `mythwar-data.json` through the small `ServerStore` seam
    in `server/store.ts` — with accounts a database would sit behind the same two calls), spectators (they would simply receive turns),
