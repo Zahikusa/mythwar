@@ -541,10 +541,13 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    the class. (Done: those three were compact through `.sprogrow .mbtn` already; `.mbtn.small`
    now means the same size wherever it's used.)
 (Items 127–128: open for the next run.)
-127. [ ] CI (`.github/workflows/pages.yml`, `release.yml`) runs typecheck + unit tests only — the
+127. [x] CI (`.github/workflows/pages.yml`, `release.yml`) runs typecheck + unit tests only — the
    smoke and multiplayer smoke (which caught several of run #8's regressions: the gate tap, the
    Enter-on-laurels focus bug) never run on GitHub. A job with Chrome (ubuntu has it) running
-   `npm run smoke` and `npm run mpsmoke` on pull requests.
+   `npm run smoke` and `npm run mpsmoke` on pull requests. (Done: `.github/workflows/browser-tests.yml`
+   beside "Test & publish" — Chrome from the runner, Ubuntu 24.04's AppArmor userns restriction
+   lifted for its sandbox. Not run yet: nothing is pushed from here; its first run on GitHub will
+   tell whether timings hold on a shared runner — see Open questions.)
 128. [ ] The menus' focus handling (#76) and the HUD's accessibility labels (#79) are covered only by
    smoke checks; unit tests can't reach DOM code (no DOM environment in vitest). Decide whether a
    DOM environment (happy-dom) is worth a dev dependency, or keep them in smoke.
@@ -946,6 +949,10 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   the menu just locally, so the waiting player can always leave.
 
 ## Open questions for the human
+- (Run #8) `.github/workflows/browser-tests.yml` (smoke + mpsmoke on GitHub) is written but has
+  never run — nothing is pushed from these runs. On its first run, check that Chrome starts on the
+  runner and that the timing-based checks hold on a shared machine; if some flake, they are the
+  ones with fixed `sleep`s (smoke's results and riddle flows).
 - **Playtest kit:** docs/PLAYTEST.md is a one-hour plan for testing with real people on real phones
   (it covers the two items below); Settings → Copy playtest journal collects each device's numbers.
 - Gamepad support (Lens #54) is tested with a stubbed standard-layout pad only; please try a real
