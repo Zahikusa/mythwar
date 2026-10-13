@@ -1,8 +1,8 @@
 /**
  * Screenshot harness: serves dist/ and captures scenarios with the local Chrome.
- *   npm run build && node scripts/shoot.ts [filter] [--query "a=1&b=2"] [--wait ms] [--size 667x375]
+ *   npm run build && node scripts/shoot.ts [name…] [--query "a=1&b=2"] [--wait ms] [--size 667x375]
  *   (--size overrides the viewport of the selected scenarios; the file name gets a -WxH suffix)
- *   node scripts/shoot.ts --list      (scenario names; the filter matches substrings)
+ *   node scripts/shoot.ts --list      (scenario names; a name matches exactly, else as a substring)
  *   --cvd protanopia|deuteranopia|tritanopia   simulate colour-vision deficiency (Machado 2009,
  *   full severity) over the whole page; the file name gets a -<type> suffix
  *   --settings '{"colorblind":true}'  stored settings to start with (merged over the defaults)
