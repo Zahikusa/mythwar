@@ -449,6 +449,13 @@ export class MpScreens {
     setText(this.readyBtn.querySelector('span')!, this.iAmReady ? 'Not ready' : 'Ready');
     toggle(this.readyBtn, 'primary', !this.iAmReady);
     this.readyBtn.disabled = !foe || !online || room.phase === 'playing';
+    // (Why it can't be pressed — for a hover and for screen readers, not only the note below.)
+    const why = room.phase === 'playing' ? 'The battle is under way' : !online ? 'Connecting to the game server…' : !foe ? 'Waits for a second player to join' : '';
+    if (this.readyBtn.title !== why) {
+      this.readyBtn.title = why;
+      if (why) this.readyBtn.setAttribute('aria-description', why);
+      else this.readyBtn.removeAttribute('aria-description');
+    }
     let note: string;
     if (!online) note = 'Reconnecting…';
     else if (!foe) note = 'Waiting for a second player to join…';

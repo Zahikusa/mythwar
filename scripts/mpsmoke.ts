@@ -170,6 +170,12 @@ async function main(): Promise<void> {
     await waitFor(a, 'the invite QR', () => !!document.querySelector('.rqr svg'));
     const invite = await a.evaluate(() => ({ qr: !!document.querySelector('.rqr svg'), link: document.querySelector('.rlink')?.textContent ?? '' }));
     check('invite QR and link', invite.qr && invite.link.includes(`?join=${code}`), invite.link);
+    // (Backlog 140) Ready can't be pressed alone — and says why.
+    const why = await a.evaluate(() => {
+      const b = [...document.querySelectorAll<HTMLButtonElement>('.screen.room button')].find((x) => x.textContent?.trim() === 'Ready')!;
+      return { disabled: b.disabled, desc: b.getAttribute('aria-description') };
+    });
+    check('room: a disabled Ready says why', why.disabled && why.desc === 'Waits for a second player to join', JSON.stringify(why));
     await shot(a, '2-room-waiting');
 
     // A duplicated tab inherits A's session token (sessionStorage is copied): it must start
