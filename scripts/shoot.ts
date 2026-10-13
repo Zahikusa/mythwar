@@ -27,10 +27,19 @@ interface Scenario {
   script?: string;
   /** Extra wait after the script ran. */
   after?: number;
+  /**
+   * A second player (multiplayer scenarios): after the script, a desktop browser in its own
+   * profile, with these stored settings, opens the invite link of the room the page hosts and
+   * runs `script` there; the shot is still of the first page, `after` ms later.
+   */
+  guest?: { settings: Record<string, unknown>; script?: string };
 }
 
 /** Opens Multiplayer and hosts a battle room (the shoot server hosts rooms too). */
 const hostRoom = `(async () => { const a = window.__mythwar; a.openMultiplayer(); for (let i = 0; i < 40 && !a.mp?.welcomed; i++) await new Promise((r) => setTimeout(r, 100)); a.mp.host(); })()`;
+
+/** The second player of a full room: takes Glass Citadel as a handicap and is Ready. */
+const guestReady = { settings: { playerName: 'Bo the Bold', sigil: 3 }, script: `(() => { const m = window.__mythwar.mp; m.setTrials(['glass']); setTimeout(() => m.ready(true), 400); })()` };
 
 const cast = (age: number, lane: number) =>
   `(() => { const a = window.__mythwar; const w = a.game.world; const p = w.players[0]; p.age = ${age}; p.powerCooldown = 0; a.game.command({ type: 'power', team: 0, lane: ${lane} }); })()`;
@@ -168,6 +177,9 @@ const SCENARIOS: Scenario[] = [
     script: hostRoom,
     after: 1200,
   },
+  // Backlog 142: both seats filled — the guest's sigil, handicap chip and Ready, the host not yet.
+  { name: 'mp-room-full', query: '', w: 1600, h: 900, wait: 1200, script: hostRoom, after: 1200, guest: guestReady },
+  { name: 'mobile-mp-room-full', query: '', w: 844, h: 390, mobile: true, dpr: 2, wait: 1200, script: hostRoom, after: 1200, guest: guestReady },
   {
     name: 'mobile-results',
     query: 'play=adept&seed=4',
@@ -327,6 +339,7 @@ async function main(): Promise<void> {
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--no-sandbox', '--disable-gpu-sandbox'] });
   try {
     const list = names.length ? [...new Set(names.flatMap(pick))] : SCENARIOS;
+    const guests: { close(): Promise<void> }[] = [];
     for (const sc of list) {
       const page = await browser.newPage();
       const errors: string[] = [];
@@ -346,6 +359,20 @@ async function main(): Promise<void> {
       if (sc.script) {
         await page.evaluate(sc.script);
         await new Promise((r) => setTimeout(r, sc.after ?? 0));
+      }
+      if (sc.guest) {
+        const code = await page.evaluate(() => (window as unknown as { __mythwar: { mp?: { room?: { code: string } } } }).__mythwar.mp?.room?.code);
+        if (!code) throw new Error(`${sc.name}: the page hosts no room for the guest to join`);
+        const ctx = await browser.createBrowserContext();
+        const guest = await ctx.newPage();
+        guest.on('pageerror', (e) => errors.push(`guest pageerror: ${String(e)}`));
+        await guest.setViewport({ width: 1366, height: 768 });
+        await guest.evaluateOnNewDocument((s: string) => localStorage.setItem('mythwar.settings.v1', s), JSON.stringify(sc.guest.settings));
+        await guest.goto(`http://127.0.0.1:${port}/?join=${code}`, { waitUntil: 'load' });
+        await guest.waitForFunction(() => (window as unknown as { __mythwar: { menus: { current: string } } }).__mythwar.menus.current === 'room', { timeout: 8000 });
+        if (sc.guest.script) await guest.evaluate(sc.guest.script);
+        await new Promise((r) => setTimeout(r, sc.after ?? 0));
+        guests.push(ctx);
       }
       const fps = await page.evaluate(() => (window as unknown as { __fps?: number }).__fps ?? -1);
       // Demo seeds play out differently whenever the sim or AI changes: flag scenarios that meant
@@ -368,6 +395,7 @@ async function main(): Promise<void> {
       await page.screenshot({ path: `screenshots/${name}.png` });
       console.log(`${name}: ${Date.now() - t0}ms fps=${fps}${errors.length ? '\n  ' + errors.join('\n  ') : ''}`);
       await page.close();
+      for (const ctx of guests.splice(0)) await ctx.close();
     }
   } finally {
     await browser.close();

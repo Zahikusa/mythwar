@@ -611,9 +611,19 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    mpsmoke checks it.)
 141. [x] docs/MULTIPLAYER.md's "What happens when…" lacked #87 (Room after a battle, what changed is
    said) and #89 (a re-scanned QR takes its own seat back). (Done.)
-142. [ ] `shoot` has no two-player room scenario (seats both filled, Ready states, handicap chips on
+142. [x] `shoot` has no two-player room scenario (seats both filled, Ready states, handicap chips on
    the other seat) — the visual review couldn't look at it; a second puppeteer page joining the
    room in the scenario's script would do.
+   (Done: a scenario's `guest` — a second browser profile with its own stored settings opens the
+   invite link and runs its script; `mp-room-full`, `mobile-mp-room-full`. The shots showed two
+   things, fixed: the seats never showed the sigil a player chose (lobby list, HUD and keep did) —
+   now "♛ Bo the Bold"; and "Bo now fights under Glass Citadel — press Ready again." told a host
+   who had never pressed Ready to press it "again" — "again" only to a player who was Ready.
+   mpsmoke checks both.)
+(Items 143–: run #9.)
+143. [x] `scripts/mpsmoke.ts`: run #9's patch for #138 wrote three em dashes as cp1252 byte 0x97
+   (Windows Python's default encoding) — the file was invalid UTF-8 for one commit. (Fixed; all
+   tracked text files checked as UTF-8.)
 
 
 

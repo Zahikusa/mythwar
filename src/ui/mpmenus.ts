@@ -473,7 +473,9 @@ export class MpScreens {
     toggle(v.el, 'empty', !s);
     toggle(v.el, 'mine', mine);
     toggle(v.el, 'ready', !!s?.ready);
-    setText(v.name, s ? s.name + (mine ? ' (you) ✎' : '') : 'Open seat');
+    // (The sigil a player chose, as in the lobby list and on their keep.)
+    const sigil = s && s.sigil >= 0 && SIGILS[s.sigil] ? `${SIGILS[s.sigil]} ` : '';
+    setText(v.name, s ? sigil + s.name + (mine ? ' (you) ✎' : '') : 'Open seat');
     v.name.title = mine ? 'Tap to change your name' : '';
     if (mine) {
       v.name.setAttribute('role', 'button');

@@ -218,7 +218,8 @@ async function main(): Promise<void> {
     await a.keyboard.press('End');
     await a.keyboard.type(' L');
     await a.keyboard.press('Enter');
-    await waitFor(b, 'B sees the new name', () => [...document.querySelectorAll('.rseat .sname')].some((e) => e.textContent === 'Ada L'));
+    // (With A's sigil before it, as in the lobby list.)
+    await waitFor(b, 'B sees the new name, with the sigil', () => [...document.querySelectorAll('.rseat .sname')].some((e) => /^â˜¾\S* Ada L$/u.test(e.textContent ?? '')));
     await shot(b, '3-room-phone');
 
     console.log('== battle ==');
@@ -499,8 +500,11 @@ async function main(): Promise<void> {
     // (Backlog 90) A takes a handicap: B is told why their Ready went (in words, not only a re-render).
     await a.evaluate(() => (window as any).__mythwar.mp.setTrials(['glass']));
     await waitFor(b, 'B told about the handicap', () => /now fights under Glass Citadel/.test(document.querySelector('.screen.room .mpflash')?.textContent ?? ''), 4000);
+    // (B wasn't Ready: nothing to press "again".)
+    const told = await b.evaluate(() => document.querySelector('.screen.room .mpflash')?.textContent ?? '');
+    check('room: a handicap change says "press Ready again" only to a player who was Ready', !told.includes('again'), told);
     await a.evaluate(() => (window as any).__mythwar.mp.setTrials([]));
-    // (A Ready sent before the room's latest change is ignored as stale — backlog 96: both wait
+    // (A Ready sent before the room's latest change is ignored as stale â€” backlog 96: both wait
     // until they see the handicap gone.)
     for (const p of [a, b]) await waitFor(p, 'the handicap gone', () => ((window as any).__mythwar.mp.room?.seats[0]?.trials.length ?? 1) === 0, 4000);
     for (const p of [a, b]) await p.evaluate(() => (window as any).__mythwar.mp.ready(true));
@@ -527,7 +531,7 @@ async function main(): Promise<void> {
     check('co-op: a lane call lights that lane for the ally', lit);
     // A steps out of the battle: B fights on alone.
     await a.evaluate(() => (window as any).__mythwar.leaveRoom());
-    // (B is told A left — the seat empties — and the battle must keep running after that.)
+    // (B is told A left â€” the seat empties â€” and the battle must keep running after that.)
     await waitFor(b, 'B sees the ally leave', () => (window as any).__mythwar.mp.room?.seats.filter(Boolean).length === 1, 6000);
     const leftAt = (await info(b)).tick;
     await until('B plays on', async () => (await info(b)).tick > leftAt + 60, 6000);

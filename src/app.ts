@@ -119,6 +119,8 @@ export class App {
   private netMenuLocal = false;
   /** The other seat as last seen (room chimes: someone joined / is ready / left). */
   private lastFoe: { name: string; ready: boolean; trials: string } | null = null;
+  /** Whether this player's own seat was Ready when last seen. */
+  private lastMeReady = false;
   /** The room's mode as last seen (undefined: no room yet), and when this player last changed it. */
   private lastCoop: Difficulty | null | undefined = undefined;
   private ownCoopAt = -Infinity;
@@ -1166,6 +1168,8 @@ export class App {
     const foe = mp.room && mp.seat !== null ? mp.room.seats[mp.seat === 0 ? 1 : 0] : null;
     const prev = this.lastFoe;
     const prevCoop = this.lastCoop;
+    const wasReady = this.lastMeReady;
+    this.lastMeReady = !!(mp.room && mp.seat !== null && mp.room.seats[mp.seat]?.ready);
     this.lastFoe = foe ? { name: foe.name, ready: foe.ready, trials: foe.trials.join(',') } : null;
     this.lastCoop = mp.room ? mp.room.coop : undefined;
     if (this.state === 'playing' || !mp.room) return;
@@ -1178,13 +1182,15 @@ export class App {
     // reset, an empty seat) looked like a tap that failed.
     if (this.menus.current !== 'room') return;
     const coop = mp.room.coop;
+    // (A handicap change takes both seats out of Ready: "again" only if this one was Ready.)
+    const again = wasReady ? ' — press Ready again.' : '.';
     const said =
       !foe && prev
         ? `${prev.name} left the room.`
         : foe && prev && foe.name === prev.name && foe.trials.join(',') !== prev.trials
           ? foe.trials.length
-            ? `${foe.name} now fights under ${foe.trials.map((t) => TRIALS[t].name).join(', ')} — press Ready again.`
-            : `${foe.name} dropped their handicaps — press Ready again.`
+            ? `${foe.name} now fights under ${foe.trials.map((t) => TRIALS[t].name).join(', ')}${again}`
+            : `${foe.name} dropped their handicaps${again}`
           : prevCoop !== undefined && coop !== prevCoop && performance.now() - this.ownCoopAt > 2000
             ? `${foe?.name ?? 'The other player'} switched to ${coop ? `co-op against the ${AI_PROFILES[coop].name} AI` : 'a duel'} — the score starts over.`
             : '';
