@@ -1382,9 +1382,10 @@ html.cbfoe .side.right .hpfill {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: rgba(10, 6, 20, 0.6);
-  border: 2px solid rgba(63, 184, 255, 0.35);
-  color: rgba(63, 184, 255, 0.6);
+  /* (Plain enough to tell the selected one apart, clear enough to be seen on the dark wall.) */
+  background: rgba(10, 6, 20, 0.72);
+  border: 2px solid rgba(63, 184, 255, 0.6);
+  color: rgba(120, 205, 255, 0.85);
   font-size: 13px;
   transition: transform 0.2s, background 0.2s, border-color 0.2s, color 0.2s;
 }
@@ -1453,6 +1454,8 @@ html.cbfoe .side.right .hpfill {
   width: 28px;
   height: 28px;
   margin-left: -14px;
+  /* (Clear of the selected tab's lane-strength bar just above it.) */
+  margin-top: 6px;
   padding: 5px;
 }
 

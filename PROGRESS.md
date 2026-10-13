@@ -483,13 +483,16 @@ how-to, bestiary, feats and desktop battles showed nothing worth reporting.)
    (Done for the size: `max-height` measured the content box — 370 + padding + border = 394 px on
    a 390-px screen; `box-sizing: border-box` → 10…380 px, scrolling. The see-through header is
    left: the HUD behind is meant to stay faintly visible.)
-112. [ ] `mobile-land`: the hold shield of the selected lane covers its lane-strength bar (`.lbar`
+112. [x] `mobile-land`: the hold shield of the selected lane covers its lane-strength bar (`.lbar`
    at `top: calc(100% + 5px)`, the tab scaled 1.18 when selected; shield at `g.y + 10·s`).
+   (Done: the phone shield sits 8 px lower — the bar shows whole; hit-area and gate-tap checks
+   still pass.)
 113. [ ] Battle intro banner ("VS HIPPOLYTA, QUEEN OF THE AMAZONS" + the chapter line): no backing
    plate — over the top lane's path and shrine the italic line is hard to read (`.banner`,
    `.banner .bsub`, hud.css ~1850–1910).
-114. [ ] Unselected lane tabs are nearly invisible on the dark wall (35%-opacity ring, 60% text —
-   `.lanetab`, hud.css ~1375); only a queue badge makes them noticeable.
+114. [x] Unselected lane tabs are nearly invisible on the dark wall (35%-opacity ring, 60% text —
+   `.lanetab`, hud.css ~1375); only a queue badge makes them noticeable. (Done: ring 60%, text
+   85%, a slightly darker disc — clearly visible, still plainly not the selected one.)
 115. [ ] Results over a battle: the HUD shows faintly through the overlay (a "Counter!" badge behind
    Copy result) and the general's faded taunt bubble is unreadable behind it.
 (Items 116–118: an independent review of this run's own diff, 2026-10-13 — three regressions in
