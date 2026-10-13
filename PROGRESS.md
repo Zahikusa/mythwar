@@ -411,18 +411,39 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
    few hours on 2026-10-13, never released) keep orphaned networks whose keys are recoverable.
    Only dev machines can have them — delete `mythwar-data.json` there; no code change.
 (Items 95–98: follow-ups left open at the end of run #8.)
-95. [ ] `src/ui/settings.ts`: no live refresh between tabs (#92 stops saves undoing each other, but
+95. [x] `src/ui/settings.ts`: no live refresh between tabs (#92 stops saves undoing each other, but
    a second tab's title/feats screens show its stale view until reloaded). Listen for `storage`
-   events on the two keys and merge (and refresh the open screen).
-96. [ ] Room: Ready that arrives just after the other player's handicap/mode change readies you on a
+   events on the two keys and merge (and refresh the open screen). (Done: `mergeFromOtherTab` on
+   `storage` events; the title's laurels refresh at once, other screens when next opened; test.)
+96. [x] Room: Ready that arrives just after the other player's handicap/mode change readies you on a
    setting you never saw (#90's review, unconfirmed in practice). Send the room revision the
-   client saw with `ready`; the server ignores a stale one.
-97. [ ] `server/match.ts` `claim`: claiming while the other player is away *during the countdown*
+   client saw with `ready`; the server ignores a stale one. (Done: `RoomInfo.rev` counts changes to
+   handicaps, mode and seats; `ready` carries it; a stale Ready is ignored and the room re-sent;
+   **protocol v15**; test.)
+97. [x] `server/match.ts` `claim`: claiming while the other player is away *during the countdown*
    counts as a full victory (Hall, tallies) though no battle was fought — consider "no contest"
-   (no result counted) before the first tick.
-98. [ ] `src/ui/hud.ts` update(): the card/lane-tab accessibility labels (#79) are recomputed every
+   (no result counted) before the first tick. (Decided: kept as it is. Leaving during the countdown
+   already forfeits, and MULTIPLAYER.md treats being away in the countdown like being away in
+   battle — after 20 s the one who stayed may take the win; a "no contest" would reward going
+   away at the start. No change.)
+98. [x] `src/ui/hud.ts` update(): the card/lane-tab accessibility labels (#79) are recomputed every
    frame (string building ×7 per frame) — cheap (perfcheck 1.0 ms/frame) but could be keyed on
-   a state signature like the rest of the HUD.
+   a state signature like the rest of the HUD. (Done: rebuilt only when a card's state changes.)
+(Items 99–103: open for the next run.)
+99. [ ] Reset records across tabs: tab A resets; tab B (open, still holding the old records in
+   memory) merges them back on its next save. A reset marker (time) stored with the progress copy,
+   honoured by `mergeProgress`, would let other tabs drop pre-reset records.
+100. [ ] `scripts/mpsmoke.ts` doesn't cover #88 (rematch note when the other player's tab closed):
+   close B's page on the results and check A's note says "lost the connection".
+101. [ ] `scripts/smoke.ts` runs its 14 flows one after another (~6 min of `npm run verify`); the
+   independent ones could run on parallel pages (they share storage — group the ones that care).
+102. [x] `server/main.ts`: no last-resort `uncaughtException` handler — a fault outside the lobby's
+   contained paths (#50/#51), e.g. in the static server or ws internals, ends the process without
+   saving the Hall. Log, `flush(true)`, exit non-zero (a supervisor/the starter restarts it).
+   (Done; not triggered in a test — nothing reachable from outside throws there any more.)
+103. [ ] `docs/PLAYTEST.md` predates run #8: add the checks this run made possible (a phone that
+   drops the tab re-scans the QR and gets its seat back; "Room" on the results; the away banner
+   with a screen reader).
 
 
 
@@ -459,6 +480,7 @@ built, how to see each part working, and the decisions that need you.
   (#71); a battle stopped by a fault says so (#72); accessibility (#76–84: focus follows
   screens, screen-reader wording, finger-sized hit areas clear of the gate, "!" for danger);
   docs corrected (#75); `npm run smoke -- --only <flow>` (#86).
+- **Protocol is now v15** (`RoomInfo.rev`, `ready.rev` — #96): server and pages from one build.
 - The release package (`npm run package`) was started and probed: brotli, immutable hashed
   assets, no-cache page/sw/manifest, path escapes refused, stray upgrades closed.
 

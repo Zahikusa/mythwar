@@ -137,3 +137,15 @@ const stop = () => {
 };
 process.on('SIGINT', stop);
 process.on('SIGTERM', stop);
+// Last resort: a fault outside the lobby's contained paths (the static files, the socket layer)
+// still ends the process — but says what happened and saves the Hall of champions first. (The
+// starters and a supervisor bring it back up; battles in progress are lost either way.)
+process.on('uncaughtException', (e) => {
+  console.error(stamp(`the server stopped on a fault: ${e?.stack ?? e}`));
+  try {
+    mp.lobby.flush(true);
+  } catch {
+    // (nothing more to save)
+  }
+  process.exit(1);
+});
