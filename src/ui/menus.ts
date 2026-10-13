@@ -1064,8 +1064,15 @@ export class Menus {
       { class: 'vbuttons' },
       this.emoteRow,
       this.rematchNote,
-      h('div', { class: 'mrow' }, this.button('Leave room', 'ghost', () => this.cb.leaveRoom()), share, this.rematchBtn),
+      h('div', { class: 'mrow' }, this.button('Leave room', 'ghost', () => this.cb.leaveRoom()), share, this.roomButton(), this.rematchBtn),
     );
+  }
+
+  /** Back to the battle room — to change the mode or handicaps; Ready there is the rematch. */
+  private roomButton(): HTMLButtonElement {
+    const b = this.button('Room', 'ghost', () => this.cb.toRoom());
+    b.title = 'Back to the battle room: change the mode or handicaps — Ready there starts the rematch';
+    return b;
   }
 
   /** A quick message said on the online results ("Ada: Well played!"), shown by the chips. */
@@ -1081,7 +1088,8 @@ export class Menus {
    * Online results: whether a rematch is wanted by us / the other player, or they left.
    * `mine` / `theirs`: readiness; `theirs` null = they left the room.
    */
-  updateRematch(foe: string, mine: boolean, theirs: boolean | null): void {
+  /** `there`: the other player is connected (a closed tab keeps its seat for a minute). */
+  updateRematch(foe: string, mine: boolean, theirs: boolean | null, there = true): void {
     const btn = this.rematchBtn;
     const note = this.rematchNote;
     if (!btn || !note) return;
@@ -1096,7 +1104,7 @@ export class Menus {
     } else {
       btn.dataset.room = '';
       span.textContent = mine ? 'Cancel rematch' : theirs ? 'Accept rematch' : 'Rematch';
-      note.textContent = mine ? `Waiting for ${foe}…` : theirs ? `${foe} wants a rematch!` : '';
+      note.textContent = !there ? `${foe} lost the connection — waiting for them to come back.` : mine ? `Waiting for ${foe}…` : theirs ? `${foe} wants a rematch!` : '';
     }
     btn.classList.toggle('primary', !mine);
     note.classList.toggle('hot', theirs === true && !mine);

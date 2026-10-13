@@ -405,13 +405,21 @@ async function main(): Promise<void> {
     await waitFor(a, 'A at title', () => (window as any).__mythwar.menus.current === 'title');
 
     console.log('== co-op against the AI ==');
-    // B (still in the room, at the results) makes it a co-op room; A comes back and joins.
+    // B (still in the room, at the results) goes back to the room (backlog 87) and makes it a
+    // co-op room; A comes back and joins.
+    await press(b, '.screen.over', 'Room');
+    await waitFor(b, 'B back in the room from the results', () => (window as any).__mythwar.menus.current === 'room' && (window as any).__mythwar.state === 'title', 6000);
+    check('results → Room: back in the battle room, still seated', await b.evaluate(() => (window as any).__mythwar.mp.seat !== null && !!(window as any).__mythwar.mp.room));
     const coopCode = await b.evaluate(() => (window as any).__mythwar.mp.room.code as string);
     await b.evaluate(() => (window as any).__mythwar.mp.setCoop('novice'));
     await a.evaluate((c) => (window as any).__mythwar.openMultiplayer(c), coopCode);
     await waitFor(a, 'A in the co-op room', () => (window as any).__mythwar.mp?.room?.coop === 'novice' && (window as any).__mythwar.menus.current === 'room', 8000);
     const vs = await a.evaluate(() => document.querySelector('.screen.room .rvs')?.textContent ?? '');
     check('co-op room shows the allies together', vs === '&', vs);
+    // (Backlog 90) A takes a handicap: B is told why their Ready went (in words, not only a re-render).
+    await a.evaluate(() => (window as any).__mythwar.mp.setTrials(['glass']));
+    await waitFor(b, 'B told about the handicap', () => /now fights under Glass Citadel/.test(document.querySelector('.screen.room .mpflash')?.textContent ?? ''), 4000);
+    await a.evaluate(() => (window as any).__mythwar.mp.setTrials([]));
     for (const p of [a, b]) await p.evaluate(() => (window as any).__mythwar.mp.ready(true));
     await waitFor(a, 'A in the co-op battle', () => (window as any).__mythwar.state === 'playing' && (window as any).__mythwar.game.coop === 'novice', 8000);
     await waitFor(b, 'B in the co-op battle', () => (window as any).__mythwar.state === 'playing' && (window as any).__mythwar.game.coop === 'novice', 8000);

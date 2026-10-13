@@ -365,6 +365,25 @@ chronicle, 2026-10-13 — renderer/fx/layout/lobby held up.)
 86. [x] `scripts/smoke.ts` (~1300 lines, ~6 min) can only run whole — add `--only <flow>` (e.g.
    `npm run smoke -- --only journal`) for quick iteration on one flow. (Done: the flows are a
    named list; a typo lists the names; CONTRIBUTING says so.)
+(Items 87–90: an independent walk through two players' multiplayer flows, 2026-10-13 — flows 5–8
+held up: a phone locked through the countdown, a reload on the results, a full/gone room, same names.)
+87. [x] Online results: no way to change mode or handicaps for the rematch without leaving the room
+   (the `toRoom` callback exists, nothing calls it) — leaving resets the score and the friend must
+   rejoin by code. A "Room settings" button on the results → the room screen. (Done: "Room" on the
+   online results puts the battle away and shows the room, still seated (the unused `toRoom` had
+   shown the room over the results' state, #52's kind of bug); mpsmoke presses it.)
+88. [x] `src/app.ts` `syncRematch` / `menus.updateRematch`: after the other player closed the tab, the
+   rematch says "Waiting for Ada…" for the whole 60-s seat grace — look at `connected` too ("Ada
+   lost the connection — waiting for them to come back", as the room screen says). (Done.)
+89. [x] `server/lobby.ts` `join`: a player's own disconnected seat blocks them for 60 s — a guest whose
+   phone dropped the tab re-scans the QR (a new tab = a new session) and gets "That battle
+   already has two players" while the host waits for them. Let the same device take its seat back.
+   (Done outside battles — score and handicaps kept; another device still gets "full"; test.)
+90. [x] Room screen: changes by the other player are silent — a handicap or mode change un-readies
+   you (and a mode change resets the score) with no word why; the host leaving leaves the guest
+   alone with "Waiting for a second player…". Flash what happened. (Done: "Ada now fights under
+   Glass Citadel — press Ready again", "… switched to co-op against the Novice AI — the score
+   starts over" (not for your own switch), "Ada left the room."; mpsmoke checks the first.)
 
 
 
