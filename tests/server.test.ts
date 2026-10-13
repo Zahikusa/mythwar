@@ -66,6 +66,11 @@ class FakeClient {
     this.handlers.message(JSON.stringify(m));
   }
 
+  /** A frame as sent, whatever it is. */
+  raw(data: string): void {
+    this.handlers.message(data);
+  }
+
   hello(name: string, token?: string, extra: { battle?: boolean; away?: boolean; rank?: number; device?: string; sigil?: number } = {}): void {
     this.send({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint(), name, token, ...extra });
   }
@@ -819,6 +824,52 @@ describe('battle', () => {
     run(1600);
     a.send({ type: 'emote', id: 'wp' });
     expect(b.last('emote')).toEqual({ type: 'emote', seat: 0, id: 'wp' });
+  });
+
+  it('snapshot requests are answered at most once a second — a flood is coalesced, not dropped (backlog 283)', () => {
+    const { run, a } = battle();
+    run(2000);
+    const snaps = () => a.inbox.filter((m) => m.type === 'snapshot').length;
+    for (let i = 0; i < 50; i++) a.send({ type: 'resync' });
+    expect(snaps()).toBe(1);
+    run(500);
+    expect(snaps()).toBe(1);
+    run(600);
+    // (The battle as it stands then — not 49 more.)
+    expect(snaps()).toBe(2);
+    expect(a.last('snapshot')!.tick).toBeGreaterThan(a.inbox.find((m) => m.type === 'snapshot')!.tick as number);
+    run(3000);
+    expect(snaps()).toBe(2);
+    // A request a second after the last is answered at once.
+    a.send({ type: 'resync' });
+    expect(snaps()).toBe(3);
+  });
+
+  it('a flood of junk is counted before it is parsed — or answered (backlog 283)', () => {
+    const { lobby } = setup();
+    const a = new FakeClient(lobby);
+    a.hello('Ada');
+    for (let i = 0; i < 1000; i++) a.raw('not json');
+    const errors = a.inbox.filter((m) => m.type === 'error').length;
+    expect(errors).toBe(119);
+  });
+
+  it('the open-battles list goes out when watching starts, not on every ask — a new link asks afresh (backlog 283)', () => {
+    const { lobby } = setup();
+    const a = new FakeClient(lobby);
+    a.hello('Ada');
+    const lists = () => a.inbox.filter((m) => m.type === 'rooms').length;
+    for (let i = 0; i < 20; i++) a.send({ type: 'watchRooms', on: true });
+    expect(lists()).toBe(1);
+    a.send({ type: 'watchRooms', on: false });
+    a.send({ type: 'watchRooms', on: true });
+    expect(lists()).toBe(2);
+    // A second tab takes the session over before the first link is known to be gone: it gets
+    // its own list.
+    const b = new FakeClient(lobby);
+    b.hello('Ada', a.token);
+    b.send({ type: 'watchRooms', on: true });
+    expect(b.inbox.filter((m) => m.type === 'rooms').length).toBe(1);
   });
 
   it('a player who stays away forfeits', () => {

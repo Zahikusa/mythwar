@@ -33,6 +33,12 @@ const MAX_PER_ADDRESS = 32;
 /** Seconds without any sign of life before a connection is considered dead. */
 const DEAD_AFTER = 12;
 const HEARTBEAT = 4;
+/**
+ * Bytes waiting to go out on one socket before it is closed: a client that stops reading (a
+ * script; nothing a phone does — a stalled link is held as away after 4 s) would otherwise have
+ * the server queue for it until memory runs out. A whole battle's snapshot is ~12 kB.
+ */
+const MAX_BUFFERED = 1024 * 1024;
 
 /**
  * Hosts multiplayer on an existing HTTP server: WebSocket upgrades on MP_PATH go to a lobby
@@ -90,7 +96,11 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
     const lag = opts.latency || opts.jitter ? { up: laggy(opts), down: laggy(opts) } : null;
     const handlers = lobby.connect({
       send: (data) => {
-        const go = () => ws.readyState === ws.OPEN && ws.send(data);
+        const go = () => {
+          if (ws.readyState !== ws.OPEN) return;
+          if (ws.bufferedAmount > MAX_BUFFERED) return ws.terminate();
+          ws.send(data);
+        };
         if (lag) lag.down(go);
         else go();
       },

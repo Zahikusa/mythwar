@@ -104,6 +104,8 @@ const EMOTE_GAP = 1500;
 /** Minimum ms between two away/back changes from one player (more are coalesced, not dropped). */
 const AWAY_GAP = 250;
 const MSG_RATE = 120;
+/** Minimum ms between two snapshots sent on request (more requests are coalesced, not dropped). */
+const RESYNC_GAP = 1000;
 
 interface Session {
   token: string;
@@ -138,6 +140,9 @@ interface Session {
   quiet: { n: number; ms: number; since: number };
   /** The client's own round-trip measurement (ms). */
   rtt: number;
+  /** When a snapshot was last sent on this player's request, and whether another waits (RESYNC_GAP). */
+  resyncAt: number;
+  resyncWanted: boolean;
   /** How the session's last battle ended (final snapshot + result), for a client that missed it. */
   lastOver: { snapshot: ServerMsg; over: ServerMsg } | null;
 }
@@ -178,6 +183,8 @@ export class Lobby {
   private readonly hallKeyPending = new Set<string>();
   /** Players with an away/back change waiting (see AWAY_GAP). */
   private readonly awayWaiting = new Set<Session>();
+  /** Players whose snapshot request waits for RESYNC_GAP. */
+  private readonly resyncWaiting = new Set<Session>();
   private lastHallSave = -Infinity;
   private readonly now: () => number;
   private readonly random: () => number;
@@ -260,13 +267,7 @@ export class Lobby {
     const rate = { start: this.now(), msgs: 0, cmds: 0 };
     return {
       message: (data) => {
-        let msg: ClientMsg;
-        try {
-          msg = JSON.parse(data) as ClientMsg;
-        } catch {
-          return this.error(conn, 'bad-request', 'Not JSON');
-        }
-        if (!msg || typeof msg !== 'object' || typeof msg.type !== 'string') return this.error(conn, 'bad-request', 'Bad message');
+        // (Counted before anything else: a flood of junk is neither parsed nor answered.)
         const now = this.now();
         if (now - rate.start >= 1000) {
           rate.start = now;
@@ -274,6 +275,13 @@ export class Lobby {
           rate.cmds = 0;
         }
         if (++rate.msgs > MSG_RATE) return;
+        let msg: ClientMsg;
+        try {
+          msg = JSON.parse(data) as ClientMsg;
+        } catch {
+          return this.error(conn, 'bad-request', 'Not JSON');
+        }
+        if (!msg || typeof msg !== 'object' || typeof msg.type !== 'string') return this.error(conn, 'bad-request', 'Bad message');
         // (A fault while handling one message — a bug, whatever the input — is logged and that
         // message dropped; thrown on, it would end the process and every battle in it.)
         try {
@@ -305,6 +313,7 @@ export class Lobby {
     const stalled = now - this.lastUpdate > 1000;
     this.lastUpdate = now;
     for (const s of this.awayWaiting) if (now - s.awayAt >= AWAY_GAP && s.awayWanted !== null) this.applyAway(s, s.awayWanted, now);
+    for (const s of this.resyncWaiting) if (now - s.resyncAt >= RESYNC_GAP) this.resync(s, now);
     for (const room of this.rooms.values()) {
       try {
         room.match?.update(now);
@@ -379,6 +388,16 @@ export class Lobby {
     if (s.quiet.n === 1) this.log(`${s.name} is heard from again in room ${room.code}`);
   }
 
+  /** Sends a player the battle as it stands (they asked: see 'resync'). */
+  private resync(s: Session, now: number): void {
+    s.resyncWanted = false;
+    this.resyncWaiting.delete(s);
+    const room = s.room;
+    if (!room?.match || s.seat === null || room.phase !== 'playing' || !s.conn) return;
+    s.resyncAt = now;
+    this.send(s, room.match.snapshotFor(s.seat, now));
+  }
+
   /** A player's away/back takes effect (see 'away'). */
   private applyAway(s: Session, away: boolean, now: number): void {
     s.awayAt = now;
@@ -435,9 +454,13 @@ export class Lobby {
       s.network = network;
       s.heardAt = this.now();
       s.silent = false;
-      // (Held away/back changes belong to the old link.)
+      // (Held away/back changes and snapshot requests belong to the old link — and so does
+      // watching the open battles: the new link asks for the list itself.)
       s.awayWanted = null;
       this.awayWaiting.delete(s);
+      s.resyncWanted = false;
+      this.resyncWaiting.delete(s);
+      s.watching = false;
       if (msg.name !== undefined) s.name = this.playerName(msg.name);
       if (msg.rank !== undefined) s.rank = cleanRank(msg.rank);
       if (msg.sigil !== undefined) s.sigil = cleanSigil(msg.sigil);
@@ -473,6 +496,8 @@ export class Lobby {
         heardAt: this.now(),
         silent: false,
         quiet: { n: 0, ms: 0, since: 0 },
+        resyncAt: -Infinity,
+        resyncWanted: false,
         rtt: 0,
         lastOver: null,
       };
@@ -515,10 +540,13 @@ export class Lobby {
           if (room.phase === 'waiting') this.roomsDirty = true;
         }
         return;
-      case 'watchRooms':
+      case 'watchRooms': {
+        // (The list goes out when watching starts; changes follow on their own — see update.)
+        const was = s.watching;
         s.watching = !!msg.on;
-        if (s.watching) this.send(s, { type: 'rooms', rooms: this.openRooms(s.network), hall: this.hallOf(s.network) });
+        if (s.watching && !was) this.send(s, { type: 'rooms', rooms: this.openRooms(s.network), hall: this.hallOf(s.network) });
         return;
+      }
       case 'host': {
         // Already waiting alone in an open room (a double tap): keep it.
         if (room && room.phase === 'waiting' && room.seats.filter((x) => x).length === 1) return this.broadcastRoom(room);
@@ -644,7 +672,13 @@ export class Lobby {
         if (room?.match && seat !== null && room.phase === 'playing') room.match.claim(seat, now);
         return;
       case 'resync':
-        if (room?.match && seat !== null && room.phase === 'playing') this.send(s, room.match.snapshotFor(seat, now));
+        // (A whole battle each time: one a second at most — a request sooner is answered then.)
+        if (now - s.resyncAt < RESYNC_GAP) {
+          s.resyncWanted = true;
+          this.resyncWaiting.add(s);
+          return;
+        }
+        this.resync(s, now);
         return;
       case 'ping': {
         this.send(s, { type: 'pong', t: Number(msg.t) || 0, tick: room?.match?.tick ?? 0 });
@@ -784,9 +818,12 @@ export class Lobby {
     // (A quiet spell that ends with the link: counted up to now for the battle's log line.)
     this.endQuiet(s, this.now());
     s.silent = false;
-    // (An away/back change still held back — see AWAY_GAP — came from the link that just closed.)
+    // (An away/back change still held back — see AWAY_GAP — came from the link that just closed;
+    // so did a snapshot request: a new link is sent the battle anyway.)
     s.awayWanted = null;
     this.awayWaiting.delete(s);
+    s.resyncWanted = false;
+    this.resyncWaiting.delete(s);
     s.watching = false;
     s.goneAt = this.now();
     const room = s.room;

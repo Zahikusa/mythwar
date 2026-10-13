@@ -155,11 +155,17 @@ the save file re-cleaned on load.)
    showed as "Ada" beside "Ada". (Done: `\p{Cf}` dropped but the joiner inside an emoji, marks two
    deep at most, NFC; written without a lookbehind — Safari < 16.4 (the minimum is 16.2) can't
    parse one, and a regex literal it can't parse stops the whole bundle. Test.)
-283. [ ] `server/net.ts` ~91: `send` never looks at `ws.bufferedAmount`, and any message counts as
+283. [x] `server/net.ts` ~91: `send` never looks at `ws.bufferedAmount`, and any message counts as
    a sign of life — a client that stops reading but sends `resync` 100×/s gets a snapshot queued
    each time (measured 3.9 MB after 20 s, growing ~200 kB/s, 32 sockets per address). Close a
    socket whose send buffer passes ~512 kB; rate-limit `resync` (~1/s) and `watchRooms`; run the
    rate check before parsing and before the "Not JSON" / "Bad message" replies.
+   (Done: `resync` answered at most once a second — sooner requests coalesced into one then, so
+   a real desync still gets its snapshot; `watchRooms` sends the list only when watching starts
+   (a takeover link now starts afresh — it kept the old link's flag and would have got no list);
+   the message rate is counted before parsing; the transport closes a socket with over 1 MB
+   waiting. The review's flood script: 0 bytes queued after 20 s (was 3.9 MB); 1000 junk frames
+   get 120 replies (was 1000). Three server tests, failing before.)
 284. [ ] `server/lobby.ts` ~258/882: every connection from a new network starts a 16-MB scrypt for
    the Hall key before `hello`, unqueued — 400 connections from different /64s slowed a plain
    readFile from 0.8 ms to 2.5 s (the libuv pool is shared with static files and saves). Hash
