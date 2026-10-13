@@ -137,7 +137,7 @@ const STEPS: Step[] = [
 ];
 
 interface Problem {
-  kind: 'scroll' | 'zoom' | 'outside' | 'clipped' | 'small' | 'panel' | 'tiny' | 'error';
+  kind: 'scroll' | 'zoom' | 'outside' | 'clipped' | 'small' | 'panel' | 'tiny' | 'overlap' | 'error';
   what: string;
 }
 
@@ -171,6 +171,7 @@ function inspect(safe: Insets): Problem[] {
 
   const safeBox: Box = { l: safe.l, t: safe.t, r: vw - safe.r, b: vh - safe.b };
   const sel = 'button, a[href], input, select, textarea, [role="button"], [role="tab"], [role="switch"], [role="slider"]';
+  const touchable: { el: HTMLElement; b: Box }[] = [];
   for (const el of document.querySelectorAll<HTMLElement>(sel)) {
     const r = el.getBoundingClientRect();
     if (r.width < 2 || r.height < 2) continue;
@@ -191,6 +192,7 @@ function inspect(safe: Insets): Problem[] {
     const hit = document.elementFromPoint((seen.l + seen.r) / 2, (seen.t + seen.b) / 2);
     if (!hit || !(hit === el || el.contains(hit) || hit.contains(el))) continue;
     const whole = box(r);
+    touchable.push({ el, b: seen });
     const cutOff = whole.l < clip.l - 1 || whole.t < clip.t - 1 || whole.r > clip.r + 1 || whole.b > clip.b + 1;
     if (cutOff && !scroller) out.push({ kind: 'clipped', what: `${name(el)} cut by its container` });
     if (seen.l < safeBox.l - 1 || seen.t < safeBox.t - 1 || seen.r > safeBox.r + 1 || seen.b > safeBox.b + 1)
@@ -208,6 +210,15 @@ function inspect(safe: Insets): Problem[] {
     const size = Math.min(tw, th);
     if (size < 44 - 0.5) out.push({ kind: 'small', what: `${name(el)} ${Math.round(tw)}×${Math.round(th)}` });
   }
+  // Controls side by side, not on top of each other (one inside the other is a part of it).
+  for (let i = 0; i < touchable.length; i++)
+    for (let j = i + 1; j < touchable.length; j++) {
+      const a = touchable[i];
+      const b = touchable[j];
+      if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+      const o = cut(a.b, b.b);
+      if (o.r - o.l > 4 && o.b - o.t > 4) out.push({ kind: 'overlap', what: `${name(a.el)} and ${name(b.el)} overlap by ${Math.round(o.r - o.l)}×${Math.round(o.b - o.t)}` });
+    }
   // Readable text: nothing on screen below 10 px (the HUD's small numbers are 10).
   const tiny = new Set<string>();
   for (const el of document.querySelectorAll<HTMLElement>('body *')) {
