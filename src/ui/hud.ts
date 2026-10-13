@@ -775,7 +775,6 @@ export class Hud {
     return this.panel === 'turret' ? this.el.turretPanel : this.panel === 'bless' ? this.el.blessPanel : this.panel === 'keys' ? this.el.keysPanel : null;
   }
 
-  /** True while a centre-screen banner (ascension, Ragnarök, verdict) is showing. */
   /**
    * Online, "Ada is away" / "Connection lost" takes the banner's place (hud.css hides it): its time
    * doesn't run meanwhile, and once the notice goes it is said again — screen readers don't
@@ -798,6 +797,7 @@ export class Hud {
     }
   }
 
+  /** True while a centre-screen banner (ascension, Ragnarök, verdict) is showing. */
   get bannerShowing(): boolean {
     return this.bannerTimer > 0;
   }

@@ -702,11 +702,15 @@ keyboard, gamepad), checked with puppeteer, 2026-10-13.)
    on desktop ("6 ms", "5 ms"…), drowning toasts. No role; announce only quality changes.
    (Done: a hidden status line (a `<b>`, which phones don't hide) says the quality when it
    changes after the first reading.)
-275. [ ] The online opening banner is filled while the HUD is still inert under the room screen
+275. [x] The online opening banner is filled while the HUD is still inert under the room screen
    — never announced; the countdown's assertive "3" follows 12 ms later.
-276. [ ] "Claim victory" is out of a gamepad's reach (A summons, Start's menu has no claim) and
+   (Done: `Hud.sayBannerAgain()` re-writes the banner's lines when the HUD stops being inert
+   (as `holdBanner` does after the away notice); the countdown is polite, so it queues behind them.)
+276. [x] "Claim victory" is out of a gamepad's reach (A summons, Start's menu has no claim) and
    the 16th Tab stop by keyboard, with no key. A claim in the pause menu, or pad/Tab focus to it
    when it appears.
+   (Done: the pause menu (Start / Esc) shows "Claim victory" while the notice offers it
+   (`NetOverlay.claimable` → `Menus.setClaimable`); mpsmoke claims from the pause menu now.)
 277. [x] The message line is two `role=alert` elements (lobby and room screens) — a message
    written while both are visible (a room vanishing → lobby) is announced twice, and a closed
    line keeps its text in the accessibility tree. One live region, cleared when it closes.
