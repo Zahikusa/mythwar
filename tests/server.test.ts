@@ -107,12 +107,14 @@ function setup(opts: { awayGrace?: number; silentAway?: number; store?: ServerSt
       lobby.update();
     }
   };
-  return { lobby, run };
+  /** Time passes without the server running at all (a stalled process). */
+  const stall = (ms: number) => void (now += ms);
+  return { lobby, run, stall };
 }
 
 /** Two players in a running battle. */
 function battle(opts: { awayGrace?: number; silentAway?: number; store?: ServerStore; today?: () => number } = {}) {
-  const { lobby, run } = setup(opts);
+  const { lobby, run, stall } = setup(opts);
   const a = new FakeClient(lobby);
   const b = new FakeClient(lobby);
   a.hello('Ada');
@@ -123,7 +125,7 @@ function battle(opts: { awayGrace?: number; silentAway?: number; store?: ServerS
   a.send({ type: 'ready', ready: true });
   b.send({ type: 'ready', ready: true });
   run(3100);
-  return { lobby, run, a, b, code };
+  return { lobby, run, stall, a, b, code };
 }
 
 describe('lobby', () => {
@@ -595,6 +597,47 @@ describe('battle', () => {
     expect(a.inbox.slice(before).some((m) => m.type === 'resuming')).toBe(false);
     b.send({ type: 'away', away: false });
     expect(a.last('resuming')).toBeDefined();
+  });
+
+  it('silence: a battle that ended while away, a quiet first word, a stalled server (backlog 222)', () => {
+    const { lobby, run, stall, a, b } = battle({ silentAway: 4 });
+    const step = (secs: number, quiet: FakeClient | null = null) => {
+      for (let i = 0; i < secs; i++) {
+        for (const c of [a, b]) if (c !== quiet) c.send({ type: 'ping', t: 0, rtt: 20 });
+        run(1000);
+      }
+    };
+    // B's page goes to the background and A claims the win: B never says "back" (that's only
+    // said in a battle). In the rematch a quiet spell of B's ends when B is heard from again.
+    b.send({ type: 'away', away: true });
+    step(21, b);
+    a.send({ type: 'claim' });
+    expect(a.last('over')).toMatchObject({ winner: 0, reason: 'timeout' });
+    a.send({ type: 'ready', ready: true });
+    b.send({ type: 'ready', ready: true });
+    step(4);
+    expect(b.last('start')).toBeDefined();
+    let before = a.inbox.length;
+    step(6, b);
+    expect(a.inbox.slice(before).some((m) => m.type === 'paused')).toBe(true);
+    b.send({ type: 'ping', t: 0, rtt: 20 });
+    expect(a.last('resuming')).toBeDefined();
+    step(4);
+    // A quiet player's first word is "away" (the page went to the background meanwhile): no
+    // flicker of "resuming" before the pause.
+    step(6, b);
+    before = a.inbox.length;
+    b.send({ type: 'away', away: true });
+    step(1);
+    expect(a.inbox.slice(before).some((m) => m.type === 'resuming')).toBe(false);
+    b.send({ type: 'away', away: false });
+    step(4);
+    // The server itself stalls for 6 s (the host's laptop dozed): nobody was silent.
+    before = a.inbox.length;
+    stall(6000);
+    lobby.update();
+    step(2);
+    expect(a.inbox.slice(before).some((m) => m.type === 'paused')).toBe(false);
   });
 
   it('a tab reconnecting in the background stays away', () => {

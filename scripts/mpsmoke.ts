@@ -24,6 +24,9 @@ const num = (name: string) => Number(args[args.indexOf(`--${name}`) + 1] ?? 0) |
 const latency = args.includes('--latency') ? num('latency') : 0;
 const jitter = args.includes('--jitter') ? num('jitter') : 0;
 const shotDir = resolve('screenshots/mp');
+/** The server's link timeouts here (12 s and 4 s for real): a dead link, a silent seat in battle. */
+const DEAD_AFTER = 5;
+const SILENT_AWAY = 2.5;
 
 let failures = 0;
 function check(name: string, ok: boolean, extra = ''): void {
@@ -39,9 +42,10 @@ function section(name: string): void {
   sectionAt = now;
 }
 
-async function waitFor(page: Page, what: string, fn: () => boolean, timeout = 8000): Promise<boolean> {
+/** `args` are passed to `fn` (it runs in the page). */
+async function waitFor(page: Page, what: string, fn: (...args: any[]) => boolean, timeout = 8000, ...args: unknown[]): Promise<boolean> {
   try {
-    await page.waitForFunction(fn, { timeout, polling: 50 });
+    await page.waitForFunction(fn, { timeout, polling: 50 }, ...args);
     return true;
   } catch {
     const dump = await page
@@ -193,7 +197,7 @@ async function main(): Promise<void> {
   const root = resolve('dist');
   if (!existsSync(join(root, 'index.html'))) throw new Error('Run "npm run build" first');
   const http = createServer(serveStatic(root));
-  let mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 3, deadAfter: 3 });
+  let mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 3, deadAfter: DEAD_AFTER, silentAway: SILENT_AWAY });
   await new Promise<void>((r) => http.listen(0, '127.0.0.1', () => r()));
   const port = (http.address() as { port: number }).port;
   const base = `http://127.0.0.1:${port}`;
@@ -296,13 +300,13 @@ async function main(): Promise<void> {
     // (Backlog 160) B's phone locks in the room (no wake lock over http): its link is gone for longer
     // than the server keeps a seat (3 s here, a minute for real). Back, it joins the room again.
     // (Backlog 217) A sleeping phone rarely closes its socket — it just goes silent, and the server
-    // only learns by its heartbeat (3 s here, 12 s for real): B's network is cut, not its socket.
+    // only learns by its heartbeat (5 s here, 12 s for real): B's network is cut, not its socket.
     const cut = Date.now();
     netCut = true;
     net.freeze();
     await waitFor(a, "B's link found dead", () => (window as any).__mythwar.mp.room?.seats[1]?.connected === false, 15_000);
     const deadIn = Date.now() - cut;
-    check('room: a silent link is found dead by the heartbeat', deadIn > 2000, `${deadIn} ms`);
+    check('room: a silent link is found dead by the heartbeat', deadIn > DEAD_AFTER * 1000 - 500, `${deadIn} ms`);
     await waitFor(a, "B's seat given up", () => (window as any).__mythwar.mp.room?.seats[1] === null, 15_000);
     net.thaw();
     // (Welcomed again: until then B's page still shows the room it had before the link went.)
@@ -505,6 +509,21 @@ async function main(): Promise<void> {
     await waitFor(b, 'B back online', () => (window as any).__mythwar.game.resyncs >= 1 && (window as any).__mythwar.mp.state === 'online' && !(window as any).__mythwar.game.paused, 8000);
     const b3 = await info(b);
     check('B resynced from a snapshot', b3.resyncs >= 1, `resyncs ${b3.resyncs}`);
+    // (Backlog 222) B's phone walks out of the Wi-Fi: its link goes silent, not closed. The battle
+    // is held for B once it has been quiet a while — before the link is even found dead.
+    {
+      const cut = Date.now();
+      netCut = true;
+      net.freeze();
+      await waitFor(a, 'A held for a silent B', () => ((window as any).__mythwar.game.netPause?.reason ?? '') === 'away', 10_000);
+      // (Quiet since its last ping — up to a second before the cut.)
+      const heldIn = Date.now() - cut;
+      check('a silent phone holds the battle before its link is found dead', heldIn > (SILENT_AWAY - 1.2) * 1000 && heldIn < DEAD_AFTER * 1000, `${heldIn} ms`);
+      net.thaw();
+      await waitFor(b, 'B back in the battle', () => (window as any).__mythwar.mp.state === 'online' && !(window as any).__mythwar.game.paused, 10_000);
+      await waitFor(a, 'A runs on', () => !(window as any).__mythwar.game.paused, 8000);
+      netCut = false;
+    }
 
     section('reload mid-battle');
     await b.reload({ waitUntil: 'load' });
@@ -756,10 +775,12 @@ async function main(): Promise<void> {
     // (B wasn't Ready: nothing to press "again".)
     const told = await b.evaluate(() => document.querySelector('.screen.room .mpflash')?.textContent ?? '');
     check('room: a handicap change says "press Ready again" only to a player who was Ready', !told.includes('again'), told);
+    const glassRev = await b.evaluate(() => (window as any).__mythwar.mp.room.rev as number);
     await a.evaluate(() => (window as any).__mythwar.mp.setTrials([]));
     // (A Ready sent before the room's latest change is ignored as stale — backlog 96: both wait
-    // until they see the handicap gone.)
-    for (const p of [a, b]) await waitFor(p, 'the handicap gone', () => ((window as any).__mythwar.mp.room?.seats[0]?.trials.length ?? 1) === 0, 4000);
+    // until the server's word on the handicap gone reached them. A's own page shows it at once,
+    // before the server's new revision of the room arrives.)
+    for (const p of [a, b]) await waitFor(p, 'the handicap gone', (rev) => ((window as any).__mythwar.mp.room?.seats[0]?.trials.length ?? 1) === 0 && (window as any).__mythwar.mp.room.rev > rev, 4000, glassRev);
     for (const p of [a, b]) await p.evaluate(() => (window as any).__mythwar.mp.ready(true));
     await waitFor(a, 'A in the co-op battle', () => (window as any).__mythwar.state === 'playing' && (window as any).__mythwar.game.coop === 'novice', 8000);
     await waitFor(b, 'B in the co-op battle', () => (window as any).__mythwar.state === 'playing' && (window as any).__mythwar.game.coop === 'novice', 8000);
@@ -830,7 +851,7 @@ async function main(): Promise<void> {
     section('server restart');
     // B sits on the results in its room; the game server restarts and forgets everyone.
     mp.close();
-    mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 3, deadAfter: 3 });
+    mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 3, deadAfter: DEAD_AFTER, silentAway: SILENT_AWAY });
     await waitFor(b, 'B back in the lobby after the restart', () => (window as any).__mythwar.menus.current === 'mp' && (window as any).__mythwar.mp?.state === 'online', 10000);
     const note = await b.evaluate(() => document.querySelector('.screen.mp .mpflash')?.textContent ?? '');
     check('B told the server restarted', note.includes('restarted'), note);

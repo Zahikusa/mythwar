@@ -1131,6 +1131,7 @@ export class App {
     this.mp?.leave();
     // (A room's message — "press Back again to leave", a change of terms — stays behind.)
     this.menus.mp.unflash();
+    this.roomBackAt = -Infinity;
     if (inBattle) this.toTitle();
     this.openMultiplayer();
   }
@@ -1188,7 +1189,12 @@ export class App {
     if (this.state === 'title') {
       const cur = this.menus.current;
       if (cur === 'mp' && mp.room) this.menus.show('room');
-      else if (cur === 'room' && !mp.room) this.menus.show('mp');
+      else if (cur === 'room' && !mp.room) {
+        // (The room went from under a "press Back again": that was about the room.)
+        if (performance.now() - this.roomBackAt < ROOM_BACK_WINDOW) this.menus.mp.unflash();
+        this.roomBackAt = -Infinity;
+        this.menus.show('mp');
+      }
     }
     const lost = mp.sessionLost;
     if (lost) {

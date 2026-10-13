@@ -183,6 +183,8 @@ export class Lobby {
   private roomsDirty = false;
   private lastRoomList = -Infinity;
   private lastSweep = -Infinity;
+  /** When update() last ran: after a stall of the whole server, nobody has been silent. */
+  private lastUpdate = -Infinity;
 
   constructor(opts: LobbyOptions = {}) {
     this.opts = opts;
@@ -280,8 +282,9 @@ export class Lobby {
           }
           if (!session || session.conn !== conn) return this.error(conn, 'bad-request', 'Say hello first');
           if (msg.type === 'cmd' && ++rate.cmds > CMD_RATE) return this.error(conn, 'rate', 'Too many commands');
-          this.heard(session, now);
           this.handle(session, msg);
+          // (After the message: a quiet player's first word may be "away" — or "leave".)
+          this.heard(session, now);
         } catch (e) {
           this.fault(`error handling "${msg.type}" from ${session?.name ?? 'a new connection'}: ${(e as Error)?.stack ?? e}`);
         }
@@ -295,6 +298,10 @@ export class Lobby {
   /** Drives matches and expiries; call every few milliseconds. */
   update(): void {
     const now = this.now();
+    // (The host's laptop dozed, a long pause of the process: messages that waited meanwhile are
+    // read after this call — no one is silent just because the server wasn't listening.)
+    const stalled = now - this.lastUpdate > 1000;
+    this.lastUpdate = now;
     for (const s of this.awayWaiting) if (now - s.awayAt >= AWAY_GAP && s.awayWanted !== null) this.applyAway(s, s.awayWanted, now);
     for (const room of this.rooms.values()) {
       try {
@@ -303,7 +310,7 @@ export class Lobby {
         this.matchFault(room, e);
         continue;
       }
-      if (room.phase === 'playing' && room.match) this.checkSilence(room, room.match, now);
+      if (room.phase === 'playing' && room.match && !stalled) this.checkSilence(room, room.match, now);
       if (room.phase !== 'playing') {
         for (const seat of [0, 1] as Team[]) {
           const s = room.seats[seat];
@@ -630,6 +637,10 @@ export class Lobby {
     const [a, b] = room.seats as [Seat, Seat];
     a.ready = false;
     b.ready = false;
+    // (A page says "away" only during a battle: one that ended while it was away never said
+    // "back". A tab hidden as this one starts says so again.)
+    a.session.saysAway = false;
+    b.session.saysAway = false;
     const seed = (this.random() * 2 ** 31) | 0;
     const names: [string, string] = [this.nameIn(room, 0), this.nameIn(room, 1)];
     const countdown = this.opts.countdown ?? START_COUNTDOWN;

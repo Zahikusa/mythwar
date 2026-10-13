@@ -447,6 +447,40 @@ the overlay and the app's online wiring — 2026-10-13.)
    said it's away (`saysAway`, from hello and 'away'). `LobbyOptions.silentAway` (0 = never: the
    server tests' fake clients don't ping); server test; MULTIPLAYER.md. mpsmoke plain and
    with latency green.)
+(Items 223–224: an independent review of run #10's own diff, 2026-10-13; 225–227: a review of
+server/lobby.ts and match.ts, 2026-10-13.)
+223. [x] #222's silence rule, three holes: (a) `saysAway` outlived its battle — a page says
+   "back" only during a battle, so one that ended while it was away (a claimed win) kept it,
+   and in the rematch a Wi-Fi stall's away was never undone: the battle held for a player who
+   is there, and the other could claim; (b) `heard()` ran before the message that ended the
+   silence — a first word of "away" flickered resuming → paused; (c) after a stall of the whole
+   server (the host's laptop dozing) every player counted as silent before their waiting
+   messages were read. (Done: `startMatch` resets `saysAway`; `heard()` after `handle()`; an
+   `update()` after a > 1-s gap skips the check. One server test covers all three — each part
+   fails without its fix. mpsmoke gained a mid-battle silent-link step: the battle is held
+   after ~2–2.7 s of silence (`silentAway` 2.5 there), before the link is found dead (5 s).)
+224. [x] The phone's "press Back again" (#215) outlived the room: Back once, Leave room, join
+   another within 4 s, Back once → left with no prompt; a room gone from under the prompt left
+   it on the lobby. (Done: `leaveRoom` and the room → lobby switch forget it, and drop the
+   prompt's text.)
+225. [ ] Seat grace measured from the disconnect, not the battle's end (lobby.ts ~307): in co-op
+   B's phone locks at minute 2, A wins alone at minute 6 — in the same `update()` B's 4-minute-old
+   `goneAt` removes B at once, and `removeFromRoom` zeroes the wins A just earned; a duel won by
+   the 90-s forfeit likewise. Start the grace at the result (`goneAt = now` in `ended()` for
+   seats still gone).
+226. [ ] A host whose phone reconnects isn't put back in the open-battles list: `disconnected()`
+   marks the room list dirty (the room drops out — `openRooms` needs `conn`), the resume path in
+   `hello` doesn't. On a quiet LAN the room stays unlisted. Set `roomsDirty` in `hello` when the
+   session has a room.
+227. [ ] Away/back toggling can still hold a duel forever (a gap in #46): "back" counts from
+   `setAway(false)`, but the battle only runs after the 3-s resume countdown — 2 s away, 2.5 s
+   back, repeat: each return carries nothing over, the claim/forfeit clocks restart, not a tick
+   is played. Count the time back from when the battle actually runs again.
+228. [x] mpsmoke's co-op start failed once under `--latency 60 --jitter 80` (A's Ready ignored):
+   A's own page shows its handicap gone at once (`setTrials` is optimistic), so A's wait passed
+   and its Ready went out with the room's old `rev` — stale (#96). (Done: both pages wait for a
+   newer `rev` than the one with the handicap; `waitFor` passes arguments into the page. Four
+   runs green incl. two with latency.) A person can't tap that fast after a chip (~100 ms).
 
 
 
