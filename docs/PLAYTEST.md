@@ -41,6 +41,12 @@ Pick one or two questions for this session, not ten. Good ones right now:
   come back, not "already has two players"); after a battle press **Room**, switch to co-op and
   Ready again (the other phone should say what changed); hold the lane shield on a small phone
   right next to the gate (the tap should hold the lane, and a tap on the gate open its turret).
+- And the phone behaviours from run #9: on Android, press **Back** in a battle (the menu should
+  open on that phone only — the other player's battle goes on, no pause spent — and Back again
+  closes it); in the room, let the guest's phone lock for two minutes, then wake it (it should
+  be back in the room by itself if nobody took the seat); after a battle tap **Copy result** on
+  a phone and paste it into a message (it should paste the result, not "Copy failed"); a guest
+  who came by QR code: did they find **How to play** in the room?
 
 **Don't** explain, defend or coach while they play. "What are you thinking?" is the only
 question allowed during the battle.

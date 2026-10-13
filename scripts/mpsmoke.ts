@@ -165,7 +165,6 @@ async function main(): Promise<void> {
     await a.click('.mpname', { count: 3 });
     await a.keyboard.type('Ada');
     await a.keyboard.press('Enter');
-    await waitFor(a, 'the name taken', () => (window as any).__mythwar.mp.name === 'Ada', 4000);
     // (Backlog 131) Connected with nothing open: the list says so (not the offline "—").
     await waitFor(a, 'the empty list says None yet', () => (document.querySelector('.mplist')?.textContent ?? '').includes('None yet'), 4000);
     await shot(a, '1-lobby-desktop');
@@ -177,6 +176,8 @@ async function main(): Promise<void> {
     });
     await press(a, '.screen.mp', 'Host a battle');
     await waitFor(a, 'A in a room', () => (window as any).__mythwar.menus.current === 'room');
+    // (The server's word for the name typed in the lobby: it went out before "host".)
+    check('lobby: the name typed reached the server', await a.evaluate(() => (window as any).__mythwar.mp.room?.seats[0]?.name === 'Ada'));
     const code = (await info(a)).room!;
     check('room code', /^[A-Z0-9]{4}$/.test(code), code);
     // (The QR library loads on demand.)
