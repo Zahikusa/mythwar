@@ -51,6 +51,11 @@ scanning the code again; a phone that **locked while waiting in the room** takes
 when it wakes; **Copy result / Copy link work on LAN phones** (plain http has no clipboard API);
 the room has **How to play**; the start countdown, the "is away" notice and the opening banner no
 longer cover each other; the chronicle tells a forfeit as a forfeit. No rules or protocol change.
+On the host's side, the server now names the network adapter behind each address it prints (and
+which one the QR code uses), explains Windows' *Public* Wi-Fi trap, and checks the Node version;
+the release package's starters say plainly when the zip wasn't unpacked. **But the downloadable
+release is still v1.0.0 from 2026-10-08** — publishing a new one is your step (PROGRESS.md, Open
+questions).
 
 ## Things that need your decision
 1. **Try it on two real phones** (docs/PLAYTEST.md). If anything feels off, that beats any

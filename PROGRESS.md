@@ -834,7 +834,7 @@ it prints, inviting, stopping — 2026-10-13.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #9 in short (for the morning)
-- Verification mode, backlog items 138–155. Open from run #8: #138 and #142 done; #128 (DOM tests)
+- Verification mode, backlog items 138–186. Open from run #8: #138 and #142 done; #128 (DOM tests)
   and #129 (rival ids) decided against, with reasons; #137 (split app.ts) started with a pure,
   tested `src/ui/roomnews.ts`.
 - A look at the online flows through screenshots (mpsmoke `--shots`, landscape and upright phone,
@@ -855,7 +855,16 @@ built, how to see each part working, and the decisions that need you.
   room (#161); keyboard wording on phones (#163, #164). `shoot` gained a two-player room and an
   online battle; smoke waits for the app instead of fixed sleeps (#158). docs/BRIEF.md has a
   run-#9 paragraph.
-- Tests 256 → 268; `npm run verify` green; `mpengines` (WebKit vs Chrome/Firefox) in sync.
+- Then the host's side (a review of getting, starting and stopping the server, #175–#185): the
+  console names each address's adapter and which one the QR uses, filters VPN/VM adapters, says
+  how to set Windows' Wi-Fi to *Private*, announces a busy port, saves on window close (SIGHUP /
+  SIGBREAK); `npm run lan` checks the Node version first; the package's starters check Node and
+  that the zip was unpacked; macOS 15's Gatekeeper steps; `npm run package:check` starts the
+  packaged server.mjs (also in release.yml). Plus #167 (Back online spends no pause), #169, #171,
+  #174 (more pure, tested online logic), #186 (gamepad in the room).
+- **Open question added:** the downloadable release (v1.0.0) is ~280 commits old.
+- Tests 256 → 279; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
+  frame); `mpengines` (WebKit vs Chrome/Firefox) in sync.
 
 ## Run #8 in short (for the morning)
 - Verification mode, backlog items 38–142: done except the notes #23, #94 and the open
