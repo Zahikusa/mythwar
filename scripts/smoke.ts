@@ -4,6 +4,7 @@
  *   node scripts/smoke.ts --only journal,sandbox     (just those flows; names listed on a typo)
  * Exits non-zero on any failed check or console error.
  */
+import { exportProgress } from '../src/ui/progress.ts';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createServer } from 'node:http';
 import { readFile, readdir } from 'node:fs/promises';
@@ -863,6 +864,36 @@ async function phoneBackFlow(page: Page): Promise<void> {
   check('the second Back on the title leaves the page', page.url() !== url, page.url());
 }
 
+/**
+ * (Phase 3) The installed iPhone app's first launch: the welcome, and records from Safari brought
+ * over with one tap (the progress code read from the clipboard).
+ */
+async function appWelcomeFlow(page: Page): Promise<void> {
+  console.log('== installed app welcome ==');
+  await page.setViewport({ width: 844, height: 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1');
+  await page.browserContext().overridePermissions(base, ['clipboard-read', 'clipboard-write', 'clipboard-sanitized-write']);
+  await page.evaluateOnNewDocument(() => {
+    const mm = window.matchMedia.bind(window);
+    window.matchMedia = (q: string) => mm(q.replace(/\(\s*display-mode:\s*standalone\s*\)/g, '(min-width: 0px)'));
+    Object.defineProperty(navigator, 'standalone', { configurable: true, value: true });
+  });
+  // A code as Safari's "Copy my progress" would make: two feats, a win against the Novice.
+  await page.goto(`${base}/`, { waitUntil: 'load' });
+  await page.waitForFunction(() => (window as any).__mythwar?.menus?.current === 'title', { timeout: 8000 });
+  const shown = await page.evaluate(() => ({ open: (window as any).__mythwar.install.isOpen, title: document.querySelector('.isheet h3')?.textContent ?? '', paste: !!document.querySelector('.isheet .iactions')?.textContent?.includes('Paste my progress') }));
+  check('installed: the first launch says welcome, with "Paste my progress"', shown.open && /Welcome/.test(shown.title) && shown.paste, JSON.stringify(shown));
+  const code = exportProgress({ records: { novice: { wins: 1, losses: 0, best: 300, streak: 1, stars: 2 } }, feats: ['first', 'novice'], ageSeen: 0, online: {}, riddles: [], resetAt: 0 } as unknown as Parameters<typeof exportProgress>[0]);
+  await page.evaluate((c: string) => navigator.clipboard.writeText(c), code);
+  const btn = await page.evaluateHandle(() => [...document.querySelectorAll<HTMLElement>('.isheet .mbtn')].find((b) => b.textContent?.includes('Paste my progress'))!);
+  await sleep(400); // (the sheet slides up first)
+  const box = await (btn as any).boundingBox();
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForFunction(() => /brought over|No progress|not allowed/.test(document.querySelector('.isheet')?.textContent ?? ''), { timeout: 4000 }).catch(() => {});
+  const after = await page.evaluate(() => ({ text: [...document.querySelectorAll('.isheet .mbtn')].map((b) => b.textContent).join(' | '), feats: (window as any).__mythwar.settings.feats, stored: JSON.parse(localStorage.getItem('mythwar.settings.v1') ?? '{}').feats }));
+  check('"Paste my progress" brings the records over (and saves them)', !!code && /brought over/.test(after.text) && after.feats.includes('novice') && (after.stored ?? []).includes('novice'), JSON.stringify({ codeLen: code.length, ...after }));
+}
+
 async function rotatedMenusFlow(page: Page): Promise<void> {
   console.log('== rotated portrait menus ==');
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
@@ -1582,6 +1613,7 @@ async function main(): Promise<void> {
     { name: 'resume', label: 'resume', go: resumeFlow },
     { name: 'rotated', label: 'rotated menus', go: rotatedMenusFlow },
     { name: 'phone-back', label: 'phone back', go: phoneBackFlow },
+    { name: 'app-welcome', label: 'installed app welcome', go: appWelcomeFlow },
     { name: 'phone-menus', label: 'phone menus', go: phoneMenusFit },
     { name: 'service-worker', label: 'service worker', go: serviceWorkerFlow },
     { name: 'tutorial', label: 'tutorial', go: tutorialHandoffFlow },

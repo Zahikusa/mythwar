@@ -1,7 +1,7 @@
 import { advise, currentSituation } from '../platform.ts';
 import type { Advice, InApp, Situation } from '../platform.ts';
 import type { Settings } from './settings.ts';
-import { exportProgress } from './progress.ts';
+import { exportProgress, importProgress } from './progress.ts';
 import { copyText, h, onTap } from './dom.ts';
 import { qrSvg } from './mpmenus.ts';
 
@@ -179,6 +179,8 @@ export interface InstallHooks {
   canFullscreen(): boolean;
   /** A sheet opened: Back should close it (the app keeps a history entry for that). */
   opened(): void;
+  /** Progress came in (a pasted code): saved, and shown where it shows (the title's laurels). */
+  progressChanged(): void;
 }
 
 /**
@@ -379,19 +381,27 @@ export class InstallGuide {
     s.appWelcome = true;
     this.hooks.save();
     const fresh = !Object.values(s.records).some((r) => r && r.wins + r.losses > 0) && !s.feats.length;
-    this.show(
-      {
-        title: 'Welcome to the Mythwar app',
-        lead: 'It opens full screen from your Home Screen and battles the gods offline too.',
-        steps: [],
-        spot: { portrait: null, landscape: null },
-        note:
-          fresh && this.situation.os === 'ios'
-            ? 'Played in Safari before? The app keeps its own records: in Safari open Settings → Copy my code, then paste it here in Settings.'
-            : undefined,
-      },
-      [this.button('Let’s play', 'primary', () => this.close())],
-    );
+    const bring = fresh && this.situation.os === 'ios';
+    const actions = [this.button('Let’s play', 'primary', () => this.close())];
+    // Records from Safari in one tap: the code copied there (its sheet's "Copy my progress", or
+    // Settings → Copy my code) is read from the clipboard — iOS asks with its own Paste bubble.
+    let note = bring ? 'Played in Safari before? The app keeps its own records: copy your progress there (Settings → Copy my code), then paste it here.' : undefined;
+    if (bring && navigator.clipboard?.readText) {
+      const paste = this.button('Paste my progress', '', () => {
+        const say = (t: string) => (paste.querySelector('span')!.textContent = t);
+        navigator.clipboard.readText().then(
+          (code) => {
+            if (!importProgress(s, code)) return say('No progress code copied');
+            this.hooks.save();
+            this.hooks.progressChanged();
+            say('Progress brought over ✓');
+          },
+          () => say('Paste not allowed — use Settings'),
+        );
+      });
+      actions.unshift(paste);
+    } else if (bring) note = 'Played in Safari before? The app keeps its own records: in Safari open Settings → Copy my code, then paste it here in Settings.';
+    this.show({ title: 'Welcome to the Mythwar app', lead: 'It opens full screen from your Home Screen and battles the gods offline too.', steps: [], spot: { portrait: null, landscape: null }, note }, actions);
   }
 
   /** The sheet for this situation (Settings' entry, the offer, after the first battle). */

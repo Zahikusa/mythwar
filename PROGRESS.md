@@ -168,6 +168,20 @@ Already in the code before Phase 3, and kept:
    `lan-title` and `lan-settings` in the tab — iPhone: no offer, the line in Settings;
    Android: "Play full screen" on the title and in Settings.)
 
+8. [x] The installed iPhone app's welcome tells a returning player to go to Settings to paste
+   the progress code copied in Safari: a "Paste my progress" button right in the welcome
+   (`navigator.clipboard.readText`, which iOS answers with its own Paste bubble) would bring
+   the records over in one tap.
+   (Done: "Paste my progress" in the welcome (iPhone, a fresh app, where the clipboard can be
+   read) merges the code and saves; smoke's `app-welcome` flow stubs an installed iPhone,
+   puts a code on the clipboard and taps it.)
+9. [ ] mobilecheck doesn't visit the coach's tips (the first battle's guidance), the age
+   preview (long press on Ascend) or a card's details on a phone: three overlays a phone player
+   sees in the first minutes.
+10. [ ] Back while the upright typing echo is up (ui/upright.ts): the screen behind changes
+   (lobby → title) but the field may keep the focus and the echo its place — check that the
+   echo always goes with its screen.
+
 ## Decisions
 
 - **Portrait:** keep rotating the stage 90° on an upright phone (the game is a side-view

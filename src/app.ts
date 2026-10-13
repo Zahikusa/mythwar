@@ -292,6 +292,10 @@ export class App {
       fullscreen: () => this.goFullscreen(),
       canFullscreen: () => canFullscreen(),
       opened: () => this.armBack(true),
+      progressChanged: () => {
+        this.applySettings(this.settings);
+        if (this.menus.current === 'title') this.menus.refreshLaurels();
+      },
     });
     this.install.attachTitle(this.menus.titleNotes);
     // An upright phone types into the turned stage's fields through an upright echo of them.
