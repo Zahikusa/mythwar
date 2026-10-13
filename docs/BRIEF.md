@@ -1,7 +1,7 @@
 # Mythwar — brief for the client
 
 One page: what TASK.md asked for, what was built, how to see it with your own eyes, and what
-still needs you. (Details: PROGRESS.md for the log, docs/LENSES.md for the reasoning per lens.)
+still needs you. (Details: PROGRESS.md for the log — older parts in docs/PROGRESS-archive.md — docs/LENSES.md for the reasoning per lens.)
 
 ## Phase 1 — a match against another person on the same Wi-Fi
 
@@ -34,7 +34,7 @@ docs/PLAYTEST.md is a one-hour plan to close this gap — the most valuable next
 Six independent reviews of the finished work (netcode, app flows, simulation, persistence,
 accessibility, docs) and two walk-throughs (two players' flows; saved data across versions) found
 about 70 concrete defects; each is fixed and checked, most with a test that failed first
-(PROGRESS.md, items 38–107). The ones you'd notice: **one misbehaving client could crash the LAN
+(docs/PROGRESS-archive.md, items 38–107; later ones in PROGRESS.md). The ones you'd notice: **one misbehaving client could crash the LAN
 server** — fixed, and a fault in one battle no longer ends the others; a phone that drops the page
 gets its seat back when it re-scans the QR; "Room" on the results lets you change mode or
 handicaps for the rematch; reconnecting is quicker after a Wi-Fi switch; a save in one tab never
@@ -45,7 +45,7 @@ fights — now perfectly even), and the **protocol is v15**: server and pages fr
 
 A walk-through of a first-time guest — scans the QR code on a phone, waits in the room, plays,
 sees the results — and screenshots of every online screen found the rough edges a friend would
-hit first (PROGRESS.md, items 138–166). Now: **the phone's Back button no longer closes the
+hit first (PROGRESS.md, items 138–205). Now: **the phone's Back button no longer closes the
 game** (in a battle it opens the menu), and a tab that did close rejoins its running battle by
 scanning the code again; a phone that **locked while waiting in the room** takes its seat back
 when it wakes; **Copy result / Copy link work on LAN phones** (plain http has no clipboard API);
