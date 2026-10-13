@@ -611,12 +611,20 @@ export class Lobby {
         // counted, and allies on one device share one co-op victory.)
         const sameDevice = !!room.seats[0]?.session.device && room.seats[0]?.session.device === room.seats[1]?.session.device;
         if (coop) {
+          // (Only allies still in it: one whose tab closed at the start and never came back
+          // didn't win this battle.)
           if (winner === 0)
             room.seats.forEach((x, i) => {
-              if (!x) return;
+              if (!x || (match && !match.stillIn(i as Team, this.now()))) return;
               x.wins++;
               if (!(sameDevice && i === 1)) this.hallEntry(x.session).coop++;
             });
+          // The ally left mid-battle: an open room again, its score starting over (as in a duel
+          // when the other player leaves) — listed for a new ally to join.
+          if (room.seats.filter(Boolean).length === 1) {
+            room.phase = 'waiting';
+            for (const x of room.seats) if (x) x.wins = 0;
+          }
         } else {
           const w = room.seats[winner];
           const l = room.seats[winner === 0 ? 1 : 0];
@@ -659,7 +667,7 @@ export class Lobby {
     s.seat = null;
     if (!room || seat === null) return;
     if (room.match && room.phase === 'playing') {
-      room.match.forfeit(seat);
+      room.match.forfeit(seat, this.now());
       // Co-op with an ally still in the battle: they play on alone; the room stays as it is.
       if (room.match.coop && room.seats[1 - seat] && room.phase === 'playing') {
         room.seats[seat] = null;

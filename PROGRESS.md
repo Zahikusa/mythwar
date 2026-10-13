@@ -829,6 +829,37 @@ it prints, inviting, stopping — 2026-10-13.)
    `mobile-mp-battle` now has both players summon after the countdown; re-shot with tips off —
    `shoot mobile-mp-battle --settings '{"hints":false,"playerName":"Ada","sigil":1}'` then
    `docshot … docs/mp-phone.jpg 960`; caption fixed — it is the host's phone.)
+(Items 188–197: an independent review of co-op (two allies against the server's AI), 2026-10-13.)
+188. [x] `server/match.ts` `forfeit` in co-op ended the battle at once ("forfeit", the AI wins)
+   when the leaver's ally was away at all — B switches apps for 2 s, A leaves: lost. (Done: the
+   leaver is gone for good, the battle waits while the ally is away and is lost only when the
+   ally's own grace runs out; server test — failed before.)
+189. [x] Co-op results: the rematch note named the AI ("Waiting for Novice…", "Novice left the
+   room.") — `syncRematch` passed `foeName`. (Done: the ally's name in co-op.)
+190. [x] An ally whose tab closed at the start and never came back still got the co-op victory in
+   the Hall (and the room's wins). (Done: `Match.stillIn()` — only allies here or away for less
+   than the grace are credited; server test.)
+191. [ ] The ally who stays is never told the other is away or has left (room news skip battles,
+   the net notice only shows a pause, the HUD still says "You & Bo"). A toast "Bo left — you fight
+   on alone" / "Bo is away", and the HUD's name line without them.
+192. [x] After an ally left mid-battle, the room ended in phase 'over' with one seat: not listed
+   in the lobby, and the old "victories together" score carried to a new ally. (Done: such a room
+   is 'waiting' again with the score reset, as in a duel; server test.)
+193. [ ] A rematch accepted from the results can start a different battle than the one shown:
+   A goes to Room, switches to a duel (or takes a handicap) and readies; B on the results reads
+   "wants a rematch!" and accepts — now fighting the ally. Say what changed on the results' note
+   ("Ada wants a duel / now fights under Glass Citadel") — or route Accept through the room.
+194. [ ] Both allies away: the notice names the ally ("Bo is away… you win") with duel wording and
+   may offer "Claim victory", which the server refuses in co-op (netoverlay.ts ~91–97). Co-op
+   wording: "Bo is away — the battle waits for you both"; no claim button.
+195. [ ] Co-op room: under the ally's seat "2 – 2 here · you 3 – 1 overall" frames the ally as an
+   opponent (mpmenus.ts ~441–447). In co-op: "Victories together: 2".
+196. [ ] Co-op leaving and credit: the leaver's journal records a defeat and the pause note says
+   leaving "counts as a defeat" though the side may still win; side-wide feats (Wyrmcaller,
+   Favoured, Among the Gods) go to both allies for one ally's deed; a stayer who won alone reads
+   "You and Bo toppled the Novice!".
+197. [ ] (minor) The co-op chronicle calls the foe by the difficulty label ("First blood to Novice")
+   where single player uses the general's name (Puck); the results drop the AI's income note.
 
 
 

@@ -1127,7 +1127,8 @@ export class App {
     if (!mp || !(g instanceof NetGame) || this.state !== 'over') return;
     const seats = mp.room?.seats;
     const foe = seats?.[g.seat === 0 ? 1 : 0] ?? null;
-    this.menus.updateRematch(g.foeName, !!seats?.[g.seat]?.ready, foe ? foe.ready : null, !!foe?.connected);
+    // (In co-op the other seat is the ally — the foe is the AI.)
+    this.menus.updateRematch(g.coop ? g.allyName : g.foeName, !!seats?.[g.seat]?.ready, foe ? foe.ready : null, !!foe?.connected);
   }
 
   private onMpChanged(): void {

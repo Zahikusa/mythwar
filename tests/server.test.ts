@@ -183,6 +183,93 @@ describe('lobby', () => {
     expect(b.hashChecks).toBeGreaterThan(0);
   });
 
+  it('co-op: an ally leaving while the other is away for a moment doesn’t lose the battle (backlog 188)', () => {
+    const coopBattle = () => {
+      const { lobby, run } = setup({ awayGrace: 10 });
+      const a = new FakeClient(lobby);
+      const b = new FakeClient(lobby);
+      a.hello('Ada');
+      b.hello('Bo');
+      a.send({ type: 'host' });
+      b.send({ type: 'join', code: a.last('room')!.room.code });
+      a.send({ type: 'coop', coop: 'novice' });
+      a.send({ type: 'ready', ready: true, rev: a.last('room')!.room.rev });
+      b.send({ type: 'ready', ready: true, rev: b.last('room')!.room.rev });
+      expect(b.last('start')!.coop).toBe('novice');
+      run(4000);
+      return { run, a, b };
+    };
+    // B switches apps for two seconds; A leaves meanwhile: the battle waits for B, then runs on.
+    {
+      const { run, a, b } = coopBattle();
+      b.send({ type: 'away', away: true });
+      run(500);
+      a.send({ type: 'leave' });
+      run(1500);
+      expect(b.last('over')).toBeUndefined();
+      expect(b.last('paused')!.state).toMatchObject({ reason: 'away', seat: 1 });
+      b.send({ type: 'away', away: false });
+      run(5000);
+      expect(b.last('over')).toBeUndefined();
+      expect(b.inbox.at(-1)?.type).toBe('turn');
+    }
+    // …but if B stays away past their own grace, the side is lost (nobody is left).
+    {
+      const { run, a, b } = coopBattle();
+      b.send({ type: 'away', away: true });
+      run(500);
+      a.send({ type: 'leave' });
+      run(11_000);
+      expect(b.last('over')).toMatchObject({ winner: 1, reason: 'timeout' });
+    }
+  });
+
+  it('co-op: a win counts for the allies still in it; a room its ally left opens again (backlog 190, 192)', () => {
+    const { lobby, run } = setup({ awayGrace: 10 });
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    const watcher = new FakeClient(lobby);
+    a.hello('Ada');
+    b.hello('Bo');
+    watcher.hello('Cy');
+    watcher.send({ type: 'watchRooms', on: true });
+    a.send({ type: 'host' });
+    const code = a.last('room')!.room.code;
+    b.send({ type: 'join', code });
+    a.send({ type: 'coop', coop: 'novice' });
+    a.send({ type: 'ready', ready: true, rev: a.last('room')!.room.rev });
+    b.send({ type: 'ready', ready: true, rev: b.last('room')!.room.rev });
+    run(4000);
+    // Bo's tab closes and never comes back; Ada fights on and wins after Bo's grace ran out.
+    b.disconnect();
+    run(12_000);
+    const room = (lobby as unknown as { rooms: Map<string, { match: { finish(w: number, r: string): void } }> }).rooms.get(code)!;
+    (room.match as unknown as { finish(w: number, r: string): void }).finish(0, 'citadel');
+    run(300);
+    expect(a.last('over')).toMatchObject({ winner: 0 });
+    expect(watcher.last('rooms')!.hall).toEqual([{ name: 'Ada', sigil: -1, w: 0, l: 0, coop: 1 }]);
+    // A second battle: Bo is back in, then leaves mid-battle; Ada wins alone.
+    const c = new FakeClient(lobby);
+    c.hello('Bo2');
+    a.send({ type: 'leave' });
+    a.send({ type: 'host' });
+    const code2 = a.last('room')!.room.code;
+    c.send({ type: 'join', code: code2 });
+    a.send({ type: 'coop', coop: 'novice' });
+    a.send({ type: 'ready', ready: true, rev: a.last('room')!.room.rev });
+    c.send({ type: 'ready', ready: true, rev: c.last('room')!.room.rev });
+    run(4000);
+    c.send({ type: 'leave' });
+    run(1000);
+    const room2 = (lobby as unknown as { rooms: Map<string, { match: unknown }> }).rooms.get(code2)!;
+    (room2.match as { finish(w: number, r: string): void }).finish(0, 'citadel');
+    run(300);
+    // The room is open again — listed, the score starting over — for a new ally.
+    expect(a.last('room')!.room).toMatchObject({ phase: 'waiting' });
+    expect(a.last('room')!.room.seats[0]!.wins).toBe(0);
+    expect(watcher.last('rooms')!.rooms.map((r) => r.code)).toContain(code2);
+  });
+
   it('co-op: both players command the left side against an AI run by the server, in lockstep', () => {
     const { lobby, run } = setup();
     const a = new FakeClient(lobby);

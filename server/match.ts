@@ -112,6 +112,12 @@ export class Match {
     return this.awaySince[seat] !== null;
   }
 
+  /** Still part of the battle at `now`: here, or away for less than the grace (not gone for good). */
+  stillIn(seat: Team, now: number): boolean {
+    const since = this.awaySince[seat];
+    return since === null || now - since < this.awayGrace * 1000;
+  }
+
   /** A player disconnected / put the app in the background (or came back). */
   setAway(seat: Team, away: boolean, now: number): void {
     if (this.state === 'over') return;
@@ -158,12 +164,15 @@ export class Match {
   }
 
   /** The player in `seat` gives up (left the room); the other wins. */
-  forfeit(seat: Team): void {
+  forfeit(seat: Team, now: number): void {
     if (this.state === 'over') return;
-    // Co-op: the ally plays on alone (the battle is lost only if nobody is left).
+    // Co-op: the ally plays on alone. Gone for good (away since forever): the battle waits only
+    // while the ally is away too, and is lost only once the ally's own time away runs out — an
+    // ally who just switched apps for a moment mustn't lose the battle because the other left.
     if (this.coop) {
-      this.awaySince[seat] = this.awaySince[seat] ?? -Infinity;
-      if (this.awaySince[1 - seat] !== null) this.finish(1, 'forfeit');
+      this.awaySince[seat] = -Infinity;
+      // (If the ally is away now, the battle waits for them — the notice names them.)
+      this.refreshPause(now);
       return;
     }
     this.finish((1 - seat) as Team, 'forfeit');
