@@ -212,7 +212,7 @@ built, how to see each part working, and the decisions that need you.
 - [x] #97 Transformation — the results' Legend tab tells the real myth behind your champion of the battle
 - [x] #98 Responsibility — a break suggested on the results after each hour of battles; public network keys hashed in the hall file (no IPs at rest); docs/PRIVACY.md; Reset records clears the journal
 - [x] #99 The Raven — stepped back: the newcomer path is fine; the core risk was an untested multiplayer path — mpsmoke now starts a battle with one tab hidden (backlog #29 closed)
-- [ ] #100 Your Secret Purpose — final reflection
+- [x] #100 Your Secret Purpose — two people at one table: winning the war (first victory over Ares) ends with "Now bring a friend →" into Multiplayer; reflection in LENSES.md
 
 # Phase 1 — Local (Wi-Fi) multiplayer (complete)
 

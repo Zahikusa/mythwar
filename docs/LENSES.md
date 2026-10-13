@@ -1892,3 +1892,25 @@ does the game meet them?*
   lens-sized feature but the real-device playtest and the remaining improvement backlog.
 - Checked: mpsmoke ("a battle starting in a hidden tab waits for that player — away:1 at tick
   0"; the rematch then runs); full verify.
+
+## #100 The Lens of Your Secret Purpose
+*Why am I really making this game? What is the deep purpose behind it — and does the game serve
+it?*
+- Looking back over ninety-nine lenses, the changes that mattered most kept pointing the same
+  way: a battle two people can start in a minute on whatever device they hold (phase 1), counters
+  you can read and explain to a friend (#6, #27, #57), co-op and handicaps so a newcomer and a
+  veteran can play together (#36–#38), rivals recognised and a Hall the whole room shares (#84,
+  #86), and stories out of the world's oldest myths (#7, #11, #79, #88, #97). The secret purpose
+  of Mythwar isn't the war: it is **two people at one table**, and an old story passed on — the
+  way *Age of War* was passed around a school computer room.
+- And yet at the one moment the game says it is *finished* — the first victory over Ares, when
+  "The Return" closes and the skalds have their song — it pointed back at itself: a tip about
+  Trials, the same Rematch button as ever.
+- Change: when the war is won, the results hand over: "**The war is won — and a war is better
+  shared.**" with **Now bring a friend →**, straight into Multiplayer (versus on the same Wi-Fi,
+  or side by side against the generals). The game's last word is an invitation to someone else.
+- Checked: `shoot results-war-won` (first win over Ares: the closing chapter, the line and the
+  button on one line, the page fits 1600×900); full verify.
+- After 100 lenses: the design is written down (DESIGN.md), every change has its reasoning
+  (this file), the client has a one-page brief (docs/BRIEF.md), and what remains is the one
+  thing no lens can do from here — two real people with two real phones (docs/PLAYTEST.md).

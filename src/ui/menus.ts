@@ -540,6 +540,13 @@ export class Menus {
 
   /** Beside the tip: "Face the Master →" after a win, "Face the Adept →" after a losing run. */
   private flowButton(won: boolean, difficulty: Difficulty): HTMLButtonElement | null {
+    // The war is won (the last chapter just closed): what the game is for, in the end, is two
+    // people at one table — so the way on leads to a friend (Lens #100).
+    if (won && difficulty === 'mythic' && this.epilogue) {
+      const b = this.button('Now bring a friend →', 'vnext', () => this.cb.multiplayer());
+      b.title = 'Teach the war to someone: battle a friend on the same Wi-Fi — or fight side by side against the generals';
+      return b;
+    }
     const next = flowSuggestion(won, difficulty, this.settings.records[difficulty]?.streak ?? 0);
     if (!next) return null;
     const b = this.button(`Face the ${AI_PROFILES[next].name} →`, 'vnext', () => this.cb.play(next));
@@ -890,6 +897,8 @@ export class Menus {
       }
     }
     const place = placeName(world.seed);
+    // The first victory over Ares ends the war (Lens #100): the tip hands over to "bring a friend".
+    const warWon = !online && won && difficulty === 'mythic' && !!this.epilogue;
     const story = this.chronicle;
     const shareText = `Mythwar: ${won ? 'Victory' : 'Defeat'} at ${place} vs ${foeName} in ${fmtTime(world.time)} — reached ${AGES[P.age].name}, ${P.stats.kills} foes slain.${story.length ? `\n${story.join('\n')}` : ''}`;
     const share = this.button('Copy result', 'ghost', () => {
@@ -933,7 +942,7 @@ export class Menus {
       h(
         'div',
         { class: 'vtip' },
-        h('span', { class: this.breakNote ? 'vbreak' : undefined, text: this.breakNote ?? (online && (won || online.reason !== 'citadel') ? scoreLine(online) : battleTip(world, me, difficulty, ageUps, this.settings.advice)) }),
+        h('span', { class: this.breakNote ? 'vbreak' : undefined, text: this.breakNote ?? (online && (won || online.reason !== 'citadel') ? scoreLine(online) : warWon ? 'The war is won — and a war is better shared.' : battleTip(world, me, difficulty, ageUps, this.settings.advice)) }),
         online || this.breakNote ? null : this.flowButton(won, difficulty),
       ),
       h('div', { class: 'vstats' }, table, this.storyPanel(history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null, story, best > 0 ? champion : null)),
