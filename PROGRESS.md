@@ -239,6 +239,28 @@ the improvement backlog below (verified, committed) and add what the review find
    resumed 'suspended', so a phone could stay silent for the rest of the session. (Done: any
    state but running/closed is resumed. Not testable here — no iOS device; the logic is a
    one-line state check.)
+(Items 59–64: an independent review of the simulation, AI and HUD, 2026-10-13 — scripts reproduced 1–2, 4.)
+59. [x] `src/sim/world.ts` ~1014: a shot's flight time is fixed from `target.x` — already stepped this
+   tick for team 1's shots, not yet for team 0's: mirrored kitsune bolts land a tick apart. Aim
+   at `target.px` (as `findTarget(…, true)` and `resolveAttack` do).
+60. [x] `src/sim/world.ts` ~862: `allyGap` skips allies slain earlier in the same tick — team 0's
+   kills free team 1's followers that tick, not the reverse: mirrored titan/titan/griffin armies
+   end with a winner. Count allies slain this tick as blockers until `cleanup`. (Mirror tests use
+   one creature kind only; with 59+60, 120 mixed mirrors stay symmetric.) (Done, both: a new test
+   mirrors every two-kind army of each age (titan/titan/griffin ended with a winner before);
+   riddles: puzzlecheck answers unchanged; designcheck passes — 100/53/17/3%, even battles
+   18.0 min, left side 53%. Battle outcomes can differ from earlier builds — online, server
+   and pages come from one build anyway.)
+61. [ ] Sandbox "For: Foe" (`src/game.ts` ~144 remaps commands to team 1): the HUD's queue chips,
+   turret panel (Sell!), blessing panel and card blockers still read `g.playerTeam` — a queue
+   chip cancels a foe creature of the same kind; the foe's queue can't be seen.
+62. [ ] `src/ui/hud.ts` ~1547: Bastion promises "+375 citadel health" under the Glass Citadel trial
+   where the citadel gains 187.5 — use `baseMaxHpFor` before/after.
+63. [ ] Online: card 'poor', Ascend 'ready' (+ chime), bless 'avail', turret 'poor' use the raw gold;
+   `NetGame.blocker` and the gold counter subtract orders in flight — with 160 gold, a 30-gold
+   summon in flight and a 150 tithe, Ascend glows "ready", a tap says "Not enough gold".
+64. [ ] `src/ai/ai.ts` ~295/327: the gold the AI keeps for the Elder Dragon also blocks buying the
+   Dragon (needs ~4,700–5,100 gold while calm). Low impact; leave the reserve out for the Dragon.
 
 
 

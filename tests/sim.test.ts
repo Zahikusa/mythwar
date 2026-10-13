@@ -776,6 +776,38 @@ describe('fairness between the sides', () => {
     }
   });
 
+  it('mixed mirrored armies end even — shots aimed and followers freed alike for both sides (backlog 59–60)', () => {
+    /** Two kinds per side, in waves, at mirrored spots and times; returns the survivor side. */
+    const mirrored = (ids: string[], gap: number): Team | null => {
+      const w = new World();
+      let spawned = 0;
+      for (let t = 0; t < 150; t += TICK) {
+        if (spawned < ids.length && t >= spawned * gap) {
+          w.spawnUnit(0, 0, UNITS[ids[spawned]], 300);
+          w.spawnUnit(1, 0, UNITS[ids[spawned]], LANE_LENGTH - 300);
+          spawned++;
+        }
+        w.step();
+        const alive = w.lanes[0].filter((u) => u.alive);
+        const a0 = alive.some((u) => u.team === 0);
+        const a1 = alive.some((u) => u.team === 1);
+        if (spawned === ids.length && (!a0 || !a1)) return a0 ? 0 : a1 ? 1 : null;
+      }
+      return null;
+    };
+    const uneven: string[] = [];
+    for (const units of AGE_UNITS) {
+      for (const a of units) {
+        for (const b of units) {
+          if (a === b) continue;
+          const army = [a.id, a.id, b.id, b.id, b.id];
+          if (mirrored(army, 0.7) !== null) uneven.push(army.join(' '));
+        }
+      }
+    }
+    expect(uneven).toEqual([]);
+  });
+
   it('phase-2 mechanics favour no side: mirrored holds, charges and frozen (brittle) armies end even', () => {
     for (const id of ['treant', 'redcap', 'pixie', 'jotunn', 'fenrir', 'valkyrie', 'griffin']) {
       for (const frozen of [false, true]) {

@@ -859,7 +859,9 @@ export class World {
   private allyGap(u: Unit, list: Unit[]): number {
     let gap = Infinity;
     for (const a of list) {
-      if (a === u || !a.alive || a.team !== u.team || a.flying) continue;
+      // (An ally slain earlier this tick still blocks until the tick ends: otherwise team 0's
+      // blows would free team 1's followers a tick sooner than the other way round.)
+      if (a === u || a.team !== u.team || a.flying) continue;
       // Ranged creatures hang back and let melee allies through to the front line.
       if (a.def.projectile && !u.def.projectile) continue;
       // Hunters fight as a pack: they crowd together and strike the same foe at once.
@@ -1011,7 +1013,9 @@ export class World {
     const def = u.def;
     const spec = def.projectile!;
     const x0 = u.x + dirOf(u.team) * def.radius * 0.6;
-    const tx = target ? target.x : this.baseFront(other(u.team));
+    // (Where the target stood at the start of the tick: team 1's targets have already stepped
+    // this tick when it shoots, team 0's not yet — the flight time must not depend on that.)
+    const tx = target ? target.px : this.baseFront(other(u.team));
     const slow = trait(def, 'slow');
     const bounce = trait(def, 'bounce');
     const splash = trait(def, 'splash');
