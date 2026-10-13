@@ -710,7 +710,7 @@ built, how to see each part working, and the decisions that need you.
   instead of previewing; the automatic battery saver stuck for good after an iPhone's Low Power
   Mode; iOS 15 got a broken layout or a crash — now a "needs a newer browser" message; iOS focus
   zoom on the 12-px code box; text inflation on rotation. A docs-vs-code review (#244).
-- Tests 285 → 295; mpsmoke plain / latency / portrait green (a co-op Ready race in the test
+- Tests 285 → 299; mpsmoke plain / latency / portrait green (a co-op Ready race in the test
   fixed, #228); mpengines, package:check green.
 
 ## Run #9 in short (for the morning)
