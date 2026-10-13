@@ -12,6 +12,11 @@ export class Input {
   /** Maps client coordinates into the stage (handles the rotated portrait mode). */
   toStage: (x: number, y: number) => [number, number] = (x, y) => [x, y];
   onPause: () => void = () => {};
+  /**
+   * A menu covers the battle (online with no pauses left it runs on behind it): battle keys wait —
+   * Space on a focused slider must not cast the god power.
+   */
+  menuOpen: () => boolean = () => false;
   private holdTimer = 0;
   private readonly canvas: HTMLCanvasElement;
   private cursorState = '';
@@ -172,7 +177,7 @@ export class Input {
       else this.onPause();
       return true;
     }
-    if (g.paused || g.over) return false;
+    if (g.paused || g.over || this.menuOpen()) return false;
     // A HUD button clicked earlier keeps focus; don't let Space/Enter also activate it.
     // (Buttons reached with Tab keep focus, so keyboard users can press them with Enter.)
     const active = document.activeElement;
