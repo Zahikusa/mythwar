@@ -146,7 +146,7 @@ complete; its log follows below the lens plan.
 - [x] #63 Beauty — no banner showing through the results (the same words twice); the riddle result gets a portrait composition
 - [x] #64 Projection — "Your name" in Settings: by your citadel in every battle, and the generals address you by it
 - [x] #65 The Story Machine — each battle writes its chronicle (first blood, ascensions, dragon, the end) on the results and in Copy result
-- [ ] #66 The Obstacle — obstacles worth overcoming
+- [x] #66 The Obstacle — riddles stopped at Asgard: The White Tigers (Jade) and Sky and Stone (Celestial), brute-forced
 - [ ] #67 Simplicity and Transcendence — a transcendent power moment
 - [ ] #68 The Hero's Journey — a short campaign path
 - [ ] #69 The Weirdest Thing — fix the weirdest thing

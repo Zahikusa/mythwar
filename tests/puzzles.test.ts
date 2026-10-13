@@ -9,6 +9,8 @@ const ANSWERS: Record<string, Attempt> = {
   labyrinth: { orders: [[1, 'gorgon'], [1, 'gorgon'], [1, 'gorgon']] },
   wall: { orders: [[2, 'jotunn'], [2, 'valkyrie'], [2, 'valkyrie']] },
   winter: { orders: [[0, 'fenrir'], [0, 'fenrir'], [0, 'fenrir']], cast: { lane: 0, at: 8 } },
+  tigers: { orders: [[2, 'oni'], [2, 'oni'], [2, 'kitsune']] },
+  skystone: { orders: [[2, 'phoenix'], [2, 'phoenix']], cast: { lane: 0, at: 4 } },
 };
 
 describe('riddles of war', () => {

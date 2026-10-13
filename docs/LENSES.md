@@ -1278,3 +1278,22 @@ a place where the story the game made is handed back to them?*
 - Checked: unit test (a full AI battle: 5–10 lines in time order, first blood first, an
   ascension, the verdict last), screenshots (1600×900, 1366×768); full verify (the smoke caught
   the first version's extra tab row pushing the results' buttons out of reach).
+
+## #66 The Lens of the Obstacle
+*What stands between the player and the goal — and is overcoming it worth it? Does each part of
+the journey have an obstacle of its own?*
+- The obstacles: the generals (a ladder of four, #49/#51), the trials (#31), the age race,
+  Ragnarök — and the riddles (#52), the game's purest obstacles: one question, one answer. But
+  the riddles stopped at Asgard. A player's journey through the ages ran on into the Jade Empire
+  and the Celestial realm with no riddle waiting there — the later, richer creature sets (the
+  Oni's enrage, the Kitsune's foxfire, the Phoenix's rebirth, the flying Griffin) had no
+  obstacle built around them.
+- Change: two more riddles, brute-forced like the first four. **The White Tigers** (Jade): a
+  tiger pack with a fox behind it, 900 gold — 2 of 17 answers win, both built on two Oni
+  Brutes. **Sky and Stone** (Celestial): Griffins down the top lane, Titans along the bottom,
+  1,400 gold and Starfall once — 26 of 297 win, none without the power (Phoenixes for the
+  Titans; Starfall holds the sky lane by itself). Sealed until their age is reached in battle,
+  so each is a reward at the end of a stretch of the journey.
+- Fixed on the way: a riddle card's header without the "Solved" tag was centred.
+- Checked: puzzlecheck, unit tests (each answer wins, < 25% of answers, the power riddle needs
+  its power), the list of six on a 667×375 phone; full verify.

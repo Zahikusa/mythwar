@@ -73,6 +73,28 @@ export const PUZZLES: Puzzle[] = [
     limit: 100,
     foes: [...row(0, 'fenrir', 5, 620, 18), ...row(0, 'valkyrie', 3, 740, 30)],
   },
+  {
+    id: 'tigers',
+    name: 'The White Tigers',
+    brief: 'A pack of Byakko Tigers runs down the bottom lane, a Kitsune behind it. You have 900 gold.',
+    hint: 'Shields beat fangs: Oni Brutes break a tiger pack — two of them, and something more to reach the fox.',
+    age: 3,
+    gold: 900,
+    power: false,
+    limit: 100,
+    foes: [...row(2, 'byakko', 4, 640, 14), ...row(2, 'kitsune', 1, 760, 24)],
+  },
+  {
+    id: 'skystone',
+    name: 'Sky and Stone',
+    brief: 'Griffins swoop down the top lane while Titans march along the bottom. 1,400 gold — and Starfall, once.',
+    hint: 'Orbs beat shields: Phoenixes for the Titans. And a god power can hold a whole lane by itself.',
+    age: 4,
+    gold: 1400,
+    power: true,
+    limit: 100,
+    foes: [...row(0, 'griffin', 3, 660, 16), ...row(2, 'titan', 2, 640, 44)],
+  },
 ];
 
 export function puzzleById(id: string): Puzzle | undefined {
