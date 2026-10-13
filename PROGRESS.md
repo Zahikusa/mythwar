@@ -188,8 +188,9 @@ Already in the code before Phase 3, and kept:
    hides the echo.)
 11. [x] The ambient strips (backlog 1) redraw 4× a second even with the battery saver on.
    (Done: once a second then.)
-12. [ ] PLAYTEST.md's phone check predates "Paste my progress" and the upright typing echo: add
+12. [x] PLAYTEST.md's phone check predates "Paste my progress" and the upright typing echo: add
    a line for each (installed iPhone: paste from Safari; upright lobby: the echo while typing).
+   (Done, with the ambient strips beside the notch too.)
 13. [ ] An iPad 9.7"/10.2" in a Safari tab sideways (1024×~690): the title's corner offer sits
    beside a logo that's wider relative to the screen than on the iPad mini — add that size to
    mobilecheck and look.

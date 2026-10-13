@@ -85,16 +85,20 @@ down the model, the iOS/Android version and anything that looks wrong (a photo h
       results' buttons. Sideways with the bars shown and hidden (iOS 26: the floating bar).
 - [ ] Settings, Bestiary, the lobby: only the middle scrolls (with momentum); the title and
       the Done/Back button stay put. Pulling past the end does not move the page.
-- [ ] The lobby, upright: tap "Your name" — the keyboard opens, the field stays visible; close
-      the keyboard — the game sits exactly where it was (no gap, nothing shifted).
+- [ ] The lobby, upright: tap "Your name" — the keyboard opens and an upright box at the top
+      shows what you type (the field itself is on the turned game); Done closes it. Close the
+      keyboard — the game sits exactly where it was (no gap, nothing shifted).
 - [ ] The "Get the app" offer on the title opens the sheet; the steps match what Safari
       shows (iOS 26: ⋯ → Share → Add to Home Screen → Open as Web App); the arrow points at
       the right button. Swipe the sheet down: it goes.
 
 **iPhone, installed (2 min)** — follow the sheet's steps, then open Mythwar from the Home Screen.
 - [ ] Launch: dark from the first frame (no white flash), no browser bars, the welcome card.
+- [ ] Before installing, tap "Copy my progress" in the sheet (after a battle in Safari); in the
+      app's welcome tap "Paste my progress" → iOS's Paste bubble → your feats are there.
 - [ ] Sideways on a phone with a notch: nothing important under the notch or the home bar,
-      on both sides (turn the phone the other way round too).
+      on both sides (turn the phone the other way round too); beside the notch a blurred copy of
+      the scene, not black bars.
 - [ ] Upright: the game turns sideways cleanly; the status bar doesn't cover anything.
 - [ ] Flight mode, close the app fully, open it again: it starts (offline).
 - [ ] The swipe back from the screen's left edge steps back like the game's Back.
