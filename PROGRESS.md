@@ -578,9 +578,11 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 135. [x] perfcheck hasn't run since the late run-#8 HUD changes (#79/#98 labels, #110's `more`
    listeners, #113's banner pool): re-measure (it was 1.02 ms of script per frame after #63).
    (Done: 0.96 ms of script per frame (budget 3), HUD 0.14 ms — unchanged.)
-136. [ ] The online pause menu's line for the other player's words (#125) has no shoot scenario and
+136. [x] The online pause menu's line for the other player's words (#125) has no shoot scenario and
    no phone check — on a 360-px-tall phone the pause screen is already full; check it still fits
-   with the line showing (smoke's phone-menus flow checks Resume with an empty line only).
+   with the line showing (smoke's phone-menus flow checks Resume with an empty line only). (Done:
+   the phone check now pauses with a line on the menu — Resume still on screen at 844×390 and
+   640×360.)
 
 
 

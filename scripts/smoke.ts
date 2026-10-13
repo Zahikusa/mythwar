@@ -596,6 +596,8 @@ async function phoneMenusFit(page: Page): Promise<void> {
     const pause = await page.evaluate(async () => {
       const app = (window as unknown as { __mythwar: any }).__mythwar;
       app.pause();
+      // (With the other player's words on it too, as online — backlog 136.)
+      app.menus.pauseSay('Ada L: Well played!');
       await new Promise((r) => setTimeout(r, 400));
       const el = document.querySelector('.screen.pause .psummary') as HTMLElement;
       const r = document.querySelector('.screen.pause .mbtn.primary')!.getBoundingClientRect();
