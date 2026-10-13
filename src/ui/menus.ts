@@ -7,7 +7,7 @@ import { h, fmt, fmtTime, onTap } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 import type { Settings } from './settings.ts';
-import { SIGILS, battleStars, parTime } from './settings.ts';
+import { SIGILS, battleStars, journalText, parTime } from './settings.ts';
 import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
 import { Bestiary } from './bestiary.ts';
@@ -748,8 +748,24 @@ export class Menus {
     });
     const sigilRow = h('div', { class: 'srow sname-row' }, h('span', { text: 'Your sigil' }), sigilBtn);
     const progress = h('div', { class: 'sprog' }, h('span', { class: 'sproglabel', text: 'Play on another device too? Carry your records and feats over:' }), h('div', { class: 'sprogrow' }, copyProg, progInput, loadProg), progStatus);
+    // Playtests (Lens #91): the last battles as plain text, for whoever runs the test. Kept on
+    // this device only; nothing leaves it unless the player copies it.
+    const journalStatus = h('span', { class: 'sprogstatus', role: 'status' });
+    const copyJournal = this.button('Copy playtest journal', 'ghost small', () => {
+      if (!s.journal.length) {
+        journalStatus.textContent = 'No battles noted yet — play one first.';
+        return;
+      }
+      const text = journalText(s, typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : '');
+      const shown = () => (journalStatus.textContent = `${s.journal.length} battle(s) copied — paste them into a message or a document.`);
+      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(shown, () => (journalStatus.textContent = 'Copying is blocked here — try another browser.'));
+      else journalStatus.textContent = 'Copying is not available in this browser.';
+    });
+    const journalRow = h('div', { class: 'sprogrow sjournal' }, copyJournal, h('span', { class: 'sproglabel', text: 'For playtests: your last battles (this device only).' }));
+    progress.append(journalRow, journalStatus);
     // Each visit starts fresh: no half-armed "erase records" left over from last time.
     this.settingsOpened = () => {
+      journalStatus.textContent = '';
       progStatus.textContent = '';
       progInput.value = '';
       resetRecords.dataset.armed = '';

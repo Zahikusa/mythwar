@@ -1722,3 +1722,24 @@ decisions?*
   contradictions, gamepad controls, Ragnarök moved to the systems it belongs to, numbers
   updated. Each entry names its lens so the reasoning is one search away in LENSES.md.
 - Checked: every number and name in the new text against the code (e.g. 18 feats, 3 pauses).
+
+## #91 The Lens of Playtesting
+*Why, who, where, what and how will we playtest — and what will we learn from it?*
+- Everything so far has been tested by scripts: scripted players, AI-vs-AI battles, two
+  headless browsers. What scripts cannot tell is where a newcomer frowns, and the two oldest open
+  questions (real iPhone/Android, a real gamepad) need people anyway. A playtest also needs
+  numbers afterwards, and the game kept none beyond wins and losses per general.
+- Change, in two parts:
+  - **A playtest journal**: every finished battle — against a general, online, or co-op — is
+    noted on the device (mode, foe, result, length, stars, final age, creatures summoned per
+    class, kills, losses, god powers, quick/later start/trials), the last 30 kept. Settings →
+    **Copy playtest journal** copies it as one readable line per battle. Nothing leaves the
+    device unless the player copies it; it isn't part of progress codes.
+  - **docs/PLAYTEST.md**, a one-hour kit for the human: decide the question first (three
+    suggested), who and where (fresh eyes, their own phones, the sofa), the setup (`npm run
+    lan`, QR codes, a gamepad), what to watch and the one question allowed during play, the four
+    questions after, collecting the journals, and where the findings go.
+- Found on the way: the extra Settings row pushed the buttons below a 1600×900 window — the
+  journal button now shares the progress-code block on one line.
+- Checked: unit tests (cap, the text format, a hand-edited save); Settings screenshots desktop
+  and phone; full verify.

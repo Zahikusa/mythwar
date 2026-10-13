@@ -14,11 +14,11 @@ import { Renderer } from './render/renderer.ts';
 import { Coach } from './ui/coach.ts';
 import { Hud, RAG_WARN } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
-import { battleStars, loadSettings, parTime, recordOnline, recordResult, saveSettings, playerLabel } from './ui/settings.ts';
+import { addJournal, battleStars, loadSettings, parTime, recordOnline, recordResult, saveSettings, playerLabel } from './ui/settings.ts';
 import { clearBattle, loadBattle, saveBattle } from './save.ts';
-import { AGES } from './sim/data.ts';
+import { AGES, UNITS } from './sim/data.ts';
 import { fmtTime } from './ui/dom.ts';
-import type { Settings } from './ui/settings.ts';
+import type { JournalEntry, Settings } from './ui/settings.ts';
 import { MpClient, hasStoredSession } from './net/client.ts';
 import { hasMpServer } from './net/connection.ts';
 import { NetGame } from './net/netgame.ts';
@@ -779,6 +779,7 @@ export class App {
       // (A battle abandoned by the server restarting has no result to count.)
       // (Co-op battles are against the AI: no head-to-head tally.)
       if (g.result && !g.coop) recordOnline(this.settings, g.foeName.replace(/ \(2\)$/, ''), won);
+      if (g.result) this.journal(g, won, g.coop ? 'coop' : 'online', g.coop ?? g.foeName, 0);
       this.audio.ui(won ? 'victory' : 'defeat');
       this.overTimer = 2.6;
       this.hud.cancelTargeting();
@@ -800,12 +801,36 @@ export class App {
     // The first victory over a general closes their chapter of the journey (Lens #70).
     this.menus.epilogue = won && !this.settings.records[this.difficulty]?.wins ? JOURNEY[this.difficulty] : null;
     recordResult(this.settings, this.difficulty, won, g.world.time, stars, quick || custom);
+    this.journal(g, won, 'ai', this.difficulty, stars);
     if (starTotal(this.settings.records) >= MAX_STARS) this.feats?.award(PINNACLE);
     clearBattle();
     this.audio.ui(won ? 'victory' : 'defeat');
     this.overTimer = 2.6;
     this.hud.cancelTargeting();
     this.hud.banner(won ? 'Victory' : 'Defeat', won ? 'The enemy citadel crumbles' : 'Your citadel has fallen', won ? 'gold' : 'red');
+  }
+
+  /** Notes the battle in the playtest journal (Lens #91; kept on this device only). */
+  private journal(g: Game, won: boolean, mode: JournalEntry['mode'], foe: string, stars: number): void {
+    const P = g.world.players[g.playerTeam];
+    const by = P.stats.summonedBy;
+    const count = (cls: string) => Object.entries(by).reduce((n, [id, c]) => n + (UNITS[id]?.cls === cls ? c : 0), 0);
+    addJournal(this.settings, {
+      at: Date.now(),
+      mode,
+      foe,
+      won,
+      secs: Math.round(g.world.time),
+      stars,
+      age: P.age,
+      summons: [count('guardian'), count('hunter'), count('mystic'), count('legend')],
+      kills: P.stats.kills,
+      losses: P.stats.losses,
+      powers: P.stats.powersCast,
+      quick: g.world.quick,
+      startAge: g.world.startAge,
+      trials: P.trials.length,
+    });
   }
 
   private frame(now: number): void {

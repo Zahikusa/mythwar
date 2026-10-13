@@ -15,6 +15,35 @@ export interface DifficultyRecord {
   stars?: number;
 }
 
+/**
+ * One battle in the playtest journal (Lens #91): what a designer wants to know after a playtest,
+ * kept on this device only and copied out by the player (Settings → Copy playtest journal).
+ */
+export interface JournalEntry {
+  /** When it ended (ms since 1970). */
+  at: number;
+  /** 'ai' (vs a general), 'online' (vs a player), 'coop' (allies vs the AI). */
+  mode: 'ai' | 'online' | 'coop';
+  /** The general's difficulty (ai, coop) or the opponent's name (online). */
+  foe: string;
+  won: boolean;
+  /** Battle length in seconds. */
+  secs: number;
+  /** Stars earned (ai only). */
+  stars: number;
+  /** The age the player ended in (0 = Fae Wilds). */
+  age: number;
+  /** Creatures summoned: guardians, hunters, mystics, dragons. */
+  summons: [number, number, number, number];
+  kills: number;
+  losses: number;
+  powers: number;
+  /** Quick battle / later start / trials taken. */
+  quick: boolean;
+  startAge: number;
+  trials: number;
+}
+
 export interface Settings {
   master: number;
   music: number;
@@ -55,6 +84,8 @@ export interface Settings {
   startAge: number;
   /** The player's sigil (Lens #75: index into SIGILS, -1 = none). */
   sigil: number;
+  /** The last battles, for playtests (Lens #91; most recent last). */
+  journal: JournalEntry[];
 }
 
 export { SIGILS } from '../net/protocol.ts';
@@ -93,6 +124,7 @@ const DEFAULTS: Settings = {
   riddles: [],
   startAge: 0,
   sigil: -1,
+  journal: [],
 };
 
 export function loadSettings(): Settings {
@@ -107,7 +139,7 @@ export function loadSettings(): Settings {
   }
   // First run: respect the OS "reduce motion" preference.
   const calm = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  return { ...DEFAULTS, shake: !calm, hintsSeen: [], records: {}, online: {}, feats: [], trials: [], riddles: [] };
+  return { ...DEFAULTS, shake: !calm, hintsSeen: [], records: {}, online: {}, feats: [], trials: [], riddles: [], journal: [] };
 }
 
 /** Stored settings may come from an older build or be hand-edited: keep only sane values. */
@@ -146,7 +178,56 @@ function sanitize(s: Settings): Settings {
     riddles: Array.isArray(s.riddles) ? [...new Set(s.riddles.filter((x): x is string => typeof x === 'string'))].slice(0, 50) : [],
     trials: Array.isArray(s.trials) ? TRIAL_ORDER.filter((t) => s.trials.includes(t)) : [],
     feats: Array.isArray(s.feats) ? [...new Set(s.feats.filter((x): x is string => typeof x === 'string'))].slice(0, 100) : [],
+    journal: sanitizeJournal(s.journal),
   };
+}
+
+const JOURNAL_MAX = 30;
+
+function sanitizeJournal(raw: unknown): JournalEntry[] {
+  if (!Array.isArray(raw)) return [];
+  const n = (v: unknown) => Math.max(0, Math.round(Number(v) || 0));
+  return raw
+    .filter((e): e is Record<string, unknown> => !!e && typeof e === 'object')
+    .slice(-JOURNAL_MAX)
+    .map((e) => {
+      const sm = Array.isArray(e.summons) ? e.summons : [];
+      return {
+        at: n(e.at),
+        mode: e.mode === 'online' || e.mode === 'coop' ? e.mode : 'ai',
+        foe: typeof e.foe === 'string' ? e.foe.slice(0, 40) : '',
+        won: e.won === true,
+        secs: n(e.secs),
+        stars: Math.min(3, n(e.stars)),
+        age: Math.min(4, n(e.age)),
+        summons: [n(sm[0]), n(sm[1]), n(sm[2]), n(sm[3])],
+        kills: n(e.kills),
+        losses: n(e.losses),
+        powers: n(e.powers),
+        quick: e.quick === true,
+        startAge: Math.min(4, n(e.startAge)),
+        trials: Math.min(3, n(e.trials)),
+      };
+    });
+}
+
+/** Adds a battle to the playtest journal (the last JOURNAL_MAX are kept) and saves. */
+export function addJournal(s: Settings, e: JournalEntry): void {
+  s.journal.push(e);
+  if (s.journal.length > JOURNAL_MAX) s.journal.splice(0, s.journal.length - JOURNAL_MAX);
+  saveSettings(s);
+}
+
+/** The journal as plain text, one battle per line, for pasting to whoever runs the playtest. */
+export function journalText(s: Settings, version = ''): string {
+  const pad = (v: number) => String(v).padStart(2, '0');
+  const lines = s.journal.map((e) => {
+    const d = new Date(e.at);
+    const when = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const extras = [e.quick ? 'quick' : '', e.startAge ? `start age ${e.startAge + 1}` : '', e.trials ? `${e.trials} trial(s)` : ''].filter(Boolean).join(', ');
+    return `${when} | ${e.mode} vs ${e.foe} | ${e.won ? 'WON' : 'lost'} in ${Math.floor(e.secs / 60)}:${pad(e.secs % 60)}${e.mode === 'ai' ? ` | ${e.stars}★` : ''} | age ${e.age + 1} | summons G${e.summons[0]} H${e.summons[1]} M${e.summons[2]}${e.summons[3] ? ` D${e.summons[3]}` : ''} | kills ${e.kills} lost ${e.losses} | powers ${e.powers}${extras ? ` | ${extras}` : ''}`;
+  });
+  return [`Mythwar playtest journal${version ? ` (v${version})` : ''} — ${s.journal.length} battle(s), oldest first`, ...lines].join('\n');
 }
 
 const ONLINE_MAX = 40;
