@@ -723,11 +723,11 @@ async function phoneMenusFit(page: Page): Promise<void> {
       // (Scrolled a little first: at the top, Settings' only free button sits half under the
       // pinned row.)
       const from = await page.evaluate(async () => {
-        const s = document.querySelector('.screen.settings') as HTMLElement;
+        const s = document.querySelector('.screen.settings > .sbody') as HTMLElement;
         s.scrollTop = 100;
         await new Promise((r) => requestAnimationFrame(() => r(null)));
         // (A button in the scrolling part — its middle clear of the pinned row of buttons below.)
-        const pinned = s.querySelector(':scope > .mrow')!.getBoundingClientRect().top;
+        const pinned = s.parentElement!.querySelector(':scope > .mrow')!.getBoundingClientRect().top;
         const b = [...s.querySelectorAll<HTMLElement>('button')].find((x) => {
           const r = x.getBoundingClientRect();
           return !x.closest('.mrow') && r.width > 0 && r.top > 40 && r.top + r.height / 2 < pinned - 4;
@@ -745,7 +745,7 @@ async function phoneMenusFit(page: Page): Promise<void> {
         }
         await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
         await sleep(300); // (a fling may carry on a little)
-        const top = await page.evaluate(() => (document.querySelector('.screen.settings') as HTMLElement).scrollTop);
+        const top = await page.evaluate(() => (document.querySelector('.screen.settings > .sbody') as HTMLElement).scrollTop);
         check('phone: a swipe that starts on a button scrolls Settings', top > from.start + 20, `scrollTop ${from.start} → ${top} (swiped on "${from.label}")`);
         await cdp.detach();
       }
@@ -1420,7 +1420,9 @@ async function run(page: Page, label: string, viewport: { width: number; height:
         // (The report's tabs are real tabs: one selected, each tied to its panel.)
         const tabs = [...el.querySelectorAll('[role="tablist"] [role="tab"]')];
         const tabsOk = tabs.length >= 2 && tabs.filter((t) => t.getAttribute('aria-selected') === 'true').length === 1 && tabs.every((t) => !!document.getElementById(t.getAttribute('aria-controls') ?? '')?.getAttribute('role'));
-        const out = { scroll: el.scrollHeight, client: el.clientHeight, spare: Math.round(el.clientHeight - used), tabs: tabs.length, tabsOk };
+        // (Only the body between the verdict and the buttons could scroll.)
+        const body = el.querySelector<HTMLElement>(':scope > .sbody') ?? el;
+        const out = { scroll: body.scrollHeight, client: body.clientHeight, spare: Math.round(el.clientHeight - used), tabs: tabs.length, tabsOk };
         m.featsEarned = [];
         m.newBestStars = 0;
         m.epilogue = null;

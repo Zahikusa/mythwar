@@ -168,7 +168,8 @@ export class Menus {
       el!.setAttribute('role', k === 'title' ? 'region' : 'dialog');
       el!.setAttribute('aria-label', labels[k as Screen] ?? k);
       this.root.appendChild(el!);
-      el!.addEventListener('scroll', () => moreBelow(el!), { passive: true });
+      // (Capturing: it's the screen's body that scrolls.)
+      el!.addEventListener('scroll', () => moreBelow(el!), { passive: true, capture: true });
       // Content that changes while shown (the lobby's list and Hall arriving, a room's seats) can
       // start or stop running under the pinned buttons too: checked once per frame of changes.
       let queued = false;
@@ -286,6 +287,8 @@ export class Menus {
     }
     if (screen === 'settings' && this.screen !== 'settings') this.settingsOpened?.();
     this.screen = screen;
+    const shown = this.screens[screen];
+    if (shown) frame(shown);
     for (const [k, el] of Object.entries(this.screens)) el!.classList.toggle('active', k === screen);
     this.root.classList.toggle('open', screen !== 'none');
     this.root.classList.toggle('dim', screen !== 'none' && screen !== 'title');
@@ -304,8 +307,7 @@ export class Menus {
     if (screen === 'settings') for (const f of this.syncers) f();
     if (screen !== 'none') this.focusScreen(screen);
     // (After the screen has laid out: whether content waits below its pinned buttons.)
-    const el = this.screens[screen];
-    if (el) requestAnimationFrame(() => moreBelow(el));
+    if (shown) requestAnimationFrame(() => moreBelow(shown));
   }
 
   /**
@@ -1438,5 +1440,38 @@ function niceCeil(v: number): number {
  * a backdrop, so what scrolls under them reads as "more below", not as cut off.
  */
 function moreBelow(el: HTMLElement): void {
-  el.classList.toggle('more', el.scrollHeight - el.scrollTop - el.clientHeight > 2);
+  const body = el.querySelector<HTMLElement>(':scope > .sbody') ?? el;
+  body.classList.toggle('more', body.scrollHeight - body.scrollTop - body.clientHeight > 2);
+  body.classList.toggle('above', body.scrollTop > 2);
+}
+
+/** What stays at the top of a screen (its title; a room's header) and at its bottom (its buttons). */
+const HEAD = 'h2, .rhead';
+const FOOT = '.mrow, .vbuttons';
+
+/**
+ * A screen in three parts: the title stays at the top and the buttons at the bottom, and only
+ * what lies between scrolls (`.sbody`), with momentum, when a phone is too short for it — the
+ * screen itself, and with it the page, never moves. (Run again on every show: the results and
+ * a riddle's outcome are rebuilt each time.) The title screen is laid out to fit as it is.
+ */
+function frame(el: HTMLElement): void {
+  if (el.classList.contains('title')) return;
+  let body = el.querySelector<HTMLElement>(':scope > .sbody');
+  const kids = [...el.children].filter((k) => k !== body);
+  let first = 0;
+  while (first < kids.length && kids[first].matches(HEAD)) first++;
+  let last = kids.length;
+  while (last > first && kids[last - 1].matches(FOOT)) last--;
+  const middle = kids.slice(first, last);
+  if (body && !middle.length) return;
+  if (!body) {
+    body = h('div', { class: 'sbody' });
+    el.insertBefore(body, kids[last] ?? null);
+  }
+  // (In document order: what stood before the body, the body's own, what came after it.)
+  const before = middle.filter((k) => body!.compareDocumentPosition(k) & Node.DOCUMENT_POSITION_PRECEDING);
+  const after = middle.filter((k) => !before.includes(k));
+  body.prepend(...before);
+  body.append(...after);
 }

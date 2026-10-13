@@ -31,9 +31,51 @@
   visibility: hidden;
   transform: scale(0.98);
   transition: opacity 0.35s ease, transform 0.35s ease, visibility 0s linear 0.35s;
-  overflow-y: auto;
+  /* (Never scrolls itself: its body does — see .sbody.) */
+  overflow: hidden;
   /* A screen fading out must not catch taps meant for the one fading in. */
   pointer-events: none;
+}
+
+/* The title and the buttons keep their size; the body between them gives way and scrolls. */
+.screen > * {
+  flex-shrink: 0;
+}
+
+/* What lies between a screen's title and its buttons (Menus' frame()): the only part that
+   scrolls when a phone is too short for it — with momentum, and without passing the swipe on to
+   the page. It reaches into the screen's side padding so glows and shadows aren't cut off. */
+.screen > .sbody {
+  flex: 0 1 auto;
+  min-height: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: inherit;
+  margin: -6px calc(-1 * var(--spad, 20px));
+  padding: 6px var(--spad, 20px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+/* More above / below than is shown: the edge fades ("scroll for more", not "cut off"). */
+.screen > .sbody.more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+}
+
+.screen > .sbody.above {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 28px);
+  mask-image: linear-gradient(to bottom, transparent, #000 28px);
+}
+
+.screen > .sbody.above.more {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 28px, #000 calc(100% - 28px), transparent);
 }
 
 /* Large desktop screens: menus keep their proportion (--hs from the layout, 1 elsewhere). */
@@ -1557,6 +1599,7 @@
   .screen {
     gap: 10px;
     padding: 10px;
+    --spad: 10px;
     justify-content: flex-start;
   }
 
@@ -1731,29 +1774,6 @@
 
   .title-foot {
     display: none;
-  }
-
-  /* A screen's buttons stay in reach while its content scrolls under them. */
-  /* (No backdrop — a fade band looked odd where nothing scrolls — so the see-through ghost
-     buttons turn solid instead, in the colour they show over the dimmed screen.) */
-  .screen > .mrow {
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
-  }
-
-  .screen > .mrow .mbtn.ghost {
-    background: rgb(17, 10, 30);
-  }
-
-  /* …but while content waits below them (Menus' `more`), a backdrop: what passes under the
-     buttons reads as "scroll for more", not as cut off. */
-  .screen.more > .mrow {
-    background: linear-gradient(to bottom, rgba(17, 10, 30, 0), rgba(17, 10, 30, 0.94) 16px);
-    /* (Across the whole screen, its padding included — not just behind the buttons.) */
-    align-self: stretch;
-    margin: -16px -20px 0;
-    padding: 16px 20px 0;
   }
 
   /* Settings in two columns: sliders beside toggles. */

@@ -647,7 +647,7 @@ async function main(): Promise<void> {
     await waitFor(b, 'the Hall line shown', () => (document.querySelector('.mphall')?.textContent ?? '').includes('Champions'), 4000);
     await b.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
     const more = await b.evaluate(() => {
-      const s = document.querySelector<HTMLElement>('.screen.mp')!;
+      const s = document.querySelector<HTMLElement>('.screen.mp > .sbody')!;
       return { below: s.scrollHeight - s.scrollTop - s.clientHeight > 2, marked: s.classList.contains('more') };
     });
     check('lobby: the "more below" backdrop follows content that arrives later', more.below === more.marked, JSON.stringify(more));
