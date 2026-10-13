@@ -290,6 +290,29 @@ describe('NetGame over a simulated network', () => {
     expect(a.room?.seats[0]?.name).toBe('Ada');
   });
 
+  it('a battle the server stopped on a fault is dropped on both pages, like after a restart', () => {
+    const { a, b, ga, gb } = twoPlayers();
+    net.run(2000);
+    const rooms = (net.lobby as unknown as { rooms: Map<string, { match: { update: () => void } }> }).rooms;
+    const errors = console.error;
+    console.error = () => {};
+    try {
+      rooms.get(a.room!.code)!.match.update = () => {
+        throw new Error('boom');
+      };
+      net.run(3000);
+    } finally {
+      console.error = errors;
+    }
+    for (const [c, g] of [[a, ga], [b, gb]] as const) {
+      expect(c.state).toBe('online');
+      expect(c.room).toBeNull();
+      expect(c.sessionLost).toBe('restart');
+      expect(g.over).toBe(true);
+      expect(g.result).toBeNull();
+    }
+  });
+
   it('a phone that missed the end of the battle sees the result when it reconnects', () => {
     const { a, b, ga, gb } = twoPlayers();
     net.run(3000);

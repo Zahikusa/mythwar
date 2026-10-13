@@ -203,9 +203,29 @@ the improvement backlog below (verified, committed) and add what the review find
    any bug reachable from one client's message (whatever the validation) throws out of the ws
    'message' event and ends the process with every battle in it. (Done: logged — even with
    --quiet — and that message dropped; test with a handler that throws.)
-51. [ ] `server/lobby.ts` `update()`: likewise a throw from one room's `match.update` (a simulation
+51. [x] `server/lobby.ts` `update()`: likewise a throw from one room's `match.update` (a simulation
    bug in some rare state) ends every battle on the server. Contain it per room — log once, stop
    that battle for its two players (they need a clear message, not a frozen "waiting" screen).
+   (Done: the room is dropped and its players forgotten as after a restart — their pages drop the
+   battle and the lobby says the server no longer knows the session; tests on both sides.)
+(Items 52–57: an independent review of the app's state flow and persistence, 2026-10-13.)
+52. [ ] `src/ui/menus.ts` ~247/633: from the riddles screen, the difficulty screen's Back shows the
+   title directly (no `App.toTitle()`): the app stays in state 'over' — title over the frozen
+   riddle field with its HUD; then Multiplayer → Host never switches to the room screen (only done
+   in state 'title'). Riddle result → Riddles → Back → Back; also "Now bring a friend →" from the
+   results. Fix diffBack, give riddle results a Main menu button, `toTitle()` before multiplayer.
+53. [ ] `src/input.ts` ~175: with no pauses left the online menu opens on this device only and the
+   battle runs on — keys 1–4, Space (god power), W/S/arrows still act behind the menu (the
+   gamepad is blocked there). Ignore all but Esc/P while a menu is open.
+54. [ ] `src/app.ts` ~183/1017: leaving an online battle records no loss for the leaver (`abandon()`
+   has no gameOver) — the opponent counts a win; the tallies disagree; the pause note says
+   "Leaving the battle counts as a defeat". Record the loss (and journal it) before leaving.
+55. [ ] `src/app.ts` ~1092/1167: the wake lock isn't released after leaving a room (only toTitle /
+   closeMultiplayer release it); a lock request still pending when released is kept on arrival.
+56. [ ] `src/app.ts` ~482: the general's opening line (3.2 s timer) isn't tied to its battle — a
+   restart within 3.2 s says it over the new battle's banner, then again.
+57. [ ] `src/app.ts` ~547: a continued battle shows "Asgard" instead of "Odin · Asgard" (the foe's
+   name isn't set again after `hud.attach()` in `continueSaved`).
 
 
 

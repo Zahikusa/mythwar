@@ -738,6 +738,36 @@ describe('battle', () => {
     expect(lines.some((l) => l.includes('"host" from Ada') && l.includes('boom'))).toBe(true);
   });
 
+  it('a battle that throws stops alone; its players are told the server lost it (backlog 51)', () => {
+    const lines: string[] = [];
+    const { lobby, run, a, b } = battle();
+    (lobby as unknown as { opts: { log: (l: string) => void } }).opts.log = (l) => lines.push(l);
+    // Another battle on the same server.
+    const c = new FakeClient(lobby);
+    const d = new FakeClient(lobby);
+    c.hello('Cy');
+    d.hello('Dee');
+    c.send({ type: 'host' });
+    d.send({ type: 'join', code: c.last('room')!.room.code });
+    c.send({ type: 'ready', ready: true });
+    d.send({ type: 'ready', ready: true });
+    run(3100);
+    const rooms = (lobby as unknown as { rooms: Map<string, { match: { update: () => void } }> }).rooms;
+    rooms.get(a.last('room')!.room.code)!.match.update = () => {
+      throw new Error('boom');
+    };
+    const tick = c.last('turn')!.tick;
+    expect(() => run(1000)).not.toThrow();
+    expect(lines.filter((l) => l.includes('boom'))).toHaveLength(1);
+    expect(a.open).toBe(false);
+    expect(b.open).toBe(false);
+    // The other battle runs on.
+    expect(c.last('turn')!.tick).toBeGreaterThan(tick + 50);
+    // Back, the session is unknown: the page drops the battle (as after a restart).
+    a.reconnect({ battle: true });
+    expect(a.last('welcome')).toMatchObject({ room: null, resumed: false });
+  });
+
   it('a day is the server’s local calendar day, not UTC (backlog)', () => {
     // 23:30 and 00:30 local are two days; 00:30 and 23:30 local of one date are one.
     expect(localDay(new Date(2026, 9, 13, 0, 30))).toBe(localDay(new Date(2026, 9, 13, 23, 30)));

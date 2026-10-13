@@ -269,7 +269,12 @@ export class Lobby {
   update(): void {
     const now = this.now();
     for (const room of this.rooms.values()) {
-      room.match?.update(now);
+      try {
+        room.match?.update(now);
+      } catch (e) {
+        this.matchFault(room, e);
+        continue;
+      }
       if (room.phase !== 'playing') {
         for (const seat of [0, 1] as Team[]) {
           const s = room.seats[seat];
@@ -287,6 +292,28 @@ export class Lobby {
     if (this.roomsDirty && now - this.lastRoomList >= ROOM_LIST_EVERY) {
       this.lastRoomList = now;
       this.sendRoomLists();
+    }
+  }
+
+  /**
+   * A battle threw (a bug in some rare state): it alone stops, the server and every other battle
+   * go on. Its players are forgotten as after a restart — their pages drop the battle and say so
+   * in the lobby (no result counts).
+   */
+  private matchFault(room: Room, e: unknown): void {
+    this.fault(`the battle in room ${room.code} was stopped by a fault: ${(e as Error)?.stack ?? e}`);
+    this.rooms.delete(room.code);
+    this.roomsDirty = true;
+    for (const x of room.seats) {
+      if (!x) continue;
+      const s = x.session;
+      s.room = null;
+      s.seat = null;
+      s.lastOver = null;
+      this.sessions.delete(s.token);
+      const conn = s.conn;
+      s.conn = null;
+      conn?.close(1011, 'fault');
     }
   }
 
