@@ -493,17 +493,24 @@ async function armedFlow(page: Page): Promise<void> {
   const beats = await page.evaluate(async () => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;
     const P = app.game.world.players[0];
+    // (Beats counted, and the tempo each was struck at — `k`, 0…1: the interval is 1.5 − 0.95·k s.
+    // Counting beats in wall time alone flaked under load: slow frames stretch the gaps.)
     let n = 0;
-    app.audio.heartbeat = () => n++;
+    let k = 0;
+    app.audio.heartbeat = (tempo: number) => {
+      n++;
+      k = Math.max(k, tempo);
+    };
     const count = async (frac: number) => {
       n = 0;
+      k = 0;
       P.baseHp = P.baseMaxHp * frac;
-      await new Promise((r) => setTimeout(r, 3000));
-      return n;
+      await new Promise((r) => setTimeout(r, 2000));
+      return { n, k: Math.round(k * 100) / 100 };
     };
     return { healthy: await count(0.8), low: await count(0.25), dire: await count(0.03) };
   });
-  check('a citadel in danger has a heartbeat, faster as it falls', beats.healthy === 0 && beats.low >= 1 && beats.dire > beats.low, JSON.stringify(beats));
+  check('a citadel in danger has a heartbeat, faster as it falls', beats.healthy.n === 0 && beats.low.n >= 1 && beats.dire.n >= 1 && beats.dire.k > beats.low.k + 0.5, JSON.stringify(beats));
   // Ragnarök is foretold three minutes ahead, with a warning at one minute.
   const rag = await page.evaluate(async () => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;

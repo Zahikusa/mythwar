@@ -353,6 +353,10 @@ it prints, inviting, stopping — 2026-10-13.)
 211. [ ] `lostSessionPlan` (#171): a seat that expired while the phone sat on the *results* pulls
    the player off the results to the lobby (then rejoins, #160) — the results vanish mid-read.
    Keep the results up with a note, and rejoin when they leave them.
+212. [x] smoke's heartbeat check flaked once in a full `verify` ({"low":3,"dire":3}): it counted beats
+   in 3 s of wall time, and slow frames under the three parallel flows stretch the gaps (expected
+   3 vs 5, margin one beat). (Done: it also records the tempo `k` each beat was struck at — 0.17
+   vs 0.9 — and compares that; 2-s windows; verify green.)
 
 
 
@@ -362,7 +366,7 @@ it prints, inviting, stopping — 2026-10-13.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #9 in short (for the morning)
-- Verification mode, backlog items 138–199. Open from run #8: #138 and #142 done; #128 (DOM tests)
+- Verification mode, backlog items 138–212. Open from run #8: #138 and #142 done; #128 (DOM tests)
   and #129 (rival ids) decided against, with reasons; #137 (split app.ts) started with a pure,
   tested `src/ui/roomnews.ts`.
 - A look at the online flows through screenshots (mpsmoke `--shots`, landscape and upright phone,
@@ -396,8 +400,12 @@ built, how to see each part working, and the decisions that need you.
   away; co-op wording in the away notice, the room's score, the rematch note, the pause note and
   the verdict; the results say when an offered rematch is a different battle (#193, both modes).
   Then #198: side-wide feats only for the ally who ordered the deed. Open: #197 (minor wording).
+- Late in the run: the WebKit (iPhone engine) pass in `mpengines` checks the http copy fallback and
+  Back (#201); Back is guarded on touch devices only (#209); PROGRESS.md split — history in
+  docs/PROGRESS-archive.md (#202); README's two multiplayer pictures re-shot (#187, #206); a flaky
+  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #197, #204, #211.
 - **Open question added:** the downloadable release (v1.0.0) is ~280 commits old.
-- Tests 256 → 284; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
+- Tests 256 → 285; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
   frame); `mpengines` (WebKit vs Chrome/Firefox) in sync.
 
 ## Run #8 in short (for the morning)
