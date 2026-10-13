@@ -65,7 +65,8 @@ describe('lostSessionPlan (the server no longer seats us)', () => {
 
   it('mid-battle an expired seat waits for the replayed ending; on the results it goes back to the room', () => {
     expect(lostSessionPlan('expired', 'playing', 'none', true, 'ABCD')).toMatchObject({ toLobby: false, rejoin: false });
-    expect(lostSessionPlan('expired', 'over', 'over', true, 'ABCD')).toMatchObject({ toLobby: true, rejoin: true });
+    // (On the results: they stay up — the room is taken again quietly; backlog 211.)
+    expect(lostSessionPlan('expired', 'over', 'over', true, 'ABCD')).toEqual({ toLobby: false, rejoin: true, note: '' });
   });
 
   it('a restart or a fault ends the battle at once and rejoins nothing', () => {

@@ -350,9 +350,12 @@ it prints, inviting, stopping — 2026-10-13.)
    sits idle — title, settings, bestiary, a battle — so no layout reads per frame.)
 210. [x] Co-op room: your own seat shows "2 wins" while the ally's shows "Victories together: 2"
    (#195) — the same number twice; in co-op, leave your own seat's line empty. (Done.)
-211. [ ] `lostSessionPlan` (#171): a seat that expired while the phone sat on the *results* pulls
+211. [x] `lostSessionPlan` (#171): a seat that expired while the phone sat on the *results* pulls
    the player off the results to the lobby (then rejoins, #160) — the results vanish mid-read.
-   Keep the results up with a note, and rejoin when they leave them.
+   Keep the results up with a note, and rejoin when they leave them. (Done a little differently: the results
+   stay up and the room is taken again at once, quietly — the results' buttons follow the room
+   (Rematch again once seated); `lostSessionPlan` test updated; mpsmoke drops B on the results
+   past the seat's grace and checks B is seated again with its results still showing.)
 212. [x] smoke's heartbeat check flaked once in a full `verify` ({"low":3,"dire":3}): it counted beats
    in 3 s of wall time, and slow frames under the three parallel flows stretch the gaps (expected
    3 vs 5, margin one beat). (Done: it also records the tempo `k` each beat was struck at — 0.17
@@ -403,7 +406,7 @@ built, how to see each part working, and the decisions that need you.
 - Late in the run: the WebKit (iPhone engine) pass in `mpengines` checks the http copy fallback and
   Back (#201); Back is guarded on touch devices only (#209); PROGRESS.md split — history in
   docs/PROGRESS-archive.md (#202); README's two multiplayer pictures re-shot (#187, #206); a flaky
-  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #197, #204, #211.
+  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #197, #204 (and #211 done at the very end).
 - **Open question added:** the downloadable release (v1.0.0) is ~280 commits old.
 - Tests 256 → 285; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
   frame); `mpengines` (WebKit vs Chrome/Firefox) in sync.

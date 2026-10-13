@@ -629,6 +629,17 @@ async function main(): Promise<void> {
       return { all: all.map(label), unreachable: all.filter((b) => !seen.has(b)).map(label) };
     });
     check('gamepad: every control on the online results is reachable with the D-pad', reach.unreachable.length === 0 && reach.all.includes('Room') && reach.all.includes('Well played!'), JSON.stringify(reach));
+    // (Backlog 211) B's phone locks on the results for longer than the seat is kept (6 s here): when
+    // it wakes, its results stay up and it is quietly seated in the room again.
+    await b.evaluate(() => (window as any).__mythwar.mp.conn.close());
+    await waitFor(a, "B's seat given up on the results", () => (window as any).__mythwar.mp.room?.seats[1] === null, 15_000);
+    await b.evaluate(() => (window as any).__mythwar.mp.conn.open());
+    await waitFor(b, 'B seated again, still on its results', () => {
+      const app = (window as any).__mythwar;
+      return app.mp.welcomed && app.mp.seat !== null && app.mp.room?.seats[app.mp.seat]?.connected === true;
+    }, 8000);
+    check('results: a seat lost while the phone slept is taken again, the results stay up', await b.evaluate(() => (window as any).__mythwar.menus.current === 'over'));
+    await waitFor(a, 'A sees B back in the room', () => (window as any).__mythwar.mp.room?.seats[1]?.connected === true, 8000);
 
     console.log('== leaving the room ==');
     // (Backlog 87) A goes back to the room from the results — still seated — and leaves from there.

@@ -80,15 +80,19 @@ export interface LostSessionPlan {
  * `state`: the app's ('title' | 'playing' | 'over'), `menu`: the screen showing, `netBattle`: an
  * online battle is loaded, `lostRoom`: the room's code. An expired seat mid-battle first gets the
  * battle's ending replayed (results follow), so the lobby waits; after a restart or a fault the
- * battle is gone at once. A phone that locked in the room (no wake lock over plain http) — or on
- * the results — lost its seat after a minute: it joins the same room again.
+ * battle is gone at once. A phone that locked in the room (no wake lock over plain http) lost its
+ * seat after a minute: it joins the same room again. On the results it does so quietly, the
+ * results staying up (backlog 211) — their buttons follow the room again once it's back.
  */
 export function lostSessionPlan(lost: 'restart' | 'expired' | 'fault', state: 'title' | 'playing' | 'over', menu: string, netBattle: boolean, lostRoom: string | null): LostSessionPlan {
-  const toLobby = netBattle && state !== 'title' && (lost !== 'expired' || state === 'over');
-  const onRoomScreens = toLobby || (state === 'title' && (menu === 'mp' || menu === 'room'));
-  const rejoin = lost === 'expired' && !!lostRoom && onRoomScreens;
+  const toLobby = netBattle && state !== 'title' && lost !== 'expired';
+  const onResults = netBattle && state === 'over';
+  const onRoomScreens = state === 'title' && (menu === 'mp' || menu === 'room');
+  const rejoin = lost === 'expired' && !!lostRoom && (onRoomScreens || onResults);
   const note = rejoin
-    ? 'You were away a while and lost your seat — joining the room again…'
+    ? onResults
+      ? ''
+      : 'You were away a while and lost your seat — joining the room again…'
     : lost === 'fault'
       ? 'The game server ran into a fault and stopped your battle — sorry. It doesn’t count for anyone.'
       : lost === 'restart'
