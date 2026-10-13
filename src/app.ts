@@ -961,7 +961,7 @@ export class App {
           if (!(g instanceof NetGame) || seat === g.seat || this.state === 'title' || !this.settings.emotes) return;
           // After the battle the results cover the HUD: their words appear by the result chips.
           if (this.state === 'over' && this.menus.current === 'over') {
-            this.menus.resultEmote(`${g.coop ? g.allyName : g.foeName}: ${EMOTES[id] ?? ''}`);
+            this.menus.resultEmote(`${this.mp?.room?.seats[seat]?.name ?? (g.coop ? g.allyName : g.foeName)}: ${EMOTES[id] ?? ''}`);
             this.audio.ui('select');
             return;
           }

@@ -98,6 +98,8 @@ export class Menus {
   private rematchNote: HTMLElement | null = null;
   private emoteLine: HTMLElement | null = null;
   private emoteRow: HTMLElement | null = null;
+  /** The opponent of these results has left the room (their chips stay away). */
+  private emoteGone = false;
   private bestiary!: Bestiary;
   private pauseGoals: HTMLElement | null = null;
   /** Feats earned in the battle whose results are shown next. */
@@ -1025,6 +1027,7 @@ export class Menus {
       return chip;
     });
     this.emoteRow = h('div', { class: 'vemotes' }, ...chips, this.emoteLine);
+    this.emoteGone = false;
     return h(
       'div',
       { class: 'vbuttons' },
@@ -1052,8 +1055,9 @@ export class Menus {
     const note = this.rematchNote;
     if (!btn || !note) return;
     const span = btn.querySelector('span')!;
-    // (Nobody to talk to once they've left.)
-    this.emoteRow?.classList.toggle('hidden', theirs === null);
+    // (Nobody to talk to once they've left — not even a stranger who takes their seat later.)
+    if (theirs === null) this.emoteGone = true;
+    this.emoteRow?.classList.toggle('hidden', this.emoteGone);
     if (theirs === null) {
       span.textContent = 'Back to room';
       note.textContent = `${foe} left the room.`;
