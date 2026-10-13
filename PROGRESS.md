@@ -326,9 +326,16 @@ it prints, inviting, stopping — 2026-10-13.)
    for ~2 s before saying it (and say "back" only after an "away" was said). (Done: `allyNews` returns a kind;
    the app says "away" after 2 s if still away, "back" only after an "away" was said; tests;
    mpsmoke's co-op checks green.)
-204. [ ] smoke still has ~90 short fixed sleeps (100–600 ms) between taps and checks — on the CI
+204. [x] smoke still has ~90 short fixed sleeps (100–600 ms) between taps and checks — on the CI
    runner (#127) the timing-sensitive ones may flake. Turn the ones that wait for a state into
    `waitForFunction`s (as #134/#158 did for results and page loads).
+   (Done for the menu changes, the ones that matter: `menuIs(page, name)` waits until that menu
+   shows *and* its screen has finished its 0.35-s fade/slide — a tap measured mid-slide could miss
+   on a slow runner. 20 sleeps replaced (93 → 74): Continue, New battle/Begin, the gamepad's
+   Play/Back/Start, riddles, the tutorial hand-off, the rotated menus, results → Change foe → Back,
+   Rematch (+ the HUD taking input again — a frame later), Settings → Copy journal (waits for
+   "copied"). Left: 16–120 ms steps of drags, key and pad presses (time is what they are), and
+   short waits for in-battle effects. smoke green three runs in a row.)
 205. [x] The `browser-tests` workflow (#127) hasn't run on GitHub yet and now has `package:check`
    to consider: add `npm run package:check` to it (it needs no browser) so every PR proves the
    release package starts. (Done: a last step in browser-tests.yml.)

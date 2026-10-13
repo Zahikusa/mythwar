@@ -82,6 +82,27 @@ async function appUp(page: Page, settle = 500): Promise<void> {
   await sleep(settle);
 }
 
+/**
+ * After a tap or key that changes the menu: waits until `want` shows and its screen has finished
+ * fading in (its buttons have stopped moving) — instead of a fixed pause. 'none': no menu (a
+ * battle). A timeout lets the check that follows fail with its own message.
+ */
+async function menuIs(page: Page, want: string, timeout = 6000): Promise<void> {
+  await page
+    .waitForFunction(
+      (want) => {
+        if ((window as unknown as { __mythwar: any }).__mythwar.menus.current !== want) return false;
+        const s = want === 'none' ? null : document.querySelector(`.screen.${want}`);
+        if (!s) return true;
+        const cs = getComputedStyle(s);
+        return cs.opacity === '1' && cs.transform === 'none';
+      },
+      { timeout, polling: 50 },
+      want,
+    )
+    .catch(() => {});
+}
+
 async function center(page: Page, selector: string): Promise<{ x: number; y: number }> {
   const box = await (await page.$(selector))!.boundingBox();
   return { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
@@ -134,7 +155,7 @@ async function resumeFlow(page: Page): Promise<void> {
   check('title offers "Continue battle" after an autosave', visible);
   // Enter presses the title's primary button (here: Continue).
   await page.keyboard.press('Enter');
-  await sleep(500);
+  await menuIs(page, 'pause');
   const st = await page.evaluate(() => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;
     const g = app.game;
@@ -169,11 +190,11 @@ async function resumeFlow(page: Page): Promise<void> {
     const before = await page.evaluate(`(() => { const a = (${app})(); a.settings.tutorialSeen = true; return a.settings.records.adept?.losses ?? 0; })()`);
     const nb = await centerText(page, '.screen.title', 'New battle');
     await page.mouse.click(nb.x, nb.y);
-    await sleep(500);
+    await menuIs(page, 'difficulty');
     const note = await page.evaluate(() => !document.querySelector('.dnote')!.classList.contains('hidden'));
     const bb = await centerText(page, '.screen.difficulty', 'Begin Battle');
     await page.mouse.click(bb.x, bb.y);
-    await sleep(500);
+    await menuIs(page, 'none');
     const after = (await page.evaluate(`(() => { const a = (${app})(); return { losses: a.settings.records.adept?.losses ?? 0, state: a.state }; })()`)) as { losses: number; state: string };
     check('a new battle from the title warns about and forfeits the autosave', note && after.losses === (before as number) + 1 && after.state === 'playing', JSON.stringify({ note, before, after }));
     // Leave it (discarding its autosave) so navigating away doesn't save it again.
@@ -337,11 +358,13 @@ async function journalFlow(page: Page): Promise<void> {
     const copied = ((window as unknown as { __copied: string[] }).__copied = [] as string[]);
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async (t: string) => void copied.push(t) } });
   });
-  for (const [scope, text] of [['.screen.over', 'Main menu'], ['.screen.title', 'Settings'], ['.screen.settings', 'Copy playtest journal']]) {
+  for (const [scope, text, next] of [['.screen.over', 'Main menu', 'title'], ['.screen.title', 'Settings', 'settings'], ['.screen.settings', 'Copy playtest journal', '']]) {
     await page.evaluate((scope, text) => [...document.querySelectorAll(`${scope} button`)].find((el) => el.textContent?.trim() === text)?.scrollIntoView({ block: 'center' }), scope, text);
     const p = await centerText(page, scope, text);
     await page.mouse.click(p.x, p.y);
-    await sleep(300);
+    // (The copy itself: until its status line says so.)
+    if (next) await menuIs(page, next);
+    else await page.waitForFunction(() => /copied/.test(document.querySelector('.screen.settings .sprog > .sprogstatus:last-child')?.textContent ?? ''), { timeout: 4000, polling: 50 }).catch(() => {});
     // (Backlog 76) Focus followed the screens: inside Settings once it opens, not left on the
     // (now hidden) title.
     if (text === 'Settings') {
@@ -387,14 +410,14 @@ async function gamepadFlow(page: Page): Promise<void> {
   const menu = () => page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current);
   // Title: A presses the main button (Play → the foe screen).
   await tap(0);
-  await sleep(300);
+  await menuIs(page, 'difficulty');
   check('gamepad: A on the title presses Play', (await menu()) === 'difficulty', await menu());
   // D-pad picks a button; B goes back.
   await tap(15);
   const focused = await page.evaluate(() => document.querySelector('.padfocus')?.textContent ?? '');
   check('gamepad: the D-pad highlights a button', focused.length > 0, focused);
   await tap(1);
-  await sleep(300);
+  await menuIs(page, 'title');
   check('gamepad: B goes back', (await menu()) === 'title', await menu());
   await page.goto(`${base}/?play=adept&seed=4`, { waitUntil: 'load' });
   await appUp(page);
@@ -408,10 +431,10 @@ async function gamepadFlow(page: Page): Promise<void> {
   });
   check('gamepad: X and A summon the first two cards, the D-pad changes lane', st.queue.join() === 'treant@1,redcap@0' && st.lane === 0, JSON.stringify(st));
   await tap(9); // Start: pause
-  await sleep(200);
+  await menuIs(page, 'pause');
   check('gamepad: Start pauses', (await menu()) === 'pause', await menu());
   await tap(9);
-  await sleep(200);
+  await menuIs(page, 'none');
   check('gamepad: Start again resumes', (await menu()) === 'none', await menu());
   // (Backlog 28) On the results every control can be reached with the D-pad: a breadth-first walk
   // over the app's own D-pad moves, from the main button. (First the summons step out: a champion,
@@ -558,7 +581,7 @@ async function riddleFlow(page: Page): Promise<void> {
   check('after a first victory the trials appear', wonChips.length === 4, JSON.stringify(wonChips));
   const btn = await centerText(page, '.screen.difficulty', 'Riddles');
   await page.mouse.click(btn.x, btn.y);
-  await sleep(400);
+  await menuIs(page, 'riddles');
   const list = await page.evaluate(() => [...document.querySelectorAll('.riddle')].map((r) => `${(r as HTMLButtonElement).disabled ? 'sealed' : 'open'}`));
   check('the riddles screen lists the riddles, later ages sealed', list.length >= 4 && list[0] === 'open' && list.at(-1) === 'sealed', JSON.stringify(list));
   const first = await center(page, '.riddle');
@@ -585,10 +608,10 @@ async function riddleFlow(page: Page): Promise<void> {
   check('four Guardians solve the Redcap Pack; the result says so and it is remembered', menu === 'over' && res.verdict === 'Solved' && res.solved.includes('pack'), JSON.stringify({ menu, ...res }));
   // (Backlog 52) Out of a riddle by Riddles → Back → Back: the real title (the riddle put away),
   // from which Multiplayer works.
-  for (const [scope, text] of [['.screen.over', 'Riddles'], ['.screen.riddles', 'Back'], ['.screen.difficulty', 'Back']]) {
+  for (const [scope, text, next] of [['.screen.over', 'Riddles', 'riddles'], ['.screen.riddles', 'Back', 'difficulty'], ['.screen.difficulty', 'Back', 'title']]) {
     const p = await centerText(page, scope, text);
     await page.mouse.click(p.x, p.y);
-    await sleep(300);
+    await menuIs(page, next);
   }
   const home = await page.evaluate(() => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;
@@ -607,12 +630,12 @@ async function tutorialHandoffFlow(page: Page): Promise<void> {
   await appUp(page);
   const play = await center(page, '.screen.title .mbtn.primary:not(.hidden)');
   await page.mouse.click(play.x, play.y);
-  await sleep(500);
+  await menuIs(page, 'difficulty');
   const begin = await center(page, '.screen.difficulty .mbtn.primary');
   await page.mouse.click(begin.x, begin.y);
-  await sleep(500);
+  await menuIs(page, 'howto');
   await page.keyboard.press('Escape');
-  await sleep(400);
+  await menuIs(page, 'difficulty');
   const menu = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current);
   check('Esc leaves the first-run how-to', menu === 'difficulty', menu);
   await page.evaluate(() => {
@@ -620,10 +643,10 @@ async function tutorialHandoffFlow(page: Page): Promise<void> {
     app.play('novice');
     app.pause();
   });
-  await sleep(400);
+  await menuIs(page, 'pause');
   const hb = await center(page, '.screen.pause .mbtn:nth-child(2)');
   await page.mouse.click(hb.x, hb.y);
-  await sleep(400);
+  await menuIs(page, 'howto');
   const r = await page.evaluate(() => ({
     menu: (window as unknown as { __mythwar: any }).__mythwar.menus.current,
     skipHidden: document.querySelector('.screen.howto .hskip')!.classList.contains('hidden'),
@@ -702,20 +725,20 @@ async function rotatedMenusFlow(page: Page): Promise<void> {
   await appUp(page);
   const playBtn = await center(page, '.screen.title .mbtn.primary:not(.hidden)');
   await page.touchscreen.tap(playBtn.x, playBtn.y);
-  await sleep(600);
+  await menuIs(page, 'difficulty');
   let menu = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current);
   check('rotated: Play opens the difficulty screen', menu === 'difficulty', menu);
   const begin = await center(page, '.screen.difficulty .mbtn.primary');
   const inView = begin.x > 0 && begin.x < 390 && begin.y > 0 && begin.y < 844;
   check('rotated: Begin Battle is on screen', inView, JSON.stringify(begin));
   await page.touchscreen.tap(begin.x, begin.y);
-  await sleep(600);
+  await menuIs(page, 'howto');
   // A first-time player sees the how-to first, with a Skip button straight into battle.
   menu = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current);
   check('rotated: first battle opens the how-to first', menu === 'howto', menu);
   const skip = await center(page, '.screen.howto .hskip');
   await page.touchscreen.tap(skip.x, skip.y);
-  await sleep(600);
+  await menuIs(page, 'none');
   const st = await page.evaluate(() => ({ state: (window as unknown as { __mythwar: any }).__mythwar.state, menu: (window as unknown as { __mythwar: any }).__mythwar.menus.current }));
   check('rotated: Skip starts the battle', st.state === 'playing' && st.menu === 'none', JSON.stringify(st));
   // Notch + home bar (upright iPhone, standalone): the rotated stage stays inside the insets and
@@ -1310,15 +1333,15 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   }
   // "Change foe", then Back: returns to the results (not a broken title over the battlefield).
   {
-    const tapAt = async (p: { x: number; y: number }) => {
+    const tapAt = async (p: { x: number; y: number }, next: string) => {
       if (viewport.mobile) await page.touchscreen.tap(p.x, p.y);
       else await page.mouse.click(p.x, p.y);
-      await sleep(250);
+      await menuIs(page, next);
     };
     const menuState = () => page.evaluate(() => ({ menu: (window as unknown as { __mythwar: any }).__mythwar.menus.current, state: (window as unknown as { __mythwar: any }).__mythwar.state }));
-    await tapAt(await centerText(page, '.screen.over', 'Change foe'));
+    await tapAt(await centerText(page, '.screen.over', 'Change foe'), 'difficulty');
     const opened = await menuState();
-    await tapAt(await centerText(page, '.screen.difficulty', 'Back'));
+    await tapAt(await centerText(page, '.screen.difficulty', 'Back'), 'over');
     const back = await menuState();
     check('results → Change foe → Back returns to the results', opened.menu === 'difficulty' && back.menu === 'over' && back.state === 'over', JSON.stringify({ opened, back }));
   }
@@ -1326,7 +1349,14 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   const rm = await center(page, '.screen.over .mbtn.primary');
   if (viewport.mobile) await page.touchscreen.tap(rm.x, rm.y);
   else await page.mouse.click(rm.x, rm.y);
-  await sleep(500);
+  await menuIs(page, 'none');
+  // (The HUD comes back as the results fade out — and takes input again on the next frame.)
+  await page
+    .waitForFunction(() => {
+      const hud = (window as unknown as { __mythwar: any }).__mythwar.hud.root;
+      return getComputedStyle(hud).visibility === 'visible' && !hud.inert;
+    }, { timeout: 3000, polling: 50 })
+    .catch(() => {});
   const re = await page.evaluate(() => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;
     return { state: app.state, menu: app.menus.current, over: app.game.over, time: app.game.world.time, hud: getComputedStyle(app.hud.root).visibility, inert: app.hud.root.inert };
