@@ -480,9 +480,15 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
 built, how to see each part working, and the decisions that need you.
 
 ## Run #8 in short (for the morning)
-- Verification mode, backlog items 38–86 (all but the note #23 done): six independent reviews
-  (netcode; app state; simulation/AI/HUD; rendering/persistence; accessibility; docs) found most
-  of them, each reproduced by a new test or smoke check where possible before fixing.
+- Verification mode, backlog items 38–109 (all done but the notes #23, #94 and #101): eight
+  independent reviews (netcode; app state; simulation/AI/HUD; rendering/persistence;
+  accessibility; docs; two players' flows; data across versions) found most of them, each
+  reproduced by a new test or smoke check where possible before fixing.
+- Items 87–109: "Room" on the online results; a dropped phone re-scanning the QR gets its seat
+  back; the room says what the other player changed; a stale Ready is ignored (protocol v15);
+  autosaves are v2 and survive other builds; a save never undoes another tab's progress (a second
+  copy under `mythwar.progress.v1`, merged on every save; resets honoured between tabs; journals
+  merged); `npm run verify:all`; CONTRIBUTING rule 6; BRIEF's "since then" paragraph.
 - **Rules changed** (battle outcomes can differ from run-#7 builds): mixed mirrored armies were
   uneven — team 1 had a one-tick edge in shot timing and in followers freed by a kill (#59–60);
   the AI's Dragon bank no longer blocks the Dragon (#64). designcheck passes; riddles unchanged.
