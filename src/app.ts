@@ -1143,7 +1143,8 @@ export class App {
     // (In co-op the other seat is the ally — the foe is the AI.)
     const who = g.coop ? g.allyName : g.foeName;
     const changed = this.battleTerms && mp.room ? termsChange(this.battleTerms, mp.room, g.seat, who) : '';
-    this.menus.updateRematch(who, !!seats?.[g.seat]?.ready, foe ? foe.ready : null, !!foe?.connected, changed);
+    // (`same`: the seat holds the player this battle was fought with — not a stranger who took it.)
+    this.menus.updateRematch(who, !!seats?.[g.seat]?.ready, foe ? foe.ready : null, !!foe?.connected, changed, !!foe && foe.name === who);
   }
 
   private onMpChanged(): void {

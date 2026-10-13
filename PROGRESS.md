@@ -360,11 +360,13 @@ it prints, inviting, stopping — 2026-10-13.)
    in 3 s of wall time, and slow frames under the three parallel flows stretch the gaps (expected
    3 vs 5, margin one beat). (Done: it also records the tempo `k` each beat was struck at — 0.17
    vs 0.9 — and compares that; 2-s windows; verify green.)
-213. [ ] Online results: once the other seat empties, the quick-message chips stay hidden for those
+213. [x] Online results: once the other seat empties, the quick-message chips stay hidden for those
    results (#18 — so a stranger who takes the seat isn't addressed as the old opponent). Since
    #211, the *same* player can come back to their seat on the results (a phone that slept) — the
    chips should come back for them (same device / same name), and stay away only for a stranger.
-   (Seen in mpsmoke: the gamepad walk had to run before B's sleep.)
+   (Seen in mpsmoke: the gamepad walk had to run before B's sleep.) (Done: `updateRematch(…, same)` — the seat holds
+   the player the battle was fought with (by name) → the chips come back; a stranger still gets
+   none; mpsmoke checks A's chips return once B is back.)
 
 
 

@@ -640,6 +640,8 @@ async function main(): Promise<void> {
     }, 8000);
     check('results: a seat lost while the phone slept is taken again, the results stay up', await b.evaluate(() => (window as any).__mythwar.menus.current === 'over'));
     await waitFor(a, 'A sees B back in the room', () => (window as any).__mythwar.mp.room?.seats[1]?.connected === true, 8000);
+    // (Backlog 213) …and A can talk to B again: the same player is back, not a stranger.
+    await waitFor(a, "A's quick-message chips back for B", () => !document.querySelector('.screen.over .vemotes')!.classList.contains('hidden'), 4000);
 
     console.log('== leaving the room ==');
     // (Backlog 87) A goes back to the room from the results — still seated — and leaves from there.

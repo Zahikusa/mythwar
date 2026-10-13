@@ -1110,13 +1110,15 @@ export class Menus {
    * Online results: whether a rematch is wanted by us / the other player, or they left (the
    * wording: `rematchView`).
    */
-  updateRematch(foe: string, mine: boolean, theirs: boolean | null, there = true, changed = ''): void {
+  updateRematch(foe: string, mine: boolean, theirs: boolean | null, there = true, changed = '', same = false): void {
     const btn = this.rematchBtn;
     const note = this.rematchNote;
     if (!btn || !note) return;
     const span = btn.querySelector('span')!;
-    // (Nobody to talk to once they've left — not even a stranger who takes their seat later.)
+    // (Nobody to talk to once they've left — not even a stranger who takes their seat later; but
+    // the same player back in their seat — a phone that slept, backlog 213 — can be talked to.)
     if (theirs === null) this.emoteGone = true;
+    else if (same) this.emoteGone = false;
     this.emoteRow?.classList.toggle('hidden', this.emoteGone);
     // ("Back to room" and "Room" would be two buttons doing one thing.)
     // (Focus on it would fall to the page: the main button, now "Back to room", takes it.)
