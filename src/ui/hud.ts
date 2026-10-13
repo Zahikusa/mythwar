@@ -221,7 +221,27 @@ export class Hud {
     E.ascFill = h('div', { class: 'ascfill' });
     E.ascSub = h('div', { class: 'asub' });
     E.ascend = h('button', { class: 'act ascend', 'aria-label': 'Ascend to the next age (U)' }, E.ascFill, h('i', { class: 'aico', html: ICONS.ascend }), h('div', { class: 'aname', text: 'Ascend' }), E.ascSub, h('span', { class: 'akey', text: 'U' }));
-    onTap(E.ascend, () => this.tryAscend());
+    // A long press on a touch screen previews the next age (as on the cards) — and the release that
+    // ends it doesn't ascend. (iOS fires no contextmenu on a long press.)
+    let ascHold = 0;
+    let ascHeld = false;
+    E.ascend.addEventListener('pointerdown', (e) => {
+      ascHeld = false;
+      clearTimeout(ascHold);
+      if ((e as PointerEvent).pointerType === 'mouse') return;
+      ascHold = window.setTimeout(() => {
+        ascHeld = true;
+        this.showAgePreview(E.ascend);
+      }, 420);
+    });
+    onTap(E.ascend, () => {
+      if (ascHeld) {
+        ascHeld = false;
+        return;
+      }
+      this.tryAscend();
+    });
+    for (const type of ['pointerup', 'pointercancel', 'pointerleave']) E.ascend.addEventListener(type, () => clearTimeout(ascHold));
     // What waits in the next age: hover, keyboard focus or a long press (right click).
     E.ascend.addEventListener('pointerenter', (e) => {
       if ((e as PointerEvent).pointerType === 'mouse') this.showAgePreview(E.ascend);

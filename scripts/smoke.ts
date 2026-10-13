@@ -1185,6 +1185,24 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     await sleep(80);
     const released = await page.evaluate(() => !(window as unknown as { __mythwar: any }).__mythwar.game.view.inspect);
     check('press-and-hold inspects a creature; release dismisses', held && released, JSON.stringify({ held, released }));
+    // (Backlog 246) A long press on Ascend previews the next age — and the release doesn't ascend,
+    // even with the gold and XP there (iOS fires no contextmenu on a long press).
+    await page.evaluate(() => {
+      const p = (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0];
+      p.gold = 99_999;
+      p.xp = 99_999;
+    });
+    await settled(page, () => !(document.querySelector('.act.ascend') as HTMLButtonElement).disabled && !document.querySelector('.act.ascend')!.classList.contains('locked'), 1000);
+    const asc = await center(page, '.act.ascend');
+    const age0 = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].age as number);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: asc.x, y: asc.y }] });
+    await sleep(600);
+    const preview = await page.evaluate(() => !document.querySelector('.tooltip')!.classList.contains('hidden'));
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await sleep(150);
+    const age1 = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].age as number);
+    check('long press on Ascend previews the next age, and its release does not ascend', preview && age1 === age0, JSON.stringify({ preview, age0, age1 }));
+    // (A plain tap still ascends: "ascend button advances the age" below.)
   }
 
   // Turret panel: open and build

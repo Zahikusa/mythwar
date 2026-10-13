@@ -583,9 +583,12 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
    only from the gaps. Keep `none` on what's dragged (cards, power buttons); others `manipulation`.
    (Done that way. smoke: on an 844×390 phone a swipe that starts on a Settings button scrolls
    it (100 → 143) — 100 → 100 with the old rule. smoke ×2 and mpsmoke `--portrait` green.)
-246. [ ] A long press on Ascend (to preview the next age) ascends on release: the preview opens on
+246. [x] A long press on Ascend (to preview the next age) ascends on release: the preview opens on
    `contextmenu` (hud.ts ~224), which iOS Safari doesn't fire on a long press, and `onTap` fires
    on the release anyway. A 420-ms hold timer like the cards': preview, and no ascend on release.
+   (Done: a touch held 420 ms on Ascend shows the preview while held; that release doesn't
+   ascend; a tap still does. smoke (phone, rotated phone): long press → preview, age unchanged —
+   without the fix no preview and an ascension.)
 247. [x] The automatic battery saver (app.ts ~688) switches to low quality after ~14 s under
    40 fps and *saves* it — an iPhone in Low Power Mode (30 fps cap) gets a blurry 1× canvas for
    good. Session-only, or not for a steady ~30 fps.
