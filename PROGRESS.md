@@ -5,7 +5,7 @@ Status: **Phase 2 in progress** — 100 design iterations, one per lens of Jesse
 complete; its log follows below the lens plan.
 
 ## Run #7 in short (for the morning)
-- Lenses #77–#84 so far. Creatures have a **temper** and a kill gesture (#77); the generals
+- Lenses #77–#84: Creatures have a **temper** and a kill gesture (#77); the generals
   answer the player's deeds from their place on the circumplex (#78), tell their mythic ties at
   first meetings — Hippolyta is Ares' daughter, Odin drank from Mímir's well (#79) — and show an
   inner contradiction at Ragnarök (#82); **standing** titles by each seat in the battle room
@@ -14,6 +14,13 @@ complete; its log follows below the lens plan.
 - designcheck after veterans: even battles 18.1 min (was 18.6), ladder 100/73/20/7%;
   `sim 120 master master` 60–60. perfcheck 1.58 ms/frame.
 - The death event now carries `killer` (unit id or -1); a new `veteran` event.
+- Lenses #85–#92: your sigil flies on your keep and online the opponent sees it (#85, protocol
+  v10); the server's **Hall of champions** per network in the lobby (#86, v11), kept across
+  restarts in `mythwar-data.json` (#92: `server/store.ts`, `--data`, `--no-save`); **3 pauses per
+  player per online battle** (#87, v12); veterans earn myth names and the chronicle names the
+  hero of the battle (#88); **CONTRIBUTING.md** (#89); DESIGN.md refreshed (#90); a local
+  **playtest journal** (Settings → Copy playtest journal) and **docs/PLAYTEST.md** (#91).
+- Protocol is now **v12**: server and pages must come from the same build (as always).
 
 ## Run #6 in short (for the morning)
 - Lenses #45–#76 done (one commit each, reasoning in `docs/LENSES.md`). Highlights: battles are
