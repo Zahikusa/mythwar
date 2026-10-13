@@ -7,6 +7,7 @@ import { DIFFICULTIES } from '../src/ai/ai.ts';
 import type { Difficulty } from '../src/ai/ai.ts';
 import type { Team } from '../src/sim/types.ts';
 import { simFingerprint } from '../src/sim/fingerprint.ts';
+import { wideOf } from './lan.ts';
 import { Match } from './match.ts';
 import { validateCommand } from './validate.ts';
 
@@ -91,6 +92,10 @@ const MAX_SESSIONS = 10000;
 /** Per public address / IPv6 /64 (LAN addresses are exempt). */
 const MAX_SESSIONS_PER_ADDRESS = 64;
 const MAX_ROOMS_PER_ADDRESS = 8;
+/** An IPv6 /48 (see wideOf) may hold this many times one address's sessions and rooms. */
+const WIDE_FACTOR = 4;
+/** Seconds a new connection has to say hello before it is closed. */
+const HELLO_WITHIN = 10;
 /** Hall of champions: names kept per network, networks kept, entries shown. */
 const HALL_NAMES = 64;
 const HALL_NETWORKS = 256;
@@ -183,6 +188,8 @@ export class Lobby {
   private readonly hallKeyPending = new Set<string>();
   /** Players with an away/back change waiting (see AWAY_GAP). */
   private readonly awayWaiting = new Set<Session>();
+  /** Connections that haven't said hello yet, and when they opened (see HELLO_WITHIN). */
+  private readonly unwelcomed = new Map<Conn, number>();
   /** Players whose snapshot request waits for RESYNC_GAP. */
   private readonly resyncWaiting = new Set<Session>();
   private lastHallSave = -Infinity;
@@ -263,6 +270,7 @@ export class Lobby {
    */
   connect(conn: Conn, network = 'lan', quota = ''): { message: (data: string) => void; close: () => void } {
     this.warmHallKey(network);
+    this.unwelcomed.set(conn, this.now());
     let session: Session | null = null;
     const rate = { start: this.now(), msgs: 0, cmds: 0 };
     return {
@@ -288,6 +296,7 @@ export class Lobby {
           if (msg.type === 'hello') {
             if (session) return;
             session = this.hello(conn, msg, network, quota);
+            if (session) this.unwelcomed.delete(conn);
             return;
           }
           if (!session || session.conn !== conn) return this.error(conn, 'bad-request', 'Say hello first');
@@ -300,6 +309,7 @@ export class Lobby {
         }
       },
       close: () => {
+        this.unwelcomed.delete(conn);
         if (session && session.conn === conn) this.disconnected(session);
       },
     };
@@ -334,6 +344,12 @@ export class Lobby {
       this.lastSweep = now;
       for (const s of this.sessions.values()) {
         if (s.conn === null && s.room === null && s.goneAt !== null && now - s.goneAt > SESSION_TTL * 1000) this.sessions.delete(s.token);
+      }
+      // (A socket that never says hello would hold its place for good: ws answers pings itself.)
+      for (const [conn, at] of this.unwelcomed) {
+        if (now - at < HELLO_WITHIN * 1000) continue;
+        this.unwelcomed.delete(conn);
+        conn.close(1008, 'no hello');
       }
     }
     if (this.roomsDirty && now - this.lastRoomList >= ROOM_LIST_EVERY) {
@@ -469,9 +485,13 @@ export class Lobby {
       // Full (overall, or for this address): make room by forgetting the oldest idle session.
       const max = this.opts.maxSessions ?? MAX_SESSIONS;
       const ofQuota = () => (quota ? [...this.sessions.values()].filter((x) => x.quota === quota) : []);
+      const wide = wideOf(quota);
+      const ofWide = () => (wide ? [...this.sessions.values()].filter((x) => wideOf(x.quota) === wide) : []);
+      const wideMax = MAX_SESSIONS_PER_ADDRESS * WIDE_FACTOR;
       if (quota && ofQuota().length >= MAX_SESSIONS_PER_ADDRESS) this.evictIdle(ofQuota());
+      if (wide && ofWide().length >= wideMax) this.evictIdle(ofWide());
       if (this.sessions.size >= max) this.evictIdle([...this.sessions.values()]);
-      if (this.sessions.size >= max || (quota !== '' && ofQuota().length >= MAX_SESSIONS_PER_ADDRESS)) {
+      if (this.sessions.size >= max || (quota !== '' && ofQuota().length >= MAX_SESSIONS_PER_ADDRESS) || (wide !== '' && ofWide().length >= wideMax)) {
         this.error(conn, 'rate', 'The server is full right now — try again in a minute.');
         conn.close(1013, 'full');
         return null;
@@ -551,7 +571,9 @@ export class Lobby {
         // Already waiting alone in an open room (a double tap): keep it.
         if (room && room.phase === 'waiting' && room.seats.filter((x) => x).length === 1) return this.broadcastRoom(room);
         const hostedHere = s.quota ? [...this.rooms.values()].filter((r) => r.seats.some((x) => x?.session.quota === s.quota)).length : 0;
-        if (this.rooms.size >= (this.opts.maxRooms ?? MAX_ROOMS) || hostedHere >= MAX_ROOMS_PER_ADDRESS) return this.error(s.conn, 'rate', 'The server is full right now — try again in a minute.');
+        const wide = wideOf(s.quota);
+        const hostedWide = wide ? [...this.rooms.values()].filter((r) => r.seats.some((x) => x && wideOf(x.session.quota) === wide)).length : 0;
+        if (this.rooms.size >= (this.opts.maxRooms ?? MAX_ROOMS) || hostedHere >= MAX_ROOMS_PER_ADDRESS || hostedWide >= MAX_ROOMS_PER_ADDRESS * WIDE_FACTOR) return this.error(s.conn, 'rate', 'The server is full right now — try again in a minute.');
         if (room) this.removeFromRoom(s);
         const r: Room = { code: this.makeCode(), createdAt: now, phase: 'waiting', seats: [null, null], match: null, coop: null, rev: 0 };
         this.rooms.set(r.code, r);

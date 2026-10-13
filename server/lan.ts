@@ -31,6 +31,16 @@ export function networkOf(address: string | undefined): string {
     .join(':');
 }
 
+/**
+ * The wider network a quota key belongs to, for a second tier of limits: an IPv6 /64's /48
+ * ('' for anything else). A home or provider handing out a /56 has 256 /64s — each with its own
+ * per-address limits; their /48 counts them together.
+ */
+export function wideOf(quota: string): string {
+  const parts = quota.split(':');
+  return parts.length >= 4 ? `${parts.slice(0, 3).join(':')}::/48` : '';
+}
+
 /** A network address of this machine, with the adapter it belongs to. */
 export interface LanAddress {
   ip: string;

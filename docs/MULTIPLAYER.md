@@ -211,9 +211,14 @@ The design already separates everything that matters for that step:
    A matchmaking queue would be the next step.
 4. **Latency:** the jitter buffer adapts by itself (tested with 20–140 ms delays); for long
    distances raise `turnTicks` in `attachMultiplayer` to save packets if needed.
-5. **Abuse limits are in place:** rooms (2000) and sessions (10000) per server; 32 connections,
-   64 sessions and 8 rooms per public address (local-network clients exempt); message / command / emote rate limits, strict validation of every message,
-   64 kB maximum frame size. Responses are brotli/gzip-compressed.
+5. **Abuse limits are in place:** rooms (2000), sessions (10000) and connections (5000) per
+   server; 32 connections, 64 sessions and 8 rooms per public address — an IPv6 /64 — and four
+   times that per IPv6 /48 (local-network clients exempt); 10 s to say hello; message / command /
+   emote rate limits (counted before a message is even parsed), a battle snapshot on request at
+   most once a second, strict validation of every message, 64 kB maximum frame size; a client
+   that stops reading is dropped once 1 MB waits for it. Responses are brotli/gzip-compressed.
+   Still open for a public server (PROGRESS.md backlog): the Hall-key hash on connect, room-code
+   guessing, Hall farming, `--trust-proxy` from a reachable port, room-update floods.
 6. **Scale:** rooms are independent, so several server processes behind sticky sessions (or one
    process per region) scale horizontally. A match costs ~0.04 % of a CPU core and ~19 MB of
    traffic per hour (`node scripts/servercost.ts`; docs/PROFIT.md has the cost model).

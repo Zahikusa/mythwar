@@ -4,7 +4,7 @@ import { Server as TlsServer } from 'node:tls';
 import { WebSocketServer } from 'ws';
 import type { WebSocket } from 'ws';
 import { MP_PATH } from '../src/net/protocol.ts';
-import { lanAddresses, networkOf } from './lan.ts';
+import { lanAddresses, networkOf, wideOf } from './lan.ts';
 import { Lobby } from './lobby.ts';
 import type { LobbyOptions } from './lobby.ts';
 
@@ -26,10 +26,16 @@ export interface AttachOptions extends LobbyOptions {
   sharedUpgrades?: boolean;
   /** Testing aid: seconds without a sign of life before a link counts as dead (default 12). */
   deadAfter?: number;
+  /** Simultaneous connections in all (default MAX_SOCKETS). */
+  maxSockets?: number;
 }
 
 /** Simultaneous connections from one address (a household has a few devices; a script many). */
 const MAX_PER_ADDRESS = 32;
+/** ...and from one IPv6 /48 (see wideOf: a /56's 256 /64s would each have their own 32). */
+const MAX_PER_WIDE = 4 * MAX_PER_ADDRESS;
+/** Simultaneous connections in all. */
+const MAX_SOCKETS = 5000;
 /** Seconds without any sign of life before a connection is considered dead. */
 const DEAD_AFTER = 12;
 const HEARTBEAT = 4;
@@ -78,19 +84,20 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
     // Limits count per public address (an IPv6 /64 counts as one). Local-network clients of a
     // LAN server are exempt: everyone there is trusted, and testing opens many tabs.
     const quota = network === 'lan' && !opts.trustProxy ? '' : network === 'lan' ? address : network;
-    const count = (perAddress.get(quota) ?? 0) + 1;
-    if (quota && count > MAX_PER_ADDRESS) {
+    const wide = wideOf(quota);
+    const keys = [quota, wide && `wide ${wide}`].filter(Boolean);
+    if (alive.size >= (opts.maxSockets ?? MAX_SOCKETS) || (quota && (perAddress.get(quota) ?? 0) >= MAX_PER_ADDRESS) || (wide && (perAddress.get(`wide ${wide}`) ?? 0) >= MAX_PER_WIDE)) {
       ws.close(1013, 'too many connections');
       return;
     }
-    if (quota) {
-      perAddress.set(quota, count);
-      ws.once('close', () => {
-        const n = (perAddress.get(quota) ?? 1) - 1;
-        if (n > 0) perAddress.set(quota, n);
-        else perAddress.delete(quota);
-      });
-    }
+    for (const key of keys) perAddress.set(key, (perAddress.get(key) ?? 0) + 1);
+    ws.once('close', () => {
+      for (const key of keys) {
+        const n = (perAddress.get(key) ?? 1) - 1;
+        if (n > 0) perAddress.set(key, n);
+        else perAddress.delete(key);
+      }
+    });
     // Small frames, sent as they happen: no Nagle delay.
     (ws as unknown as { _socket?: { setNoDelay?: (v: boolean) => void } })._socket?.setNoDelay?.(true);
     const lag = opts.latency || opts.jitter ? { up: laggy(opts), down: laggy(opts) } : null;

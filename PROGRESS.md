@@ -170,9 +170,14 @@ the save file re-cleaned on load.)
    the Hall key before `hello`, unqueued — 400 connections from different /64s slowed a plain
    readFile from 0.8 ms to 2.5 s (the libuv pool is shared with static files and saves). Hash
    lazily (first needed at a battle's end) with 1–2 in flight.
-285. [ ] Public-server limits: per-/64 quotas multiply over a /56 (256 × 8 rooms = the 2000-room
+285. [x] Public-server limits: per-/64 quotas multiply over a /56 (256 × 8 rooms = the 2000-room
    cap: "The server is full"); no server-wide socket cap; a socket that never says `hello`
    lives forever (ws answers pings). A 10-s hello deadline, a global cap, /56 and /48 tiers.
+   (Done: `Lobby` closes a connection without hello after 10 s; `attachMultiplayer` takes 5000
+   sockets in all (`maxSockets`); a second tier per IPv6 /48 (`wideOf`) at 4× the per-/64
+   sockets, sessions and rooms — the review's script now gets 32 rooms from one /56 (was all
+   2000) and a real host still gets one. Tests: hello deadline, /48 rooms, socket cap over a real
+   WebSocket, `wideOf`. MULTIPLAYER.md's limits list updated.)
 286. [ ] Room codes can be brute-forced: 27⁴ = 531,441 codes, joins only under the 120 msgs/s
    limit — 32 sockets cover them all in ~2.3 min. Count failed joins per session / address with
    a backoff; longer codes on a public server.

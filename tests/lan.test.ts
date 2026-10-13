@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { networkInterfaces } from 'node:os';
-import { lanInterfaces } from '../server/lan.ts';
+import { lanInterfaces, networkOf, wideOf } from '../server/lan.ts';
 
 type Ifaces = ReturnType<typeof networkInterfaces>;
 const v4 = (address: string, internal = false) => ({ address, family: 'IPv4', internal, netmask: '255.255.255.0', mac: '00:00:00:00:00:00', cidr: `${address}/24` }) as NonNullable<Ifaces[string]>[number];
@@ -37,5 +37,15 @@ describe('lanInterfaces (which address the QR code shows — backlog 176)', () =
   it('only virtual adapters: still listed (last resort), and marked as such', () => {
     const list = lanInterfaces({ 'vEthernet (Default Switch)': [v4('172.17.80.1')] });
     expect(list).toEqual([{ ip: '172.17.80.1', adapter: 'vEthernet (Default Switch)', virtual: true }]);
+  });
+});
+
+describe('wideOf (a second tier of per-address limits — backlog 285)', () => {
+  it("an IPv6 /64 belongs to its /48; IPv4 addresses and 'lan' to none", () => {
+    expect(wideOf(networkOf('2001:db8:7:3:1:2:3:4'))).toBe('2001:db8:7::/48');
+    expect(wideOf(networkOf('2001:db8:7:ff::9'))).toBe('2001:db8:7::/48');
+    expect(wideOf(networkOf('203.0.113.7'))).toBe('');
+    expect(wideOf('')).toBe('');
+    expect(wideOf('lan')).toBe('');
   });
 });

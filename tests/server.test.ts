@@ -22,10 +22,12 @@ class FakeClient {
 
   readonly lobby: Lobby;
   readonly network: string;
+  readonly quota: string;
 
-  constructor(lobby: Lobby, network = 'lan') {
+  constructor(lobby: Lobby, network = 'lan', quota = '') {
     this.lobby = lobby;
     this.network = network;
+    this.quota = quota;
     this.handlers = this.connect();
   }
 
@@ -38,7 +40,7 @@ class FakeClient {
       close: () => {
         this.open = false;
       },
-    }, this.network);
+    }, this.network, this.quota);
   }
 
   private receive(m: ServerMsg): void {
@@ -460,6 +462,40 @@ describe('lobby', () => {
     b.send({ type: 'host' });
     expect(b.last('error')!.code).toBe('rate');
     expect(lobby.roomCount).toBe(1);
+  });
+
+  it('a connection that never says hello is closed after 10 s (backlog 285)', () => {
+    const { lobby, run } = setup();
+    const quiet = new FakeClient(lobby);
+    const late = new FakeClient(lobby);
+    run(5000);
+    late.hello('Late');
+    run(6000);
+    expect(quiet.open).toBe(false);
+    expect(late.open).toBe(true);
+  });
+
+  it('per-address limits have a wider tier: the /64s of one /48 count together (backlog 285)', () => {
+    // (Real randomness: setup's stand-in repeats itself within a few dozen room codes.)
+    const lobby = new Lobby({});
+    // Five homes' worth of /64s in one /48, eight rooms each: the /48 stops at 32.
+    let refused = 0;
+    for (let n = 0; n < 5; n++) {
+      for (let i = 0; i < 8; i++) {
+        const net = `2001:db8:7:${n}`;
+        const c = new FakeClient(lobby, net, net);
+        c.hello(`P${n}${i}`);
+        c.send({ type: 'host' });
+        if (c.last('error')?.code === 'rate') refused++;
+      }
+    }
+    expect(lobby.roomCount).toBe(32);
+    expect(refused).toBe(8);
+    // Another /48 is not affected.
+    const other = new FakeClient(lobby, '2001:db8:8:1', '2001:db8:8:1');
+    other.hello('Other');
+    other.send({ type: 'host' });
+    expect(lobby.roomCount).toBe(33);
   });
 
   it('an empty room disappears', () => {
@@ -1461,6 +1497,40 @@ describe('over a real WebSocket', () => {
       expect(ticks).toEqual([...ticks].sort((x, y) => x - y));
       a.ws.close();
       b.ws.close();
+    } finally {
+      mp.close();
+      await new Promise((r) => http.close(r));
+    }
+  });
+
+  it('the server takes at most so many connections in all (backlog 285)', async () => {
+    const { createServer } = await import('node:http');
+    const { attachMultiplayer } = await import('../server/net.ts');
+    const http = createServer();
+    const mp = attachMultiplayer(http, { maxSockets: 2 });
+    await new Promise<void>((r) => http.listen(0, '127.0.0.1', r));
+    const port = (http.address() as { port: number }).port;
+    const open = () =>
+      new Promise<{ ws: WebSocket; closed: Promise<number> }>((resolve, reject) => {
+        const ws = new WebSocket(`ws://127.0.0.1:${port}/mp`);
+        const closed = new Promise<number>((r) => ws.addEventListener('close', (e) => r(e.code)));
+        ws.onerror = reject;
+        ws.onopen = () => resolve({ ws, closed });
+      });
+    try {
+      const a = await open();
+      const b = await open();
+      const c = await open();
+      expect(await c.closed).toBe(1013);
+      // One goes: there is room again.
+      a.ws.close();
+      await a.closed;
+      await new Promise((r) => setTimeout(r, 50));
+      const d = await open();
+      const early = await Promise.race([d.closed, new Promise((r) => setTimeout(() => r('open'), 200))]);
+      expect(early).toBe('open');
+      b.ws.close();
+      d.ws.close();
     } finally {
       mp.close();
       await new Promise((r) => http.close(r));
