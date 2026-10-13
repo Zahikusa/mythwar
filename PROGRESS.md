@@ -451,9 +451,10 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
 (Items 104–107: open for the next run.)
 104. [ ] The playtest journal isn't merged between tabs (#92 merges what only grows, the journal
    too could: by `at`, the last 30) — two tabs playing in turn keep only the last saver's.
-105. [ ] Online results on a 360-px-tall phone now have four buttons in a row (Leave room · Share ·
+105. [x] Online results on a 360-px-tall phone now have four buttons in a row (Leave room · Share ·
    Room · Rematch, #87): check they fit (mpsmoke's phone is 844×390; smoke's results-fit check
-   covers single-player results only) — add a check, wrap to two rows if needed.
+   covers single-player results only) — add a check, wrap to two rows if needed. (Done: mpsmoke
+   resizes the phone to 640×360 and 360×640 on the online results — all four fit, no overlap.)
 106. [x] CONTRIBUTING.md: say when to bump PROTOCOL_VERSION (any message shape change — v15 now) and
    the battle save's `v` (a change older builds would misread — v2 now), and that settings
    fields only ever grow (older builds drop unknown ones; `mythwar.progress.v1` covers that).

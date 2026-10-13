@@ -392,6 +392,21 @@ async function main(): Promise<void> {
     const own = await b.evaluate(() => document.querySelector('.screen.over .vemoteline')?.textContent ?? '');
     check('results: a quick message after the battle reaches the other player', said.endsWith(': Well played!') && own === 'You: Well played!', `${said} | ${own}`);
     await shot(b, '11-results-phone');
+    // (Backlog 105) The online results' buttons (Leave room · Share · Room · Rematch) all fit a
+    // small phone, without overlapping.
+    for (const [w, h] of [[640, 360], [360, 640]] as const) {
+      await b.setViewport({ width: w, height: h, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+      await sleep(400);
+      const fit = await b.evaluate(() => {
+        const rs = [...document.querySelectorAll('.screen.over .mrow button')].map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0);
+        const inside = rs.every((r) => r.left >= 0 && r.right <= innerWidth + 1 && r.top >= 0 && r.bottom <= innerHeight + 1);
+        const overlap = rs.some((r, i) => rs.some((q, j) => j > i && r.left < q.right - 1 && q.left < r.right - 1 && r.top < q.bottom - 1 && q.top < r.bottom - 1));
+        return { n: rs.length, inside, overlap, boxes: rs.map((r) => [Math.round(r.left), Math.round(r.top), Math.round(r.right), Math.round(r.bottom)]) };
+      });
+      check(`online results: all buttons fit a ${w}×${h} phone`, fit.n === 4 && fit.inside && !fit.overlap, JSON.stringify(fit));
+    }
+    await b.setViewport({ width: portrait ? 390 : 844, height: portrait ? 844 : 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    await sleep(300);
     // (Backlog 88/100) B's connection drops on the results: A's rematch note says so — not
     // "Waiting for Bo…" for the minute the seat is kept.
     await b.evaluate(() => (window as any).__mythwar.mp.conn.close());
