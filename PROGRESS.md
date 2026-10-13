@@ -441,9 +441,10 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
    contained paths (#50/#51), e.g. in the static server or ws internals, ends the process without
    saving the Hall. Log, `flush(true)`, exit non-zero (a supervisor/the starter restarts it).
    (Done; not triggered in a test — nothing reachable from outside throws there any more.)
-103. [ ] `docs/PLAYTEST.md` predates run #8: add the checks this run made possible (a phone that
+103. [x] `docs/PLAYTEST.md` predates run #8: add the checks this run made possible (a phone that
    drops the tab re-scans the QR and gets its seat back; "Room" on the results; the away banner
-   with a screen reader).
+   with a screen reader). (Done: three on-purpose checks under "What to watch" — the seat back
+   after a re-scan, Room → co-op → Ready, the shield beside the gate on a small phone.)
 
 
 

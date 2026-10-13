@@ -36,6 +36,11 @@ Pick one or two questions for this session, not ten. Good ones right now:
 - Multiplayer: how long from "let's play" to the countdown; anything that made them ask "what
   now?"; what happens when a phone is locked for 20 seconds mid-battle.
 - Sound on or off? Portrait or landscape?
+- If there's time, three rough edges worth a try on purpose (fixed in run #8, never seen on real
+  phones yet): close the guest's tab in the battle room and scan the QR again (the seat should
+  come back, not "already has two players"); after a battle press **Room**, switch to co-op and
+  Ready again (the other phone should say what changed); hold the lane shield on a small phone
+  right next to the gate (the tap should hold the lane, and a tap on the gate open its turret).
 
 **Don't** explain, defend or coach while they play. "What are you thinking?" is the only
 question allowed during the battle.
