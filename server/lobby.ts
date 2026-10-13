@@ -359,16 +359,23 @@ export class Lobby {
     }
   }
 
+  /** A quiet spell this battle counted (see checkSilence) is over: its length goes into the log's sum. */
+  private endQuiet(s: Session, now: number): void {
+    if (!s.quiet.since) return;
+    s.quiet.ms += now - s.quiet.since;
+    s.quiet.since = 0;
+  }
+
   /** Something arrived from this player: one who had gone quiet is back (unless their page says it's away). */
   private heard(s: Session, now: number): void {
     s.heardAt = now;
     if (!s.silent) return;
     s.silent = false;
+    this.endQuiet(s, now);
     const room = s.room;
     if (!room?.match || s.seat === null || room.phase !== 'playing' || s.saysAway || !room.match.isAway(s.seat)) return;
     room.match.setAway(s.seat, false, now);
     this.broadcastRoom(room);
-    s.quiet.ms += now - s.quiet.since;
     if (s.quiet.n === 1) this.log(`${s.name} is heard from again in room ${room.code}`);
   }
 
@@ -774,6 +781,9 @@ export class Lobby {
 
   private disconnected(s: Session): void {
     s.conn = null;
+    // (A quiet spell that ends with the link: counted up to now for the battle's log line.)
+    this.endQuiet(s, this.now());
+    s.silent = false;
     // (An away/back change still held back — see AWAY_GAP — came from the link that just closed.)
     s.awayWanted = null;
     this.awayWaiting.delete(s);

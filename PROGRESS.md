@@ -673,6 +673,24 @@ server changes found sound.)
 267. [x] Ascend's long-press flag (#246) sticks when the release is > 14 px from the press (no tap
    callback), eating the next Enter/Space on the focused button once. (Done: reset just after
    any release.) vitest 300, smoke, mpsmoke plain / portrait / latency green.
+268. [x] (The same review, a note) #260's summed quiet time could count a spell from a stale
+   start (a seat already away when it went quiet) or miss one that ended with the link.
+   (Done: `endQuiet()` — a spell is open only once counted, and closes on a word or on the
+   link's end.)
+(Items 269–: open for the next run.)
+269. [ ] mpsmoke's wall time grew with run #10's steps (two silent-link waits of ~3–6 s, the news
+   queue's 2.3 s, the WebKit-free chip checks): print the section times again (#214) and trim
+   where a shorter `deadAfter` / a condition wait would do.
+270. [ ] Several run #10 tests in tests/netgame.test.ts reach into private fields (`conn.ws`,
+   `conn.lastHeard`, `lobby.rooms`, a match's world): a few test-only accessors on SimNet
+   (`socketOf(client)`, `matchOf(code)`, `suspend(client, ms)`) would make them read as the
+   scenarios they are and survive refactors.
+271. [ ] docs/MULTIPLAYER.md's "What happens when…" lacks run #10's room behaviours: a short app
+   switch keeps the seat and Ready (#264), a longer one redials at once on return (#243), room
+   news takes turns (#262), and a silent phone mid-battle (#222 — there) vs in the room.
+272. [ ] `mpengines`' WebKit pass doesn't check #246 (a long press on Ascend previews without
+   ascending) — WebKit's touch/contextmenu behaviour is the reason for the fix; Playwright's
+   touchscreen can hold a press there.
 260. [x] The server logs "went quiet" / "heard from again" for every Wi-Fi blip of 4 s+ (#222) —
    a flaky phone could fill the host's console in a long session. Keep the first of each in a
    battle and sum the rest at the battle's end ("Bo went quiet 5 times, 23 s in all").
