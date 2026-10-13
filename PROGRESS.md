@@ -762,6 +762,37 @@ battle, results — 2026-10-13.)
    in src/ui/roomnews.ts; 4 tests; mpsmoke's emote checks green.) With #150, #156, #171 the online
    glue's decisions are pure and tested; what stays in app.ts is wiring. #137 itself (moving the
    wiring to its own module) stays open — the remaining code is short and touches App's privates.
+(Items 175–184: an independent review of the host's way — getting the server, starting it, what
+it prints, inviting, stopping — 2026-10-13.)
+175. [ ] Firewall advice says "allow *private* networks" (server/main.ts ~129, the package's
+   README.txt) — but Windows 11 often files a newly joined home Wi-Fi as *Public*; following the
+   advice still blocks every phone. Say how to check/switch the network profile (MULTIPLAYER.md
+   ~69 does) in the console and README.txt.
+176. [ ] The QR code always encodes the first address (main.ts ~124) and the console prints
+   addresses without adapter names; `server/lan.ts`'s virtual-adapter filter misses virbr0,
+   br-<id> (Docker), vmnet8, bridge100, wg0, NordLynx, ProtonVPN. Print the adapter name by each
+   address, say which one the QR uses, and widen the filter.
+177. [ ] Node version: no `engines` in package.json, no check in server/main.ts; README gives no
+   version, MULTIPLAYER.md says 24+, the real minimum for running .ts directly is 22.18 / 23.6 —
+   below it `npm run lan` builds, then fails with ERR_UNKNOWN_FILE_EXTENSION. State it once,
+   check it at start with a plain message.
+178. [ ] The packaged server prints source-checkout help: `--help` shows `node server/main.ts …
+   (npm run lan …)`, a busy port says `try: node server/main.ts --port N`, a missing build says
+   `run "npm run build"` (main.ts ~66, ~106). Word them for how it was started.
+179. [ ] macOS: "right-click → Open" no longer passes Gatekeeper on macOS 15+ (README.md ~46,
+   README.txt, release notes): System Settings → Privacy & Security → Open Anyway.
+180. [ ] The Windows starter run from inside the zip (Explorer's zip view) fails with "Cannot find
+   module": `Start Mythwar Server.cmd` should check `server.mjs` is beside it and say "extract
+   the zip first".
+181. [ ] Closing the server window (README.txt recommends it) ends Node by SIGHUP — only
+   SIGINT/SIGTERM run the final Hall save (main.ts ~138): up to 5 s of results lost. Handle SIGHUP
+   (and Windows' SIGBREAK) too.
+182. [ ] The macOS/Linux starters only check that `node` exists (package.ts ~52): Ubuntu 22.04's
+   apt Node 12 gives a raw SyntaxError. Check the version like the Windows starter. (And nothing
+   ever starts the bundled `server.mjs` in tests/CI.)
+183. [ ] Port 8787 busy → the server moves to the next free port silently (main.ts ~101): usually a
+   second copy is running, and phones are on the old one. Say so when it moves.
+184. [ ] main.ts ~141's comment says the starters restart the server; they don't. Fix the comment.
 172. [ ] Back (#166) on the online results does nothing (Esc does nothing there either); on a phone,
    Back from the results could mean "Room" (the friend-facing next step) — or leave it: the
    buttons are right there. Decide after a playtest (docs/PLAYTEST.md).
@@ -1196,6 +1227,11 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   the menu just locally, so the waiting player can always leave.
 
 ## Open questions for the human
+- (Run #9) **The downloadable release is stale**: the only GitHub release (v1.0.0, 2026-10-08) is
+  ~280 commits behind; the GitHub Pages "Download the game server" button (`releases/latest`)
+  hands out a server without the saved Hall of champions, the protocol fixes of runs #8–#9, etc.
+  Publishing needs a push and a tag — not done from these runs. Bump `version` in package.json
+  (still 1.0.0) and tag when you publish.
 - (Run #8) `.github/workflows/browser-tests.yml` (smoke + mpsmoke on GitHub) is written but has
   never run — nothing is pushed from these runs. On its first run, check that Chrome starts on the
   runner and that the timing-based checks hold on a shared machine; if some flake, they are the
