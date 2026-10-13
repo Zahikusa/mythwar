@@ -40,6 +40,8 @@ export interface MenuCallbacks {
   sandbox(): void;
   /** A riddle of war (src/sim/puzzles.ts). */
   riddle(id: string): void;
+  /** Back to the title screen from a menu — from a finished battle too (it's put away first). */
+  home(): void;
   continueSaved(): void;
   resume(): void;
   restart(): void;
@@ -234,7 +236,11 @@ export class Menus {
   goBack(): void {
     if (this.screen === 'howto' || this.screen === 'settings' || this.screen === 'bestiary' || this.screen === 'feats') this.show(this.back);
     else if (this.screen === 'riddles') this.show('difficulty');
-    else if (this.screen === 'difficulty') this.show(this.diffBack);
+    // (The title by way of the app: after a battle or a riddle its field and HUD are put away.)
+    else if (this.screen === 'difficulty') {
+      if (this.diffBack === 'title') this.cb.home();
+      else this.show(this.diffBack);
+    }
   }
 
   show(screen: Screen): void {
@@ -244,7 +250,8 @@ export class Menus {
     if (screen === 'howto' || screen === 'settings' || screen === 'bestiary' || screen === 'feats') {
       if (this.screen !== 'howto' && this.screen !== 'settings' && this.screen !== 'bestiary' && this.screen !== 'feats') this.back = this.screen === 'none' ? 'title' : this.screen;
     }
-    if (screen === 'difficulty' && this.screen !== 'difficulty' && this.screen !== 'howto' && this.screen !== 'settings') {
+    // (Riddles is a step below the difficulty screen: coming back from it keeps where Back leads.)
+    if (screen === 'difficulty' && this.screen !== 'difficulty' && this.screen !== 'howto' && this.screen !== 'settings' && this.screen !== 'riddles') {
       this.diffBack = this.screen === 'over' ? 'over' : 'title';
     }
     if (screen === 'settings' && this.screen !== 'settings') this.settingsOpened?.();
