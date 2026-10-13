@@ -457,8 +457,9 @@ export class Lobby {
         // The same device back in a new tab (a phone that dropped the page, a re-scanned QR): its
         // own seat, left without a connection, is its to take back — score and handicaps kept.
         // (Whether or not the other seat is free: a host whose page dropped must not end up as
-        // their own guest.)
-        const own = r.phase !== 'playing' && s.device ? ([0, 1] as Team[]).find((i) => !!r.seats[i] && r.seats[i]!.session !== s && r.seats[i]!.session.conn === null && r.seats[i]!.session.device === s.device) : undefined;
+        // their own guest. Mid-battle too: Android's Back closes a tab opened from a QR code, and
+        // its session — kept in that tab — goes with it; scanning again picks the battle up.)
+        const own = s.device ? ([0, 1] as Team[]).find((i) => !!r.seats[i] && r.seats[i]!.session !== s && r.seats[i]!.session.conn === null && r.seats[i]!.session.device === s.device) : undefined;
         if (own !== undefined) {
           if (room) this.removeFromRoom(s);
           const old = r.seats[own]!;
@@ -469,6 +470,11 @@ export class Lobby {
           s.seat = own;
           if (r.phase === 'over') r.phase = 'waiting';
           this.broadcastRoom(r);
+          if (r.phase === 'playing' && r.match) {
+            this.send(s, r.match.snapshotFor(own, this.now()));
+            r.match.setAway(own, false, this.now());
+            this.broadcastRoom(r); // (no longer away)
+          }
           this.roomsDirty = true;
           this.log(`${s.name} took their seat in room ${r.code} back`);
           return;

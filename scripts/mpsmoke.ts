@@ -151,7 +151,7 @@ async function main(): Promise<void> {
     const a = await browser.newPage();
     await a.setViewport({ width: 1366, height: 768, deviceScaleFactor: 1 });
     const ctxB = await browser.createBrowserContext();
-    const b = await ctxB.newPage();
+    let b = await ctxB.newPage();
     // --portrait: the phone is held upright (the game rotates its stage into landscape).
     const portrait = args.includes('--portrait');
     await b.setViewport({ width: portrait ? 390 : 844, height: portrait ? 844 : 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
@@ -369,6 +369,24 @@ async function main(): Promise<void> {
     const a5 = await info(a);
     const b5 = await info(b);
     check('no desyncs', a5.desyncs === 0 && b5.desyncs === 0, `${a5.desyncs} / ${b5.desyncs}`);
+
+    console.log('== tab closed mid-battle, QR scanned again ==');
+    // (Backlog 159) Android's Back closes a tab opened from a QR code — its session token goes
+    // with it. Scanning the code again (a new tab, same phone) picks the battle up.
+    {
+      const b2 = await ctxB.newPage();
+      await b2.setViewport({ width: portrait ? 390 : 844, height: portrait ? 844 : 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+      watch(b2, 'B2');
+      const before = (await info(b)).summoned[0];
+      await b.close();
+      b = b2;
+      await waitFor(a, 'A waits for B (tab closed)', () => ((window as any).__mythwar.game.netPause?.reason ?? '') === 'away', 8000);
+      await b.goto(`${base}/?join=${code}`, { waitUntil: 'load' });
+      await waitFor(b, 'B back in the battle from the QR code', () => (window as any).__mythwar.state === 'playing' && !!(window as any).__mythwar.game.options.online && !(window as any).__mythwar.game.paused, 10000);
+      await waitFor(a, 'A running again', () => !(window as any).__mythwar.game.netPause && !(window as any).__mythwar.game.paused, 8000);
+      const back = await info(b);
+      check('a closed tab rejoins its running battle by the QR code', back.seat === 1 && back.mirror && back.summoned[0] >= before && back.tick > 200, JSON.stringify({ seat: back.seat, mirror: back.mirror, summoned: back.summoned, tick: back.tick }));
+    }
 
     console.log('== leaving forfeits ==');
     await b.keyboard.press('Escape'); // (a phone keyboard isn't a thing, but the key works)

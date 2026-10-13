@@ -639,6 +639,35 @@ describe('battle', () => {
     expect(host.last('room')!.room.seats[1]).toMatchObject({ name: 'Bo', connected: true });
   });
 
+  it('mid-battle too: a tab closed by Back and a QR scanned again picks the battle up (backlog 159)', () => {
+    const { lobby, run, a, b, code } = battle();
+    const bDevice = 'b0b0b0b0b0b0b0b0b0b0b0b0';
+    run(2000);
+    const rooms = (lobby as unknown as { rooms: Map<string, { seats: ({ session: { device: string } } | null)[] }> }).rooms;
+    rooms.get(code)!.seats[1]!.session.device = bDevice;
+    b.disconnect();
+    run(500);
+    expect(a.last('paused')!.state).toMatchObject({ reason: 'away', seat: 1 });
+    // Another device can't take the seat of a running battle…
+    const stranger = new FakeClient(lobby);
+    stranger.hello('Cy', undefined, { device: 'c0c0c0c0c0c0c0c0c0c0c0c0' });
+    stranger.send({ type: 'join', code });
+    expect(stranger.last('error')?.code).toBe('room-full');
+    // …the same phone, in a fresh tab (no session token), can.
+    const again = new FakeClient(lobby);
+    again.hello('Bo', undefined, { device: bDevice });
+    again.send({ type: 'join', code });
+    expect(again.last('error')).toBeUndefined();
+    expect(again.last('room')!.seat).toBe(1);
+    expect(again.last('snapshot')).toMatchObject({ seat: 1 });
+    run(5000);
+    // The battle runs on: B is no longer away, and A's orders reach the new tab.
+    expect(a.last('room')!.room.seats[1]).toMatchObject({ connected: true, away: false });
+    const before = again.inbox.filter((m) => m.type === 'turn').length;
+    run(1000);
+    expect(again.inbox.filter((m) => m.type === 'turn').length).toBeGreaterThan(before);
+  });
+
   it('a Ready sent before the other player changed the terms is ignored (backlog 96)', () => {
     const { lobby } = setup();
     const a = new FakeClient(lobby);

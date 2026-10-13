@@ -692,6 +692,29 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    machine (the CI runner, #127) too short, here longer than needed — and the gamepad flow slept
    6 s for summons to step out. (Done: `appUp()` waits until a battle ticks or a menu shows, then
    0.5 s for the fade; the gamepad flow waits for its creatures on the field. 49 s → 44 s.)
+(Items 159–165: an independent review of a first-time guest's way in — QR code on a phone, room,
+battle, results — 2026-10-13.)
+159. [x] Android's Back mid-battle closed the tab opened from the QR code (its session token lived
+   in that tab); scanning again was refused — "That battle already has two players" — while the
+   host waited for a claim. (Done: `server/lobby.ts` join — the same device takes its seat back in
+   a running battle too: snapshot, present again; server test; mpsmoke closes B's tab mid-battle
+   and rescans — failed before the fix; MULTIPLAYER.md.)
+160. [ ] A phone that locks while waiting in the battle room (plain http: no wake lock; iPhones
+   lock after 30 s) loses its seat after 12 s + 60 s and lands in the lobby with "away too long".
+   Hold a disconnected seat longer while the room is waiting (and say "keep your screen on" in the
+   room on phones?).
+161. [ ] The battle room has no way to the how-to: a QR guest never saw it (it shows before a first
+   *local* battle) and Leave room → Back disconnects. A "How to play" in the room, Back to the room.
+162. [ ] "Copy result" (results) and "Copy link" (room) always fail on LAN phones — `navigator.
+   clipboard` needs a secure context (http://192.168… isn't); Settings' progress code has the
+   select-the-text fallback, these don't (menus.ts ~973, mpmenus.ts ~236). A shared copy helper
+   with an `execCommand('copy')` fallback.
+163. [ ] The results tip (`battleTip`, menus.ts ~1240) says "click a gate or press T" on phones (the
+   coach swaps Tap/Click by device; this doesn't).
+164. [ ] The "turn your phone sideways before typing" tip is in the lobby only; a QR guest renaming
+   in the room on an upright phone never sees it (mpmenus.ts ~194).
+165. [ ] (note) iPhone's silent switch mutes Web Audio (no `navigator.audioSession.type = 'playback'`)
+   — left on purpose: the switch means "quiet"; the room's chimes have visual twins.
 
 
 
