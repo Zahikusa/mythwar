@@ -10,6 +10,22 @@ Started run #12, 2026-10-13. Phases 1–2 (LAN multiplayer, the 100 lenses)
 are finished; their log, backlog and open questions are in
 [docs/PROGRESS-archive.md](docs/PROGRESS-archive.md) (last section).
 
+## Run #12 in short (for the morning)
+
+Phase 3 was planned, built and verified in one run (2026-10-13): `npm run mobilecheck` (new),
+then A (screens framed: only their middle scrolls; the page held still; the stage follows the
+visual viewport), B (launch images, manifest, update offer, offline start tested), C
+(`platform.ts` + the install guide: title offer, pictured sheet with an arrow, Android's
+dialog, app-browser escape, QR, LAN line, installed welcome), D (Back model, swipe-down
+sheets, 44-px targets, Vibration switch), E (contact-sheet review on 8 devices), F decided
+against. Then verification mode: backlog 1, 3, 4, 6–15, 17, 18 done (the notch strips now
+continue the scene; upright typing echo; "Paste my progress"; the LAN page shot; …).
+Open: 2 (launch images' size), 5 (arrow places on real devices), 16 (iPhone haptics trick).
+Bugs worth knowing that were found on the way: WebKit ignores `position: sticky` under the
+turned stage (Settings' Done was off screen on an upright iPhone); Chrome refuses every swipe
+on a turned scroller with `overflow-x: hidden`; headless WebKit froze CSS animations of pages
+it didn't consider in front (mobilecheck runs one browser per view, transitions off).
+
 ## Where things stood at the start (run #12)
 
 Already in the code before Phase 3, and kept:
