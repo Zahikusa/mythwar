@@ -175,9 +175,11 @@ Already in the code before Phase 3, and kept:
    (Done: "Paste my progress" in the welcome (iPhone, a fresh app, where the clipboard can be
    read) merges the code and saves; smoke's `app-welcome` flow stubs an installed iPhone,
    puts a code on the clipboard and taps it.)
-9. [ ] mobilecheck doesn't visit the coach's tips (the first battle's guidance), the age
+9. [x] mobilecheck doesn't visit the coach's tips (the first battle's guidance), the age
    preview (long press on Ascend) or a card's details on a phone: three overlays a phone player
    sees in the first minutes.
+   (Done: `tip`, `preview` and `card` screens — all fit on every phone; looked at on the SE
+   both ways and the Galaxy sideways.)
 10. [ ] Back while the upright typing echo is up (ui/upright.ts): the screen behind changes
    (lobby → title) but the field may keep the focus and the echo its place — check that the
    echo always goes with its screen.
