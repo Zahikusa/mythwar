@@ -19,6 +19,8 @@ describe('the chronicle', () => {
     expect(lines.length).toBeLessThanOrEqual(10);
     expect(lines[0]).toMatch(/^\d+:\d\d — First blood/);
     expect(lines.some((l) => /ascends? to Olympus/.test(l))).toBe(true);
+    // The battle's hero is remembered by the name it earned (Lens #88).
+    expect(lines.some((l) => /Hero of the battle: [^,]+, your [A-Za-zö ]+ — \d+ foes felled\./.test(l)), lines.join(' | ')).toBe(true);
     expect(lines.at(-1)).toMatch(w.winner === 0 ? /Victory: Odin's citadel falls/ : /Defeat: your citadel falls to Odin/);
     // In order of time.
     const secs = lines.map((l) => { const [m, s] = l.split(' ')[0].split(':').map(Number); return m * 60 + s; });

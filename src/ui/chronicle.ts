@@ -8,6 +8,8 @@ import { AGES, UNITS } from '../sim/data.ts';
 import type { SimEvent, Team } from '../sim/types.ts';
 import type { World } from '../sim/world.ts';
 import { fmtTime } from './dom.ts';
+import { heroName } from './heroes.ts';
+import { VETERAN_KILLS } from '../sim/data.ts';
 
 const LANES = ['top', 'middle', 'bottom'];
 
@@ -25,6 +27,8 @@ export class Chronicle {
   private firstBlood = false;
   private low: [boolean, boolean] = [false, false];
   private veteran: [boolean, boolean] = [false, false];
+  /** The player's creature with the most kills so far (Lens #88: the hero of the battle). */
+  private hero: { defId: string; id: number; kills: number } | null = null;
 
   /** `foe`: the opponent's name as the story calls them ("Hippolyta", "Ada"). */
   constructor(me: Team, foe: string) {
@@ -61,11 +65,22 @@ export class Chronicle {
         // Each side's first veteran (Lens #81).
         this.veteran[e.team] = true;
         const name = UNITS[e.defId]?.name ?? 'creature';
-        this.add(t, e.team === this.me ? `Your ${name} rises a veteran in the ${LANES[e.lane]} lane.` : `${this.foe}'s ${name} rises a veteran in the ${LANES[e.lane]} lane.`, e.team === this.me ? 2 : 1);
+        const called = heroName(e.defId, e.unitId);
+        this.add(t, e.team === this.me ? `Your ${name}${called ? `, ${called},` : ''} rises a veteran in the ${LANES[e.lane]} lane.` : `${this.foe}'s ${name} rises a veteran in the ${LANES[e.lane]} lane.`, e.team === this.me ? 2 : 1);
       } else if (e.type === 'ragnarok') {
         this.add(t, 'Ragnarök: the wards fall silent.', 2);
       } else if (e.type === 'gameOver') {
+        const h = this.hero;
+        if (h && h.kills >= VETERAN_KILLS) this.add(t, `Hero of the battle: ${heroName(h.defId, h.id)}, your ${UNITS[h.defId]?.name ?? 'creature'} — ${h.kills} foes felled.`, 5);
         this.add(t, e.winner === this.me ? `Victory: ${this.foe}'s citadel falls.` : `Defeat: your citadel falls to ${this.foe}.`, 9);
+      }
+    }
+    // Kills change only when something dies: then look for a new hero among your creatures.
+    if (events.some((e) => e.type === 'death')) {
+      for (const lane of world.lanes) {
+        for (const u of lane) {
+          if (u.alive && u.team === this.me && u.kills > (this.hero?.kills ?? 0)) this.hero = { defId: u.def.id, id: u.id, kills: u.kills };
+        }
       }
     }
     // A citadel brought below a quarter — the turning point of many battles (once per side).

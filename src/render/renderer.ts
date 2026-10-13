@@ -6,6 +6,7 @@ import type { World } from '../sim/world.ts';
 import { renderAurora, renderBackground, renderVignette } from './background.ts';
 import { drawCitadelGate, drawCitadelKeep, drawTurret, gateBounds, keepEmblem } from './citadel.ts';
 import { SIGILS } from '../net/protocol.ts';
+import { heroName } from '../ui/heroes.ts';
 import { artFor } from './creatures/index.ts';
 import { GESTURE_TIME, TEMPERS, gestureAt } from './creatures/tempers.ts';
 import type { CreatureArt, Pose } from './creatures/types.ts';
@@ -1831,7 +1832,7 @@ export class Renderer {
   /** Small name / class / health label above the creature under the mouse. */
   private drawHoverLabel(ctx: CanvasRenderingContext2D, u: Unit, x: number, y: number, view: ViewState): void {
     const mine = u.team === view.playerTeam;
-    const name = u.veteran ? `${u.def.name} · Veteran` : u.def.name;
+    const name = u.veteran ? `${heroName(u.def.id, u.id)} · Veteran ${u.def.name}` : u.def.name;
     const hp = `${Math.ceil(u.hp)} / ${Math.ceil(u.maxHp)}`;
     // The counter rule, right where you look: what beats this foe / what yours is good against.
     const cls = u.def.cls;

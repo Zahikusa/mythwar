@@ -87,3 +87,16 @@ describe('veterans (Lens #81)', () => {
     expect(back.unitById.get(u.id)!.veteran).toBe(true);
   });
 });
+
+describe('hero names (Lens #88)', () => {
+  it('every creature has names from its myth; one creature keeps its name', async () => {
+    const { heroName } = await import('../src/ui/heroes.ts');
+    for (const def of [...AGE_UNITS.flat(), DRAGON]) {
+      const names = new Set(Array.from({ length: 40 }, (_, i) => heroName(def.id, i + 1)));
+      expect(names.size, def.id).toBeGreaterThan(1);
+      for (const n of names) expect(n.length, def.id).toBeGreaterThan(2);
+      expect(heroName(def.id, 77)).toBe(heroName(def.id, 77));
+    }
+    expect(heroName('nobody', 1)).toBe('');
+  });
+});

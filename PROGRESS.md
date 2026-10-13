@@ -189,7 +189,7 @@ complete; its log follows below the lens plan.
 - [x] #85 Expression — your sigil flies on your keep, and online the opponent sees it there and by your name (protocol v10)
 - [x] #86 Community — the server's Hall of champions per network (wins/losses across rooms, co-op victories) in the lobby (protocol v11)
 - [x] #87 Griefing — 3 pauses per player per online battle (server-enforced; away holds uncapped), then the menu opens only locally (protocol v12)
-- [ ] #88 Love — care for the details
+- [x] #88 Love — veterans earn a name out of their myth (Asterion, Sköll, Brynhild…); the chronicle names the hero of the battle
 - [ ] #89 The Team — contributor guide
 - [ ] #90 Documentation — design doc refresh
 - [ ] #91 Playtesting — playtest kit / local stats

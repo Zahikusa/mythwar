@@ -1672,3 +1672,21 @@ does the game do to foster it?*
   uncapped and keep their own forfeit timer.
 - Checked: server tests (three pauses then refused, the other player's untouched, the count in
   snapshots), netgame test; full verify (mpsmoke's pause title reads "you have 3 pauses left").
+
+## #88 The Lens of Love
+*What do I love about this game — and does the care show in its details?*
+- What I love in Mythwar is its bestiary: sixteen creatures out of real myths, each with its
+  own cry (#10), temper and gesture (#77). Yet on the field they were stock — "a Minotaur", one of
+  dozens — even the ones that earned something: a veteran (#81) that held a lane alone for a
+  minute was nameless, and the battle's real heroes vanished into "Creatures killed: 112".
+- Change: a veteran **earns a name out of its own myth** — the Minotaur's true name Asterion,
+  Fenrir's sons Sköll and Hati, the valkyries Brynhild and Skögul, the oni Shuten and Ibaraki,
+  Tamamo-no-Mae the kitsune, the Titans Hyperion and Atlas, the phoenixes Bennu and Fenghuang,
+  the wyrms Fáfnir, Níðhöggr and Ladon (four per creature, stable per creature). It shows on the
+  hover label ("Asterion · Veteran Minotaur"), in the chronicle when it rises ("Your Minotaur,
+  Asterion, rises a veteran in the top lane."), and the chronicle closes with the **hero of the
+  battle** — your creature with the most kills, if it reached veterancy: "Hero of the battle:
+  Sköll, your Fenrir Wolf — 9 foes felled." A small thing nobody asked for; the kind of detail
+  that says someone cared.
+- Checked: unit tests (names for every creature, stable; a full AI battle's chronicle names
+  its hero, still in time order and ending with the verdict); full verify.
