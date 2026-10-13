@@ -1,6 +1,7 @@
 import { AGES, AGE_TURRETS, AGE_UNITS, POWERS } from '../sim/data.ts';
 import { h, onTap } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, CLASS_NAME } from './icons.ts';
+import { TEMPERS } from '../render/creatures/tempers.ts';
 import { portrait } from './portraits.ts';
 
 /** Where each creature comes from: one or two lines of the myth behind it. */
@@ -74,7 +75,7 @@ export class Bestiary {
     for (const def of AGE_UNITS[i]) {
       const text = known
         ? [
-            h('div', { class: 'bname' }, h('span', { class: 'bico', style: `color:${CLASS_COLOR[def.cls]}`, html: CLASS_ICON[def.cls] }), h('b', { text: def.name })),
+            h('div', { class: 'bname' }, h('span', { class: 'bico', style: `color:${CLASS_COLOR[def.cls]}`, html: CLASS_ICON[def.cls] }), h('b', { text: def.name }), TEMPERS[def.id] ? h('i', { class: 'btemper', text: TEMPERS[def.id].word.toLowerCase() }) : null),
             h('div', { class: 'bmeta', text: `${CLASS_NAME[def.cls]} · ${def.projectile ? 'Ranged' : 'Melee'} · ${def.cost} gold` }),
             def.traitText ? h('div', { class: 'btrait', text: def.traitText }) : null,
             h('div', { class: 'bmyth', text: MYTHS[def.id] ?? def.blurb }),

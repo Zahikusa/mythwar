@@ -157,7 +157,7 @@ export type SimEvent =
   | { type: 'attack'; unitId: number; team: Team; lane: number; defId: string; ranged: boolean }
   | { type: 'hit'; targetId: number; team: Team; lane: number; x: number; amount: number; mult: number; source: 'unit' | 'turret' | 'power' | 'projectile' }
   | { type: 'baseHit'; team: Team; lane: number; amount: number }
-  | { type: 'death'; unitId: number; team: Team; lane: number; x: number; defId: string; flying: boolean; gold: number }
+  | { type: 'death'; unitId: number; team: Team; lane: number; x: number; defId: string; flying: boolean; gold: number; killer: number }
   | { type: 'rebirth'; unitId: number; team: Team; lane: number; x: number }
   | { type: 'projectile'; projId: number; team: Team; lane: number; kind: ProjectileKind; fromTurret: boolean }
   | { type: 'impact'; id: number; team: Team; lane: number; x: number; kind: ProjectileKind; splash: number }

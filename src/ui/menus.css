@@ -903,6 +903,11 @@
   font-family: var(--title-font);
 }
 
+.btemper {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .bico {
   width: 15px;
   height: 15px;

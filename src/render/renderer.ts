@@ -6,6 +6,7 @@ import type { World } from '../sim/world.ts';
 import { renderAurora, renderBackground, renderVignette } from './background.ts';
 import { drawCitadelGate, drawCitadelKeep, drawTurret, gateBounds } from './citadel.ts';
 import { artFor } from './creatures/index.ts';
+import { GESTURE_TIME, TEMPERS, gestureAt } from './creatures/tempers.ts';
 import type { CreatureArt, Pose } from './creatures/types.ts';
 import { TAU, circle, drawGlow, ellipse, setLineWidth } from './draw.ts';
 import { Fx } from './fx.ts';
@@ -52,6 +53,9 @@ interface UnitVis {
   hx: number;
   hy: number;
   radius: number;
+  /** Its temper's gesture after felling a foe: 1 → 0 while playing; not again before `gestNext`. */
+  gest: number;
+  gestNext: number;
 }
 
 interface Ghost {
@@ -552,6 +556,13 @@ export class Renderer {
           this.fx.burst(x, by, { count: 12, color: tc.light, rgb: tc.rgb, speed: 50, life: 1.1, size: 2.4, shape: 'glow', layer: e.lane, gravity: -60, drag: 1.5, jitter: 14 * s });
           this.fx.burst(x, y - 4, { count: 8, color: 'rgba(60,45,40,0.6)', speed: 40, life: 0.8, size: 4 * s + 2, shape: 'smoke', layer: e.lane, gravity: -10 });
           this.deathFlourish(e.defId, x, by, e.lane, s);
+          // The creature that dealt the blow shows its temper (Lens #77): the oni roars, the
+          // redcap hops, the kitsune twirls — now and then, not at every kill of a long melee.
+          const kv = this.vis.get(e.killer);
+          if (kv && this.time >= kv.gestNext) {
+            kv.gest = 1;
+            kv.gestNext = this.time + 4 + kv.seed * 3;
+          }
           if (e.team !== view.playerTeam) {
             this.countRout(e.lane, world.time, x, g.y - 70 * this.bodyScale(g));
             this.fx.gold(x, by - art.height * 0.5 * s, e.gold, '#ffd76a', 15, 70 * this.bodyScale(g));
@@ -1527,7 +1538,7 @@ export class Renderer {
         // Creatures already out on the field (a continued battle, which starts paused, or a
         // fast-forwarded one) are fully there; only fresh summons fade and grow in.
         const spawn = Math.min(1, Math.max(0, (simTime - u.bornAt) / SPAWN_TIME));
-        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1, reborn: 0, frozen: null, hx: NaN, hy: NaN, radius: u.def.radius };
+        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1, reborn: 0, frozen: null, hx: NaN, hy: NaN, radius: u.def.radius, gest: 0, gestNext: 0 };
         this.vis.set(u.id, v);
       }
     }
@@ -1607,6 +1618,17 @@ export class Renderer {
     const recoil = v.flash * v.flash * 3 * p.s * (u.team === 0 ? -1 : 1);
     ctx.translate(p.x + recoil, y);
     ctx.scale(u.team === 0 ? sc : -sc, sc);
+    // Its temper's gesture after felling a foe (Lens #77), around its feet.
+    if (v.gest > 0) {
+      v.gest = u.freezeTimer > 0 || this.winner !== null ? 0 : Math.max(0, v.gest - dt / GESTURE_TIME);
+      const temper = TEMPERS[u.def.id];
+      if (temper && v.gest > 0) {
+        const gt = gestureAt(temper.gesture, 1 - v.gest);
+        ctx.translate(0, gt.lift);
+        ctx.rotate(gt.rot);
+        ctx.scale(gt.sx, gt.sy);
+      }
+    }
     setLineWidth(Math.min(1.6, 1.25 / sc));
     if (u.enraged) drawGlow(ctx, 0, art.body[1], art.height * 0.7, [255, 70, 40], 0.45 + 0.15 * Math.sin(this.time * 12));
     if (u.charged && u.moving) {

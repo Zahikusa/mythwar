@@ -187,6 +187,16 @@ const SCENARIOS: Scenario[] = [
     script: `(() => { const g = window.__mythwar.game; g.world.players[0].gold = 1e4; for (const [u, l] of [['redcap', 0], ['redcap', 0], ['treant', 1], ['pixie', 2]]) g.command({ type: 'train', team: 0, unitId: u, lane: l }); })()`,
     after: 700,
   },
+  // Lens #77: creatures frozen mid-gesture after a kill (roar, hop, twirl, rear, loom; both sides).
+  {
+    name: 'temper-gestures',
+    query: 'sandbox&seed=3&theme=3',
+    w: 1600,
+    h: 900,
+    wait: 1500,
+    script: `(() => { const a = window.__mythwar; const w = a.game.world; const U = window.__mythwarData.UNITS; [['oni', 0, 260], ['redcap', 0, 330], ['kitsune', 0, 400], ['centaur', 1, 640], ['treant', 1, 700], ['valkyrie', 1, 760]].forEach(([id, team, x]) => { const u = w.spawnUnit(team, 1, U[id], x); u.def = { ...u.def, speed: 0, damage: 0 }; }); setTimeout(() => { a.game.paused = true; for (const v of a.renderer.vis.values()) v.gest = 0.55; }, 1500); })()`,
+    after: 2200,
+  },
 ];
 
 /** Machado, Oliveira & Fernandes (2009) simulation matrices, severity 1 (linear RGB). */

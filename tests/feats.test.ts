@@ -9,7 +9,7 @@ function tracker(have: string[] = []) {
   return { t, got };
 }
 
-const death = (lane: number): SimEvent => ({ type: 'death', unitId: 1, team: 1, lane, x: 500, defId: 'redcap', flying: false, gold: 10 });
+const death = (lane: number): SimEvent => ({ type: 'death', unitId: 1, team: 1, lane, x: 500, defId: 'redcap', flying: false, gold: 10, killer: -1 });
 
 describe('feats', () => {
   it('have unique ids', () => {

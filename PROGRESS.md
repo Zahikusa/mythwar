@@ -167,7 +167,7 @@ complete; its log follows below the lens plan.
 - [x] #74 The World — travellers cross the far sky now and then (wisp, eagle, Odin's ravens, sky dragon, comet)
 - [x] #75 The Avatar — a personal sigil (sun, moon, star, crown, swords, lozenge) by your name and on the results
 - [x] #76 Character Function — tooltips lead with each class's job (front line, striker, backline, siege-breaker)
-- [ ] #77 Character Traits — creature personality
+- [x] #77 Character Traits — each creature has a temper (word in the Bestiary) and a gesture when it fells a foe (roar, hop, twirl, rear, loom)
 - [ ] #78 The Interpersonal Circumplex — rival personalities
 - [ ] #79 The Character Web — relationships between characters
 - [ ] #80 Status — status among players

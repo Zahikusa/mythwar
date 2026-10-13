@@ -1258,7 +1258,7 @@ export class World {
     killer.stats.killGold += gold;
     this.players[u.team].stats.losses++;
     if (attacker) attacker.kills++;
-    this.emit({ type: 'death', unitId: u.id, team: u.team, lane: u.lane, x: u.x, defId: u.def.id, flying: u.flying, gold });
+    this.emit({ type: 'death', unitId: u.id, team: u.team, lane: u.lane, x: u.x, defId: u.def.id, flying: u.flying, gold, killer: attacker ? attacker.id : -1 });
   }
 
   damageBase(team: Team, rawAmount: number, lane: number, attackerTeam: Team): void {

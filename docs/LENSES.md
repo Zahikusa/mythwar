@@ -1456,3 +1456,26 @@ tell what it is?*
   deadlock." Role first, mechanics second: the player knows why to pick a card before how it
   fights.
 - Checked: screenshot of a card tooltip; full verify.
+
+## #77 The Lens of Character Traits
+*What traits define each character? How are those traits expressed — in what it says, how it
+moves, what it does?*
+- The creatures have traits on paper: the Bestiary's myths (the vicious redcap, the mischievous
+  pixie, the wise-and-wild centaurs) and their mechanical traits (regrowth, charge, enrage…),
+  plus a cry of their own when summoned (#10). But on the field every creature *behaved* the same
+  way — walk, strike, die. A temper was told, never shown.
+- Change: every creature has a **temper** — one word (the treant *patient*, the redcap
+  *vicious*, the pixie *mischievous*, the minotaur *furious*, the centaur *wild*, the gorgon
+  *cold*, the jötunn *brooding*, Fenrir *ravenous*, the valkyrie *exultant*, the oni *wrathful*,
+  Byakko *fierce*, the kitsune *sly*, the titan *imperious*, the griffin *regal*, the phoenix
+  *serene*, the Elder Dragon *ancient*) — and a **gesture** that expresses it when it fells a
+  foe: the brutes swell up and lean in (roar), the predators hop savagely, the tricksters twirl
+  round, the proud riders and fliers rear back, the patient and cold ones draw themselves up.
+  Now and then (4–7 s apart per creature), so a long melee doesn't turn into a dance. The word
+  stands by the name in the Bestiary.
+- The kill is attributed exactly: the sim's death event now names the killing creature
+  (`killer`, -1 for turrets and powers). Events aren't hashed, so the rules fingerprint is
+  unchanged; the gesture is render-only.
+- Checked: `tests/tempers.test.ts` (every creature has a temper, gestures stay in bounds and end
+  where they begin, the killer is named); `shoot temper-gestures` (six creatures frozen
+  mid-gesture, both sides) and the Bestiary; full verify.
