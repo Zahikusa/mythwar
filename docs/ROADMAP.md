@@ -24,9 +24,10 @@ else (more reasons to return: new riddles, a weekly challenge, rivalries) — no
    internet"): TLS in front, `--trust-proxy`, the open-battle list already scoped per home network,
    room codes already work across networks. *Bet:* friends who aren't in the same room play
    more often than friends who are. *Measure:* returning players on the public Hall.
-2. **Identity without passwords.** A device key (the session token made permanent) instead of
-   names as identity: names collide ("Ada" ≠ "Ada"), and the Hall, standings and rival records
-   are keyed by name today. Progress codes become account recovery codes.
+2. **Identity without passwords.** The Hall already knows a player by a random device id (not by
+   name — names collide: "Ada" ≠ "Ada"); rival records on the device are still keyed by name, a
+   standing is simply what the client declares, and an id doesn't move between devices. Next: one
+   identity across devices — progress codes become account recovery codes.
 3. **Storage.** The Hall lives behind `ServerStore` (server/store.ts); a database goes behind the
    same two calls when there is more than one server process.
 4. **Phone ↔ phone without a PC.** Today one device must run Node. The public server solves it

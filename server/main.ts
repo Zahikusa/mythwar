@@ -27,8 +27,8 @@ if (args.includes('--help') || args.includes('-h')) {
 
   node server/main.ts [options]          (npm run lan = build + this)
 
-  --port <n>           port (default 8787; the next free one if busy and not given)
-  --dir <path>         built game to serve (default: dist/)
+  --port <n>           port (default $PORT or 8787; if busy and not given, the next free one up to 8797)
+  --dir <path>         built game to serve (default: game/ next to the server, else dist/)
   --cert <pem> --key <pem>   serve https/wss (wake lock + app install on phones)
   --trust-proxy        behind a reverse proxy: client addresses from X-Forwarded-For
   --latency <ms> --jitter <ms>   simulate a bad network (testing)

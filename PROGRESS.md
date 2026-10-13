@@ -311,6 +311,30 @@ chronicle, 2026-10-13 — renderer/fx/layout/lobby held up.)
 74. [x] A continued battle's chronicle starts at the resume (#66 stops it lying, but the moments
    before are gone): keep the chronicle's moments in the battle save (`src/save.ts`). (Done:
    `GameSave.story`, restored (sanitized) in front of what follows; unit test.)
+75. [x] Docs vs code after run #8 (an independent check): DESIGN (what progress codes carry; being
+   away has its own clock, not "no cap"), ROADMAP (the Hall already knows device ids), PRIVACY
+   (the service worker also caches a LAN build on localhost/https; delete the `.unreadable-`
+   copies too), MULTIPLAYER (per-address session/room limits; away vs pauses; a player offline
+   at a fault is told "restarted"), README (`npm test` covers server and netcode too), `--help`
+   ($PORT, the release package's game/ folder, ports up to 8797). (Done, all.)
+(Items 76–81: an independent accessibility review, 2026-10-13 — the rules text checked out.)
+76. [ ] `src/ui/menus.ts` `show()` (and HUD `togglePanel`): focus isn't moved when a screen changes —
+   the old screen goes `visibility:hidden`, focus falls to `<body>`, the new `role="dialog"`
+   screen isn't announced. Focus the new screen's heading (tabindex -1) or first button; return
+   focus to the opener when a HUD panel closes.
+77. [ ] `src/ui/netoverlay.ts` ~39/86: the away banner is a polite live region whose sub-line counts
+   down every second — a screen reader re-reads it every second. Mímir's bubble (`coach.ts`
+   ~205) has no live region at all. Countdown aria-hidden; coach text `role="status"`.
+78. [ ] Phones: the hold shield (28×28) and lane tab (26×26) sit ~32 px apart (`hud.css` ~1437,
+   ~2457) — the shield is the only touch way to hold a lane. Hit areas ≥ 40 px via `::before`.
+79. [ ] `src/ui/hud.ts` ~1349: a card's `aria-label` hides "Counter!", "in Ns", "Queue full" (and
+   reads "(Guardian) , 30 gold"); lane tabs show the selected one by colour only (no
+   aria-pressed); "danger" at a gate is a red pulse only.
+80. [ ] `src/ui/mpmenus.ts` ~274: renaming yourself in the room is a tappable `div` (no focus, no
+   role); every open battle's button is just "Join" (no host/code in its name).
+81. [ ] `src/ui/menus.css` ~71: the pause summary is one `nowrap` line with an ellipsis — on a 360-px
+   phone the age comparison and kills are cut ("…The Battle of the Weald of the Hanged Moon ·
+   vs Hippolyta (Adept) · 12:34 · Jade Empire vs Celestial · 123 foes slain").
 
 
 

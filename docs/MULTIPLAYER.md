@@ -91,9 +91,9 @@ picks another port.
 | The battle ended while a phone was offline | On reconnect it is shown how the battle ended (final state and result). |
 | A player quits while offline | Leaving the battle / room is delivered when the connection returns; they are not pulled back in. (Closing Multiplayer altogether while offline simply lets the seat time out.) |
 | The same game is opened in another tab | A duplicated tab starts its own session; if one session is taken over elsewhere, the old tab says so and stops reconnecting. |
-| A player presses Pause | The battle pauses for both; either player can resume. Each player has **3 pauses per battle** (so nobody can grief with a pause/resume loop); after that Pause opens the menu just for them and the battle goes on. Being away is not capped. |
+| A player presses Pause | The battle pauses for both; either player can resume. Each player has **3 pauses per battle** (so nobody can grief with a pause/resume loop); after that Pause opens the menu just for them and the battle goes on. Being away uses up no pauses; it has its own clock (see above). |
 | A player leaves the battle | They forfeit; the other player wins (both devices count it). The room stays open for a new opponent. |
-| The server hits a bug | A fault while handling one message is logged and that message dropped; a fault inside one battle stops that battle alone — its two players are sent back to the lobby with a note saying so (no result counts). Every other battle goes on. |
+| The server hits a bug | A fault while handling one message is logged and that message dropped; a fault inside one battle stops that battle alone — its two players are sent back to the lobby with a note saying so (no result counts; a player offline at that moment is told the server restarted). Every other battle goes on. |
 | After a battle | Both press **Rematch** to play again in the same room (wins are counted). |
 | The game server restarts | Clients notice their session is gone and return to the lobby. |
 | Old page against a newer server | The client is told to reload: the protocol version **and** a fingerprint of the game rules (balance tables + a short scripted battle) must match. |
@@ -196,8 +196,8 @@ The design already separates everything that matters for that step:
    A matchmaking queue would be the next step.
 4. **Latency:** the jitter buffer adapts by itself (tested with 20–140 ms delays); for long
    distances raise `turnTicks` in `attachMultiplayer` to save packets if needed.
-5. **Abuse limits are in place:** rooms (2000) and sessions (10000) per server, 32 connections per
-   public address, message / command / emote rate limits, strict validation of every message,
+5. **Abuse limits are in place:** rooms (2000) and sessions (10000) per server; 32 connections,
+   64 sessions and 8 rooms per public address (local-network clients exempt); message / command / emote rate limits, strict validation of every message,
    64 kB maximum frame size. Responses are brotli/gzip-compressed.
 6. **Scale:** rooms are independent, so several server processes behind sticky sessions (or one
    process per region) scale horizontally. A match costs ~0.04 % of a CPU core and ~19 MB of

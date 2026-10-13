@@ -197,7 +197,8 @@ this ends and half wishes he hadn't; Ares, war itself, is hated by his own fathe
   **start in any age already reached** (#71, no stars), **Riddles of war** (below),
   **Sandbox** (no foe, endless gold, summon for either side), **Bestiary** (every creature's
   myth and temper; unreached ages hidden).
-- **Progress codes** carry records, feats and ages between devices (merging, never losing).
+- **Progress codes** carry records, feats, ages reached, online records and solved riddles between
+  devices (merging, never losing).
 - **Mímir**, keeper of the well, is the player's mentor: the coach's tips are his.
 
 ## Multiplayer: the social layer
@@ -208,7 +209,8 @@ this ends and half wishes he hadn't; Ares, war itself, is hated by his own fathe
 - The lobby **recognises old rivals** (#84: listed first, with your record together) and shows the
   network's **Hall of champions** (#86: battles won and lost on this server).
 - **Three pauses** per player per battle (#87); being away (app in the background, lost Wi-Fi)
-  holds the battle without a cap, with a forfeit timer and a claim after 20 s.
+  uses up no pauses: it has its own clock — a claim after 20 s, a forfeit after 90 s (absences
+  close together add up).
 
 ## AI
 Same command API as the player. Four difficulties: Novice, Adept, Master, Mythic.

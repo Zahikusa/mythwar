@@ -11,7 +11,7 @@ online battle shares only what the other player needs to see.
 | The battle in progress | `localStorage` → `mythwar.battle.v1` | *Continue* after closing the tab |
 | The multiplayer session token | `sessionStorage` (this tab only) | Rejoin your room after a reload |
 | A random device id (24 hex digits, nothing derived from you) | `localStorage` → `mythwar.device` | The Hall of champions knows you by it, not by your name |
-| The game's files (GitHub Pages version) | the service worker's cache | Play offline |
+| The game's files (GitHub Pages, or a LAN server opened via localhost or https) | the service worker's cache | Play offline |
 
 Nothing of this leaves the device by itself. Four buttons copy something to the clipboard, and
 only when you press them: *Copy my code* (progress code), *Copy playtest journal*, *Copy result*,
@@ -39,8 +39,9 @@ never written down as such:
   ~20 ms and 16 MB each): recovering an address from the file would take years of computing,
   not minutes. Still, keep the file as private as any server log.
 
-To forget everything: stop the server, then delete the file (a running server keeps the Hall in
-memory and writes it again).
+To forget everything: stop the server (a running server keeps the Hall in memory and writes it
+again), then delete the file and any `mythwar-data.json.unreadable-…` copies next to it — a file
+the server couldn't read is kept aside, not overwritten.
 
 Its log (the terminal window) shows names, room codes and results — no addresses.
 

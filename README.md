@@ -131,7 +131,7 @@ npm run build                    # static build in dist/
 npm run preview                  # serve the production build
 npm run lan                      # build + LAN server with QR code on port 8787
 npm run package                  # the release's server package → release/mythwar-server-v<version>.zip
-npm test                         # unit tests (simulation + AI)
+npm test                         # unit tests (simulation, AI, server, netcode)
 npm run sim -- 20 master adept   # headless AI-vs-AI balance runs
 node scripts/trace.ts 1003       # timeline of one headless match
 node scripts/bots.ts 10          # AI difficulty vs scripted players (naive → "smart")
