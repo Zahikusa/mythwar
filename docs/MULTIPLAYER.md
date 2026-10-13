@@ -44,7 +44,11 @@ Each player always sees their own citadel on the left, in blue.
 **Co-op:** in the room, "Battle: Together vs Novice / Adept / Master / Mythic" makes it a
 cooperative battle — both players share the left citadel and its gold against an AI that the
 server runs (its orders go to both devices like a player's, so nothing can drift). Either ally
-can step away (or leave) and the other fights on; the battle waits only when both are gone.
+can step away (or leave) and the other fights on — and is told so; the battle waits only when
+both are gone, and is lost only when neither comes back in time. A victory counts for the allies
+still in it (not for one whose tab closed long before). If an ally leaves mid-battle, the room
+opens again for a new one afterwards. Feats for a deed (the Elder Dragon, the last ascension, a
+blessing's top rank) go to the ally who ordered it.
 
 **Handicaps:** a stronger player can take trials in the room ("Your handicap": Glass Citadel,
 Godless, No Walls) so a newer friend has a real chance. Both players see each other's handicaps,
@@ -71,7 +75,8 @@ picks another port.
   public/hotel Wi-Fis isolate devices from each other ("AP/client isolation"); a phone hotspot
   works fine (the computer joins the phone's hotspot).
 - **The right address:** use the `192.168.x.x` / `10.x.x.x` address, not `localhost`. Computers
-  with VPNs or virtual adapters may print several; the first one is usually right.
+  with VPNs or virtual adapters may print several — each with its adapter's name ("WLAN",
+  "Wi-Fi", "en0"); the QR code uses the first, which is usually the Wi-Fi.
 - **The page loads, but the lobby stays on "Connecting to the game server…"** (later "Can't
   reach the game server — still trying…"): the page came through, the live
   connection (WebSocket) didn't. VPN apps, ad blockers that filter traffic, company proxies and
