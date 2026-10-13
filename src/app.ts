@@ -282,7 +282,7 @@ export class App {
     window.addEventListener('popstate', () => {
       if (!this.backArmed) return;
       this.backArmed = false;
-      this.escape();
+      this.escape(true);
       arm();
     });
     // Escape on the title screens (no battle input attached) steps back through the menus.
@@ -757,7 +757,8 @@ export class App {
   }
 
   /** Escape / P: leave a sub-menu, otherwise toggle pause. */
-  private escape(): void {
+  /** `back`: the phone's Back button (online it opens the menu without pausing — see pause()). */
+  private escape(back = false): void {
     const m = this.menus.current;
     if (m === 'mp') this.closeMultiplayer();
     else if (m === 'room') return;
@@ -767,18 +768,22 @@ export class App {
       // Online the battle may be held for other reasons (countdown, someone away): Esc
       // toggles the menu itself.
       if (m === 'pause') this.resume();
-      else this.pause();
+      else this.pause(back);
     } else if (this.game?.paused) this.resume();
     else this.pause();
   }
 
-  pause(): void {
+  /**
+   * `menuOnly` (online): just this device's menu, no pause for both — the phone's Back, often
+   * pressed by accident (Android's edge swipe), mustn't spend one of the player's pauses.
+   */
+  pause(menuOnly = false): void {
     if (this.state !== 'playing' || !this.game || this.game.over) return;
     const g = this.game;
     if (g instanceof NetGame) {
       // Online: ask the server; the pause screen opens for both players when it confirms.
       const outOfPauses = g.pausesLeft[g.seat] <= 0;
-      if (!g.netPause && g.countdownEnd <= performance.now() && g.online && !outOfPauses) {
+      if (!menuOnly && !g.netPause && g.countdownEnd <= performance.now() && g.online && !outOfPauses) {
         this.mp?.pause();
         return;
       }
@@ -788,7 +793,8 @@ export class App {
       if (this.menus.current !== 'none') return;
       this.netMenuLocal = true;
       const running = !g.netPause && g.countdownEnd <= performance.now();
-      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title: outOfPauses && running ? 'Menu — no pauses left, the battle goes on' : 'Menu' });
+      const title = running ? (outOfPauses ? 'Menu — no pauses left, the battle goes on' : menuOnly ? 'Menu — the battle goes on' : 'Menu') : 'Menu';
+      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title });
       this.hud.cancelTargeting();
       this.hud.hideTooltip();
       if (this.hud.panelOpen) this.hud.togglePanel('none');

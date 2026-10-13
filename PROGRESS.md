@@ -734,6 +734,11 @@ battle, results — 2026-10-13.)
    one step back in menus, nothing in the room — and re-arms. On the bare title it isn't kept, so
    a second Back still leaves. smoke: Back opens and closes the battle menu, the page stays
    (desktop, phone, rotated); mpsmoke: Back in the room keeps the guest seated.)
+167. [x] #166 made Back in an online battle do what Esc does — ask the server for a pause, spending
+   one of the player's three and holding the battle for both. Android's Back is an edge swipe,
+   easy to make by accident (the phone's cards sit at the left edge). (Done: from Back, online,
+   the menu opens on this device only — "Menu — the battle goes on"; Esc and the pause button
+   still pause for both; mpsmoke checks A isn't held and no pause is spent.)
 
 
 

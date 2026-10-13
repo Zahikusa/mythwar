@@ -354,6 +354,18 @@ async function main(): Promise<void> {
     await shot(a, '5-battle-desktop');
     await shot(b, '6-battle-phone');
 
+    // (Backlog 167) The phone's Back mid-battle opens B's menu only — no pause for both, none spent.
+    {
+      const left = await b.evaluate(() => (window as any).__mythwar.game.pausesLeft[1] as number);
+      await b.goBack({ timeout: 3000 }).catch(() => null);
+      await waitFor(b, "B's menu after Back", () => (window as any).__mythwar.menus.current === 'pause', 3000);
+      await sleep(400); // (a pause for both would reach A by now)
+      const st = { aHeld: (await info(a)).netPause, bLeft: await b.evaluate(() => (window as any).__mythwar.game.pausesLeft[1] as number), title: await b.evaluate(() => document.querySelector('.screen.pause h2')?.textContent ?? '') };
+      check('Back in an online battle: a menu on this phone only, no pause spent', st.aHeld === null && st.bLeft === left && /battle goes on/.test(st.title), JSON.stringify(st));
+      await b.goBack({ timeout: 3000 }).catch(() => null);
+      await waitFor(b, "B's menu closed by Back again", () => (window as any).__mythwar.menus.current === 'none', 3000);
+    }
+
     console.log('== pause / resume ==');
     await a.keyboard.press('Escape');
     await waitFor(b, 'B sees the pause screen', () => (window as any).__mythwar.menus.current === 'pause');
