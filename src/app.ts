@@ -113,6 +113,8 @@ export class App {
   private quietResume = false;
   private wakeLock: { release(): Promise<void> } | null = null;
   private wakePending = false;
+  /** Whether the screen should stay awake now (a lock that arrives after this turned false is let go). */
+  private wakeWanted = false;
   /** Online: the pause menu was opened just on this device (the battle was already held). */
   private netMenuLocal = false;
   /** The other seat as last seen (room chimes: someone joined / is ready / left). */
@@ -162,6 +164,7 @@ export class App {
     // Coach tips live in the HUD layer: above lane tabs, below card tooltips.
     this.coach = new Coach(this.stage, this.settings, this.hud.root);
     this.input.onPause = () => this.escape();
+    this.input.menuOpen = () => this.menus.current !== 'none';
     this.pads = new Pads({
       inBattle: () => this.state === 'playing' && this.menus.current === 'none' && !this.hud.panelOpen,
       battleKey: (k) => this.input.press(k),
@@ -188,7 +191,12 @@ export class App {
       },
       settingsChanged: (s) => this.applySettings(s),
       sound: (k) => this.audio.ui(k),
-      multiplayer: () => this.openMultiplayer(),
+      home: () => (this.state === 'title' ? this.menus.show('title') : this.toTitle()),
+      // (From the results — "Now bring a friend →" — the finished battle is put away first.)
+      multiplayer: () => {
+        if (this.state !== 'title') this.toTitle();
+        this.openMultiplayer();
+      },
       rematch: () => this.rematch(),
       leaveRoom: () => this.leaveRoom(),
       toRoom: () => this.menus.show('room'),
@@ -479,7 +487,10 @@ export class App {
       // The general speaks once the opening banner has had its moment — at a first meeting, of
       // who they are to the others (Lens #79).
       const meet = !this.settings.records[difficulty]?.wins;
-      window.setTimeout(() => this.taunt(meet ? 'meet' : 'start', true), 3200);
+      // (Only into this battle: a restart or another battle within 3 s has its own opening.)
+      window.setTimeout(() => {
+        if (this.game === game && this.state === 'playing') this.taunt(meet ? 'meet' : 'start', true);
+      }, 3200);
     }
   }
 
@@ -560,6 +571,8 @@ export class App {
     this.difficulty = save.difficulty;
     this.hookGame(game, false);
     this.enterBattle(game);
+    // ("Odin · Asgard" by the foe's citadel, as when the battle began.)
+    this.hud.setFoeName(PERSONAS[save.difficulty].name);
     this.pause();
   }
 
@@ -1016,6 +1029,13 @@ export class App {
   /** Leave the room (from the room screen, the results, or the battle's pause menu). */
   private leaveRoom(): void {
     const inBattle = (this.state === 'playing' || this.state === 'over') && this.game instanceof NetGame;
+    // Leaving a battle still on forfeits it ("counts as a defeat", says the menu): the opponent
+    // counts a win, so this side counts the loss — and the playtest journal notes it.
+    const g = this.game;
+    if (inBattle && g instanceof NetGame && !g.over && !g.options.demo) {
+      if (!g.coop) recordOnline(this.settings, g.foeName.replace(/ \(2\)$/, ''), false);
+      this.journal(g, false, g.coop ? 'coop' : 'online', g.coop ?? g.foeName, 0);
+    }
     this.mp?.leave();
     if (inBattle) this.toTitle();
     this.openMultiplayer();
@@ -1090,6 +1110,8 @@ export class App {
       this.openMultiplayer();
     }
     if (mp.room) this.keepAwake(true);
+    // (Out of the room, on the lobby: the screen may sleep again.)
+    else if (this.state === 'title') this.keepAwake(false);
     this.roomChimes(mp);
     this.syncRematch();
   }
@@ -1167,6 +1189,7 @@ export class App {
   private keepAwake(on: boolean): void {
     type Lock = { release(): Promise<void>; addEventListener(type: string, fn: () => void): void };
     const nav = navigator as Navigator & { wakeLock?: { request(type: 'screen'): Promise<Lock> } };
+    this.wakeWanted = on;
     if (!on) {
       const lock = this.wakeLock;
       this.wakeLock = null;
@@ -1179,6 +1202,11 @@ export class App {
       .request('screen')
       .then((lock) => {
         this.wakePending = false;
+        // (Let go meanwhile — the battle or room was left while the browser answered.)
+        if (!this.wakeWanted) {
+          lock.release().catch(() => {});
+          return;
+        }
         this.wakeLock = lock;
         // Browsers drop the lock when the page is hidden; becoming visible asks again.
         lock.addEventListener('release', () => {

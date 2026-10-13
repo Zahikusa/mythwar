@@ -209,23 +209,31 @@ the improvement backlog below (verified, committed) and add what the review find
    (Done: the room is dropped and its players forgotten as after a restart — their pages drop the
    battle and the lobby says the server no longer knows the session; tests on both sides.)
 (Items 52–57: an independent review of the app's state flow and persistence, 2026-10-13.)
-52. [ ] `src/ui/menus.ts` ~247/633: from the riddles screen, the difficulty screen's Back shows the
+52. [x] `src/ui/menus.ts` ~247/633: from the riddles screen, the difficulty screen's Back shows the
    title directly (no `App.toTitle()`): the app stays in state 'over' — title over the frozen
    riddle field with its HUD; then Multiplayer → Host never switches to the room screen (only done
    in state 'title'). Riddle result → Riddles → Back → Back; also "Now bring a friend →" from the
    results. Fix diffBack, give riddle results a Main menu button, `toTitle()` before multiplayer.
-53. [ ] `src/input.ts` ~175: with no pauses left the online menu opens on this device only and the
+   (Done: Back to the title goes through the app (`cb.home` → `toTitle()`); coming back from
+   Riddles keeps where Back leads; Multiplayer from the results puts the battle away first. A
+   Main menu button on riddle results was left out — four buttons crowd a phone, and Riddles →
+   Back → Back now works; smoke walks it.)
+53. [x] `src/input.ts` ~175: with no pauses left the online menu opens on this device only and the
    battle runs on — keys 1–4, Space (god power), W/S/arrows still act behind the menu (the
-   gamepad is blocked there). Ignore all but Esc/P while a menu is open.
-54. [ ] `src/app.ts` ~183/1017: leaving an online battle records no loss for the leaver (`abandon()`
+   gamepad is blocked there). Ignore all but Esc/P while a menu is open. (Done: `Input.menuOpen`;
+   smoke presses 1, Space, ↓ under the Settings menu of a running battle.)
+54. [x] `src/app.ts` ~183/1017: leaving an online battle records no loss for the leaver (`abandon()`
    has no gameOver) — the opponent counts a win; the tallies disagree; the pause note says
    "Leaving the battle counts as a defeat". Record the loss (and journal it) before leaving.
-55. [ ] `src/app.ts` ~1092/1167: the wake lock isn't released after leaving a room (only toTitle /
+   (Done in `leaveRoom` (co-op: journal only); mpsmoke checks both sides' tallies.)
+55. [x] `src/app.ts` ~1092/1167: the wake lock isn't released after leaving a room (only toTitle /
    closeMultiplayer release it); a lock request still pending when released is kept on arrival.
-56. [ ] `src/app.ts` ~482: the general's opening line (3.2 s timer) isn't tied to its battle — a
-   restart within 3.2 s says it over the new battle's banner, then again.
-57. [ ] `src/app.ts` ~547: a continued battle shows "Asgard" instead of "Odin · Asgard" (the foe's
-   name isn't set again after `hud.attach()` in `continueSaved`).
+   (Done: released on the lobby without a room; `wakeWanted` lets a late lock go.)
+56. [x] `src/app.ts` ~482: the general's opening line (3.2 s timer) isn't tied to its battle — a
+   restart within 3.2 s says it over the new battle's banner, then again. (Done: only into its
+   own battle.)
+57. [x] `src/app.ts` ~547: a continued battle shows "Asgard" instead of "Odin · Asgard" (the foe's
+   name isn't set again after `hud.attach()` in `continueSaved`). (Done.)
 
 
 
@@ -233,6 +241,21 @@ the improvement backlog below (verified, committed) and add what the review find
 
 **Start here: [docs/BRIEF.md](docs/BRIEF.md)** — one page: what TASK.md asked for, what was
 built, how to see each part working, and the decisions that need you.
+
+## Run #8 in short (for the morning)
+- Verification mode, backlog items 38–57 (all but the note #23 done): two independent reviews
+  (netcode; app state flow) found 12 real defects, each reproduced by a new test before fixing.
+- The weightiest: **one client could crash the LAN server** (a malformed frame on a socket refused
+  for the per-address limit — #44); a fault while handling a message, or in one battle, no
+  longer ends the server and every battle in it (#50, #51); toggling "away" could stall a battle
+  forever (#46); an opponent named "__proto__" polluted `Object.prototype` on the page (#43).
+- Reconnects: a WebSocket stuck dialling is given up after 5–15 s and retried; the network coming
+  back dials at once (#40). The last turn now goes out before 'over' (#49); leaving while a start
+  is on its way no longer starts that battle (#48); leaving counts as a defeat on both sides (#54).
+- Menus: riddle result → Riddles → Back → Back reaches the real title (#52); battle keys wait
+  under a menu over a running online battle (#53).
+- Bundle: the QR library loads on demand (main chunk 401 → 381 kB, #38). Progress codes carry
+  solved riddles (#42). New test files: connection, static, net. Tests: 218 → 234+.
 
 ## Run #7 in short (for the morning)
 - Lenses #77–#84: Creatures have a **temper** and a kill gesture (#77); the generals

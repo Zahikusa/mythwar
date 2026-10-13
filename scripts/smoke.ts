@@ -210,6 +210,22 @@ async function journalFlow(page: Page): Promise<void> {
   await page.goto(`${base}/?play=novice&seed=6`, { waitUntil: 'load' });
   await sleep(900);
   const before = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.settings.journal.length as number);
+  // (Backlog 53) A menu over a battle that runs on (online, no pauses left): battle keys wait.
+  {
+    await page.evaluate(() => {
+      const app = (window as unknown as { __mythwar: any }).__mythwar;
+      app.game.world.players[0].gold = 500;
+      app.menus.show('settings');
+    });
+    for (const k of ['1', ' ', 'ArrowDown'] as const) await page.keyboard.press(k);
+    const r = await page.evaluate(() => {
+      const app = (window as unknown as { __mythwar: any }).__mythwar;
+      const out = { queue: app.game.world.players[0].queue.length, lane: app.game.view.selectedLane, paused: app.game.paused, menu: app.menus.current };
+      app.menus.show('none');
+      return out;
+    });
+    check('battle keys do nothing while a menu covers a running battle', r.queue === 0 && r.lane === 1 && !r.paused && r.menu === 'settings', JSON.stringify(r));
+  }
   const win = async () => {
     await page.evaluate(() => {
       const app = (window as unknown as { __mythwar: any }).__mythwar;
@@ -463,6 +479,18 @@ async function riddleFlow(page: Page): Promise<void> {
   }
   const res = await page.evaluate(() => ({ verdict: document.querySelector('.screen.over .vt')?.textContent, solved: JSON.parse(localStorage.getItem('mythwar.settings.v1')!).riddles }));
   check('four Guardians solve the Redcap Pack; the result says so and it is remembered', menu === 'over' && res.verdict === 'Solved' && res.solved.includes('pack'), JSON.stringify({ menu, ...res }));
+  // (Backlog 52) Out of a riddle by Riddles → Back → Back: the real title (the riddle put away),
+  // from which Multiplayer works.
+  for (const [scope, text] of [['.screen.over', 'Riddles'], ['.screen.riddles', 'Back'], ['.screen.difficulty', 'Back']]) {
+    const p = await centerText(page, scope, text);
+    await page.mouse.click(p.x, p.y);
+    await sleep(300);
+  }
+  const home = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    return { state: app.state, menu: app.menus.current, demo: !!app.game?.options.demo, hud: !!app.hud.game };
+  });
+  check('riddle result → Riddles → Back → Back reaches the real title', home.state === 'title' && home.menu === 'title' && home.demo && !home.hud, JSON.stringify(home));
 }
 
 /** Esc out of the first-run how-to must not leave its "then start a battle" hand-off behind. */

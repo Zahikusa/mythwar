@@ -332,6 +332,19 @@ async function main(): Promise<void> {
     check('results: victory by forfeit', res.verdict.includes('Victory') && res.verdict.includes('left'), res.verdict);
     check('results: opponent left the room', res.note.includes('left the room'), res.note);
     await waitFor(b, 'B back in the lobby', () => (window as any).__mythwar.menus.current === 'mp');
+    // (Backlog 54) Both sides count it: the leaver a defeat (and the journal notes it).
+    {
+      const tally = (p: Page) =>
+        p.evaluate(() => {
+          const s = (window as any).__mythwar.settings;
+          return { online: s.online, last: s.journal.at(-1) };
+        });
+      const ta = await tally(a);
+      const tb = await tally(b);
+      const aName = await a.evaluate(() => (window as any).__mythwar.mp.name);
+      const bName = await b.evaluate(() => (window as any).__mythwar.mp.name);
+      check('leaving counts as a defeat on both sides', ta.online[bName]?.w >= 1 && tb.online[aName]?.l >= 1 && tb.last?.mode === 'online' && tb.last?.won === false, JSON.stringify({ a: ta.online[bName], b: tb.online[aName], journal: tb.last?.mode }));
+    }
     await waitFor(b, 'room listed', () => document.querySelectorAll('.mproom').length === 1);
     await shot(b, '10-lobby-phone');
     await shot(a, '9-results-desktop');
