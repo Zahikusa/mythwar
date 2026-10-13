@@ -848,10 +848,13 @@ it prints, inviting, stopping — 2026-10-13.)
 192. [x] After an ally left mid-battle, the room ended in phase 'over' with one seat: not listed
    in the lobby, and the old "victories together" score carried to a new ally. (Done: such a room
    is 'waiting' again with the score reset, as in a duel; server test.)
-193. [ ] A rematch accepted from the results can start a different battle than the one shown:
+193. [x] A rematch accepted from the results can start a different battle than the one shown:
    A goes to Room, switches to a duel (or takes a handicap) and readies; B on the results reads
    "wants a rematch!" and accepts — now fighting the ally. Say what changed on the results' note
-   ("Ada wants a duel / now fights under Glass Citadel") — or route Accept through the room.
+   ("Ada wants a duel / now fights under Glass Citadel") — or route Accept through the room. (Done: the room's terms are kept
+   when a battle starts (`roomTerms`); the results' note says a change — "Bo wants a rematch — as
+   a duel!", "Next battle: Bo under Glass Citadel." (`termsChange`, tested); mpsmoke: B takes a
+   handicap on the results, A's note says so.)
 194. [x] Both allies away: the notice names the ally ("Bo is away… you win") with duel wording and
    may offer "Claim victory", which the server refuses in co-op (netoverlay.ts ~91–97). Co-op
    wording: "Bo is away — the battle waits for you both"; no claim button. (Done: in co-op, "Bo is

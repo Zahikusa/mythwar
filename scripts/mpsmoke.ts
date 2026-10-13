@@ -596,6 +596,12 @@ async function main(): Promise<void> {
     check('results: the rematch note says when the other player lost the connection', true);
     await b.evaluate(() => (window as any).__mythwar.mp.conn.open());
     await waitFor(a, 'B back: the note clears', () => !(document.querySelector('.screen.over .rmatch')?.textContent ?? '').includes('lost the connection'), 8000);
+    // (Backlog 193) B changes the terms for the next battle (a handicap): A's results say so — an
+    // Accept there would start that battle, not the one just played.
+    await b.evaluate(() => (window as any).__mythwar.mp.setTrials(['glass']));
+    await waitFor(a, "A's results tell B's new handicap", () => /under Glass Citadel/.test(document.querySelector('.screen.over .rmatch')?.textContent ?? ''), 6000);
+    await b.evaluate(() => (window as any).__mythwar.mp.setTrials([]));
+    await waitFor(a, "A's results back to plain", () => !/Glass Citadel|without a handicap/.test(document.querySelector('.screen.over .rmatch')?.textContent ?? ''), 6000);
 
     // (Backlog 109) Every control on the online results — the chips, Leave room, Share, Room,
     // Rematch — can be reached with a gamepad's D-pad (a breadth-first walk over the app's moves).

@@ -1110,7 +1110,7 @@ export class Menus {
    * Online results: whether a rematch is wanted by us / the other player, or they left (the
    * wording: `rematchView`).
    */
-  updateRematch(foe: string, mine: boolean, theirs: boolean | null, there = true): void {
+  updateRematch(foe: string, mine: boolean, theirs: boolean | null, there = true, changed = ''): void {
     const btn = this.rematchBtn;
     const note = this.rematchNote;
     if (!btn || !note) return;
@@ -1122,7 +1122,7 @@ export class Menus {
     // (Focus on it would fall to the page: the main button, now "Back to room", takes it.)
     if (theirs === null && this.roomBtn && document.activeElement === this.roomBtn) btn.focus();
     this.roomBtn?.classList.toggle('hidden', theirs === null);
-    const v = rematchView(foe, mine, theirs, there);
+    const v = rematchView(foe, mine, theirs, there, changed);
     span.textContent = v.label;
     note.textContent = v.note;
     btn.dataset.room = v.back ? '1' : '';
@@ -1137,11 +1137,13 @@ export class Menus {
  * leads back to the room: `back`); `there`: the other player is connected (a closed tab keeps its
  * seat for a minute). `hot`: they are waiting for us.
  */
-export function rematchView(foe: string, mine: boolean, theirs: boolean | null, there = true): { label: string; note: string; back: boolean; hot: boolean } {
+export function rematchView(foe: string, mine: boolean, theirs: boolean | null, there = true, changed = ''): { label: string; note: string; back: boolean; hot: boolean } {
   if (theirs === null) return { label: 'Back to room', note: `${foe} left the room.`, back: true, hot: false };
+  // (`changed`: how the room's terms differ from the battle just fought — Accept starts that one.)
+  const next = changed ? ` — ${changed}` : '';
   return {
     label: mine ? 'Cancel rematch' : theirs ? 'Accept rematch' : 'Rematch',
-    note: !there ? `${foe} lost the connection — waiting for them to come back.` : mine ? `Waiting for ${foe}…` : theirs ? `${foe} wants a rematch!` : '',
+    note: !there ? `${foe} lost the connection — waiting for them to come back.` : mine ? `Waiting for ${foe}…` : theirs ? `${foe} wants a rematch${next}!` : changed ? `Next battle: ${changed}.` : '',
     back: false,
     hot: theirs && !mine,
   };

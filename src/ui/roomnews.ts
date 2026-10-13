@@ -120,3 +120,26 @@ export function emoteRoute(o: { mine: boolean; state: 'title' | 'playing' | 'ove
   if (o.ally !== null) return { to: 'ally', text: `${o.ally}: ${o.phrase}`, sound: 'ready' };
   return { to: 'bubble', text: o.phrase, sound: 'select' };
 }
+
+/** The terms a battle was fought on: the mode and each seat's handicaps. */
+export interface RoomTerms {
+  coop: Difficulty | null;
+  trials: [TrialId[], TrialId[]];
+}
+
+export function roomTerms(room: RoomInfo): RoomTerms {
+  return { coop: room.coop, trials: [room.seats[0]?.trials.slice() ?? [], room.seats[1]?.trials.slice() ?? []] };
+}
+
+/**
+ * How the room's terms now differ from the battle just fought, as the other player set them
+ * ('' = the same): said on the results, where "Accept rematch" would start the new kind of battle
+ * (backlog 193). `me`: our seat; `other`: the other player's name.
+ */
+export function termsChange(before: RoomTerms, room: RoomInfo, me: Team, other: string): string {
+  if (room.coop !== before.coop) return room.coop ? `together against the ${AI_PROFILES[room.coop].name} AI` : 'as a duel';
+  const them = (me === 0 ? 1 : 0) as Team;
+  const now = room.seats[them]?.trials ?? [];
+  if (now.join(',') === before.trials[them].join(',')) return '';
+  return now.length ? `${other} under ${now.map((t) => TRIALS[t].name).join(', ')}` : `${other} without a handicap`;
+}

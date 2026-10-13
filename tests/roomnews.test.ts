@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RoomInfo, SeatInfo } from '../src/net/protocol.ts';
-import { allyNews, emoteRoute, lostSessionPlan, roomNews, roomView } from '../src/ui/roomnews.ts';
+import { allyNews, emoteRoute, lostSessionPlan, roomNews, roomTerms, roomView, termsChange } from '../src/ui/roomnews.ts';
 import type { RoomView } from '../src/ui/roomnews.ts';
 
 const seat = (name: string, over: Partial<SeatInfo> = {}): SeatInfo => ({ name, connected: true, ready: false, away: false, wins: 0, ping: 0, trials: [], rank: 0, sigil: -1, ...over });
@@ -108,5 +108,17 @@ describe('allyNews (co-op: what the ally just did — backlog 191)', () => {
     expect(allyNews(view(bo({ away: true })), view(bo()))).toBe('Bo is back.');
     expect(allyNews(view(bo()), view(bo({ ready: true })))).toBe('');
     expect(allyNews(null, view(bo()))).toBe('');
+  });
+});
+
+describe('termsChange (the rematch on the results would be a different battle — backlog 193)', () => {
+  it('says a switch of mode, or the other player’s new handicap; nothing if the same', () => {
+    const before = roomTerms(room([seat('Ada'), seat('Bo')], 'novice'));
+    expect(termsChange(before, room([seat('Ada'), seat('Bo')], 'novice'), 0, 'Bo')).toBe('');
+    expect(termsChange(before, room([seat('Ada'), seat('Bo')], null), 0, 'Bo')).toBe('as a duel');
+    expect(termsChange(before, room([seat('Ada'), seat('Bo')], 'master'), 0, 'Bo')).toBe('together against the Master AI');
+    expect(termsChange(before, room([seat('Ada'), seat('Bo', { trials: ['glass'] })], 'novice'), 0, 'Bo')).toBe('Bo under Glass Citadel');
+    const handicapped = roomTerms(room([seat('Ada', { trials: ['godless'] }), seat('Bo')]));
+    expect(termsChange(handicapped, room([seat('Ada'), seat('Bo')]), 1, 'Ada')).toBe('Ada without a handicap');
   });
 });

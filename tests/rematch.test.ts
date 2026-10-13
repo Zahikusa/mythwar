@@ -18,4 +18,9 @@ describe('the online results: rematch button and note', () => {
     expect(rematchView('Bo', false, null)).toEqual({ label: 'Back to room', note: 'Bo left the room.', back: true, hot: false });
     expect(rematchView('Bo', false, null, false).note).toBe('Bo left the room.');
   });
+
+  it('says when the rematch on offer is a different battle (backlog 193)', () => {
+    expect(rematchView('Bo', false, true, true, 'as a duel').note).toBe('Bo wants a rematch — as a duel!');
+    expect(rematchView('Bo', false, false, true, 'Bo under Glass Citadel').note).toBe('Next battle: Bo under Glass Citadel.');
+  });
 });

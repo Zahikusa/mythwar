@@ -40,8 +40,8 @@ import { JOURNEY, PERSONAS, tauntLine } from './ui/personas.ts';
 import { Sitting } from './ui/wellbeing.ts';
 import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
-import { allyNews, emoteRoute, lostSessionPlan, roomNews, roomView } from './ui/roomnews.ts';
-import type { RoomView } from './ui/roomnews.ts';
+import { allyNews, emoteRoute, lostSessionPlan, roomNews, roomTerms, roomView, termsChange } from './ui/roomnews.ts';
+import type { RoomTerms, RoomView } from './ui/roomnews.ts';
 
 type AppState = 'title' | 'playing' | 'over';
 
@@ -121,6 +121,8 @@ export class App {
   private wakeWanted = false;
   /** Online: the pause menu was opened just on this device (the battle was already held). */
   private netMenuLocal = false;
+  /** The room's terms when the current online battle started (see termsChange). */
+  private battleTerms: RoomTerms | null = null;
   /** The battle room as last seen (null: none) — room chimes, and what the other player changed. */
   private lastRoom: RoomView | null = null;
   /** When this player last changed the room's mode (their own change needs no telling). */
@@ -1130,7 +1132,9 @@ export class App {
     const seats = mp.room?.seats;
     const foe = seats?.[g.seat === 0 ? 1 : 0] ?? null;
     // (In co-op the other seat is the ally — the foe is the AI.)
-    this.menus.updateRematch(g.coop ? g.allyName : g.foeName, !!seats?.[g.seat]?.ready, foe ? foe.ready : null, !!foe?.connected);
+    const who = g.coop ? g.allyName : g.foeName;
+    const changed = this.battleTerms && mp.room ? termsChange(this.battleTerms, mp.room, g.seat, who) : '';
+    this.menus.updateRematch(who, !!seats?.[g.seat]?.ready, foe ? foe.ready : null, !!foe?.connected, changed);
   }
 
   private onMpChanged(): void {
@@ -1207,6 +1211,8 @@ export class App {
   /** An online battle starts (or is rejoined after a reload / reconnect). */
   private onNetBattle(g: NetGame): void {
     this.hookGame(g, false);
+    // (What this battle is fought on: the results say if the other player changes it for a rematch.)
+    this.battleTerms = this.mp?.room ? roomTerms(this.mp.room) : null;
     g.onReject = (reason) => this.hud.toast(reason, 'bad');
     g.onDesync = (n) => {
       // Corrected silently each time; if it keeps happening, say so once (and the log has details).
