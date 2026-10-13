@@ -12,12 +12,12 @@ function multiplayer(): Plugin {
     name: 'mythwar-multiplayer',
     configureServer(server) {
       if (server.httpServer) {
-        const mp = attachMultiplayer(server.httpServer as import('node:http').Server);
+        const mp = attachMultiplayer(server.httpServer as import('node:http').Server, { sharedUpgrades: true });
         server.httpServer.on('close', () => mp.close());
       }
     },
     configurePreviewServer(server) {
-      const mp = attachMultiplayer(server.httpServer as import('node:http').Server);
+      const mp = attachMultiplayer(server.httpServer as import('node:http').Server, { sharedUpgrades: true });
       server.httpServer.on('close', () => mp.close());
     },
   };

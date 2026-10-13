@@ -171,13 +171,15 @@ the improvement backlog below (verified, committed) and add what the review find
    keys only, `putOnline` defines instead of assigning — in battle, on load and in progress
    codes; such names are kept like any other; tests incl. save → load and a progress code.)
 (Items 44–49: an independent review of the netcode, 2026-10-13 — each traced, 1–3 reproduced.)
-44. [ ] `server/net.ts` ~63: a socket rejected for the per-address limit (`ws.close(1013)`) has no
+44. [x] `server/net.ts` ~63: a socket rejected for the per-address limit (`ws.close(1013)`) has no
    'error' listener — a bad frame on it (e.g. unmasked) throws `WS_ERR_EXPECTED_MASK` uncaught
    and **the server process exits**. Reproduced: 32 sockets from one address, a 33rd sends an
-   unmasked frame. Fix: `terminate()` it, or listen for 'error' first.
-45. [ ] `server/net.ts` ~48: upgrade requests for other paths than `/mp` are ignored and never
+   unmasked frame. Fix: `terminate()` it, or listen for 'error' first. (Done: the error listener
+   comes first, for every socket; tests/net.test.ts reproduces it — failed before, passes now.)
+45. [x] `server/net.ts` ~48: upgrade requests for other paths than `/mp` are ignored and never
    closed in standalone mode (no timeout, not counted per address) — 50 such sockets stayed open.
-   Destroy them when not running under Vite (Vite's HMR socket needs them).
+   Destroy them when not running under Vite (Vite's HMR socket needs them). (Done: refused unless
+   `sharedUpgrades` (vite.config sets it); tested.)
 46. [ ] `server/match.ts` ~114 / `server/lobby.ts` ~443: `away` toggled (19 s away, 0.1 s back,
    away again) restarts `awaySince` every time — the opponent can never claim (20 s) and the 90 s
    forfeit never comes; also bypasses the 3-pause cap. Count away time per battle (or don't

@@ -19,6 +19,11 @@ export interface AttachOptions extends LobbyOptions {
   /** Testing aid: delay (ms) added to every message in both directions, plus random jitter. */
   latency?: number;
   jitter?: number;
+  /**
+   * Something else on this HTTP server takes its own WebSocket upgrades (Vite's HMR socket): leave
+   * other paths alone. Otherwise they are refused — an upgrade nobody answers would stay open.
+   */
+  sharedUpgrades?: boolean;
 }
 
 /** Simultaneous connections from one address (a household has a few devices; a script many). */
@@ -45,12 +50,18 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
 
   const onUpgrade = (req: IncomingMessage, socket: Duplex, head: Buffer) => {
     const path = (req.url ?? '').split('?')[0];
-    if (!path.endsWith(MP_PATH)) return; // e.g. Vite's own HMR socket
+    if (!path.endsWith(MP_PATH)) {
+      if (!opts.sharedUpgrades) socket.destroy();
+      return;
+    }
     wss.handleUpgrade(req, socket, head, (ws) => wss.emit('connection', ws, req));
   };
   http.on('upgrade', onUpgrade);
 
   wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
+    // First of all: a socket error nobody listens for (a malformed frame, even on a socket being
+    // refused below) would be thrown — and take the whole server down.
+    ws.on('error', () => ws.terminate());
     // Behind a proxy the client address is the entry the proxy itself appended (the rightmost);
     // anything left of it came from the client and could be forged.
     const forwarded = opts.trustProxy ? (String(req.headers['x-forwarded-for'] ?? '').split(',').pop() ?? '').trim() : '';
@@ -97,7 +108,6 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
       if (lag) lag.up(() => handlers.close());
       else handlers.close();
     });
-    ws.on('error', () => ws.terminate());
   });
 
   // Rooms and battles advance on a fast timer (the simulation runs at 60 Hz).
