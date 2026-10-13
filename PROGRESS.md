@@ -692,6 +692,25 @@ server changes found sound.)
    (Done: `SimNet.socketOf`, `matchOf`, `suspended`; run #10's tests use them; the version error
    now arrives through the fake socket like a real message. Two older tests keep their own
    casts (a fault injection, the #160 close/open).)
+(Items 273–279: an independent accessibility review of the online flow (screen reader,
+keyboard, gamepad), checked with puppeteer, 2026-10-13.)
+273. [ ] Room and results news isn't announced: the room's note (`.rnote`, "Bo is ready — press
+   Ready to begin!") and the results' rematch note (`.rmatch`, "Ada wants a rematch!", "lost the
+   connection") are plain divs, and a join or a Ready only chimes. `role="status"` on both.
+274. [ ] The HUD's connection badge (`.netinfo`, role=status) re-announces the ping every second
+   on desktop ("6 ms", "5 ms"…), drowning toasts. No role; announce only quality changes.
+275. [ ] The online opening banner is filled while the HUD is still inert under the room screen
+   — never announced; the countdown's assertive "3" follows 12 ms later.
+276. [ ] "Claim victory" is out of a gamepad's reach (A summons, Start's menu has no claim) and
+   the 16th Tab stop by keyboard, with no key. A claim in the pause menu, or pad/Tab focus to it
+   when it appears.
+277. [ ] The message line is two `role=alert` elements (lobby and room screens) — a message
+   written while both are visible (a room vanishing → lobby) is announced twice, and a closed
+   line keeps its text in the accessibility tree. One live region, cleared when it closes.
+278. [ ] An invalid room code ("ZZZZ", too short) only shakes the field and plays a sound — no
+   words, no `aria-invalid`.
+279. [ ] Reduced motion misses the away notice's spinner (`.nspin`, runs for minutes), the quick
+   message pop, the battle speech bubble, the code field's shake.
 271. [x] docs/MULTIPLAYER.md's "What happens when…" lacks run #10's room behaviours: a short app
    switch keeps the seat and Ready (#264), a longer one redials at once on return (#243), room
    news takes turns (#262), and a silent phone mid-battle (#222 — there) vs in the room.
