@@ -653,6 +653,10 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    (`6-battle-phone`) and blocked taps on the lanes it talks about, for 9 s, also online where
    nothing pauses. (Done: only "Got it" takes a tap; smoke checks the bubble's text lets a tap
    through to the canvas on desktop, phone and rotated phone.)
+150. [x] (A first slice of #137) `src/app.ts` `roomChimes` mixed the room's news — which chime, what
+   the other player changed, in words — with audio and DOM, untested (where #142's "again" bug
+   lived). (Done: `src/ui/roomnews.ts` — `roomView` / `roomNews`, pure; three fields of App became
+   one `lastRoom`; tests/roomnews.test.ts (5 tests); mpsmoke unchanged and green.)
 
 
 

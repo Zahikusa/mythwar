@@ -2,7 +2,7 @@ import { Audio } from './audio/audio.ts';
 import { Game } from './game.ts';
 import { puzzleById } from './sim/puzzles.ts';
 import { Chronicle } from './ui/chronicle.ts';
-import { AI_PROFILES, DIFFICULTIES } from './ai/ai.ts';
+import { DIFFICULTIES } from './ai/ai.ts';
 import type { SimEvent } from './sim/types.ts';
 import type { Difficulty } from './ai/ai.ts';
 import { Input } from './input.ts';
@@ -16,7 +16,7 @@ import { Hud, RAG_WARN } from './ui/hud.ts';
 import { Menus } from './ui/menus.ts';
 import { addJournal, battleStars, loadSettings, mergeFromOtherTab, onlineRecord, parTime, recordOnline, recordResult, saveSettings, playerLabel } from './ui/settings.ts';
 import { clearBattle, loadBattle, saveBattle } from './save.ts';
-import { AGES, TRIALS, UNITS } from './sim/data.ts';
+import { AGES, UNITS } from './sim/data.ts';
 import { fmtTime } from './ui/dom.ts';
 import type { JournalEntry, Settings } from './ui/settings.ts';
 import { MpClient, hasStoredSession } from './net/client.ts';
@@ -40,6 +40,8 @@ import { JOURNEY, PERSONAS, tauntLine } from './ui/personas.ts';
 import { Sitting } from './ui/wellbeing.ts';
 import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
+import { roomNews, roomView } from './ui/roomnews.ts';
+import type { RoomView } from './ui/roomnews.ts';
 
 type AppState = 'title' | 'playing' | 'over';
 
@@ -117,12 +119,9 @@ export class App {
   private wakeWanted = false;
   /** Online: the pause menu was opened just on this device (the battle was already held). */
   private netMenuLocal = false;
-  /** The other seat as last seen (room chimes: someone joined / is ready / left). */
-  private lastFoe: { name: string; ready: boolean; trials: string } | null = null;
-  /** Whether this player's own seat was Ready when last seen. */
-  private lastMeReady = false;
-  /** The room's mode as last seen (undefined: no room yet), and when this player last changed it. */
-  private lastCoop: Difficulty | null | undefined = undefined;
+  /** The battle room as last seen (null: none) — room chimes, and what the other player changed. */
+  private lastRoom: RoomView | null = null;
+  /** When this player last changed the room's mode (their own change needs no telling). */
   private ownCoopAt = -Infinity;
 
   constructor(root: HTMLElement) {
@@ -1163,38 +1162,16 @@ export class App {
     this.syncRematch();
   }
 
-  /** Little sounds for what the other player does outside battle. */
+  /** Little sounds, and a line in words, for what the other player does outside battle. */
   private roomChimes(mp: MpClient): void {
-    const foe = mp.room && mp.seat !== null ? mp.room.seats[mp.seat === 0 ? 1 : 0] : null;
-    const prev = this.lastFoe;
-    const prevCoop = this.lastCoop;
-    const wasReady = this.lastMeReady;
-    this.lastMeReady = !!(mp.room && mp.seat !== null && mp.room.seats[mp.seat]?.ready);
-    this.lastFoe = foe ? { name: foe.name, ready: foe.ready, trials: foe.trials.join(',') } : null;
-    this.lastCoop = mp.room ? mp.room.coop : undefined;
-    if (this.state === 'playing' || !mp.room) return;
-    if (foe && !prev) {
-      this.audio.ui('ready');
-      this.buzz([20, 40, 20]);
-    } else if (foe && prev && foe.ready && !prev.ready) this.audio.ui('bless');
-    else if (!foe && prev) this.audio.ui('cancel');
-    // What the other player changed, in words: the room just re-rendering (Ready undone, the score
-    // reset, an empty seat) looked like a tap that failed.
-    if (this.menus.current !== 'room') return;
-    const coop = mp.room.coop;
-    // (A handicap change takes both seats out of Ready: "again" only if this one was Ready.)
-    const again = wasReady ? ' — press Ready again.' : '.';
-    const said =
-      !foe && prev
-        ? `${prev.name} left the room.`
-        : foe && prev && foe.name === prev.name && foe.trials.join(',') !== prev.trials
-          ? foe.trials.length
-            ? `${foe.name} now fights under ${foe.trials.map((t) => TRIALS[t].name).join(', ')}${again}`
-            : `${foe.name} dropped their handicaps${again}`
-          : prevCoop !== undefined && coop !== prevCoop && performance.now() - this.ownCoopAt > 2000
-            ? `${foe?.name ?? 'The other player'} switched to ${coop ? `co-op against the ${AI_PROFILES[coop].name} AI` : 'a duel'} — the score starts over.`
-            : '';
-    if (said) this.menus.mp.flash(said);
+    const prev = this.lastRoom;
+    const now = mp.room ? roomView(mp.room, mp.seat) : null;
+    this.lastRoom = now;
+    if (this.state === 'playing' || !now) return;
+    const news = roomNews(prev, now, performance.now() - this.ownCoopAt <= 2000);
+    if (news.chime) this.audio.ui(news.chime);
+    if (news.chime === 'ready') this.buzz([20, 40, 20]);
+    if (news.said && this.menus.current === 'room') this.menus.mp.flash(news.said);
   }
 
   private onMpError(code: string, message: string): void {
