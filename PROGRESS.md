@@ -384,6 +384,10 @@ it prints, inviting, stopping — 2026-10-13.)
    (`lanUrls: () => ['http://192.168.1.20:8787/']` — an `attachMultiplayer` option already) so
    pictures are stable between shots and say nothing about the machine they were made on. (Done:
    shoot's server announces http://192.168.1.20:8787/; docs/mp-room.jpg re-made with it.)
+217. [ ] mpsmoke's seat-expiry steps (#160, #211) drop the link with a clean `conn.close()`; a phone
+   that sleeps usually leaves a dead link the server only notices by its heartbeat (server/net.ts,
+   ~12 s). Cover that path once: block the page's traffic (CDP `Network.emulateNetworkConditions`
+   offline) instead of closing, and check the seat still comes back.
 
 
 
@@ -430,7 +434,7 @@ built, how to see each part working, and the decisions that need you.
 - Late in the run: the WebKit (iPhone engine) pass in `mpengines` checks the http copy fallback and
   Back (#201); Back is guarded on touch devices only (#209); PROGRESS.md split — history in
   docs/PROGRESS-archive.md (#202); README's two multiplayer pictures re-shot (#187, #206); a flaky
-  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #204, #215 (#211, #213, #214 done at the very end).
+  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #204, #215, #217 (#211, #213, #214 done at the very end).
 - **Open question added:** the downloadable release (v1.0.0) is ~280 commits old.
 - Tests 256 → 285; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
   frame); `mpengines` (WebKit vs Chrome/Firefox) in sync.
