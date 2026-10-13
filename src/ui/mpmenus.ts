@@ -273,6 +273,9 @@ export class MpScreens {
       edit.addEventListener('blur', done);
       const startEdit = () => {
         if (this.mySeat !== i) return;
+        // (Upright phones show the game rotated but open the keyboard upright — the lobby's tip
+        // says so, and a guest who came by QR code never saw the lobby.)
+        if (name.closest('#stage')?.classList.contains('rotated')) this.flash('Tip: turn your phone sideways to type — the keyboard opens upright.');
         edit.value = this.nameInput.value;
         name.classList.add('hidden');
         edit.classList.remove('hidden');

@@ -717,8 +717,9 @@ battle, results — 2026-10-13.)
 163. [x] The results tip (`battleTip`, menus.ts ~1240) says "click a gate or press T" on phones (the
    coach swaps Tap/Click by device; this doesn't). (Done: `battleTip(…, touch)` — "(tap a gate)" on a
    phone stage; test.)
-164. [ ] The "turn your phone sideways before typing" tip is in the lobby only; a QR guest renaming
-   in the room on an upright phone never sees it (mpmenus.ts ~194).
+164. [x] The "turn your phone sideways before typing" tip is in the lobby only; a QR guest renaming
+   in the room on an upright phone never sees it (mpmenus.ts ~194). (Done: tapping your name in the room on a rotated
+   (upright) phone flashes "turn your phone sideways to type"; mpsmoke `--portrait` checks.)
 165. [ ] (note) iPhone's silent switch mutes Web Audio (no `navigator.audioSession.type = 'playback'`)
    — left on purpose: the switch means "quiet"; the room's chimes have visual twins.
 

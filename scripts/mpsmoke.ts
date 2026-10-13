@@ -230,6 +230,12 @@ async function main(): Promise<void> {
     await press(b, '.screen.howto', 'Back');
     await waitFor(b, 'B back in the room from the how-to', () => (window as any).__mythwar.menus.current === 'room', 4000);
     check('room: How to play and back, still seated', await b.evaluate(() => (window as any).__mythwar.mp.seat === 1 && !!(window as any).__mythwar.mp.room));
+    if (portrait) {
+      // (Backlog 164) An upright phone renaming in the room is told to turn sideways first.
+      await b.tap('.rseat.mine .sname');
+      await waitFor(b, 'the turn-sideways tip in the room', () => /sideways/.test(document.querySelector('.screen.room .mpflash.show')?.textContent ?? ''), 3000);
+      await b.keyboard.press('Escape');
+    }
 
     console.log('== battle ==');
     await press(a, '.screen.room', 'Ready');
