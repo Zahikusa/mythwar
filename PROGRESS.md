@@ -547,7 +547,7 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
 240. [x] `tests/netgame.test.ts` #219's test calls NetGame's private `publish()` / `onOver()`
    directly — brittle. Drive it through SimNet instead: hold back the server's 'over' message for
    one page (a hook in FakeSocket's send) while its turns flow, then release it.
-   (Done: `SimNet.holdIf` / `held`. The test pauses the battle, sets the AI-side citadel to 0 HP
+   (Done: `SimNet.holdIf` / `held`. The test pauses the battle, sets Bo's citadel to 0 HP
    on the server and both replicas at one tick (no desync), resumes with Ada's 'over' held: her
    replica sees the fall, no results; released → results with the verdict. Fails against the
    pre-#219 NetGame.)
