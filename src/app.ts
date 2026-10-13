@@ -576,6 +576,7 @@ export class App {
     this.difficulty = save.difficulty;
     this.hookGame(game, false);
     this.enterBattle(game);
+    this.chronicle?.restore(save.story);
     // ("Odin · Asgard" by the foe's citadel, as when the battle began.)
     this.hud.setFoeName(PERSONAS[save.difficulty].name);
     this.pause();
@@ -585,7 +586,7 @@ export class App {
   private persist(): void {
     const g = this.game;
     if (this.state !== 'playing' || !g || g.over || g.world.winner !== null || g.options.demo || g.options.online || g.practice) return;
-    saveBattle(g.toSave());
+    saveBattle({ ...g.toSave(), story: this.chronicle?.moments.slice() });
     this.lastSave = g.world.time;
   }
 

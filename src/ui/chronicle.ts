@@ -59,6 +59,16 @@ export class Chronicle {
     }
   }
 
+  /** The moments told before a save (Continue): put back in front of what follows. */
+  restore(saved: unknown): void {
+    if (!Array.isArray(saved)) return;
+    const ok = saved
+      .filter((m): m is Moment => !!m && Number.isFinite(m.t) && typeof m.text === 'string' && Number.isFinite(m.weight))
+      .slice(0, 60)
+      .map((m) => ({ t: m.t, text: m.text.slice(0, 200), weight: m.weight }));
+    this.moments.unshift(...ok);
+  }
+
   private who(team: Team): string {
     return team === this.me ? 'You' : this.foe;
   }

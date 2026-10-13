@@ -86,3 +86,18 @@ describe('a battle taken up midway (backlog 66)', () => {
     }
   });
 });
+
+describe('a continued battle keeps its story (backlog 74)', () => {
+  it('restores the saved moments in front of the new ones, ignoring anything malformed', () => {
+    const w = new World({ seed: 2 });
+    const before = new Chronicle(0, 'Odin');
+    before.moments.push({ t: 25, text: 'First blood: the enemy’s Redcap falls in the top lane.', weight: 4 }, { t: 200, text: 'You ascend to Olympus.', weight: 3 });
+    const saved = JSON.parse(JSON.stringify([...before.moments, { t: 'x', text: 5 }, null, { t: 1, text: 'ok', weight: Infinity }]));
+    const after = new Chronicle(0, 'Odin');
+    w.time = 300;
+    after.resume(w);
+    after.restore(saved);
+    after.onEvents([{ type: 'ragnarok' } as never], w);
+    expect(after.lines()).toEqual(['0:25 — First blood: the enemy’s Redcap falls in the top lane.', '3:20 — You ascend to Olympus.', '5:00 — Ragnarök: the wards fall silent.']);
+  });
+});

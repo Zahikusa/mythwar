@@ -305,10 +305,12 @@ chronicle, 2026-10-13 — renderer/fx/layout/lobby held up.)
    code, e.g. 4002 "fault", read by Connection before reconnecting). (Done: the server closes
    with 4002; `Connection.lastClose`; `sessionLost: 'fault'` → "The game server ran into a fault
    and stopped your battle — sorry. It doesn't count for anyone."; netgame test.)
-73. [ ] `public/sw.js`: lazily loaded chunks (qrcode, gallery, selftest) are never pruned — each build
-   that changes one leaves the old copy in the cache (a few kB each, forever).
-74. [ ] A continued battle's chronicle starts at the resume (#66 stops it lying, but the moments
-   before are gone): keep the chronicle's moments in the battle save (`src/save.ts`).
+73. [x] `public/sw.js`: lazily loaded chunks (qrcode, gallery, selftest) are never pruned — each build
+   that changes one leaves the old copy in the cache (a few kB each, forever). (Done: caching a
+   hashed file drops the older builds of the same name; smoke checks with the QR chunk.)
+74. [x] A continued battle's chronicle starts at the resume (#66 stops it lying, but the moments
+   before are gone): keep the chronicle's moments in the battle save (`src/save.ts`). (Done:
+   `GameSave.story`, restored (sanitized) in front of what follows; unit test.)
 
 
 

@@ -51,6 +51,8 @@ export interface GameSave {
   history: HistorySample[];
   ageUps?: { t: number; team: Team; age: number }[];
   selectedLane: number;
+  /** The chronicle so far (src/ui/chronicle.ts), so a continued battle tells its whole story. */
+  story?: { t: number; text: string; weight: number }[];
 }
 
 /** One match: the simulation, the AI(s) and the fixed-step clock. */
