@@ -396,7 +396,7 @@ export class MpScreens {
       this.hallEl.dataset.text = hallText;
       this.hallEl.innerHTML = '';
       if (hallText) this.hallEl.append(h('b', { text: 'Champions of this network: ' }), hallText);
-      this.hallEl.title = hall.length ? 'Battles won and lost on this game server (since it started)' : '';
+      this.hallEl.title = hall.length ? 'Battles won and lost on this game server' : '';
     }
 
     // Room.

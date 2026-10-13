@@ -15,6 +15,7 @@ import { createServer as createHttpsServer } from 'node:https';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { lanAddresses } from './lan.ts';
+import { flatWord } from './lobby.ts';
 import { attachMultiplayer } from './net.ts';
 import { serveStatic } from './static.ts';
 import { fileStore } from './store.ts';
@@ -80,7 +81,7 @@ const namesFile = arg('names');
 const blockedWords = namesFile
   ? readFileSync(namesFile, 'utf8')
       .split(/\r?\n/)
-      .map((w) => w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, ''))
+      .map((w) => flatWord(w))
       .filter(Boolean)
   : undefined;
 const mp = attachMultiplayer(http, { latency, jitter, trustProxy: args.includes('--trust-proxy'), log, store, blockedWords });

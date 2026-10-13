@@ -62,22 +62,31 @@ the improvement backlog below (verified, committed) and add what the review find
    public (ROADMAP *Next*). (Done: `--names <file>`; a name with a listed word, compared case- and
    punctuation-blind, becomes "Player" — at hello and on rename.)
 (Items 16–23: an independent review of the run #7 diff, 2026-10-13.)
-16. [ ] `server/lobby.ts` `flush(true)` / `server/store.ts`: Ctrl+C during a background save loses the
+16. [x] `server/lobby.ts` `flush(true)` / `server/store.ts`: Ctrl+C during a background save loses the
    newest Hall (nothing "dirty" → no final save, and `process.exit` cuts the write off); and an
    async `rename` already under way can land after `saveNow`'s.
-17. [ ] `src/ui/chronicle.ts`: only each side's *first* veteran is registered with `HeroNames`, so
+   (Done: background renames are synchronous on the main thread; shutdown always writes the
+   current Hall; test: the result is on disk the moment flush(true) returns.)
+17. [x] `src/ui/chronicle.ts`: only each side's *first* veteran is registered with `HeroNames`, so
    the hero of the battle can get a name that differs from the renderer's (a duplicate).
-18. [ ] Online results chips: after the opponent leaves and a stranger joins the open room, the
+   (Done: every veteran registered; the hero only if it rose; test against a renderer-side registry.)
+18. [x] Online results chips: after the opponent leaves and a stranger joins the open room, the
    chips reappear and the stranger's messages show under the old opponent's name.
-19. [ ] Hall of champions: the server cuts to the top 5 *before* the client drops players without
+   (Done: once the opponent leaves, the chips stay away for those results; speakers named from the seats.)
+19. [x] Hall of champions: the server cuts to the top 5 *before* the client drops players without
    wins, so a co-op champion with 0 head-to-head wins can vanish behind four 0–1 lines; the
    lobby's tooltip still says "since it started" though the Hall now survives restarts.
-20. [ ] `--names` blocklist: full-width or accented letters slip through (`ｂａｄ`, `bäd`), and names
+   (Done: the server filters to players with a victory before the top five; tooltip fixed; test.)
+20. [x] `--names` blocklist: full-width or accented letters slip through (`ｂａｄ`, `bäd`), and names
    loaded from the saved Hall are never checked.
-21. [ ] Two tabs of one browser share a device id: a two-tab battle credits the win and the loss
+   (Done: NFKD + accents dropped on both sides; saved names checked on load; tests.)
+21. [x] Two tabs of one browser share a device id: a two-tab battle credits the win and the loss
    to the same Hall line (and co-op counts twice).
-22. [ ] `scripts/perfcheck.ts`: the script share comes from a later profiling phase; if the load
+   (Done: same-device battles aren't counted; same-device allies share one co-op victory; test.)
+22. [x] `scripts/perfcheck.ts`: the script share comes from a later profiling phase; if the load
    differs then (battle over, fewer creatures) the estimate doesn't describe the timed seconds.
+   (Done: the profiling phase must carry the same load (±20% creatures, battle not over), else the
+   unscaled number is checked.)
 23. [ ] (note) The lobby's old-rival recognition (#84) matches by name; the Hall now tells two Adas
    apart, the rivals list doesn't. Leave unless it confuses players.
 

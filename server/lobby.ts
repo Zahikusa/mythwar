@@ -46,6 +46,15 @@ export interface LobbyOptions {
 }
 
 /**
+ * A word as the name blocklist compares it: compatibility-decomposed with accents dropped (so
+ * full-width "ｂａｄ" and "bäd" are "bad"), lower case, letters and digits only (so "b.a.d" and
+ * "b a d" are too).
+ */
+export function flatWord(s: string): string {
+  return s.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+}
+
+/**
  * Today as a day number in the server's own calendar (local midnight, not UTC: a European
  * evening running past 01:00 is still one evening).
  */
@@ -154,9 +163,13 @@ export class Lobby {
     const name = cleanName(raw);
     const words = this.opts.blockedWords;
     if (!words?.length) return name;
-    // (Compared without spaces, dots and the like, so "b.a.d" or "b a d" don't slip through.)
-    const flat = name.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
-    return words.some((w) => w && flat.includes(w)) ? 'Player' : name;
+    const flat = flatWord(name);
+    return words.some((w) => {
+      const f = flatWord(w);
+      return f && flat.includes(f);
+    })
+      ? 'Player'
+      : name;
   }
 
   /** Restores the Hall of champions from the store (sanitized: the file may be hand-edited). */
@@ -170,7 +183,8 @@ export class Lobby {
       const hall = new Map<string, HallEntry>();
       for (const e of entries.slice(-HALL_NAMES)) {
         if (!e || typeof e !== 'object') continue;
-        const name = cleanName(e.name);
+        // (A name saved before a blocklist was set is checked like a new one.)
+        const name = this.playerName(e.name);
         const key = typeof e.key === 'string' && /^d:[\w-]{22}$/.test(e.key) ? e.key : name.toLowerCase();
         hall.set(key, { name, sigil: cleanSigil(e.sigil), w: n(e.w), l: n(e.l), coop: n(e.coop), days: n(e.days), last: n(e.last), key });
       }
@@ -183,7 +197,8 @@ export class Lobby {
    * before returning.
    */
   flush(final = false): void {
-    if (!this.hallDirty || !this.opts.store) return;
+    // (On shutdown always: a background save may still be under way, and exiting cuts it off.)
+    if (!this.opts.store || (!this.hallDirty && !(final && this.halls.size))) return;
     this.hallDirty = false;
     this.lastHallSave = this.now();
     const halls: Record<string, HallEntry[]> = {};
@@ -485,20 +500,23 @@ export class Lobby {
           }
         }
         // (Co-op: a victory counts for both allies; the AI's wins aren't kept.)
+        // (Two tabs of one browser are one player to the Hall: a battle between them isn't
+        // counted, and allies on one device share one co-op victory.)
+        const sameDevice = !!room.seats[0]?.session.device && room.seats[0]?.session.device === room.seats[1]?.session.device;
         if (coop) {
           if (winner === 0)
-            for (const x of room.seats) {
-              if (!x) continue;
+            room.seats.forEach((x, i) => {
+              if (!x) return;
               x.wins++;
-              this.hallEntry(x.session).coop++;
-            }
+              if (!(sameDevice && i === 1)) this.hallEntry(x.session).coop++;
+            });
         } else {
           const w = room.seats[winner];
           const l = room.seats[winner === 0 ? 1 : 0];
           if (w) w.wins++;
           // (A battle abandoned by a server shutdown never gets here; a forfeit does count.)
-          if (w) this.hallEntry(w.session).w++;
-          if (l) this.hallEntry(l.session).l++;
+          if (w && !sameDevice) this.hallEntry(w.session).w++;
+          if (l && !sameDevice) this.hallEntry(l.session).l++;
         }
         this.roomsDirty = true;
         this.log(`room ${room.code}: ${coop ? (winner === 0 ? `${names.join(' & ')} beat the ${coop} AI` : `the ${coop} AI wins`) : `${names[winner]} wins`} (${reason})`);
@@ -652,7 +670,10 @@ export class Lobby {
   private hallOf(network: string): HallEntry[] {
     const hall = this.halls.get(this.hallKey(network));
     if (!hall) return [];
+    // (Champions only — someone with a victory — before the top five are taken: a co-op hero
+    // mustn't vanish behind four players who have only lost.)
     return [...hall.values()]
+      .filter((e) => e.w > 0 || e.coop > 0)
       .sort((a, b) => b.w - a.w || a.l - b.l || b.coop - a.coop)
       .slice(0, HALL_SHOWN)
       .map((e) => ({ name: e.name, sigil: e.sigil, w: e.w, l: e.l, coop: e.coop }));

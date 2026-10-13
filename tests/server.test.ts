@@ -557,7 +557,6 @@ describe('battle', () => {
     run(300);
     expect(watcher.last('rooms')!.hall).toEqual([
       { name: 'Ada', sigil: -1, w: 1, l: 0, coop: 0 },
-      { name: 'Bo', sigil: -1, w: 0, l: 1, coop: 0 },
     ]);
   });
 
@@ -576,7 +575,8 @@ describe('battle', () => {
     watcher.send({ type: 'watchRooms', on: true });
     const hall = watcher.last('rooms')!.hall!;
     expect(hall.map((e) => [e.name, e.w, e.l])).toContainEqual(['Ada', 1, 0]);
-    expect(hall.map((e) => [e.name, e.w, e.l])).toContainEqual(['Bo', 0, 1]);
+    // (Bo, without a victory, isn't listed — but kept: see the file test.)
+    expect(hall.map((e) => e.name)).not.toContain('Bo');
     expect(hall.find((e) => e.name.includes('Eve'))).toMatchObject({ name: 'bEve/b', sigil: -1, w: 0, l: 2 });
   });
 
@@ -624,7 +624,7 @@ describe('battle', () => {
     const home = new FakeClient(again, '203.0.113.7');
     home.hello('Cy');
     home.send({ type: 'watchRooms', on: true });
-    expect(home.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Ada', 'Bo']);
+    expect(home.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Ada']);
     const elsewhere = new FakeClient(again, '198.51.100.1');
     elsewhere.hello('Dee');
     elsewhere.send({ type: 'watchRooms', on: true });
@@ -664,7 +664,7 @@ describe('battle', () => {
     watcher.hello('Cy');
     watcher.send({ type: 'watchRooms', on: true });
     const hall = watcher.last('rooms')!.hall!;
-    expect(hall.map((e) => `${e.name} ${e.w}–${e.l}`)).toEqual(['Queen Ada 3–0', 'Ada 1–0', 'Bo 0–4']);
+    expect(hall.map((e) => `${e.name} ${e.w}–${e.l}`)).toEqual(['Queen Ada 3–0', 'Ada 1–0']);
     expect(Object.keys(hall[0])).not.toContain('key');
     // The ids stay out of the file (hashed) and the lines come back after a restart.
     run(5100);
@@ -673,7 +673,7 @@ describe('battle', () => {
     const w2 = new FakeClient(again);
     w2.hello('Dee');
     w2.send({ type: 'watchRooms', on: true });
-    expect(w2.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Queen Ada', 'Ada', 'Bo']);
+    expect(w2.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Queen Ada', 'Ada']);
   });
 
   it('a blocklist keeps unwanted names off a public server (backlog)', () => {
@@ -689,6 +689,63 @@ describe('battle', () => {
     expect(b.last('room')!.room.seats[0]!.name).toBe('Player');
     a.send({ type: 'name', name: 'Bo' });
     expect(b.last('room')!.room.seats[0]!.name).toBe('Bo');
+    // Full-width and accented look-alikes (backlog 20).
+    for (const trick of ['ＢＡＤＷＯＲＤ', 'bädwörd']) {
+      a.send({ type: 'name', name: trick });
+      expect(b.last('room')!.room.seats[0]!.name, trick).toBe('Player');
+    }
+    // A name saved in the Hall before the blocklist was set is checked when loaded.
+    const store = memoryStore({ v: 1, halls: { lan: [{ name: 'Bad Word', sigil: -1, w: 3, l: 0, coop: 0 }] } });
+    const strict = new Lobby({ store, blockedWords: ['badword'] });
+    const w = new FakeClient(strict);
+    w.hello('Cy');
+    w.send({ type: 'watchRooms', on: true });
+    expect(w.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Player']);
+  });
+
+  it('two tabs of one browser are one player to the Hall: their battle is not counted (backlog 21)', () => {
+    const { lobby, run } = setup();
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    a.hello('Ada', undefined, { device: 'dddddddddddddddddddddddd' });
+    b.hello('Ada too', undefined, { device: 'dddddddddddddddddddddddd' });
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    a.send({ type: 'ready', ready: true });
+    b.send({ type: 'ready', ready: true });
+    run(3100);
+    b.send({ type: 'leave' });
+    run(300);
+    expect(a.last('over')).toMatchObject({ winner: 0 });
+    const watcher = new FakeClient(lobby);
+    watcher.hello('Cy');
+    watcher.send({ type: 'watchRooms', on: true });
+    expect(watcher.last('rooms')!.hall).toEqual([]);
+  });
+
+  it('a co-op champion is listed even behind many players who only lost (backlog 19)', () => {
+    const losers = Array.from({ length: 6 }, (_, i) => ({ name: `L${i}`, sigil: -1, w: 0, l: 1, coop: 0 }));
+    const store = memoryStore({ v: 1, halls: { lan: [...losers, { name: 'Ada', sigil: -1, w: 0, l: 3, coop: 12 }, { name: 'Bob', sigil: -1, w: 5, l: 0, coop: 0 }] } });
+    const { lobby } = setup({ store });
+    const watcher = new FakeClient(lobby);
+    watcher.hello('Cy');
+    watcher.send({ type: 'watchRooms', on: true });
+    expect(watcher.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Bob', 'Ada']);
+  });
+
+  it('shutting down mid-save still leaves the newest Hall on disk (backlog 16)', async () => {
+    const { mkdtempSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { tmpdir } = await import('node:os');
+    const store = fileStore(join(mkdtempSync(join(tmpdir(), 'mythwar-')), 'data.json'));
+    const { lobby, run, b } = battle({ store });
+    run(2000);
+    b.send({ type: 'leave' });
+    run(5100); // a background save has started (and isn't finished)
+    lobby.flush(true); // Ctrl+C
+    expect(store.load()!.halls.lan.map((e) => [e.name, e.w, e.l])).toEqual([['Ada', 1, 0], ['Bo', 0, 1]]);
+    await store.idle();
+    expect(store.load()!.halls.lan.length).toBe(2);
   });
 
   it('the file store writes atomically and reads back; a broken file means an empty hall', async () => {
