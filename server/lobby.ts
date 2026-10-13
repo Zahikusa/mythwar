@@ -468,7 +468,11 @@ export class Lobby {
       this.send(s, s.lastOver.snapshot);
       this.send(s, s.lastOver.over);
     }
-    if (room) this.broadcastRoom(room);
+    if (room) {
+      this.broadcastRoom(room);
+      // (Back online, an open room is listed again: it dropped out when the link went.)
+      this.roomsDirty = true;
+    }
     this.log(`hello ${s.name}${room ? ` (back in ${room.code})` : ''}`);
     return s;
   }
@@ -658,6 +662,9 @@ export class Lobby {
       },
       ended: (winner, reason) => {
         room.phase = 'over';
+        // A seat whose link went during the battle is kept for the full grace from the result —
+        // not from when it went (minutes ago, maybe: it would go at once, the wins with it).
+        for (const x of room.seats) if (x && x.session.goneAt !== null) x.session.goneAt = this.now();
         const match = room.match;
         if (match) {
           for (const seat of [0, 1] as Team[]) {

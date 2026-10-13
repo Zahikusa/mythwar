@@ -463,19 +463,26 @@ server/lobby.ts and match.ts, 2026-10-13.)
    another within 4 s, Back once → left with no prompt; a room gone from under the prompt left
    it on the lobby. (Done: `leaveRoom` and the room → lobby switch forget it, and drop the
    prompt's text.)
-225. [ ] Seat grace measured from the disconnect, not the battle's end (lobby.ts ~307): in co-op
+225. [x] Seat grace measured from the disconnect, not the battle's end (lobby.ts ~307): in co-op
    B's phone locks at minute 2, A wins alone at minute 6 — in the same `update()` B's 4-minute-old
    `goneAt` removes B at once, and `removeFromRoom` zeroes the wins A just earned; a duel won by
    the 90-s forfeit likewise. Start the grace at the result (`goneAt = now` in `ended()` for
    seats still gone).
-226. [ ] A host whose phone reconnects isn't put back in the open-battles list: `disconnected()`
+   (Done that way; server test (co-op, Bo gone two minutes, Ada wins: Bo still seated, Ada's
+   win kept, Bo's reconnect lands in the room) — failed before the fix.)
+226. [x] A host whose phone reconnects isn't put back in the open-battles list: `disconnected()`
    marks the room list dirty (the room drops out — `openRooms` needs `conn`), the resume path in
    `hello` doesn't. On a quiet LAN the room stays unlisted. Set `roomsDirty` in `hello` when the
    session has a room.
-227. [ ] Away/back toggling can still hold a duel forever (a gap in #46): "back" counts from
+   (Done; server test — failed before.)
+227. [x] Away/back toggling can still hold a duel forever (a gap in #46): "back" counts from
    `setAway(false)`, but the battle only runs after the 3-s resume countdown — 2 s away, 2.5 s
    back, repeat: each return carries nothing over, the claim/forfeit clocks restart, not a tick
    is played. Count the time back from when the battle actually runs again.
+   (Done: `Match.lastAbsence[].endedAt` is null until the battle runs again (`backFrom()` when
+   the countdown or the resume ends; at once in co-op, where the battle ran on); an absence that
+   starts before then carries all of the last one. Server test: 12 cycles of 2 s away / 2.5 s
+   back, < 5 ticks played, then the claim succeeds — failed before.)
 228. [x] mpsmoke's co-op start failed once under `--latency 60 --jitter 80` (A's Ready ignored):
    A's own page shows its handicap gone at once (`setTrials` is optimistic), so A's wait passed
    and its Ready went out with the room's old `rev` — stale (#96). (Done: both pages wait for a

@@ -38,6 +38,7 @@ export interface MatchOptions {
 }
 
 type MatchState = 'countdown' | 'running' | 'paused' | 'resuming' | 'over';
+type Absence = { length: number; endedAt: number | null };
 
 /**
  * One authoritative battle. Owns the clock: steps the simulation in real time, applies the
@@ -76,7 +77,12 @@ export class Match {
   /** Wall time each seat went away (null = present). */
   private awaySince: [number | null, number | null] = [null, null];
   /** Each seat's last absence: how long it lasted and when it ended (ms). */
-  private lastAbsence: [{ length: number; endedAt: number } | null, { length: number; endedAt: number } | null] = [null, null];
+  /**
+   * `endedAt`: when the battle ran again after it (null: not yet — still held, or counting down
+   * to the resume). Time back only counts while the battle runs: returning for the 3-s countdown
+   * and leaving again would otherwise restart the clocks without a tick being played.
+   */
+  private lastAbsence: [Absence | null, Absence | null] = [null, null];
 
   constructor(opts: MatchOptions, now: number, host: MatchHost) {
     this.seed = opts.seed;
@@ -126,10 +132,10 @@ export class Match {
       // Away again soon after coming back: the clocks (claim, forfeit) pick up where they stopped,
       // less the time back — going away and back over and over can't hold the battle forever.
       const last = this.lastAbsence[seat];
-      this.awaySince[seat] = now - (last ? Math.max(0, last.length - (now - last.endedAt)) : 0);
+      this.awaySince[seat] = now - (last ? Math.max(0, last.length - (last.endedAt === null ? 0 : now - last.endedAt)) : 0);
     } else {
       const since = this.awaySince[seat]!;
-      this.lastAbsence[seat] = Number.isFinite(since) ? { length: now - since, endedAt: now } : null;
+      this.lastAbsence[seat] = Number.isFinite(since) ? { length: now - since, endedAt: this.state === 'running' ? now : null } : null;
       this.awaySince[seat] = null;
     }
     this.refreshPause(now);
@@ -223,6 +229,7 @@ export class Match {
         if (this.startAt === Infinity) this.checkForfeits(now);
         if (now < this.startAt) return;
         this.state = 'running';
+        this.backFrom(this.startAt);
         this.pauseState = null;
         this.runFromMs = this.startAt;
         this.runFromTick = 0;
@@ -233,6 +240,7 @@ export class Match {
         this.checkForfeits(now);
         if (now < this.resumeAt) return;
         this.state = 'running';
+        this.backFrom(now);
         this.pauseState = null;
         this.runFromMs = now;
         this.runFromTick = this.world.tick;
@@ -352,6 +360,11 @@ export class Match {
       this.resumeAt = now + RESUME_COUNTDOWN * 1000;
       this.host.broadcast({ type: 'resuming', seconds: RESUME_COUNTDOWN });
     }
+  }
+
+  /** The battle runs again: from now on, time back after an absence counts (see lastAbsence). */
+  private backFrom(now: number): void {
+    for (const a of this.lastAbsence) if (a && a.endedAt === null) a.endedAt = now;
   }
 
   private checkForfeits(now: number): void {

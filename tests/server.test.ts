@@ -640,6 +640,52 @@ describe('battle', () => {
     expect(a.inbox.slice(before).some((m) => m.type === 'paused')).toBe(false);
   });
 
+  it('a host whose phone reconnects is listed again (backlog 226)', () => {
+    const { lobby, run } = setup();
+    const a = new FakeClient(lobby);
+    const watcher = new FakeClient(lobby);
+    a.hello('Ada');
+    watcher.hello('Cy');
+    watcher.send({ type: 'watchRooms', on: true });
+    a.send({ type: 'host' });
+    run(300);
+    expect(watcher.last('rooms')!.rooms.map((r) => r.host)).toEqual(['Ada']);
+    a.disconnect(); // (the phone locks)
+    run(300);
+    expect(watcher.last('rooms')!.rooms).toEqual([]);
+    a.reconnect();
+    run(300);
+    expect(watcher.last('rooms')!.rooms.map((r) => r.code)).toEqual([a.last('room')!.room.code]);
+  });
+
+  it('a seat gone during a battle is kept for the full grace after the result (backlog 225)', () => {
+    // Co-op: Bo's phone locks early; Ada wins alone minutes later.
+    const { lobby, run } = setup({ awayGrace: 600 });
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    a.hello('Ada');
+    b.hello('Bo');
+    a.send({ type: 'host' });
+    const code = a.last('room')!.room.code;
+    b.send({ type: 'join', code });
+    a.send({ type: 'coop', coop: 'novice' });
+    a.send({ type: 'ready', ready: true, rev: a.last('room')!.room.rev });
+    b.send({ type: 'ready', ready: true, rev: b.last('room')!.room.rev });
+    run(4000);
+    b.disconnect();
+    run(120_000);
+    const room = (lobby as unknown as { rooms: Map<string, { match: { finish(w: number, r: string): void } }> }).rooms.get(code)!;
+    room.match.finish(0, 'citadel');
+    run(300);
+    expect(a.last('over')).toMatchObject({ winner: 0 });
+    // Bo still has a seat (a minute from the result), and Ada's victory still counts.
+    expect(a.last('room')!.room.seats[1]).toMatchObject({ name: 'Bo', connected: false });
+    expect(a.last('room')!.room.seats[0]!.wins).toBe(1);
+    b.reconnect();
+    run(300);
+    expect(b.last('welcome')!.room?.code).toBe(code);
+  });
+
   it('a tab reconnecting in the background stays away', () => {
     const { run, a, b } = battle();
     run(2000);
@@ -703,6 +749,24 @@ describe('battle', () => {
     run(100);
     b.send({ type: 'away', away: true });
     run(1500);
+    a.send({ type: 'claim' });
+    expect(a.last('over')).toMatchObject({ winner: 0, reason: 'timeout' });
+  });
+
+  it('away and back within each resume countdown cannot hold the battle forever either (backlog 227)', () => {
+    const { run, a, b } = battle();
+    run(2000);
+    const t0 = a.world!.tick;
+    // 2 s away, 2.5 s "back" — but the battle only runs 3 s after a return: not a tick is played.
+    for (let i = 0; i < 12; i++) {
+      b.send({ type: 'away', away: true });
+      run(2000);
+      b.send({ type: 'away', away: false });
+      run(2500);
+    }
+    b.send({ type: 'away', away: true });
+    run(500);
+    expect(a.world!.tick - t0).toBeLessThan(5);
     a.send({ type: 'claim' });
     expect(a.last('over')).toMatchObject({ winner: 0, reason: 'timeout' });
   });
