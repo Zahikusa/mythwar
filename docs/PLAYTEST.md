@@ -70,3 +70,50 @@ powers cast). It never leaves the device unless copied. Paste it under your note
 ## Afterwards
 Put the three biggest findings (with the times from your notes) into PROGRESS.md under
 "Open questions for the human" or as backlog items — each as *what happened → what we change*.
+
+## Phones: the native-app check (about 10 minutes, no players needed)
+
+What the automated check (`npm run mobilecheck`, Playwright's WebKit and Chromium) cannot see:
+the real browser bars, the home bar, the keyboard and the install dialogs. One iPhone and one
+Android phone, the public address (https://zahikusa.github.io/mythwar/). Tick each line; write
+down the model, the iOS/Android version and anything that looks wrong (a photo helps).
+
+**iPhone, Safari tab (3 min)**
+- [ ] Title, upright and sideways: drag anywhere — nothing bounces, scrolls or zooms (pinch,
+      double-tap, long press on text: no zoom, no selection, no "Copy" bubble).
+- [ ] Safari's bars never cover a button: the bottom of the title, the cards in a battle, the
+      results' buttons. Sideways with the bars shown and hidden (iOS 26: the floating bar).
+- [ ] Settings, Bestiary, the lobby: only the middle scrolls (with momentum); the title and
+      the Done/Back button stay put. Pulling past the end does not move the page.
+- [ ] The lobby, upright: tap "Your name" — the keyboard opens, the field stays visible; close
+      the keyboard — the game sits exactly where it was (no gap, nothing shifted).
+- [ ] The "Get the app" offer on the title opens the sheet; the steps match what Safari
+      shows (iOS 26: ⋯ → Share → Add to Home Screen → Open as Web App); the arrow points at
+      the right button. Swipe the sheet down: it goes.
+
+**iPhone, installed (2 min)** — follow the sheet's steps, then open Mythwar from the Home Screen.
+- [ ] Launch: dark from the first frame (no white flash), no browser bars, the welcome card.
+- [ ] Sideways on a phone with a notch: nothing important under the notch or the home bar,
+      on both sides (turn the phone the other way round too).
+- [ ] Upright: the game turns sideways cleanly; the status bar doesn't cover anything.
+- [ ] Flight mode, close the app fully, open it again: it starts (offline).
+- [ ] The swipe back from the screen's left edge steps back like the game's Back.
+
+**Android, Chrome tab (3 min)**
+- [ ] The same "nothing moves" checks; pull down on the title: no refresh.
+- [ ] Back (button or edge swipe): closes a battle sheet first, opens the menu in a battle,
+      leaves the results to the main menu; on the title the first Back says "Press Back again
+      to leave", the second leaves.
+- [ ] "Get the app" → "Install app" opens Chrome's real install dialog (if Chrome offers it;
+      otherwise the sheet shows the ⋮ menu steps and "Play full screen").
+- [ ] Settings → Vibration off: no buzz on a summon; on again: buzz.
+
+**Android, installed (2 min)**
+- [ ] Opens full screen, sideways, no status bar; Back on the title leaves only on the second press.
+- [ ] Open the game in a Chrome tab again: the title says "You have the app — open Mythwar
+      from your home screen" (getInstalledRelatedApps).
+
+**Shared link (1 min)** — send the link to yourself in WhatsApp/Instagram/Telegram and open it
+there:
+- [ ] The title offers "Open in Safari/Chrome"; on Android "Open in Chrome" opens Chrome; on
+      iPhone the steps match the app's menu.
