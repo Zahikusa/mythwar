@@ -1,6 +1,7 @@
 import { Audio } from './audio/audio.ts';
 import { Game } from './game.ts';
 import { puzzleById } from './sim/puzzles.ts';
+import { Chronicle } from './ui/chronicle.ts';
 import { DIFFICULTIES } from './ai/ai.ts';
 import type { SimEvent } from './sim/types.ts';
 import type { Difficulty } from './ai/ai.ts';
@@ -68,6 +69,8 @@ export class App {
   private fpsAcc = 0;
   private fpsFrames = 0;
   private overTimer = -1;
+  /** The battle's story so far (Lens #65), shown on the results. */
+  private chronicle: Chronicle | null = null;
   /** Seconds to the next heartbeat while the citadel is in danger. */
   private beatIn = 0;
   /** Gamepads (Lens #54) and the menu button they have highlighted. */
@@ -401,6 +404,7 @@ export class App {
         this.hud.onEvents(ev);
         this.coach.onEvents(ev);
         if (!demo && !game.practice) this.feats?.onEvents(ev, game.world);
+        if (!demo && !game.practice) this.chronicle?.onEvents(ev, game.world);
         if (!demo) this.tauntEvents(game, ev);
         for (const e of ev) {
           if (e.type === 'ageUp' && e.team === game.playerTeam) {
@@ -481,6 +485,7 @@ export class App {
       this.audio.ui('bless');
     });
     this.feats.start(game.world, game.playerTeam);
+    this.chronicle = new Chronicle(game.playerTeam, game instanceof NetGame ? game.foeName : PERSONAS[this.difficulty].name);
     this.taunts = { n: 0, at: -100, said: new Set() };
     this.starWarned = { half: false, par: game.world.time > parTime(this.difficulty, game.world.quick) };
     this.immersive();
@@ -736,6 +741,7 @@ export class App {
     }
     if (!(g instanceof NetGame) || g.result) this.feats?.onEnd(g.world, g instanceof NetGame ? null : this.difficulty, g instanceof NetGame && !!g.coop);
     this.menus.featsEarned = this.feats?.earned ?? [];
+    this.menus.chronicle = this.chronicle?.lines() ?? [];
     if (g instanceof NetGame) {
       // (A battle abandoned by the server restarting has no result to count.)
       // (Co-op battles are against the AI: no head-to-head tally.)

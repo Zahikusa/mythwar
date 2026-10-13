@@ -139,7 +139,7 @@ complete; its log follows below the lens plan.
 - [x] #62 Inherent Interest — the Elder Dragon's arrival is an occasion: fiery burst, shake, a banner; its fall announced
 - [x] #63 Beauty — no banner showing through the results (the same words twice); the riddle result gets a portrait composition
 - [x] #64 Projection — "Your name" in Settings: by your citadel in every battle, and the generals address you by it
-- [ ] #65 The Story Machine — battle chronicle on results
+- [x] #65 The Story Machine — each battle writes its chronicle (first blood, ascensions, dragon, the end) on the results and in Copy result
 - [ ] #66 The Obstacle — obstacles worth overcoming
 - [ ] #67 Simplicity and Transcendence — a transcendent power moment
 - [ ] #68 The Hero's Journey — a short campaign path

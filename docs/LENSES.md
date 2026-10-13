@@ -1259,3 +1259,22 @@ acknowledge them?*
 - Checked: unit test (named lines alternate, every general has start/won/lost lines, no
   placeholder leaks), screenshots (settings on desktop and phone, the name in battle); full
   verify (the multiplayer smoke caught a co-op label change — kept as before).
+
+## #65 The Lens of the Story Machine
+*Does the game generate stories players want to tell? What gives them the raw material? Is there
+a place where the story the game made is handed back to them?*
+- Mythwar is a story machine already: every battle has its own arc of ages, a dragon or not, a
+  surge won at the last second, a citadel saved at 3%. The results kept only the *statistics* of
+  that story (a table, an army chart): the story itself was gone once the screen changed.
+- Change: the battle writes **its chronicle** (`src/ui/chronicle.ts`): first blood, every
+  ascension (yours and theirs), Ley Surges won, the Elder Dragon taking wing and falling, a
+  citadel brought below a quarter, Ragnarök, the end — dated, in the foe's name ("1:50 — Odin
+  ascends to Olympus." … "19:08 — Odin's citadel is brought below a quarter of its strength." —
+  "19:13 — Victory: Odin's citadel falls."). Up to ten lines: when a long battle has more, the
+  least telling go first (surges, then the foe's later ascensions); first blood and the verdict
+  always stay. The results show it beside the table, sharing a panel with the army chart (two
+  small tabs in the title line — the results have no height to spare), and **Copy result** now
+  copies the whole story, ready to send to a friend. Online battles get one too.
+- Checked: unit test (a full AI battle: 5–10 lines in time order, first blood first, an
+  ascension, the verdict last), screenshots (1600×900, 1366×768); full verify (the smoke caught
+  the first version's extra tab row pushing the results' buttons out of reach).

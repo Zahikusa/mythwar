@@ -91,6 +91,8 @@ export class Menus {
   private pauseGoals: HTMLElement | null = null;
   /** Feats earned in the battle whose results are shown next. */
   featsEarned: Feat[] = [];
+  /** The battle's chronicle (src/ui/chronicle.ts) for the results shown next. */
+  chronicle: string[] = [];
   /** A new best star rating against this foe (0 = not a new best). */
   newBestStars = 0;
   private featList: HTMLElement | null = null;
@@ -832,7 +834,8 @@ export class Menus {
       }
     }
     const place = placeName(world.seed);
-    const shareText = `Mythwar: ${won ? 'Victory' : 'Defeat'} at ${place} vs ${foeName} in ${fmtTime(world.time)} — reached ${AGES[P.age].name}, ${P.stats.kills} foes slain.`;
+    const story = this.chronicle;
+    const shareText = `Mythwar: ${won ? 'Victory' : 'Defeat'} at ${place} vs ${foeName} in ${fmtTime(world.time)} — reached ${AGES[P.age].name}, ${P.stats.kills} foes slain.${story.length ? `\n${story.join('\n')}` : ''}`;
     const share = this.button('Copy result', 'ghost', () => {
       const done = (ok: boolean) => (share.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed');
       try {
@@ -876,7 +879,7 @@ export class Menus {
         h('span', { text: online && (won || online.reason !== 'citadel') ? scoreLine(online) : battleTip(world, me, difficulty, ageUps, this.settings.advice) }),
         online ? null : this.flowButton(won, difficulty),
       ),
-      h('div', { class: 'vstats' }, table, history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null),
+      h('div', { class: 'vstats' }, table, this.storyPanel(history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null, story)),
       online ? this.onlineResultButtons(share) : h(
         'div',
         { class: 'mrow' },
@@ -887,6 +890,35 @@ export class Menus {
       ),
     );
     this.show('over');
+  }
+
+  /**
+   * The army chart and the battle's chronicle (Lens #65) share one panel, with two small tabs;
+   * a battle too short for a chart shows its chronicle straight away.
+   */
+  private storyPanel(chart: HTMLElement | null, story: string[]): HTMLElement | null {
+    if (!story.length) return chart;
+    const chron = h('div', { class: 'chart chron' }, h('div', { class: 'ctitle', text: 'Chronicle of the battle' }), h('ol', { class: 'chronlist' }, ...story.map((line) => h('li', { text: line }))));
+    if (!chart) return chron;
+    const wrap = h('div', { class: 'storypanel' });
+    const tab = (label: string, show: HTMLElement, hide: HTMLElement) => {
+      const b = h('button', { class: 'ctab', text: label }) as HTMLButtonElement;
+      onTap(b, () => {
+        this.cb.sound('click');
+        show.classList.remove('hidden');
+        hide.classList.add('hidden');
+        for (const t of wrap.querySelectorAll('.ctab')) t.classList.toggle('on', t === b);
+      });
+      return b;
+    };
+    chron.classList.add('hidden');
+    // (Shorter titles leave room for the tabs on the same line.)
+    chart.querySelector('.ctitle')!.textContent = 'Army strength';
+    chron.querySelector('.ctitle')!.textContent = 'Chronicle';
+    const tabs = h('div', { class: 'ctabs' }, tab('Armies', chart, chron), tab('Chronicle', chron, chart));
+    tabs.firstElementChild!.classList.add('on');
+    wrap.append(tabs, chart, chron);
+    return wrap;
   }
 
   private onlineResultButtons(share: HTMLButtonElement): HTMLElement {
