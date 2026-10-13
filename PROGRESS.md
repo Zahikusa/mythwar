@@ -880,6 +880,9 @@ it prints, inviting, stopping — 2026-10-13.)
 199. [x] Co-op HUD: after the ally left (#191 now says so in a toast), the name line still reads
    "You & Bo · Fae Wilds" (hud.ts ~1095) — "You (Bo left)" or just "You" once their seat is empty. (Done:
    no ally named once their seat is empty — the player's own name line shows; mpsmoke checks.)
+200. [x] #191's "is away" toast and #194's co-op notice had no end-to-end check. (Done: in mpsmoke's
+   co-op battle A steps away — B is told; B too — A's notice names the ally, no claim, no "you
+   win"; both back, the battle runs.)
 197. [ ] (minor) The co-op chronicle calls the foe by the difficulty label ("First blood to Novice")
    where single player uses the general's name (Puck); the results drop the AI's income note.
 

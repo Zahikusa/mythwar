@@ -690,6 +690,16 @@ async function main(): Promise<void> {
     await waitFor(b, 'B hears the lane call', () => (document.querySelector('.hud .ebubble.mine')?.textContent ?? '').includes('Help middle!'), 4000);
     const lit = await b.evaluate(() => (window as any).__mythwar.renderer.lanePingT[1] > 0);
     check('co-op: a lane call lights that lane for the ally', lit);
+    // (Backlog 191, 194) A steps away: B is told and fights on. B steps away too: the battle waits
+    // — and A's notice speaks of an ally (no "you win", no claim).
+    await a.evaluate(() => (window as any).__mythwar.mp.away(true));
+    await waitFor(b, 'B told A is away', () => /is away — you fight on/.test(document.querySelector('.hud .toast.show')?.textContent ?? ''), 4000);
+    await b.evaluate(() => (window as any).__mythwar.mp.away(true));
+    await waitFor(a, "A's co-op notice while both are away", () => /as soon as one of you is here/.test(document.querySelector('.netoverlay .nbanner.show')?.textContent ?? ''), 6000);
+    const coopNotice = await a.evaluate(() => ({ text: document.querySelector('.netoverlay .nbanner')?.textContent ?? '', claim: !document.querySelector('.nclaim')!.classList.contains('hidden') }));
+    check('co-op: both away — the notice names the ally, no claim, no "you win"', !coopNotice.claim && !/you win/.test(coopNotice.text), JSON.stringify(coopNotice));
+    for (const p of [a, b]) await p.evaluate(() => (window as any).__mythwar.mp.away(false));
+    await waitFor(a, 'co-op running again', () => !(window as any).__mythwar.game.netPause && !(window as any).__mythwar.game.paused, 8000);
     // A steps out of the battle: B fights on alone.
     await a.evaluate(() => (window as any).__mythwar.leaveRoom());
     // (B is told A left — the seat empties — and the battle must keep running after that.)
