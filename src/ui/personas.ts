@@ -89,3 +89,15 @@ export function tauntLine(d: Difficulty, event: TauntEvent, n: number, name = ''
   const lines = PERSONAS[d].lines[event];
   return lines[n % lines.length];
 }
+
+/**
+ * The hero's journey (Lens #68): the four generals are the chapters of one war — the call, the
+ * threshold, the ordeal, the return. A chapter is told when its general is faced for the first
+ * time (until beaten), and named on the foe screen.
+ */
+export const JOURNEY: Record<Difficulty, { chapter: string; text: string }> = {
+  novice: { chapter: 'I · The Call', text: 'A wandering spirit has claimed the old crossing, and the ley lines answer whoever holds it. Someone must go. You go.' },
+  adept: { chapter: 'II · The Threshold', text: 'Word of your victory has reached the Amazons. Their queen does not believe it. Cross into her lands and prove it.' },
+  master: { chapter: 'III · The Ordeal', text: 'The All-Father has watched every battle through his ravens’ eyes. He knows how you fight. Fight better.' },
+  mythic: { chapter: 'IV · The Return', text: 'Only the god of war stands between you and the end of this war. Win, and the crossing is yours for good.' },
+};

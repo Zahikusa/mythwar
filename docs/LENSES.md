@@ -1315,3 +1315,20 @@ player — and does using it feel transcendent?*
   frame shows it; live captures in headless Chrome lagged behind the canvas.)
 - Checked: a frozen-frame screenshot of the shadow; the focus state set and decaying after a
   cast; full verify.
+
+## #68 The Lens of the Hero's Journey
+*Does the player's progress follow the shape of a journey — a call, a threshold, trials, an
+ordeal, a return? Does the game tell it?*
+- The structure was there without the story: four generals in rising difficulty (#13/#16),
+  their voices (#44), the ladder on the title (#49), Legend of the Ages at the top (#51). Each
+  battle was an episode; nothing said they were one war, or where the player stood in it.
+- Change: **the four generals are the chapters of one journey** (`JOURNEY` in personas.ts):
+  I · The Call (Puck: "A wandering spirit has claimed the old crossing… Someone must go. You
+  go."), II · The Threshold (Hippolyta: "Word of your victory has reached the Amazons. Their
+  queen does not believe it…"), III · The Ordeal (Odin: "He knows how you fight. Fight
+  better."), IV · The Return (Ares: "Win, and the crossing is yours for good."). The chapter is
+  named on each foe card, and told in the opening banner — in place of the age's lore line —
+  every time you face a general you have not yet beaten. Once beaten, the chapter is behind you
+  and the banner returns to the age's lore.
+- Checked: screenshots (foe screen on a 667×375 phone, the opening against Hippolyta); full
+  verify.

@@ -11,7 +11,7 @@ import { battleStars, parTime } from './settings.ts';
 import type { HistorySample } from '../game.ts';
 import { MpScreens } from './mpmenus.ts';
 import { Bestiary } from './bestiary.ts';
-import { PERSONAS } from './personas.ts';
+import { JOURNEY, PERSONAS } from './personas.ts';
 import { battleName, placeName } from './places.ts';
 import { FEATS, MAX_STARS, PINNACLE, starTotal } from './feats.ts';
 import { PUZZLES } from '../sim/puzzles.ts';
@@ -322,7 +322,7 @@ export class Menus {
         h('span', { title: 'How often it summons the right counter' }, h('b', { text: 'Counters' }), counters),
         h('span', { title: 'Its gold over time and from shrines, compared with yours (gold from kills is the same)' }, h('b', { text: 'Income' }), `${Math.round(p.incomeMult * 100)}%`),
       );
-      const card = h('button', { class: `diff d-${d}` }, h('div', { class: 'ribbon' }), h('div', { class: 'dname', text: p.name }), h('div', { class: 'dpersona', text: PERSONAS[d].title }), skulls, h('div', { class: 'dblurb', text: p.blurb }), chips, rec);
+      const card = h('button', { class: `diff d-${d}` }, h('div', { class: 'ribbon' }), h('div', { class: 'dname', text: p.name }), h('div', { class: 'dchapter', text: JOURNEY[d].chapter }), h('div', { class: 'dpersona', text: PERSONAS[d].title }), skulls, h('div', { class: 'dblurb', text: p.blurb }), chips, rec);
       onTap(card, (e) => {
         // Enter / Space on the card already chosen (a keyboard click: onTap only passes clicks
         // without a pointer) begins the battle, as a double-click does.

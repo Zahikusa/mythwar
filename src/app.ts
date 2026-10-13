@@ -36,7 +36,7 @@ const SANDBOX_PROMPTS = [
   'Hold a lane at its shrine, gather ten creatures, then let them loose',
   'Which turret stops a Kitsune pack: bolt or blast?',
 ];
-import { PERSONAS, tauntLine } from './ui/personas.ts';
+import { JOURNEY, PERSONAS, tauntLine } from './ui/personas.ts';
 import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
 
@@ -447,7 +447,8 @@ export class App {
       this.hud.banner('Sandbox', 'No foe · endless gold · try anything', 'gold', `${prompt}${prompt.endsWith('?') ? '' : '.'} Summon for either side with the “For:” button (X).`);
     }
     else {
-      this.hud.opening(PERSONAS[difficulty].title);
+      // Facing a general not yet beaten: their chapter of the journey (Lens #68).
+      this.hud.opening(PERSONAS[difficulty].title, this.settings.records[difficulty]?.wins ? undefined : JOURNEY[difficulty]);
       this.hud.setFoeName(PERSONAS[difficulty].name);
       // The general speaks once the opening banner has had its moment.
       window.setTimeout(() => this.taunt('start', true), 3200);

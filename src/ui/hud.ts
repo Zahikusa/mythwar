@@ -786,11 +786,12 @@ export class Hud {
    * The battle begins: who you face and what you must do (the game's essential experience), and
    * where — the battlefield's name.
    */
-  opening(foe: string): void {
+  opening(foe: string, chapter?: { chapter: string; text: string }): void {
     const g = this.game;
     if (!g) return;
     const age = AGES[g.world.players[g.playerTeam].age];
-    this.banner('Topple their citadel', `vs ${foe} · ${age.name}`, 'gold', age.lore, battleName(g.world.seed));
+    // (A journey chapter, when one is due, tells the story instead of the age's lore line.)
+    this.banner('Topple their citadel', `vs ${foe} · ${age.name}`, 'gold', chapter ? `${chapter.chapter} — ${chapter.text}` : age.lore, battleName(g.world.seed));
     this.cb.sound('horn');
   }
 
