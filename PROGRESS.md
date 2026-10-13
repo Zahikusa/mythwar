@@ -5,7 +5,7 @@ Status: **Phase 2 in progress** — 100 design iterations, one per lens of Jesse
 complete; its log follows below the lens plan.
 
 ## Run #6 in short (for the morning)
-- Lenses #45–#55 done (one commit each, reasoning in `docs/LENSES.md`). Highlights: battles are
+- Lenses #45–#74 done (one commit each, reasoning in `docs/LENSES.md`). Highlights: battles are
   fought at named places (#45); **economy** probe `npm run economy` found blessings 4×
   underpriced — priced by worth, Mythic banks for them (#46); counter-triangle matrix
   (`classwar --matrix`) fixed Asgard's and Jade's limp counters (#47); **colour-blind setting**
@@ -18,7 +18,11 @@ complete; its log follows below the lens plan.
   **citadel heartbeat** below 30% (#59); sandbox foe mode on the cards (#60); Ragnarök foretold
   3 min ahead with building drums (#61); the Elder Dragon's arrival as an event (#62); no
   banner through the results (#63); **your name** by your citadel and in the generals' mouths
-  (#64); **battle chronicle** on the results and in Copy result (#65).
+  (#64); **battle chronicle** on the results and in Copy result (#65); riddles for Jade and
+  Celestial (#66); a **god's moment** on your power: slow-motion + the field darkens around the
+  lane (#67); the generals as **journey chapters** that open (#68) and close (#70); riddles drop
+  inert controls (#69); **start in any age already reached** (#71); the crowded lane calls for
+  your power (#72); tips from **Mímir** (#73); travellers in the far sky (#74).
 - Bugs fixed: loading a progress code erased best star ratings; the intermittent "arc radius is
   negative" (a negative frame time step ran a summon animation backwards).
 - Rules changed (simFingerprint differs from run #5 builds): blessing prices, Fenrir/Jötunn/
