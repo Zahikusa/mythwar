@@ -92,7 +92,8 @@ picks another port.
 | A player quits while offline | Leaving the battle / room is delivered when the connection returns; they are not pulled back in. (Closing Multiplayer altogether while offline simply lets the seat time out.) |
 | The same game is opened in another tab | A duplicated tab starts its own session; if one session is taken over elsewhere, the old tab says so and stops reconnecting. |
 | A player presses Pause | The battle pauses for both; either player can resume. Each player has **3 pauses per battle** (so nobody can grief with a pause/resume loop); after that Pause opens the menu just for them and the battle goes on. Being away is not capped. |
-| A player leaves the battle | They forfeit; the other player wins. The room stays open for a new opponent. |
+| A player leaves the battle | They forfeit; the other player wins (both devices count it). The room stays open for a new opponent. |
+| The server hits a bug | A fault while handling one message is logged and that message dropped; a fault inside one battle stops that battle alone — its two players are sent back to the lobby as after a server restart (no result counts). Every other battle goes on. |
 | After a battle | Both press **Rematch** to play again in the same room (wins are counted). |
 | The game server restarts | Clients notice their session is gone and return to the lobby. |
 | Old page against a newer server | The client is told to reload: the protocol version **and** a fingerprint of the game rules (balance tables + a short scripted battle) must match. |
