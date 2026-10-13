@@ -137,10 +137,22 @@ the improvement backlog below (verified, committed) and add what the review find
 37. [x] `server/main.ts --port 0` (any free port) prints "localhost:0" — the real port is never
    shown, so scripts and tests have to guess a free one (tests/server-process.test.ts does).
    (Done: the bound port is printed; the process test starts on port 0.)
-38. [ ] The game bundle grew from ~300 kB to 400 kB (135 kB gzipped) over phase 2: find what grew
+38. [x] The game bundle grew from ~300 kB to 400 kB (135 kB gzipped) over phase 2: find what grew
    and whether rarely-used screens (Bestiary myths, riddles) should load on demand.
-39. [ ] No end-to-end check of Settings → "Copy playtest journal" (#91) or the break note in a real
-   battle flow; both are only unit-tested.
+   (Done: measured per source file from the source map — the growth is the game itself spread
+   over renderer/hud/menus/app (10–11% each); Bestiary 1.1%, riddles 0.8%: not worth splitting.
+   The one clean cut was the QR library (5%, only a host waiting for a guest needs it): it now
+   loads on demand — main chunk 401 → 381 kB (128 kB gzipped); mpsmoke waits for the QR.)
+39. [x] No end-to-end check of Settings → "Copy playtest journal" (#91) or the break note in a real
+   battle flow; both are only unit-tested. (Done: smoke `journalFlow` — an hour into a sitting
+   the results say "take a break" instead of the next foe, once; the battle is in the saved
+   journal; Main menu → Settings → Copy copies every battle, status line says how many.)
+40. [x] `src/net/connection.ts`: a WebSocket stuck dialling (a phone switching Wi-Fi mid-dial: the
+   SYN goes nowhere) is never given up — `tickle` only watches *open* links, so the client sits
+   in "Connecting…" until the browser times out (up to a minute or more). And the browser's
+   `online` event (network back) isn't used. No unit tests for Connection at all.
+   (Done: a dial is given up after 5 s, 7.5 s, … 15 s and retried; `online` dials at once;
+   tests/connection.test.ts — backoff, silent link, dial limit, refusals, RTT, nudge.)
 
 
 
