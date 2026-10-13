@@ -249,6 +249,40 @@ async function gamepadFlow(page: Page): Promise<void> {
   await tap(9);
   await sleep(200);
   check('gamepad: Start again resumes', (await menu()) === 'none', await menu());
+  // (Backlog 28) On the results every control can be reached with the D-pad: a breadth-first walk
+  // over the app's own D-pad moves, from the main button. (A few seconds first, so the summons
+  // step out: a champion, and with it the report's tabs.)
+  await sleep(6000);
+  await page.evaluate(() => {
+    const w = (window as unknown as { __mythwar: any }).__mythwar.game.world;
+    w.players[1].baseHp = 1;
+    w.damageBase(1, 10, 0, 0);
+  });
+  await sleep(3600);
+  const reach = await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    const screen = document.querySelector('.screen.over') as HTMLElement;
+    const all = [...screen.querySelectorAll<HTMLElement>('button')].filter((b) => b.offsetParent !== null && !(b as HTMLButtonElement).disabled);
+    const label = (b: HTMLElement) => b.textContent?.trim() ?? '';
+    const start = screen.querySelector<HTMLElement>('.mbtn.primary')!;
+    const seen = new Set<HTMLElement>([start]);
+    const queue = [start];
+    while (queue.length) {
+      const from = queue.shift()!;
+      for (const dir of ['up', 'down', 'left', 'right']) {
+        app.setPadFocus(from);
+        app.padMenu(dir);
+        const to = app.padFocus as HTMLElement | null;
+        if (to && !seen.has(to)) {
+          seen.add(to);
+          queue.push(to);
+        }
+      }
+    }
+    app.setPadFocus(null);
+    return { all: all.map(label), unreachable: all.filter((b) => !seen.has(b)).map(label) };
+  });
+  check('gamepad: every control on the results is reachable with the D-pad', reach.unreachable.length === 0 && reach.all.includes('Legend') && reach.all.includes('Rematch'), JSON.stringify(reach));
 }
 
 /** A card tapped before it can be paid for is armed, and summons itself once the gold is there. */
