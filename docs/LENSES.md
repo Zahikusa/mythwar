@@ -1297,3 +1297,21 @@ the journey have an obstacle of its own?*
 - Fixed on the way: a riddle card's header without the "Solved" tag was centred.
 - Checked: puzzlecheck, unit tests (each answer wins, < 25% of answers, the power riddle needs
   its power), the list of six on a 667×375 phone; full verify.
+
+## #67 The Lens of Simplicity and Transcendence
+*How is my world simpler than the real one? What kind of transcendent power does it give the
+player — and does using it feel transcendent?*
+- Simplicity: war reduced to three lanes, a triangle, gold and time. Transcendence: the player
+  is a god-general who calls up legends and, once a minute or so, **acts as a god**: brambles,
+  lightning, an endless winter, a spirit dragon, falling stars. Those powers look spectacular
+  (#62 and earlier) but *feel* like every other tap: the battle runs on at full speed, the
+  eye has to find the struck lane among three busy ones, and the moment is gone.
+- Change: your god power becomes **a god's moment**. For a breath after you cast, time slows to
+  a third and eases back over 0.6 s (single player — online both players share one clock), and
+  everything but the struck lane sinks into shadow, returning over 1.3 s. The world holds its
+  breath for the player's act; the eye goes straight to it.
+- Found on the way: the shadow was invisible at first — particles leave the canvas in additive
+  blending, where a dark fill adds nothing; the overlay now sets normal compositing. (A frozen
+  frame shows it; live captures in headless Chrome lagged behind the canvas.)
+- Checked: a frozen-frame screenshot of the shadow; the focus state set and decaying after a
+  cast; full verify.

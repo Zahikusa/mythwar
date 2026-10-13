@@ -62,6 +62,8 @@ export class Game {
   readonly demoAi: AiController | null;
   readonly view: ViewState;
   speed = 1;
+  /** A brief slow-motion (the player's god power, Lens #67); 1 = normal. Single player only. */
+  timeScale = 1;
   paused = false;
   /** Sandbox: orders go to the other side (team 1). */
   sandboxFoe = false;
@@ -170,7 +172,7 @@ export class Game {
   /** Advances the simulation by real time `dt` (seconds). Returns the interpolation alpha. */
   advance(dt: number): number {
     if (!this.paused && !this.over) {
-      this.acc += Math.min(dt, 0.25) * this.speed;
+      this.acc += Math.min(dt, 0.25) * this.speed * this.timeScale;
       let steps = 0;
       while (this.acc >= TICK && steps < 40) {
         this.ai?.update(TICK);

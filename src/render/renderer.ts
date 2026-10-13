@@ -130,6 +130,9 @@ export class Renderer {
   /** Seconds since the previous rendered frame (0 while paused). */
   private frameDt = 0;
   private shake = 0;
+  /** The lane of the player's god power and how much of its moment is left (1 → 0). */
+  private focusLane = -1;
+  private focusT = 0;
   private ragnarok = 0;
   private baseFlash: [number, number] = [0, 0];
   private shrinePulse = [0, 0, 0];
@@ -664,6 +667,11 @@ export class Renderer {
           this.onPowerCast(e.kind, e.team, e.lane);
           // Make it obvious which lane an enemy god power hits.
           if (e.team !== view.playerTeam) this.laneAlert[e.lane] = 1;
+          // Your own cast is a god's moment: the rest of the field dims for an instant (Lens #67).
+          else if (!view.demo) {
+            this.focusLane = e.lane;
+            this.focusT = 1;
+          }
           break;
         case 'strike':
           this.onStrike(e.kind, e.team, e.lane, e.x, e.radius);
@@ -969,6 +977,8 @@ export class Renderer {
       this.drawPowers(ctx, world, lane);
       if (!this.skip.has('leysight')) this.drawLeySight(ctx, world, lane, view);
     }
+
+    if (this.focusT > 0) this.drawFocus(ctx);
 
     // Forget visuals of projectiles that no longer exist.
     if (this.projVis.size > world.projectiles.length) {
@@ -1617,6 +1627,33 @@ export class Renderer {
       ctx.fillRect(bx, by, w * realFrac, h);
       ctx.globalAlpha = 1;
     }
+  }
+
+  /**
+   * The god's moment (Lens #67): for a breath after the player casts, everything but the struck
+   * lane sinks into shadow, then the field returns. (The shadow is full at the start and eases
+   * out over 1.3 s; a paused frame holds it.)
+   */
+  private drawFocus(ctx: CanvasRenderingContext2D): void {
+    const L = this.layout;
+    const g = L.lanes[this.focusLane];
+    this.focusT = Math.max(0, this.focusT - this.frameDt / 1.3);
+    if (!g) return;
+    const lanes = L.lanes;
+    const gap = lanes.length > 1 ? lanes[1].y - lanes[0].y : g.band * 3;
+    const top = this.focusLane > 0 ? (lanes[this.focusLane - 1].y + g.y) / 2 + g.band * 0.3 : g.y - gap * 0.9;
+    const bottom = this.focusLane < lanes.length - 1 ? (lanes[this.focusLane + 1].y + g.y) / 2 + g.band * 0.3 : g.y + g.band;
+    const k = this.focusT * Math.sqrt(this.focusT);
+    ctx.save();
+    // (Particles may have left additive blending on: a shadow must darken.)
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = `rgba(6, 3, 16, ${(0.5 * k).toFixed(3)})`;
+    ctx.beginPath();
+    ctx.rect(-L.width, -L.height, L.width * 3, L.height * 3);
+    ctx.rect(-L.width, top, L.width * 3, bottom - top);
+    ctx.fill('evenodd');
+    ctx.restore();
   }
 
   /** Small name / class / health label above the creature under the mouse. */

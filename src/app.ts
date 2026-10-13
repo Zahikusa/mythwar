@@ -46,6 +46,9 @@ type AppState = 'title' | 'playing' | 'over';
  * Top-level controller: owns the canvas, renderer, HUD, menus and the active game.
  * The title screen runs an AI-vs-AI battle in the background.
  */
+/** How long the player's god power slows time (seconds, real time). */
+const SLOWMO = 0.6;
+
 export class App {
   readonly root: HTMLElement;
   readonly stage: HTMLDivElement;
@@ -69,6 +72,8 @@ export class App {
   private fpsAcc = 0;
   private fpsFrames = 0;
   private overTimer = -1;
+  /** Seconds of the god power's slow-motion left. */
+  private slowmo = 0;
   /** The battle's story so far (Lens #65), shown on the results. */
   private chronicle: Chronicle | null = null;
   /** Seconds to the next heartbeat while the citadel is in danger. */
@@ -407,6 +412,7 @@ export class App {
         if (!demo && !game.practice) this.chronicle?.onEvents(ev, game.world);
         if (!demo) this.tauntEvents(game, ev);
         for (const e of ev) {
+          if (e.type === 'power' && e.team === game.playerTeam && !demo && !(game instanceof NetGame)) this.slowmo = SLOWMO;
           if (e.type === 'ageUp' && e.team === game.playerTeam) {
             this.buzz([30, 60, 30, 60, 60]);
             if (!demo && e.age > this.settings.ageSeen) {
@@ -814,6 +820,9 @@ export class App {
         this.hud.pulseGold();
       }
       if (this.state === 'playing') this.watchStars(g);
+      // The god power's moment: time slows to a third and eases back over 0.6 s (real time).
+      if (this.slowmo > 0 && !g.paused) this.slowmo = Math.max(0, this.slowmo - dt);
+      g.timeScale = this.slowmo > 0 ? 1 - 0.65 * (this.slowmo / SLOWMO) : 1;
       this.heartbeat(g, dt);
       if (this.state === 'playing') this.coach.update(this.hud.panelOpen || this.hud.bannerShowing || this.menus.current !== 'none' || this.netOverlay.busy);
       if (this.overTimer > 0) {
