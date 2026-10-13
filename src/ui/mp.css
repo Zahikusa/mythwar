@@ -1095,3 +1095,43 @@
     min-height: 44px;
   }
 }
+
+/* The shortest stages (a small phone sideways in a browser tab, ~290 px): the room code beside
+   its label, and "Copy link" beside the address — the whole invite QR code fits on screen for
+   the friend's camera, without scrolling. */
+@container stage (max-height: 340px) {
+  .screen.room h2 {
+    font-size: 22px;
+  }
+
+  .rcodebox {
+    flex-direction: row;
+    gap: 10px;
+    padding: 2px 14px;
+  }
+
+  .rcode {
+    font-size: 24px;
+  }
+
+  .rqr {
+    width: 92px;
+    height: 92px;
+  }
+
+  .rinvtext {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 4px 12px;
+  }
+
+  .rinvtext > b,
+  .rinvtext > span {
+    grid-column: 1 / -1;
+  }
+
+  .rinvtext .rcopy {
+    margin-top: 0;
+  }
+}
