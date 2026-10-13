@@ -45,6 +45,8 @@ export interface LobbyOptions {
   today?: () => number;
   /** Hall keys kept at hand (default HALL_KEYS_MAX; small in tests). */
   hallKeysMax?: number;
+  /** The slow hash behind a public network's hall key (tests pass a fast one; default scrypt). */
+  hallHash?: (network: string, salt: string) => string;
 }
 
 /**
@@ -770,6 +772,17 @@ export class Lobby {
   private warmHallKey(network: string): void {
     if (network === 'lan' || this.hallKeys.has(network) || this.hallKeyPending.has(network)) return;
     this.hallKeyPending.add(network);
+    const fast = this.opts.hallHash;
+    if (fast) {
+      // (Still later, as scrypt would be: the first list goes out without this network's Hall.)
+      queueMicrotask(() => {
+        this.hallKeyPending.delete(network);
+        if (this.hallKeys.has(network)) return;
+        this.cacheHallKey(network, `n:${fast(network, this.hallSalt)}`);
+        this.roomsDirty = true;
+      });
+      return;
+    }
     scrypt(network, this.hallSalt, 16, { N: 16384, r: 8, p: 1 }, (err, buf) => {
       this.hallKeyPending.delete(network);
       if (err || this.hallKeys.has(network)) return;
@@ -797,7 +810,7 @@ export class Lobby {
     // A slow, memory-hard hash (scrypt, ~20 ms and 16 MB each): the salt is kept with the file,
     // so a quick hash would let whoever has the file try all ~4 billion IPv4 addresses in
     // minutes; this makes that years of work. Computed once per network and cached.
-    const key = this.hallKeys.get(network) ?? `n:${scryptSync(network, this.hallSalt, 16, { N: 16384, r: 8, p: 1 }).toString('base64url')}`;
+    const key = this.hallKeys.get(network) ?? `n:${this.opts.hallHash ? this.opts.hallHash(network, this.hallSalt) : scryptSync(network, this.hallSalt, 16, { N: 16384, r: 8, p: 1 }).toString('base64url')}`;
     // (Used now: to the back of the queue.)
     this.cacheHallKey(network, key);
     return key;

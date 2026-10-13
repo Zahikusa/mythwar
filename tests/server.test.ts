@@ -86,7 +86,7 @@ class FakeClient {
   }
 }
 
-function setup(opts: { awayGrace?: number; store?: ServerStore; today?: () => number; hallKeysMax?: number } = {}) {
+function setup(opts: { awayGrace?: number; store?: ServerStore; today?: () => number; hallKeysMax?: number; hallHash?: (network: string, salt: string) => string } = {}) {
   let now = 1000;
   let r = 0.37;
   const lobby = new Lobby({
@@ -97,6 +97,7 @@ function setup(opts: { awayGrace?: number; store?: ServerStore; today?: () => nu
     store: opts.store,
     today: opts.today,
     hallKeysMax: opts.hallKeysMax,
+    hallHash: opts.hallHash,
   });
   const run = (ms: number) => {
     for (let t = 0; t < ms; t += 5) {
@@ -778,7 +779,8 @@ describe('battle', () => {
   });
 
   it('a full hall-key cache drops the least recently used network, and a live one finds its Hall again (backlog 47)', async () => {
-    const { lobby, run } = setup({ hallKeysMax: 2 });
+    // (A fast stand-in for scrypt: this test is about the cache, not the hash.)
+    const { lobby, run } = setup({ hallKeysMax: 2, hallHash: (n, salt) => Buffer.from(`${salt}|${n}`).toString('base64url') });
     const settle = async (until: () => boolean) => {
       for (let i = 0; i < 100 && !until(); i++) {
         await new Promise((r) => setTimeout(r, 20));
@@ -809,7 +811,8 @@ describe('battle', () => {
       c.hello(`Guest ${i}`);
       return c;
     });
-    await settle(() => false);
+    const keys = (lobby as unknown as { hallKeys: Map<string, string> }).hallKeys;
+    await settle(() => !keys.has('203.0.113.7'));
     expect(others.length).toBe(3);
     // …and is hashed again in the background: the Hall comes back without a reconnect.
     home.send({ type: 'watchRooms', on: true });
