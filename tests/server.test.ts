@@ -486,7 +486,7 @@ describe('battle', () => {
     b.send({ type: 'away', away: true });
     expect(a.last('paused')!.state).toMatchObject({ reason: 'away', seat: 1 });
     b.send({ type: 'away', away: false });
-    expect(a.last('paused')!.state).toEqual({ reason: 'pause', seat: 0 });
+    expect(a.last('paused')!.state).toMatchObject({ reason: 'pause', seat: 0 });
   });
 
   it('the waiting player may claim the win after a while', () => {
@@ -567,11 +567,31 @@ describe('battle', () => {
     expect(a.world!.players[0].stats.summoned + a.world!.players[0].queue.length).toBe(0);
   });
 
+  it('each player may pause three times a battle; being away is not capped (Lens #87)', () => {
+    const { run, a, b } = battle();
+    run(500);
+    for (let i = 0; i < 3; i++) {
+      b.send({ type: 'pause' });
+      expect(a.last('paused')!.state).toMatchObject({ reason: 'pause', seat: 1, pausesLeft: [3, 2 - i] });
+      a.send({ type: 'resume' });
+      run(3500);
+      expect(a.last('resumed')).toBeDefined();
+    }
+    const before = a.inbox.length;
+    b.send({ type: 'pause' });
+    expect(a.inbox.slice(before).some((m) => m.type === 'paused')).toBe(false);
+    // A still has all of theirs, and the count travels with a snapshot.
+    a.send({ type: 'pause' });
+    expect(a.last('paused')!.state.pausesLeft).toEqual([2, 0]);
+    b.send({ type: 'resync' });
+    expect(b.last('snapshot')!.pausesLeft).toEqual([2, 0]);
+  });
+
   it('pause and resume by either player', () => {
     const { run, a, b } = battle();
     run(1000);
     a.send({ type: 'pause' });
-    expect(b.last('paused')!.state).toEqual({ reason: 'pause', seat: 0 });
+    expect(b.last('paused')!.state).toEqual({ reason: 'pause', seat: 0, pausesLeft: [2, 3] });
     const t = b.world!.tick;
     run(5000);
     expect(b.world!.tick).toBe(t);

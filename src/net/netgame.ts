@@ -5,7 +5,7 @@ import { hashWorld } from '../sim/hash.ts';
 import type { Command, CommandResult, Team } from '../sim/types.ts';
 import { World } from '../sim/world.ts';
 import type { ClientMsg, EndReason, NetCommand, PauseState, ScheduledCommand, ServerMsg } from './protocol.ts';
-import { battleWorld } from './protocol.ts';
+import { PAUSES_PER_BATTLE, battleWorld } from './protocol.ts';
 import { AI_PROFILES } from '../ai/ai.ts';
 import type { Difficulty } from '../ai/ai.ts';
 
@@ -54,6 +54,8 @@ export class NetGame extends Game {
   result: { winner: Team; reason: EndReason } | null = null;
   /** Set while the server holds the battle (a player paused or is away). */
   netPause: PauseState | null = null;
+  /** Pauses each seat may still call in this battle (the server decides; Lens #87). */
+  pausesLeft: [number, number] = [PAUSES_PER_BATTLE, PAUSES_PER_BATTLE];
   /** performance.now() when netPause arrived (forfeitIn counts from here). */
   netPauseAt = 0;
   /** performance.now() at which the current start/resume countdown ends (0 = none). */
@@ -151,6 +153,7 @@ export class NetGame extends Game {
       case 'paused':
         this.playOutConfirmed();
         this.netPause = msg.state;
+        if (msg.state.pausesLeft) this.pausesLeft = [...msg.state.pausesLeft];
         this.netPauseAt = at;
         this.countdownEnd = 0;
         // Orders that reached the server after it paused were dropped.
@@ -325,6 +328,7 @@ export class NetGame extends Game {
     this.ageUps.splice(0, this.ageUps.length, ...msg.ageUps);
     this.nextSample = this.world.time + SAMPLE_EVERY;
     this.netPause = msg.paused;
+    if (msg.pausesLeft) this.pausesLeft = [...msg.pausesLeft];
     this.netPauseAt = this.now();
     this.countdownEnd = msg.countdown ? this.now() + msg.countdown * 1000 : 0;
     this.awaitingSnapshot = false;

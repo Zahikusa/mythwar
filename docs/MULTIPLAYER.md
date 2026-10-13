@@ -89,7 +89,7 @@ picks another port.
 | The battle ended while a phone was offline | On reconnect it is shown how the battle ended (final state and result). |
 | A player quits while offline | Leaving the battle / room is delivered when the connection returns; they are not pulled back in. (Closing Multiplayer altogether while offline simply lets the seat time out.) |
 | The same game is opened in another tab | A duplicated tab starts its own session; if one session is taken over elsewhere, the old tab says so and stops reconnecting. |
-| A player presses Pause | The battle pauses for both; either player can resume. |
+| A player presses Pause | The battle pauses for both; either player can resume. Each player has **3 pauses per battle** (so nobody can grief with a pause/resume loop); after that Pause opens the menu just for them and the battle goes on. Being away is not capped. |
 | A player leaves the battle | They forfeit; the other player wins. The room stays open for a new opponent. |
 | After a battle | Both press **Rematch** to play again in the same room (wins are counted). |
 | The game server restarts | Clients notice their session is gone and return to the lobby. |

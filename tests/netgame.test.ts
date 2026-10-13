@@ -313,7 +313,8 @@ describe('NetGame over a simulated network', () => {
     net.run(3000);
     a.pause();
     net.run(100);
-    expect(gb.netPause).toEqual({ reason: 'pause', seat: 0 });
+    expect(gb.netPause).toEqual({ reason: 'pause', seat: 0, pausesLeft: [2, 3] });
+    expect(gb.pausesLeft).toEqual([2, 3]);
     const t = gb.world.tick;
     net.run(2000);
     expect(gb.world.tick).toBe(t);

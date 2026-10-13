@@ -49,6 +49,11 @@ type AppState = 'title' | 'playing' | 'over';
 /** How long the player's god power slows time (seconds, real time). */
 const SLOWMO = 0.6;
 
+/** " · 2 pauses left" for the online pause screen (Lens #87). */
+function pausesNote(left: number): string {
+  return left <= 0 ? ' · you have no pauses left' : ` · you have ${left} ${left === 1 ? 'pause' : 'pauses'} left`;
+}
+
 export class App {
   readonly root: HTMLElement;
   readonly stage: HTMLDivElement;
@@ -711,15 +716,18 @@ export class App {
     const g = this.game;
     if (g instanceof NetGame) {
       // Online: ask the server; the pause screen opens for both players when it confirms.
-      if (!g.netPause && g.countdownEnd <= performance.now() && g.online) {
+      const outOfPauses = g.pausesLeft[g.seat] <= 0;
+      if (!g.netPause && g.countdownEnd <= performance.now() && g.online && !outOfPauses) {
         this.mp?.pause();
         return;
       }
-      // Already held (the other player is away, a countdown, reconnecting): open the menu
-      // just here, so leaving or the settings stay reachable.
+      // Already held (the other player is away, a countdown, reconnecting) — or this player's
+      // pauses are used up (Lens #87) — open the menu just here, so leaving or the settings stay
+      // reachable; the battle goes on.
       if (this.menus.current !== 'none') return;
       this.netMenuLocal = true;
-      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title: 'Menu' });
+      const running = !g.netPause && g.countdownEnd <= performance.now();
+      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title: outOfPauses && running ? 'Menu — no pauses left, the battle goes on' : 'Menu' });
       this.hud.cancelTargeting();
       this.hud.hideTooltip();
       if (this.hud.panelOpen) this.hud.togglePanel('none');
@@ -1087,7 +1095,7 @@ export class App {
     const cur = this.menus.current;
     if (want && (cur === 'none' || (cur === 'pause' && this.netMenuLocal))) {
       this.netMenuLocal = false;
-      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title: `Paused by ${p!.seat === g.seat ? 'you' : g.names[p!.seat]}` });
+      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title: `Paused by ${p!.seat === g.seat ? 'you' : g.names[p!.seat]}${pausesNote(g.pausesLeft[g.seat])}` });
       this.hud.cancelTargeting();
       this.hud.hideTooltip();
       if (this.hud.panelOpen) this.hud.togglePanel('none');

@@ -188,7 +188,7 @@ complete; its log follows below the lens plan.
 - [x] #84 Friendship — the lobby recognises old rivals: their rooms first, framed in gold, with your record together; a chime when one appears
 - [x] #85 Expression — your sigil flies on your keep, and online the opponent sees it there and by your name (protocol v10)
 - [x] #86 Community — the server's Hall of champions per network (wins/losses across rooms, co-op victories) in the lobby (protocol v11)
-- [ ] #87 Griefing — online griefing (pause abuse)
+- [x] #87 Griefing — 3 pauses per player per online battle (server-enforced; away holds uncapped), then the menu opens only locally (protocol v12)
 - [ ] #88 Love — care for the details
 - [ ] #89 The Team — contributor guide
 - [ ] #90 Documentation — design doc refresh
@@ -322,7 +322,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 ## Decisions
 - Single-player stays exactly as it was (AI, 2× speed, autosave). Multiplayer is a separate mode.
 - Seats: the host is seat 0 (team 0). Everyone sees their own citadel on the left in blue.
-- Either player can pause and either can resume (3 s countdown). Pauses are unlimited (LAN
+- Either player can pause and either can resume (3 s countdown). (Lens #87: 3 pauses per player per battle; away holds uncapped.) Pauses were unlimited (LAN
   friends); an away player (app in background, link lost) pauses the battle for up to 90 s,
   then forfeits (after 20 s the waiting player may claim the win). Leaving mid-battle forfeits. No W/L records for online games (yet).
 - Turns every 2 ticks (33 ms); hash every 60 ticks; commands apply on the server's next tick.

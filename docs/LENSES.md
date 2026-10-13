@@ -1653,3 +1653,22 @@ does the game do to foster it?*
   names per network, 256 networks). Protocol v11 (`rooms` carries `hall`).
 - Checked: server test (a forfeit counts 1–0 / 0–1 for the watcher's hall); new mpsmoke step
   (after two battles the lobby shows "☾ Ada L 2–0"), screenshot; full verify.
+
+## #87 The Lens of Griefing
+*How can a player spoil the game for others — and what can the design do so it isn't worth it?*
+- Went through the griefing routes online: spamming quick messages (already rate-limited per
+  player, known phrases only, and there's a setting to hide them), stalling a lost battle by
+  vanishing (the away timer forfeits after 90 s and the other may claim the win after 20 s),
+  quitting (forfeits and counts in the records and the Hall, #86), forged messages (validated
+  by the server). The open one was **pausing**: unlimited pauses, and either player could
+  pause again the moment the other resumed — a pause/resume loop held the other player hostage
+  for as long as the griefer liked. (Decided in run #4 as "LAN friends"; with a Hall of
+  champions and old-rival records at stake, and the internet upgrade in mind, no longer.)
+- Change: **three pauses per player per battle**, enforced by the server (protocol v12: the
+  count travels with each pause and every snapshot). The pause screen says how many you have
+  left ("Paused by Ada · you have 2 pauses left"); with none left, Pause opens the menu only for
+  you ("no pauses left, the battle goes on") so Leave and Settings stay reachable. Real
+  interruptions — a phone call, a locked screen, lost Wi-Fi — are "away" holds, which stay
+  uncapped and keep their own forfeit timer.
+- Checked: server tests (three pauses then refused, the other player's untouched, the count in
+  snapshots), netgame test; full verify (mpsmoke's pause title reads "you have 3 pauses left").

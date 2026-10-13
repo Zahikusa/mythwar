@@ -17,7 +17,7 @@ import { World } from '../sim/world.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 11;
+export const PROTOCOL_VERSION = 12;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -29,6 +29,12 @@ export const CLAIM_AFTER = 20;
 /** Countdown before a battle starts and after it resumes, in seconds. */
 export const START_COUNTDOWN = 3;
 export const RESUME_COUNTDOWN = 3;
+/**
+ * Pauses each player may call in one battle (Lens #87): enough for a real need, too few to
+ * grief the other with a pause/resume loop. Being away (app in the background, link lost) is a
+ * separate, uncapped hold with its own forfeit timer.
+ */
+export const PAUSES_PER_BATTLE = 3;
 /** A state hash is broadcast every this many ticks (60 ticks = 1 s). */
 export const HASH_EVERY = 60;
 
@@ -149,6 +155,8 @@ export interface PauseState {
   forfeitIn?: number;
   /** Seconds until the other player may claim the win instead (away only). */
   claimIn?: number;
+  /** Pauses each seat has left in this battle. */
+  pausesLeft?: [number, number];
 }
 
 export type EndReason = 'citadel' | 'forfeit' | 'timeout';
@@ -230,6 +238,8 @@ export type ServerMsg =
       paused: PauseState | null;
       /** Seconds left of a start / resume countdown (0 = none). */
       countdown?: number;
+      /** Pauses each seat has left in this battle. */
+      pausesLeft?: [number, number];
       /** Results-chart bookkeeping from before the snapshot. */
       history: HistorySample[];
       ageUps: AgeUpMark[];

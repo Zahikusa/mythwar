@@ -6,7 +6,7 @@ import { World } from '../src/sim/world.ts';
 import { AI_PROFILES, AiController } from '../src/ai/ai.ts';
 import type { Difficulty } from '../src/ai/ai.ts';
 import type { Command } from '../src/sim/types.ts';
-import { AWAY_GRACE, CLAIM_AFTER, HASH_EVERY, RESUME_COUNTDOWN, battleWorld } from '../src/net/protocol.ts';
+import { AWAY_GRACE, CLAIM_AFTER, HASH_EVERY, PAUSES_PER_BATTLE, RESUME_COUNTDOWN, battleWorld } from '../src/net/protocol.ts';
 import type { AgeUpMark, EndReason, HistorySample, NetCommand, PauseState, ScheduledCommand, ServerMsg } from '../src/net/protocol.ts';
 
 const TICK_MS = TICK * 1000;
@@ -71,6 +71,8 @@ export class Match {
   private paused = false;
   /** Who pressed pause (shown as "Paused by …"). */
   private pausedBy: Team = 0;
+  /** Pauses each seat may still call (Lens #87). */
+  readonly pausesLeft: [number, number] = [PAUSES_PER_BATTLE, PAUSES_PER_BATTLE];
   /** Wall time each seat went away (null = present). */
   private awaySince: [number | null, number | null] = [null, null];
 
@@ -116,9 +118,11 @@ export class Match {
     this.refreshPause(now);
   }
 
-  /** A player pressed pause. */
+  /** A player pressed pause (refused once their pauses for this battle are used up). */
   requestPause(seat: Team, now: number): void {
     if (this.state !== 'running' && this.state !== 'resuming') return;
+    if (this.pausesLeft[seat] <= 0 || this.paused) return;
+    this.pausesLeft[seat]--;
     this.paused = true;
     this.pausedBy = seat;
     this.pauseState = null;
@@ -171,6 +175,7 @@ export class Match {
       coop: this.coop,
       paused,
       countdown: until ? Math.max(0, (until - now) / 1000) : 0,
+      pausesLeft: [...this.pausesLeft],
       history: this.history.slice(),
       ageUps: this.ageUps.slice(),
     };
@@ -303,7 +308,7 @@ export class Match {
       // Orders not yet applied are dropped (clients forget theirs when told about the pause).
       this.pending = [];
       const seat = (awaySeat >= 0 ? awaySeat : this.pausedBy) as Team;
-      const state: PauseState = awaySeat >= 0 ? this.awayState(seat, now) : { reason: 'pause', seat };
+      const state: PauseState = awaySeat >= 0 ? this.awayState(seat, now) : { reason: 'pause', seat, pausesLeft: [...this.pausesLeft] };
       if (this.state === 'countdown') {
         // Not started yet: the countdown restarts once everyone is back.
         this.startAt = Infinity;
