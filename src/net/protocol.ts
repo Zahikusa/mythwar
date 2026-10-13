@@ -17,7 +17,7 @@ import { World } from '../sim/world.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 9;
+export const PROTOCOL_VERSION = 10;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -89,6 +89,8 @@ export interface SeatInfo {
   trials: TrialId[];
   /** The player's standing (index into RANKS). */
   rank: number;
+  /** The player's sigil (index into SIGILS, -1 = none). */
+  sigil: number;
 }
 
 /** waiting: seats filling / getting ready; playing: a battle runs (incl. its countdown); over: results, rematch. */
@@ -151,6 +153,8 @@ export type ClientMsg =
       name: string;
       /** The player's standing (index into RANKS). */
       rank?: number;
+      /** The player's sigil (index into SIGILS, -1 = none). */
+      sigil?: number;
       /** Session token from an earlier welcome (reconnect). */
       token?: string;
       /** The client still shows a battle in progress (it may have missed how it ended). */
@@ -158,7 +162,7 @@ export type ClientMsg =
       /** The app is in the background right now (a reconnect from a hidden tab). */
       away?: boolean;
     }
-  | { type: 'name'; name: string; rank?: number }
+  | { type: 'name'; name: string; rank?: number; sigil?: number }
   | { type: 'watchRooms'; on: boolean }
   | { type: 'host' }
   | { type: 'join'; code: string }
@@ -259,6 +263,17 @@ export function cleanTrials(raw: unknown): TrialId[] {
  * would keep it itself).
  */
 export const RANKS = ['Recruit', 'Warden', 'Champion', 'Warlord', 'Conqueror', 'Legend'] as const;
+
+/**
+ * Sigils a player can take as their emblem (Lens #75; text presentation, so phones don't draw
+ * emoji). Online, each player's flies on their keep for both to see (Lens #85).
+ */
+export const SIGILS = ['☀︎', '☾︎', '✦', '♛︎', '⚔︎', '❖'];
+
+/** A sigil index, or -1 (none). */
+export function cleanSigil(raw: unknown): number {
+  return typeof raw === 'number' && Number.isInteger(raw) && raw >= -1 && raw < SIGILS.length ? raw : -1;
+}
 
 export function cleanRank(raw: unknown): number {
   return typeof raw === 'number' && Number.isInteger(raw) && raw >= 0 && raw < RANKS.length ? raw : 0;

@@ -132,6 +132,27 @@ function windowLight(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
   drawGlow(ctx, x, y - h * 0.5, w * 2.2, tc.rgb, 0.25);
 }
 
+/** Where the keep stands (team 0's side; team 1 mirrors it across the field). */
+function keepGeom(layout: Layout): { keepX: number; baseY: number; w: number; h: number; s: number } {
+  const far = layout.lanes[0];
+  const s = far.s * 1.15;
+  const fx = layout.field.x;
+  const baseY = far.y + far.band * 0.4;
+  return { keepX: fx + (far.x0 - fx) * 0.44, baseY, w: Math.max(34 * s, (far.x0 - fx) * 0.5), h: (baseY - layout.horizon) * 1.2 + 26 * s, s };
+}
+
+/**
+ * Where a side's emblem hangs on the face of its keep (Lens #85: the player's sigil), in stage
+ * coordinates, with its radius.
+ */
+export function keepEmblem(layout: Layout, team: Team, age: number): { x: number; y: number; r: number } {
+  const { keepX, baseY, w, h } = keepGeom(layout);
+  const temple = CITADEL_STYLES[age].roofKind === 'pediment';
+  const x = team === 0 ? keepX : 2 * layout.field.x + layout.field.w - keepX;
+  // Between the trim band and the great window (on the temple, above its columns' capitals).
+  return { x, y: baseY - h + h * (temple ? 0.1 : 0.15), r: Math.min(w * 0.16, h * 0.07) };
+}
+
 /** The citadel keep: tall central tower behind the far lane, plus damage smoke. */
 export function drawCitadelKeep(
   ctx: CanvasRenderingContext2D,
@@ -152,12 +173,8 @@ export function drawCitadelKeep(
   const st = CITADEL_STYLES[age];
   const far = layout.lanes[0];
   const near = layout.lanes[layout.lanes.length - 1];
-  const s = far.s * 1.15;
   const fx = layout.field.x;
-  const baseY = far.y + far.band * 0.4;
-  const keepX = fx + (far.x0 - fx) * 0.44;
-  const w = Math.max(34 * s, (far.x0 - fx) * 0.5);
-  const h = (baseY - layout.horizon) * 1.2 + 26 * s;
+  const { keepX, baseY, w, h, s } = keepGeom(layout);
   const tc = TEAM_COLORS[team];
   withSide(ctx, layout, team, () => {
     setLineWidth(1.2);

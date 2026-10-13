@@ -22,7 +22,7 @@ import type { Settings } from './ui/settings.ts';
 import { MpClient, hasStoredSession } from './net/client.ts';
 import { hasMpServer } from './net/connection.ts';
 import { NetGame } from './net/netgame.ts';
-import { EMOTES, cleanCode, cleanName, emoteLane } from './net/protocol.ts';
+import { EMOTES, SIGILS, cleanCode, cleanName, emoteLane } from './net/protocol.ts';
 import { randomName } from './ui/mpmenus.ts';
 import { FeatTracker, MAX_STARS, PINNACLE, playerRank, starTotal } from './ui/feats.ts';
 
@@ -395,6 +395,19 @@ export class App {
     return this.hookGame(new Game({ difficulty, seed, demo, sandbox, trials, quick, startAge }), demo);
   }
 
+  /**
+   * Whose sigil flies on each keep (Lens #85): yours, and online your opponent's as they chose
+   * it (co-op: yours on the shared side). The attract battle and the AI generals carry none.
+   */
+  private sigilsFor(game: Game): [number, number] {
+    const out: [number, number] = [-1, -1];
+    if (game.options.demo) return out;
+    const seats = game instanceof NetGame && !game.coop ? this.mp?.room?.seats : null;
+    if (seats) return [seats[0]?.sigil ?? -1, seats[1]?.sigil ?? -1];
+    out[game.playerTeam] = this.settings.sigil;
+    return out;
+  }
+
   /** Makes `game` the active game: resets visuals and routes its events. */
   private hookGame(game: Game, demo: boolean): Game {
     this.renderer.reset();
@@ -511,6 +524,7 @@ export class App {
     // (A riddle is solved by reading the lane yourself: no "Counter!" badge there.)
     this.hud.advice = this.settings.advice && !game.riddle;
     this.hud.myName = playerLabel(this.settings);
+    this.renderer.sigils = this.sigilsFor(game);
     this.hud.attach(game);
     this.input.attach(game);
     // (The sandbox is a toy: battle tips would only be used up there.)
@@ -854,7 +868,8 @@ export class App {
       }
       if (g instanceof NetGame) {
         this.syncNetPause(g);
-        this.hud.setNet(g.foeName, this.mp?.conn.rtt ?? 0, g.online, g.bufferMs, g.allyName);
+        const foeSigil = SIGILS[this.renderer.sigils[g.playerTeam === 0 ? 1 : 0]];
+        this.hud.setNet(foeSigil ? `${foeSigil} ${g.foeName}` : g.foeName, this.mp?.conn.rtt ?? 0, g.online, g.bufferMs, g.allyName);
       }
     }
     this.netOverlay.update(g instanceof NetGame && this.state !== 'title' ? g : null, performance.now());
@@ -877,13 +892,13 @@ export class App {
       saveSettings(this.settings);
     }
     this.menus.mp.setName(this.settings.playerName);
-    this.mp?.setRank(playerRank(this.settings.records, this.settings.feats));
+    this.mp?.setIdentity(playerRank(this.settings.records, this.settings.feats), this.settings.sigil);
     if (join) {
       this.pendingJoin = join;
       this.menus.mp.setCode(join);
     }
     if (!this.mp) {
-      const mp = new MpClient({ name: this.settings.playerName, rank: playerRank(this.settings.records, this.settings.feats) });
+      const mp = new MpClient({ name: this.settings.playerName, rank: playerRank(this.settings.records, this.settings.feats), sigil: this.settings.sigil });
       this.mp = mp;
       this.mpOff = mp.listen({
         changed: () => this.onMpChanged(),

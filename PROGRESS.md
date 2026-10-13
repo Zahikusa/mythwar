@@ -186,7 +186,7 @@ complete; its log follows below the lens plan.
 - [x] #82 Inner Contradiction — at Ragnarök each general shows their contradiction (Odin who knows his doom, Hippolyta who wanted peace…); Odin falters when you field Fenrir
 - [x] #83 The Nameless Quality — not-separateness: guardians and runners kick up the lane's own ground (sand, snow, cloud) at every footfall
 - [x] #84 Friendship — the lobby recognises old rivals: their rooms first, framed in gold, with your record together; a chime when one appears
-- [ ] #85 Expression — player expression
+- [x] #85 Expression — your sigil flies on your keep, and online the opponent sees it there and by your name (protocol v10)
 - [ ] #86 Community — share results
 - [ ] #87 Griefing — online griefing (pause abuse)
 - [ ] #88 Love — care for the details

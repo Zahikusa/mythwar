@@ -1,6 +1,7 @@
 import { DIFFICULTIES } from '../ai/ai.ts';
 import type { Difficulty } from '../ai/ai.ts';
 import { TRIAL_ORDER } from '../sim/data.ts';
+import { SIGILS } from '../net/protocol.ts';
 import type { TrialId } from '../sim/data.ts';
 
 export interface DifficultyRecord {
@@ -56,8 +57,7 @@ export interface Settings {
   sigil: number;
 }
 
-/** Sigils a player can take as their emblem (text presentation, so phones don't draw emoji). */
-export const SIGILS = ['☀︎', '☾︎', '✦', '♛︎', '⚔︎', '❖'];
+export { SIGILS } from '../net/protocol.ts';
 
 /** "☀ Zoë", "☀", "Zoë" or '' — the player as the HUD and results show them. */
 export function playerLabel(s: Settings): string {

@@ -153,6 +153,12 @@ async function main(): Promise<void> {
     await a.keyboard.press('Enter');
     await sleep(100);
     await shot(a, '1-lobby-desktop');
+    // A has taken the moon as sigil (Lens #85): B should see it on A's keep and by A's name.
+    await a.evaluate(() => {
+      const app = (window as any).__mythwar;
+      app.settings.sigil = 1;
+      app.mp.setIdentity(0, 1);
+    });
     await press(a, '.screen.mp', 'Host a battle');
     await waitFor(a, 'A in a room', () => (window as any).__mythwar.menus.current === 'room');
     const code = (await info(a)).room!;
@@ -204,6 +210,8 @@ async function main(): Promise<void> {
     const ib = await info(b);
     check('online games, seats 0 and 1', ia.online && ib.online && ia.seat === 0 && ib.seat === 1);
     check('right-side player sees a mirrored field', !ia.mirror && ib.mirror);
+    const sig = await b.evaluate(() => ({ keeps: (window as any).__mythwar.renderer.sigils, badge: document.querySelector('.hud .nfoe')?.textContent ?? '' }));
+    check("B sees A's sigil on A's keep and by A's name", sig.keeps[0] === 1 && sig.keeps[1] === -1 && sig.badge.includes('☾'), JSON.stringify(sig));
     await waitFor(a, 'battle running', () => !(window as any).__mythwar.game.paused, 6000);
     // A summons with the keyboard, B taps a card.
     await a.keyboard.press('1');

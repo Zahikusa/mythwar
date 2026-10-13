@@ -1618,3 +1618,21 @@ find each other again?*
   appear" promise of the empty list, kept audibly.
 - Checked: a new mpsmoke step (after two battles, A's lobby shows B's new room as a friend with
   "you 2 – 0"); full verify.
+
+## #85 The Lens of Expression
+*How can players express themselves in the game — and does anyone else see it?*
+- Self-expression so far: a name (#64), a sigil (#75), quick messages, and how one plays (which
+  creatures, lanes, stances). But the sigil — the one purely expressive choice — was a small
+  glyph by the player's own name, seen only by the player. Expression that nobody else sees is
+  half of expression; and on the field itself, nothing was the player's.
+- Change: **your sigil flies on your keep** — a gold glyph on a roundel of your side's colour on
+  the face of the citadel, in every battle — and **online it is sent to the opponent** (protocol
+  v10: `hello`/`name` carry `sigil`, seats report it): they see your moon or crown on your keep
+  and by your name in their badge ("vs ☾ Ada"). Your choice is now part of the world and part
+  of how the other player knows you. (Co-op: yours on the shared side; the generals carry none.)
+  The glyph is drawn unmirrored, so it reads the same on the guest's mirrored field.
+- Refactor on the way: the keep's geometry is one helper (`keepGeom`) shared by the drawing and
+  the emblem; SIGILS moved next to RANKS in the protocol (settings re-exports them).
+- Checked: screenshots (moon on the Fae keep, crown on the Celestial spire, Ada's moon on the
+  guest's mirrored view); server test (sigils sanitized and shown to both); new mpsmoke check
+  (B sees A's sigil on the keep and in the badge); full verify.

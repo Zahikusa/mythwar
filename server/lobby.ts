@@ -1,4 +1,4 @@
-import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName, cleanRank, cleanTrials } from '../src/net/protocol.ts';
+import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName, cleanRank, cleanSigil, cleanTrials } from '../src/net/protocol.ts';
 import type { ClientMsg, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
 import type { TrialId } from '../src/sim/data.ts';
 import { DIFFICULTIES } from '../src/ai/ai.ts';
@@ -57,6 +57,8 @@ interface Session {
   name: string;
   /** Standing (RANKS index), as the client declares it. */
   rank: number;
+  /** Sigil (SIGILS index, -1 = none). */
+  sigil: number;
   conn: Conn | null;
   room: Room | null;
   seat: Team | null;
@@ -201,6 +203,7 @@ export class Lobby {
       s.network = network;
       if (msg.name !== undefined) s.name = cleanName(msg.name);
       if (msg.rank !== undefined) s.rank = cleanRank(msg.rank);
+      if (msg.sigil !== undefined) s.sigil = cleanSigil(msg.sigil);
     } else {
       // Full (overall, or for this address): make room by forgetting the oldest idle session.
       const max = this.opts.maxSessions ?? MAX_SESSIONS;
@@ -216,6 +219,7 @@ export class Lobby {
         token: this.makeToken(),
         name: cleanName(msg.name),
         rank: cleanRank(msg.rank),
+        sigil: cleanSigil(msg.sigil),
         conn,
         room: null,
         seat: null,
@@ -254,6 +258,7 @@ export class Lobby {
       case 'name':
         s.name = cleanName(msg.name);
         if (msg.rank !== undefined) s.rank = cleanRank(msg.rank);
+        if (msg.sigil !== undefined) s.sigil = cleanSigil(msg.sigil);
         if (room) {
           this.broadcastRoom(room);
           // (Only an open room's host name appears in the lists.)
@@ -476,7 +481,7 @@ export class Lobby {
     const seat = (i: Team) => {
       const x = room.seats[i];
       if (!x) return null;
-      return { name: this.nameIn(room, i), connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins, ping: x.session.rtt, trials: x.trials, rank: x.session.rank };
+      return { name: this.nameIn(room, i), connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins, ping: x.session.rtt, trials: x.trials, rank: x.session.rank, sigil: x.session.sigil };
     };
     return { code: room.code, phase: room.phase, seats: [seat(0), seat(1)], coop: room.coop };
   }

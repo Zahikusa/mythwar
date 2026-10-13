@@ -5,13 +5,15 @@ import type { Difficulty } from '../ai/ai.ts';
 import { Connection } from './connection.ts';
 import type { ConnState, SocketLike } from './connection.ts';
 import { NetGame } from './netgame.ts';
-import { PROTOCOL_VERSION, cleanName, cleanRank } from './protocol.ts';
+import { PROTOCOL_VERSION, cleanName, cleanRank, cleanSigil } from './protocol.ts';
 import type { EmoteId, ErrorCode, OpenRoom, RoomInfo, ServerMsg } from './protocol.ts';
 
 export interface MpClientOptions {
   name: string;
   /** The player's standing (RANKS index). */
   rank?: number;
+  /** The player's sigil (SIGILS index, -1 = none). */
+  sigil?: number;
   url?: string;
   socket?: (url: string) => SocketLike;
   /** Where the session token lives (per tab, so two tabs are two players). */
@@ -39,6 +41,7 @@ export class MpClient {
   readonly conn: Connection;
   name: string;
   rank: number;
+  sigil: number;
   room: RoomInfo | null = null;
   seat: Team | null = null;
   openRooms: OpenRoom[] = [];
@@ -64,6 +67,7 @@ export class MpClient {
   constructor(opts: MpClientOptions) {
     this.name = cleanName(opts.name);
     this.rank = cleanRank(opts.rank);
+    this.sigil = cleanSigil(opts.sigil);
     this.storage = opts.storage === undefined ? safeSessionStorage() : opts.storage;
     this.now = opts.now ?? (() => performance.now());
     this.token = this.storage?.getItem(TOKEN_KEY) ?? null;
@@ -77,6 +81,7 @@ export class MpClient {
         sim: simFingerprint(),
         name: this.name,
         rank: this.rank,
+        sigil: this.sigil,
         token: this.token ?? undefined,
         battle: !!this.game && !this.game.over,
         away: typeof document !== 'undefined' && document.hidden,
@@ -153,14 +158,15 @@ export class MpClient {
 
   setName(name: string): void {
     this.name = cleanName(name);
-    this.conn.send({ type: 'name', name: this.name, rank: this.rank });
+    this.conn.send({ type: 'name', name: this.name, rank: this.rank, sigil: this.sigil });
   }
 
-  /** The player's standing changed (a general beaten since the lobby was opened). */
-  setRank(rank: number): void {
-    if (cleanRank(rank) === this.rank) return;
+  /** The player's standing or sigil changed since the lobby was last opened. */
+  setIdentity(rank: number, sigil: number): void {
+    if (cleanRank(rank) === this.rank && cleanSigil(sigil) === this.sigil) return;
     this.rank = cleanRank(rank);
-    this.conn.send({ type: 'name', name: this.name, rank: this.rank });
+    this.sigil = cleanSigil(sigil);
+    this.conn.send({ type: 'name', name: this.name, rank: this.rank, sigil: this.sigil });
   }
 
   watchRooms(on: boolean): void {

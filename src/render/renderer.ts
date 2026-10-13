@@ -4,7 +4,8 @@ import { POWER_TIMING, spiritDragonHead } from '../sim/powers.ts';
 import type { Projectile, SimEvent, Team, Unit } from '../sim/types.ts';
 import type { World } from '../sim/world.ts';
 import { renderAurora, renderBackground, renderVignette } from './background.ts';
-import { drawCitadelGate, drawCitadelKeep, drawTurret, gateBounds } from './citadel.ts';
+import { drawCitadelGate, drawCitadelKeep, drawTurret, gateBounds, keepEmblem } from './citadel.ts';
+import { SIGILS } from '../net/protocol.ts';
 import { artFor } from './creatures/index.ts';
 import { GESTURE_TIME, TEMPERS, gestureAt } from './creatures/tempers.ts';
 import type { CreatureArt, Pose } from './creatures/types.ts';
@@ -109,6 +110,8 @@ export class Renderer {
   /** Game speed (2 = fast-forward): effects timed by the sim (meteor fall, root, freeze) run
    *  this much faster in real time, so they stay in step with what they show. */
   speed = 1;
+  /** Each side's sigil on its keep (SIGILS index, -1 = none; Lens #85). */
+  sigils: [number, number] = [-1, -1];
   /** The local player is team 1: the battlefield is drawn mirrored so their citadel is on the left. */
   private mirror = false;
   private bgCache = new Map<number, HTMLCanvasElement>();
@@ -951,6 +954,7 @@ export class Renderer {
         const c = this.keepLayer(team, p.age);
         ctx.drawImage(c.canvas, c.x, 0, c.w, L.height);
         drawCitadelKeep(ctx, L, team, p.age, p.baseHp / p.baseMaxHp, this.time, this.baseFlash[team], this.ageFlash[team], 0, 'dynamic');
+        if (this.sigils[team] >= 0) this.drawSigil(ctx, team, p.age);
       }
     }
 
@@ -1768,6 +1772,33 @@ export class Renderer {
       ctx.lineCap = 'butt';
       ctx.lineJoin = 'miter';
     }
+  }
+
+  /**
+   * A side's sigil, the emblem its player chose (Lens #85), on the face of its keep: a gold glyph
+   * on a roundel of the side's colour. (Unmirrored, so it reads the same on either screen.)
+   */
+  private drawSigil(ctx: CanvasRenderingContext2D, team: Team, age: number): void {
+    const glyph = SIGILS[this.sigils[team]];
+    if (!glyph) return;
+    const e = keepEmblem(this.layout, team, age);
+    if (e.r < 4) return;
+    const tc = TEAM_COLORS[team];
+    ctx.save();
+    ctx.translate(e.x, e.y);
+    if (this.mirror) ctx.scale(-1, 1);
+    circle(ctx, 0, 0, e.r, tc.dark);
+    ctx.strokeStyle = '#ffd76a';
+    ctx.lineWidth = Math.max(1.2, e.r * 0.14);
+    ctx.beginPath();
+    ctx.arc(0, 0, e.r, 0, TAU);
+    ctx.stroke();
+    ctx.font = `700 ${Math.round(e.r * 1.25)}px "Segoe UI Symbol", "Noto Sans Symbols 2", system-ui, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffe9a8';
+    ctx.fillText(glyph, 0, e.r * 0.06);
+    ctx.restore();
   }
 
   /**

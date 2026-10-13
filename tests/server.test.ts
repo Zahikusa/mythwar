@@ -274,6 +274,11 @@ describe('lobby', () => {
     // A rename without a rank keeps it.
     b.send({ type: 'name', name: 'Bob' });
     expect(a.last('room')!.room.seats.map((s) => s!.rank)).toEqual([3, 2]);
+    // Sigils too (Lens #85): none by default, sanitized, shown to both.
+    expect(a.last('room')!.room.seats.map((s) => s!.sigil)).toEqual([-1, -1]);
+    b.send({ type: 'name', name: 'Bob', sigil: 4 });
+    a.send({ type: 'name', name: 'Ada', sigil: 77 });
+    expect(b.last('room')!.room.seats.map((s) => s!.sigil)).toEqual([-1, 4]);
   });
 
   it('lists only rooms from the same network (LAN = all private addresses)', () => {
