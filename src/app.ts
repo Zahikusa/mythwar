@@ -997,7 +997,10 @@ export class App {
       if (g instanceof NetGame) {
         this.syncNetPause(g);
         const foeSigil = SIGILS[this.renderer.sigils[g.playerTeam === 0 ? 1 : 0]];
-        this.hud.setNet(foeSigil ? `${foeSigil} ${g.foeName}` : g.foeName, this.mp?.conn.rtt ?? 0, g.online, g.bufferMs, g.allyName);
+        // (Co-op: once the ally's seat is empty they're no longer named beside ours — backlog 199.)
+        const room = this.mp?.room;
+        const allyGone = !!g.coop && !!room && !room.seats[g.seat === 0 ? 1 : 0];
+        this.hud.setNet(foeSigil ? `${foeSigil} ${g.foeName}` : g.foeName, this.mp?.conn.rtt ?? 0, g.online, g.bufferMs, allyGone ? '' : g.allyName);
       }
     }
     this.netOverlay.update(g instanceof NetGame && this.state !== 'title' ? g : null, performance.now());

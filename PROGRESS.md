@@ -874,8 +874,9 @@ it prints, inviting, stopping — 2026-10-13.)
    Judge them by the player's own orders (the turn's `seat`), or mark them "together". (Note for whoever takes
    it: sim events don't say which seat ordered; NetGame sees each applied command's `seat` in the
    turns — count own dragon / ascend / bless orders there and credit the matching events.)
-199. [ ] Co-op HUD: after the ally left (#191 now says so in a toast), the name line still reads
-   "You & Bo · Fae Wilds" (hud.ts ~1095) — "You (Bo left)" or just "You" once their seat is empty.
+199. [x] Co-op HUD: after the ally left (#191 now says so in a toast), the name line still reads
+   "You & Bo · Fae Wilds" (hud.ts ~1095) — "You (Bo left)" or just "You" once their seat is empty. (Done:
+   no ally named once their seat is empty — the player's own name line shows; mpsmoke checks.)
 197. [ ] (minor) The co-op chronicle calls the foe by the difficulty label ("First blood to Novice")
    where single player uses the general's name (Puck); the results drop the AI's income note.
 
