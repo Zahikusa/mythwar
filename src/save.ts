@@ -16,7 +16,7 @@ export function loadBattle(): GameSave | null {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
     const save = JSON.parse(raw) as GameSave;
-    return save && save.v === 1 ? save : null;
+    return save && (save.v === 1 || save.v === 2) ? save : null;
   } catch {
     return null;
   }

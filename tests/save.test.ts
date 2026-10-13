@@ -86,3 +86,32 @@ describe('snapshots', () => {
     expect(b.shrines[0].capture).not.toBe(0.5);
   });
 });
+
+describe('saves across builds (backlog 91)', () => {
+  it('a gate-training value of the wrong shape starts afresh instead of freezing the battle', async () => {
+    const w = new World({ seed: 7 });
+    for (let i = 0; i < 300; i++) w.step();
+    for (const bad of [[null, null], [NaN, 1, 2], 'x', [1, 2, 3, 4]]) {
+      const snap = JSON.parse(JSON.stringify(w.serialize()));
+      snap.players[0].trainProgress = bad;
+      const back = World.deserialize(snap);
+      expect(back.players[0].trainProgress).toEqual([0, 0, 0]);
+      back.apply({ type: 'train', team: 0, unitId: 'redcap', lane: 1 });
+      expect(() => {
+        for (let i = 0; i < 600; i++) back.step();
+      }).not.toThrow();
+      expect(back.lanes[1].some((u) => u.team === 0 && u.def.id === 'redcap')).toBe(true);
+    }
+  });
+
+  it('saves are version 2 (older builds ignore them); version 1 still loads, anything else not', async () => {
+    const { Game } = await import('../src/game.ts');
+    const g = new Game({ difficulty: 'novice' });
+    for (let i = 0; i < 100; i++) g.world.step();
+    const save = JSON.parse(JSON.stringify(g.toSave()));
+    expect(save.v).toBe(2);
+    expect(() => Game.fromSave(save)).not.toThrow();
+    expect(() => Game.fromSave({ ...save, v: 1 })).not.toThrow();
+    expect(() => Game.fromSave({ ...save, v: 3 })).toThrow();
+  });
+});

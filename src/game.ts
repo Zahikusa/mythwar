@@ -42,7 +42,8 @@ const SAMPLE_EVERY = 5;
 
 /** A battle in progress, as stored in localStorage. */
 export interface GameSave {
-  v: 1;
+  /** 2 since gates train in parallel and the chronicle is saved (older builds only read 1). */
+  v: 1 | 2;
   difficulty: Difficulty;
   savedAt: number;
   speed: number;
@@ -100,7 +101,7 @@ export class Game {
 
   toSave(): GameSave {
     return {
-      v: 1,
+      v: 2,
       difficulty: this.options.difficulty,
       savedAt: Date.now(),
       speed: this.speed,
@@ -114,7 +115,7 @@ export class Game {
 
   /** Restores a saved battle (throws if the save is invalid). */
   static fromSave(save: GameSave): Game {
-    if (!save || save.v !== 1) throw new Error('Unsupported save');
+    if (!save || (save.v !== 1 && save.v !== 2)) throw new Error('Unsupported save');
     if (save.world.winner !== null) throw new Error('Battle already decided');
     if (!DIFFICULTIES.includes(save.difficulty)) throw new Error('Unknown difficulty');
     const game = new Game({ difficulty: save.difficulty }, World.deserialize(save.world));

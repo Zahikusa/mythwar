@@ -386,11 +386,13 @@ held up: a phone locked through the countdown, a reload on the results, a full/g
    starts over" (not for your own switch), "Ada left the room."; mpsmoke checks the first.)
 (Items 91–94: an independent review of data across versions, 2026-10-13 — old autosaves from 11
 builds back all load and play; no parseable settings value crashed; odd Hall files load.)
-91. [ ] Autosave across builds: `World.deserialize` passes any `trainProgress` shape through; a tab
+91. [x] Autosave across builds: `World.deserialize` passes any `trainProgress` shape through; a tab
    on the released build continuing this build's save (array, not number) freezes the battle
    (NaN progress, nothing trains), then writes `[null, null]` back, which crashes this build every
    frame — and the save is never dropped. Validate on load; drop a save whose battle throws;
-   bump the save to v2 (older builds ignore it).
+   bump the save to v2 (older builds ignore it). (Done, all three: `deserialize` resets a
+   malformed `trainProgress`; a non-online battle that throws while stepping is put away and its
+   save dropped; saves are written as v2, v1 still read; tests.)
 92. [ ] `src/ui/settings.ts`: settings are written whole, last tab wins — an older build's tab drops
    fields it doesn't know (riddles, stars, sigil, journal…) on its next save; two tabs of one
    build undo each other's records. Keep unknown fields; before saving, merge what only grows

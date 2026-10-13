@@ -300,6 +300,8 @@ export class World {
         p.trainProgress = [0, 0, 0];
         if (first) p.trainProgress[first.lane] = old;
       }
+      // (Anything else — a save from another build — starts the gates' training afresh.)
+      if (!Array.isArray(p.trainProgress) || p.trainProgress.length !== 3 || !p.trainProgress.every(Number.isFinite)) p.trainProgress = [0, 0, 0];
       w.players[i] = {
         ...p,
         turrets: p.turrets.map((t) => {

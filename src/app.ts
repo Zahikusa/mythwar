@@ -912,7 +912,19 @@ export class App {
       if (this.state === 'title' && g.over) this.toTitleBackdrop();
       this.renderer.coinTarget = this.state === 'playing' ? this.coinTarget : null;
       this.renderer.cinematic = this.state === 'title' && this.settings.shake;
-      const alpha = g.advance(dt);
+      let alpha: number;
+      try {
+        alpha = g.advance(dt);
+      } catch (e) {
+        if (g.options.online) throw e;
+        // A battle that can't go on (a save from another build of the game, a bug in some rare
+        // state) is put away — and its save dropped, so Continue doesn't bring it back each time.
+        console.error(e);
+        if (!g.options.demo) clearBattle();
+        if (this.state === 'title') this.toTitleBackdrop();
+        else this.toTitle();
+        return;
+      }
       if (this.state === 'playing' && !g.paused && g.world.time - this.lastSave >= 5) this.persist();
       this.audio.intensity = this.battleIntensity(g);
       // A paused battle is a true freeze-frame: effects stop too.
