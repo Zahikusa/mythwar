@@ -460,7 +460,7 @@ export class App {
         this.hud.onEvents(ev);
         this.coach.onEvents(ev);
         if (!demo && !game.practice) this.feats?.onEvents(ev, game.world);
-        if (!demo && !game.practice) this.chronicle?.onEvents(ev, game.world);
+        if (!demo && !game.practice) this.chronicle?.onEvents(ev, game.world, game instanceof NetGame ? game.result?.reason : undefined);
         if (!demo) this.tauntEvents(game, ev);
         for (const e of ev) {
           if (e.type === 'power' && e.team === game.playerTeam && !demo && !(game instanceof NetGame)) this.slowmo = SLOWMO;

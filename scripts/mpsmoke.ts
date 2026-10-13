@@ -364,6 +364,9 @@ async function main(): Promise<void> {
     const res = await a.evaluate(() => ({ verdict: document.querySelector('.verdict')?.textContent ?? '', note: document.querySelector('.rmatch')?.textContent ?? '' }));
     check('results: victory by forfeit', res.verdict.includes('Victory') && res.verdict.includes('left'), res.verdict);
     check('results: opponent left the room', res.note.includes('left the room'), res.note);
+    // (The chronicle ends with what happened — no citadel fell.)
+    const story = await a.evaluate(() => document.querySelector('.screen.over')?.textContent ?? '');
+    check("results: the chronicle says the opponent left", /Victory: [^.]+ leaves the battle\./.test(story) && !story.includes('citadel falls'), story.slice(0, 120));
     await waitFor(b, 'B back in the lobby', () => (window as any).__mythwar.menus.current === 'mp');
     // (Backlog 54) Both sides count it: the leaver a defeat (and the journal notes it).
     {
@@ -418,6 +421,10 @@ async function main(): Promise<void> {
     await press(a, '.netoverlay', 'Claim victory');
     await waitFor(a, 'A results after claiming', () => (window as any).__mythwar.menus.current === 'over', 8000);
     await waitFor(b, 'B results (lost: away too long)', () => (window as any).__mythwar.menus.current === 'over', 8000);
+    {
+      const [ta, tb] = await Promise.all([a, b].map((p) => p.evaluate(() => document.querySelector('.screen.over')?.textContent ?? '')));
+      check('results: the chronicle tells a claimed win as an absence on both sides', ta.includes('was away too long.') && tb.includes('Defeat: you were away too long.'), `${ta.slice(-80)} | ${tb.slice(-80)}`);
+    }
     // After the battle B says "Well played!" from the results; A reads it on theirs (backlog #25).
     await press(b, '.screen.over', 'Well played!');
     await waitFor(a, 'A hears B on the results', () => (document.querySelector('.screen.over .vemoteline')?.textContent ?? '').includes('Well played!'), 4000);

@@ -101,3 +101,20 @@ describe('a continued battle keeps its story (backlog 74)', () => {
     expect(after.lines()).toEqual(['0:25 — First blood: the enemy’s Redcap falls in the top lane.', '3:20 — You ascend to Olympus.', '5:00 — Ragnarök: the wards fall silent.']);
   });
 });
+
+describe('an online battle that ends without a fallen citadel', () => {
+  it('says the opponent left or was away too long, not that a citadel fell', () => {
+    const w = new World({ seed: 3 });
+    const end = (me: 0 | 1, winner: 0 | 1, reason?: 'citadel' | 'forfeit' | 'timeout') => {
+      const c = new Chronicle(me, 'Ada');
+      c.onEvents([{ type: 'gameOver', winner }], w, reason);
+      return c.lines().at(-1);
+    };
+    expect(end(0, 0, 'forfeit')).toMatch(/Victory: Ada leaves the battle\.$/);
+    expect(end(1, 0, 'forfeit')).toMatch(/Defeat: you leave the battle\.$/);
+    expect(end(0, 0, 'timeout')).toMatch(/Victory: Ada was away too long\.$/);
+    expect(end(1, 0, 'timeout')).toMatch(/Defeat: you were away too long\.$/);
+    expect(end(0, 0, 'citadel')).toMatch(/Victory: Ada's citadel falls\.$/);
+    expect(end(1, 0)).toMatch(/Defeat: your citadel falls to Ada\.$/);
+  });
+});

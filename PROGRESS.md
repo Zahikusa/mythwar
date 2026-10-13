@@ -555,7 +555,7 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 128. [ ] The menus' focus handling (#76) and the HUD's accessibility labels (#79) are covered only by
    smoke checks; unit tests can't reach DOM code (no DOM environment in vitest). Decide whether a
    DOM environment (happy-dom) is worth a dev dependency, or keep them in smoke.
-129. [ ] (#23 made concrete) Rival records on the device are keyed by the opponent's name — two Adas
+129. [x] (decided, see #146: left as is) (#23 made concrete) Rival records on the device are keyed by the opponent's name — two Adas
    share a line, a renamed friend starts a new one. The server knows each player's device: it
    could send, with the seats, an opaque per-pair rival id (a hash of both devices and the
    server's salt — never the device id itself), and the client key its tallies by it (falling back
@@ -624,6 +624,20 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 143. [x] `scripts/mpsmoke.ts`: run #9's patch for #138 wrote three em dashes as cp1252 byte 0x97
    (Windows Python's default encoding) — the file was invalid UTF-8 for one commit. (Fixed; all
    tracked text files checked as UTF-8.)
+144. [x] Online results' chronicle (`src/ui/chronicle.ts`): a battle won by forfeit or by claiming
+   an absent player's seat ended with "Defeat: your citadel falls to Ada." — though no citadel fell
+   and the verdict above said "You were away too long" (seen in mpsmoke's `11-results-phone`).
+   (Done: the chronicle is told the server's end reason — "Ada leaves the battle.", "you were away
+   too long."; unit test; mpsmoke checks both endings on both screens.)
+145. [ ] `12-claim-desktop` (mpsmoke --shots): when the opponent is away from the battle's start,
+   the "Ada is away · Claim victory" overlay sits on top of the intro banner (place, kicker, lore)
+   and both texts show through each other.
+146. [x] (decided) #129 rival ids: not done. A per-pair id (hash of both devices) breaks the progress
+   code, which carries online tallies to a new device on purpose (new device → new pair ids); a
+   per-opponent id only lasts as long as the server's salt (`--no-save` makes a new one every
+   start) and falling back to the name on a miss brings the two-Adas mix-up back. Names are what
+   players see and type; the Hall (server side) already tells devices apart. Revisit with accounts
+   (ROADMAP's public server).
 
 
 

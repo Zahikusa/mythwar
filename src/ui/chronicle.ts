@@ -6,6 +6,7 @@
  */
 import { AGES, UNITS } from '../sim/data.ts';
 import type { SimEvent, Team } from '../sim/types.ts';
+import type { EndReason } from '../net/protocol.ts';
 import type { World } from '../sim/world.ts';
 import { fmtTime } from './dom.ts';
 import { HeroNames } from './heroes.ts';
@@ -77,7 +78,8 @@ export class Chronicle {
     this.moments.push({ t, text, weight });
   }
 
-  onEvents(events: SimEvent[], world: World): void {
+  /** `end`: online, why the server ended the battle (a forfeit or an absence isn't a fallen citadel). */
+  onEvents(events: SimEvent[], world: World, end?: EndReason): void {
     const t = world.time;
     for (const e of events) {
       if (e.type === 'death' && !this.firstBlood) {
@@ -108,7 +110,20 @@ export class Chronicle {
         const h = this.hero;
         // (Only one that rose a veteran — and so has its name — is the hero.)
         if (h && h.kills >= VETERAN_KILLS && this.names.has(h.id)) this.add(t, `Hero of the battle: ${this.names.name(h.defId, h.id)}, your ${UNITS[h.defId]?.name ?? 'creature'} — ${h.kills} foes felled.`, 5);
-        this.add(t, e.winner === this.me ? `Victory: ${this.foe}'s citadel falls.` : `Defeat: your citadel falls to ${this.foe}.`, 9);
+        const won = e.winner === this.me;
+        const how =
+          end === 'forfeit'
+            ? won
+              ? `Victory: ${this.foe} leaves the battle.`
+              : `Defeat: you leave the battle.`
+            : end === 'timeout'
+              ? won
+                ? `Victory: ${this.foe} was away too long.`
+                : `Defeat: you were away too long.`
+              : won
+                ? `Victory: ${this.foe}'s citadel falls.`
+                : `Defeat: your citadel falls to ${this.foe}.`;
+        this.add(t, how, 9);
       }
     }
     // Kills change only when something dies: then look for a new hero among your creatures.
