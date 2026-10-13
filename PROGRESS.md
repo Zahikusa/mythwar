@@ -688,6 +688,10 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 157. [x] `shoot` had no online battle: `mp-battle` / `mobile-mp-battle` (a guest readies, then the
    host — `afterGuest` — and the shot is a few seconds into the battle: ping, the opponent's sigil
    on their keep and by their name). Looked at: nothing to fix.
+158. [x] `scripts/smoke.ts`: every page load was followed by a fixed sleep (0.6–1.5 s) — on a slower
+   machine (the CI runner, #127) too short, here longer than needed — and the gamepad flow slept
+   6 s for summons to step out. (Done: `appUp()` waits until a battle ticks or a menu shows, then
+   0.5 s for the fade; the gamepad flow waits for its creatures on the field. 49 s → 44 s.)
 
 
 

@@ -65,6 +65,23 @@ async function resultsShown(page: Page): Promise<void> {
   await sleep(450);
 }
 
+/**
+ * After a page load: waits until the app is up — a battle under way, or a menu showing — however
+ * long that takes on a slow machine, then lets the screen fade in (`settle` ms).
+ */
+async function appUp(page: Page, settle = 500): Promise<void> {
+  await page
+    .waitForFunction(
+      () => {
+        const app = (window as unknown as { __mythwar?: any }).__mythwar;
+        return !!app && (app.state === 'playing' ? app.game.world.tick > 0 : app.menus.current !== 'none');
+      },
+      { timeout: 15_000, polling: 50 },
+    )
+    .catch(() => {});
+  await sleep(settle);
+}
+
 async function center(page: Page, selector: string): Promise<{ x: number; y: number }> {
   const box = await (await page.$(selector))!.boundingBox();
   return { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
@@ -102,7 +119,7 @@ async function resumeFlow(page: Page): Promise<void> {
   console.log('== autosave / continue ==');
   await page.setViewport({ width: 1600, height: 900, deviceScaleFactor: 1 });
   await page.goto(`${base}/?play=adept&seed=13&ff=25`, { waitUntil: 'load' });
-  await sleep(1500);
+  await appUp(page);
   const saved = await page.evaluate(() => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;
     const g = app.game;
@@ -112,7 +129,7 @@ async function resumeFlow(page: Page): Promise<void> {
     return { time: g.world.time, gold: g.world.players[0].gold };
   });
   await page.goto(`${base}/`, { waitUntil: 'load' });
-  await sleep(1200);
+  await appUp(page);
   const visible = await page.evaluate(() => !document.querySelector('.mbtn.continue')!.classList.contains('hidden'));
   check('title offers "Continue battle" after an autosave', visible);
   // Enter presses the title's primary button (here: Continue).
@@ -145,10 +162,10 @@ async function resumeFlow(page: Page): Promise<void> {
   {
     const app = () => (window as unknown as { __mythwar: any }).__mythwar;
     await page.goto(`${base}/?play=adept&seed=13&ff=70`, { waitUntil: 'load' });
-    await sleep(600);
+    await appUp(page);
     await page.evaluate(`(${app})().persist()`);
     await page.goto(`${base}/`, { waitUntil: 'load' });
-    await sleep(900);
+    await appUp(page);
     const before = await page.evaluate(`(() => { const a = (${app})(); a.settings.tutorialSeen = true; return a.settings.records.adept?.losses ?? 0; })()`);
     const nb = await centerText(page, '.screen.title', 'New battle');
     await page.mouse.click(nb.x, nb.y);
@@ -171,7 +188,7 @@ async function resumeFlow(page: Page): Promise<void> {
     localStorage.removeItem('mythwar.progress.v1');
   });
   await page.goto(`${base}/`, { waitUntil: 'load' });
-  await sleep(900);
+  await appUp(page);
   const boot = await page.evaluate(() => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;
     return { menu: app.menus.current, cont: !document.querySelector('.mbtn.continue')!.classList.contains('hidden'), master: app.settings.master, diff: app.settings.difficulty, saved: localStorage.getItem('mythwar.battle.v1') };
@@ -234,7 +251,7 @@ async function sandboxFlow(page: Page): Promise<void> {
   console.log('== sandbox ==');
   await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
   await page.goto(`${base}/?sandbox&seed=3`, { waitUntil: 'load' });
-  await sleep(1200);
+  await appUp(page);
   await page.keyboard.press('x');
   await sleep(200);
   const foe = await page.evaluate(() => !!document.querySelector('.hud.foeside'));
@@ -267,7 +284,7 @@ async function journalFlow(page: Page): Promise<void> {
   console.log('== break note and playtest journal ==');
   await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
   await page.goto(`${base}/?play=novice&seed=6`, { waitUntil: 'load' });
-  await sleep(900);
+  await appUp(page);
   const before = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.settings.journal.length as number);
   // (Backlog 53) A menu over a battle that runs on (online, no pauses left): battle keys wait.
   {
@@ -359,7 +376,7 @@ async function gamepadFlow(page: Page): Promise<void> {
     navigator.getGamepads = () => [pad as unknown as Gamepad];
   });
   await page.goto(`${base}/`, { waitUntil: 'load' });
-  await sleep(1000);
+  await appUp(page);
   // Press and release a button across a few frames.
   const tap = async (i: number) => {
     await page.evaluate((b) => ((window as unknown as { __pad: any }).__pad.buttons[b].pressed = true), i);
@@ -380,7 +397,7 @@ async function gamepadFlow(page: Page): Promise<void> {
   await sleep(300);
   check('gamepad: B goes back', (await menu()) === 'title', await menu());
   await page.goto(`${base}/?play=adept&seed=4`, { waitUntil: 'load' });
-  await sleep(1500);
+  await appUp(page);
   await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].gold = 500));
   await tap(2); // X: the first card
   await tap(12); // up: the top lane
@@ -397,9 +414,17 @@ async function gamepadFlow(page: Page): Promise<void> {
   await sleep(200);
   check('gamepad: Start again resumes', (await menu()) === 'none', await menu());
   // (Backlog 28) On the results every control can be reached with the D-pad: a breadth-first walk
-  // over the app's own D-pad moves, from the main button. (A few seconds first, so the summons
-  // step out: a champion, and with it the report's tabs.)
-  await sleep(6000);
+  // over the app's own D-pad moves, from the main button. (First the summons step out: a champion,
+  // and with it the report's tabs.)
+  await page
+    .waitForFunction(
+      () => {
+        const w = (window as unknown as { __mythwar: any }).__mythwar.game.world;
+        return w.players[0].queue.length === 0 && w.lanes.some((l: any[]) => l.some((u) => u.alive && u.team === 0));
+      },
+      { timeout: 20_000, polling: 100 },
+    )
+    .catch(() => check('gamepad: the summons stepped out', false, 'timed out'));
   await page.evaluate(() => {
     const w = (window as unknown as { __mythwar: any }).__mythwar.game.world;
     w.players[1].baseHp = 1;
@@ -441,7 +466,7 @@ async function armedFlow(page: Page): Promise<void> {
     localStorage.removeItem('mythwar.progress.v1');
   });
   await page.goto(`${base}/?play=adept&seed=4`, { waitUntil: 'load' });
-  await sleep(1200);
+  await appUp(page);
   // (Income is a few gold a second: 5 gold stays short of a 30-gold Guardian for a while.)
   await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].gold = 5));
   const card = await center(page, '.card.cls-guardian');
@@ -512,7 +537,7 @@ async function riddleFlow(page: Page): Promise<void> {
     localStorage.removeItem('mythwar.progress.v1');
   });
   await page.goto(`${base}/?screen=difficulty`, { waitUntil: 'load' });
-  await sleep(900);
+  await appUp(page);
   const chips = () => page.evaluate(() => [...document.querySelectorAll('.screen.difficulty .trial')].filter((c) => (c as HTMLElement).offsetParent !== null).map((c) => c.textContent));
   const freshChips = await chips();
   check('a newcomer’s foe screen offers Quick battle but no trials yet', freshChips.length === 1 && freshChips[0] === 'Quick battle', JSON.stringify(freshChips));
@@ -572,7 +597,7 @@ async function tutorialHandoffFlow(page: Page): Promise<void> {
   await page.goto(`${base}/`, { waitUntil: 'load' });
   await page.evaluate(() => localStorage.clear());
   await page.goto(`${base}/`, { waitUntil: 'load' });
-  await sleep(1200);
+  await appUp(page);
   const play = await center(page, '.screen.title .mbtn.primary:not(.hidden)');
   await page.mouse.click(play.x, play.y);
   await sleep(500);
@@ -606,7 +631,7 @@ async function phoneMenusFit(page: Page): Promise<void> {
   for (const [w, h] of [[844, 390], [640, 360]]) {
     await page.setViewport({ width: w, height: h, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     await page.goto(`${base}/?screen=settings`, { waitUntil: 'load' });
-    await sleep(900);
+    await appUp(page);
     const visible = (sel: string) =>
       page.evaluate((sel) => {
         const r = document.querySelector(sel)!.getBoundingClientRect();
@@ -615,7 +640,7 @@ async function phoneMenusFit(page: Page): Promise<void> {
     const done = await visible('.screen.settings .mbtn.primary');
     check(`${w}x${h}: Settings' Done button is on screen`, done.fits, JSON.stringify(done));
     await page.goto(`${base}/?play=adept&seed=4`, { waitUntil: 'load' });
-    await sleep(1000);
+    await appUp(page);
     // (Backlog 81) The pause summary wraps rather than cutting its end off; Resume stays on screen.
     const pause = await page.evaluate(async () => {
       const app = (window as unknown as { __mythwar: any }).__mythwar;
@@ -667,7 +692,7 @@ async function rotatedMenusFlow(page: Page): Promise<void> {
   console.log('== rotated portrait menus ==');
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   await page.goto(`${base}/`, { waitUntil: 'load' });
-  await sleep(1500);
+  await appUp(page);
   const playBtn = await center(page, '.screen.title .mbtn.primary:not(.hidden)');
   await page.touchscreen.tap(playBtn.x, playBtn.y);
   await sleep(600);
@@ -726,7 +751,7 @@ async function largeDesktopFlow(page: Page): Promise<void> {
   console.log('== large desktop (QHD) ==');
   await page.setViewport({ width: 2560, height: 1440, deviceScaleFactor: 1 });
   await page.goto(`${base}/?play=novice&seed=4`, { waitUntil: 'load' });
-  await sleep(900);
+  await appUp(page);
   const info = await page.evaluate(() => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;
     const box = (sel: string) => {
@@ -874,7 +899,7 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   console.log(`\n== ${label} ==`);
   await page.setViewport({ width: viewport.width, height: viewport.height, isMobile: viewport.mobile, hasTouch: viewport.mobile, deviceScaleFactor: 1 });
   await page.goto(`${base}/?play=adept&seed=11`, { waitUntil: 'load' });
-  await sleep(800);
+  await appUp(page);
   let s = await state(page);
   check('game starts in the middle lane', s.lane === 1 && s.menu === 'none');
 
