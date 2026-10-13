@@ -457,7 +457,7 @@
   background: rgba(20, 12, 36, 0.6);
 }
 
-.sname {
+.rseat .sname {
   font-size: 18px;
   font-weight: 800;
   /* (A long name with " (you) ✎" wraps to a second line rather than losing its end.) */
@@ -858,7 +858,7 @@
     padding: 8px 12px;
   }
 
-  .sname {
+  .rseat .sname {
     font-size: 15px;
   }
 

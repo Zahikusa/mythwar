@@ -158,7 +158,7 @@ const STEPS: Step[] = [
 ];
 
 interface Problem {
-  kind: 'scroll' | 'zoom' | 'outside' | 'clipped' | 'small' | 'panel' | 'tiny' | 'overlap' | 'error';
+  kind: 'scroll' | 'zoom' | 'outside' | 'clipped' | 'small' | 'panel' | 'tiny' | 'zoomfield' | 'overlap' | 'error';
   what: string;
 }
 
@@ -251,6 +251,12 @@ function inspect(safe: Insets): Problem[] {
     if (parseFloat(cs.fontSize) < 9.95) tiny.add(`${name(el)} ${cs.fontSize}`);
   }
   for (const t of tiny) out.push({ kind: 'tiny', what: `text ${t}` });
+  // Text fields at 16 px or more: iOS zooms the page into a smaller one when it gets the focus
+  // (and with pinch off there's no way back). Hidden ones too — a tap shows them (the seat's name).
+  for (const el of document.querySelectorAll<HTMLElement>('input:not([type="range"], [type="checkbox"], [type="radio"]), textarea, select')) {
+    const fs = parseFloat(getComputedStyle(el).fontSize);
+    if (fs < 15.95) out.push({ kind: 'zoomfield', what: `${name(el)} ${fs}px (iOS zooms in on focus)` });
+  }
   // A menu screen never scrolls as a whole (its title and buttons would go with it): only its body.
   for (const el of document.querySelectorAll<HTMLElement>('.screen.active')) {
     const cs = getComputedStyle(el);
