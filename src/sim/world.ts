@@ -203,7 +203,7 @@ export class World {
       incomeMult,
       wardCooldown: Array.from({ length: LANE_COUNT }, () => 0),
       blessings: { might: 0, vitality: 0, bastion: 0 },
-      stats: { summoned: 0, summonedBy: {}, kills: 0, killsByLane: [0, 0, 0], losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0, surgeGold: 0, classDamage: [0, 0, 0] },
+      stats: { summoned: 0, summonedBy: {}, kills: 0, killsByLane: [0, 0, 0], losses: 0, goldEarned: 0, goldSpent: 0, damageToBase: 0, powersCast: 0, surgeGold: 0, killGold: 0, classDamage: [0, 0, 0] },
       lastBaseHit: -10,
       hold: [false, false, false],
       trials: [],
@@ -265,6 +265,7 @@ export class World {
       p.stats.killsByLane ??= [0, 0, 0];
       p.stats.summonedBy ??= {};
       p.stats.surgeGold ??= 0;
+      p.stats.killGold ??= 0;
       p.stats.classDamage ??= [0, 0, 0];
       p.hold ??= [false, false, false];
       p.trials ??= [];
@@ -453,7 +454,7 @@ export class World {
     const p = this.players[team];
     if (!BLESSINGS[id]) return 'Unknown blessing';
     if (p.blessings[id] >= BLESSING_MAX_RANK) return 'Fully blessed';
-    if (p.gold < blessingCost(p.blessings[id], p.age)) return 'Not enough gold';
+    if (p.gold < blessingCost(id, p.blessings[id], p.age)) return 'Not enough gold';
     return null;
   }
 
@@ -559,7 +560,7 @@ export class World {
       case 'bless': {
         const why = this.blessingBlocker(cmd.team, cmd.blessing);
         if (why) return { ok: false, reason: why };
-        const cost = blessingCost(p.blessings[cmd.blessing], p.age);
+        const cost = blessingCost(cmd.blessing, p.blessings[cmd.blessing], p.age);
         p.gold -= cost;
         p.stats.goldSpent += cost;
         p.blessings[cmd.blessing]++;
@@ -1222,6 +1223,7 @@ export class World {
     killer.stats.kills++;
     killer.stats.killsByLane[u.lane]++;
     killer.stats.goldEarned += gold;
+    killer.stats.killGold += gold;
     this.players[u.team].stats.losses++;
     if (attacker) attacker.kills++;
     this.emit({ type: 'death', unitId: u.id, team: u.team, lane: u.lane, x: u.x, defId: u.def.id, flying: u.flying, gold });

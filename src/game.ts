@@ -1,5 +1,5 @@
 import { AI_PROFILES, AiController, DIFFICULTIES } from './ai/ai.ts';
-import type { Difficulty } from './ai/ai.ts';
+import type { AiSnapshot, Difficulty } from './ai/ai.ts';
 import { TICK } from './sim/data.ts';
 import type { TrialId } from './sim/data.ts';
 import type { Command, CommandResult, SimEvent, Team } from './sim/types.ts';
@@ -41,7 +41,7 @@ export interface GameSave {
   savedAt: number;
   speed: number;
   world: WorldSnapshot;
-  ai: { timer: number; pushLane: number; rng: number };
+  ai: AiSnapshot;
   history: HistorySample[];
   ageUps?: { t: number; team: Team; age: number }[];
   selectedLane: number;

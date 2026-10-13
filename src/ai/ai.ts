@@ -1,4 +1,4 @@
-import { AGES, AGE_TURRETS, AGE_UNITS, BLESSING_MAX_RANK, CLASS_ORDER, DRAGON, LANE_COUNT, LANE_LENGTH, MAX_AGE, UNITS, blessingCost, counterOf } from '../sim/data.ts';
+import { AGES, AGE_TURRETS, AGE_UNITS, BLESSING_MAX_RANK, BLESSING_PRICE_FLOOR_AGE, CLASS_ORDER, DRAGON, LANE_COUNT, LANE_LENGTH, MAX_AGE, UNITS, blessingCost, counterOf } from '../sim/data.ts';
 import type { BlessingId } from '../sim/data.ts';
 import type { TurretDef, UnitClass, UnitDef } from '../sim/data.ts';
 import { Rng } from '../sim/rng.ts';
@@ -30,6 +30,9 @@ export interface AiProfile {
   blessSkill: number;
   /** Gold kept in hand after buying a blessing, in units of the age's cheapest creature. */
   blessMargin: number;
+  /** Banks gold for its next blessing in calm moments (blessings are priced near their worth, so
+   *  "spare gold" alone almost never buys one). */
+  savesForBlessings?: boolean;
   /** Holds summons back to mount an up-to-date turret on a lane the foe has pushed into. */
   plansTurrets: boolean;
   /** Never ascends past the opponent's age: it follows the player up the ages instead of leading. */
@@ -114,6 +117,7 @@ export const AI_PROFILES: Record<Difficulty, AiProfile> = {
     // Keeps its blessings coming instead of sinking every coin into the queue, and mounts
     // turrets before the foe reaches its gates (the two things that most often beat it).
     blessMargin: 0,
+    savesForBlessings: true,
     plansTurrets: true,
     maxQueue: 5,
     turretDelay: 30,
@@ -140,6 +144,14 @@ function unitValue(def: UnitDef, hp: number, maxHp: number): number {
   return def.cost * (0.35 + 0.65 * (hp / maxHp));
 }
 
+/** An AI's own state, saved beside the world (blessGoal: absent in older saves). */
+export interface AiSnapshot {
+  timer: number;
+  pushLane: number;
+  rng: number;
+  blessGoal?: BlessingId | null;
+}
+
 export class AiController {
   readonly team: Team;
   readonly profile: AiProfile;
@@ -148,6 +160,8 @@ export class AiController {
   private timer: number;
   /** Lane chosen for "push" summons when nothing is threatening. */
   private pushLane: number;
+  /** The blessing an able general is banking gold for (savesForBlessings). */
+  private blessGoal: BlessingId | null = null;
 
   constructor(world: World, team: Team, profile: AiProfile, seed = 99) {
     this.world = world;
@@ -160,14 +174,15 @@ export class AiController {
   }
 
   /** Decision-loop state for save games. */
-  snapshot(): { timer: number; pushLane: number; rng: number } {
-    return { timer: this.timer, pushLane: this.pushLane, rng: this.rng.state };
+  snapshot(): AiSnapshot {
+    return { timer: this.timer, pushLane: this.pushLane, rng: this.rng.state, blessGoal: this.blessGoal };
   }
 
-  restore(s: { timer: number; pushLane: number; rng: number }): void {
+  restore(s: AiSnapshot): void {
     this.timer = s.timer;
     this.pushLane = s.pushLane;
     this.rng.state = s.rng;
+    this.blessGoal = s.blessGoal ?? null;
   }
 
   update(dt: number): void {
@@ -280,7 +295,13 @@ export class AiController {
     if (me.age === MAX_AGE && p.counterSkill >= 0.5 && !underSiege && !w.ragnarokStarted && danger <= 0 && w.aliveCount(this.team, DRAGON.id) === 0 && !me.queue.some((q) => q.unitId === DRAGON.id)) {
       reserve = Math.max(reserve, DRAGON.cost * p.counterSkill);
     }
-    const keep = underSiege && !saveThroughSiege ? 0 : reserve;
+    // Able generals also bank for their next blessing: they commit to one in a calm moment, from
+    // Asgard (where the prices stop rising faster than income) until Ragnarök is near, and keep
+    // the bank until they buy it — unless the citadel comes under siege.
+    if (!p.savesForBlessings || underSiege || w.time >= w.ragnarokAt - 180) this.blessGoal = null;
+    else if (!this.blessGoal && me.age >= BLESSING_PRICE_FLOOR_AGE && danger <= 0) this.blessGoal = this.nextBlessing(false);
+    const blessing = this.blessGoal;
+    const keep = underSiege && !saveThroughSiege ? 0 : Math.max(reserve, blessing ? blessingCost(blessing, me.blessings[blessing], me.age) : 0);
 
     // 3. Turrets. A planning AI mounts one as soon as foes push past midfield in a lane without
     // an up-to-date turret, and holds further summons back until it can afford it.
@@ -292,8 +313,10 @@ export class AiController {
     }
     if (w.time >= p.turretDelay && this.rng.chance(p.turretSkill)) this.considerTurret(lanes, reserve, saveThroughSiege);
 
-    // 4. Blessings with clearly spare gold.
-    if (this.rng.chance(p.blessSkill)) this.considerBlessing(reserve, unitCost, underSiege);
+    // 4. Blessings with clearly spare gold (or the gold banked for one).
+    if (blessing) {
+      if (me.gold - blessingCost(blessing, me.blessings[blessing], me.age) >= reserve && w.apply({ type: 'bless', team: this.team, blessing }).ok) this.blessGoal = null;
+    } else if (this.rng.chance(p.blessSkill)) this.considerBlessing(reserve, unitCost, underSiege);
 
     // 5. Summons.
     let guard = 0;
@@ -361,17 +384,23 @@ export class AiController {
     return basics.find((u) => u.cls === want) ?? this.rng.pick(basics);
   }
 
-  private considerBlessing(reserve: number, unitCost: number, underSiege: boolean): void {
-    const w = this.world;
-    const me = w.players[this.team];
+  /** The blessing to buy next: fewest ranks first (keeps the tracks even), Bastion first when hurt. */
+  private nextBlessing(underSiege: boolean): BlessingId | null {
+    const me = this.world.players[this.team];
     const hurt = me.baseHp < me.baseMaxHp * 0.5;
     let options: BlessingId[] = ['might', 'vitality'];
     if (hurt || underSiege) options = ['bastion', ...options];
     options = options.filter((b) => me.blessings[b] < BLESSING_MAX_RANK);
-    if (options.length === 0) return;
-    // Cheapest rank first (keeps the tracks even), bastion first when the citadel is hurt.
-    const pick = hurt && options[0] === 'bastion' ? 'bastion' : options.sort((a, b) => me.blessings[a] - me.blessings[b])[0];
-    const cost = blessingCost(me.blessings[pick], me.age);
+    if (options.length === 0) return null;
+    return hurt && options[0] === 'bastion' ? 'bastion' : options.sort((a, b) => me.blessings[a] - me.blessings[b])[0];
+  }
+
+  private considerBlessing(reserve: number, unitCost: number, underSiege: boolean): void {
+    const w = this.world;
+    const me = w.players[this.team];
+    const pick = this.nextBlessing(underSiege);
+    if (!pick) return;
+    const cost = blessingCost(pick, me.blessings[pick], me.age);
     if (me.gold - cost < reserve + unitCost * this.profile.blessMargin) return;
     w.apply({ type: 'bless', team: this.team, blessing: pick });
   }

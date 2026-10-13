@@ -377,7 +377,7 @@ export class NetGame extends Game {
         ascending = true;
       } else if (c.type === 'bless') {
         const rank = p.blessings[c.blessing] + (blessRanks[c.blessing] ?? 0);
-        spend += blessingCost(rank, p.age);
+        spend += blessingCost(c.blessing, rank, p.age);
         blessRanks[c.blessing] = (blessRanks[c.blessing] ?? 0) + 1;
       } else if (c.type === 'buildTurret') {
         const cur = p.turrets[c.lane]?.def;
@@ -412,7 +412,7 @@ export class NetGame extends Game {
         const why = w.blessingBlocker(team, cmd.blessing);
         if (why) return why;
         const rank = p.blessings[cmd.blessing] + (blessRanks[cmd.blessing] ?? 0);
-        return gold < blessingCost(rank, p.age) ? 'Not enough gold' : null;
+        return gold < blessingCost(cmd.blessing, rank, p.age) ? 'Not enough gold' : null;
       }
       case 'buildTurret': {
         const why = w.turretBlocker(team, cmd.lane, cmd.turretId);

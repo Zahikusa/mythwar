@@ -52,9 +52,35 @@ describe('ai', () => {
       return w.players[1].blessings.might + w.players[1].blessings.vitality;
     };
     // Mythic buys with any gold to spare; Master keeps a creature's cost (30) in hand.
-    const cost = blessingCost(0, 0);
+    const cost = blessingCost('might', 0, 0);
     expect(blessingsWith('mythic', cost + 20)).toBe(1);
     expect(blessingsWith('master', cost + 20)).toBe(0);
+  });
+
+  it('Mythic banks gold for its next blessing once it commits, and buys it', () => {
+    const w = new World({ seed: 1 });
+    const me = w.players[1];
+    me.age = 2;
+    me.xp = 0;
+    for (const sh of w.shrines) sh.owner = 1;
+    const ai = new AiController(w, 1, AI_PROFILES.mythic, 2);
+    const cost = blessingCost('might', 0, 2);
+    // Calm lanes: it commits to Might and keeps its gold instead of summoning it all away.
+    me.gold = cost * 0.6;
+    for (let i = 0; i < 2 / TICK; i++) ai.update(TICK);
+    expect(me.gold).toBeGreaterThan(cost * 0.6 - 200);
+    expect(me.blessings.might).toBe(0);
+    me.gold = cost + 10;
+    for (let i = 0; i < 2 / TICK; i++) ai.update(TICK);
+    expect(me.blessings.might).toBe(1);
+    // A Master doesn't save for blessings: it summons with the same gold.
+    const w2 = new World({ seed: 1 });
+    w2.players[1].age = 2;
+    w2.players[1].gold = cost * 0.6;
+    for (const sh of w2.shrines) sh.owner = 1;
+    const master = new AiController(w2, 1, AI_PROFILES.master, 2);
+    for (let i = 0; i < 2 / TICK; i++) master.update(TICK);
+    expect(w2.players[1].gold).toBeLessThan(cost * 0.6 - 200);
   });
 
   it('mirror matches finish (Ragnarök resolves stalemates)', () => {

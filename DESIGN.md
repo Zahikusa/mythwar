@@ -117,7 +117,18 @@ turret (splash). Turrets can be sold for 50%.
 - **Blessings:** permanent upgrades bought with gold — Might (+10% damage), Vitality (+10%
   health for new creatures), Bastion (+15% citadel health, +7.5% ward/turret damage); five ranks
   each, prices scale with rank and age but never drop below the Asgard price (cheap permanent
-  first-age blessings were the best buy in the game). A late-game gold sink.
+  first-age blessings were the best buy in the game). Each is priced by its worth (Lens #46,
+  `npm run economy` and equal-gold tests): a first rank at Asgard costs Might 1,584, Vitality
+  1,056, Bastion 792 gold — about two thirds of what it wins you. Gold never piles up (creatures
+  absorb it), so a blessing means banking gold in a calm moment; the Mythic general does so.
+
+## Economy (Lens #46, `npm run economy`)
+Kills are 55–70% of everyone's income (a fallen creature pays its killer 75% of its cost),
+passive income 25–40%, Ley Surges 2–4%. Creatures take ~85–90% of all spending, ascending
+~10%, turrets and blessings the rest. Nobody ever sits on gold with a full queue: gold, not the
+queue, is the limit. The consequence players must learn — creatures thrown one by one into a
+held lane feed the enemy — is said on the how-to page and by a results tip; hold the line is the
+tool for it.
 - **Ragnarök:** at 18:00, or 3 minutes after both sides reach the final age, the wards fall
   silent, turrets fire at half their rate (since #39: stalemates at defended gates had dragged even
   battles to a 20-minute median), and damage to citadels ramps +150% per minute (raised from +100% in phase 2: the stronger defensive tools had stretched even battles past 20 minutes) — long stalemates end.

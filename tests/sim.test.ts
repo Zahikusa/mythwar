@@ -542,23 +542,28 @@ describe('victory', () => {
 describe('blessings', () => {
   it('cost gold, rank up and cap at five', () => {
     const w = new World();
-    w.players[0].gold = blessingCost(0, 0) - 1;
+    w.players[0].gold = blessingCost('might', 0, 0) - 1;
     expect(w.apply({ type: 'bless', team: 0, blessing: 'might' }).ok).toBe(false);
     w.players[0].gold = 1e6;
     for (let i = 0; i < 5; i++) expect(w.apply({ type: 'bless', team: 0, blessing: 'might' }).ok).toBe(true);
     expect(w.players[0].blessings.might).toBe(5);
     expect(w.apply({ type: 'bless', team: 0, blessing: 'might' }).ok).toBe(false);
-    expect(blessingCost(1, 0)).toBeGreaterThan(blessingCost(0, 0));
-    expect(blessingCost(0, 4)).toBeGreaterThan(blessingCost(0, 0));
+    expect(blessingCost('might', 1, 0)).toBeGreaterThan(blessingCost('might', 0, 0));
+    expect(blessingCost('might', 0, 4)).toBeGreaterThan(blessingCost('might', 0, 0));
   });
 
   it('never cost less than at the Asgard price (no first-age bargain)', () => {
     for (let rank = 0; rank < 5; rank++) {
-      expect(blessingCost(rank, 0)).toBe(blessingCost(rank, BLESSING_PRICE_FLOOR_AGE));
-      expect(blessingCost(rank, 1)).toBe(blessingCost(rank, BLESSING_PRICE_FLOOR_AGE));
+      expect(blessingCost('might', rank, 0)).toBe(blessingCost('might', rank, BLESSING_PRICE_FLOOR_AGE));
+      expect(blessingCost('might', rank, 1)).toBe(blessingCost('might', rank, BLESSING_PRICE_FLOOR_AGE));
     }
     expect(AGES[BLESSING_PRICE_FLOOR_AGE].name).toBe('Asgard');
-    expect(blessingCost(0, 3)).toBeGreaterThan(blessingCost(0, 2));
+    expect(blessingCost('might', 0, 3)).toBeGreaterThan(blessingCost('might', 0, 2));
+  });
+
+  it('are priced by their worth: Might above Vitality above Bastion', () => {
+    expect(blessingCost('might', 0, 2)).toBeGreaterThan(blessingCost('vitality', 0, 2));
+    expect(blessingCost('vitality', 0, 2)).toBeGreaterThan(blessingCost('bastion', 0, 2));
   });
 
   it('might raises creature damage', () => {

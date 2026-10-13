@@ -33,6 +33,12 @@ describe('results tip', () => {
     w.players[0].stats.surgeGold = 50;
     expect(battleTip(w, 0, 'adept', [])).toMatch(/Ley Surges/);
     w.players[1].stats.surgeGold = 0;
+    // Fed the enemy: creatures thrown away paid for its army.
+    w.players[1].stats.killGold = 4000;
+    w.players[0].stats.killGold = 2000;
+    expect(battleTip(w, 0, 'adept', [])).toMatch(/paid the enemy 4000 gold/);
+    w.players[0].stats.killGold = 3000;
+    expect(battleTip(w, 0, 'adept', [])).not.toMatch(/paid the enemy/);
     // Nothing specific: the counter advice — or, with it switched off, the triangle itself.
     expect(battleTip(w, 0, 'adept', [])).toMatch(/Counter! badge/);
     expect(battleTip(w, 0, 'adept', [], false)).toMatch(/Hunters beat Mystics/);

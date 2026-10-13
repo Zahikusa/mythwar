@@ -150,7 +150,7 @@ const TIPS: Tip[] = [
   },
   {
     id: 'bless',
-    text: 'Blessings permanently strengthen your army. Worth it when gold piles up.',
+    text: 'Blessings strengthen your army for the rest of the battle. They are pricey: bank gold in a calm moment to afford one.',
     anchor: '.blessbtn',
     when: (g, t) => t > 240 && g.world.players[g.playerTeam].gold > 600,
     done: (_g, t, s) => t - s > 9,

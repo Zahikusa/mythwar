@@ -92,7 +92,7 @@ complete; its log follows below the lens plan.
 - [x] #43 Elegance — results tip and next-foe button no longer say the same thing: the tip points at the missing star
 - [x] #44 Character — the AI difficulties are generals with a voice: Puck, Hippolyta, Odin, Ares (taunts at key moments)
 - [x] #45 Imagination — every battle is fought at a named place from its seed ("The Battle of Weeping Ford"): banner, pause, results, shared result
-- [ ] #46 Economy — economy analysis & fix
+- [x] #46 Economy — `npm run economy`; blessings were 4× underpriced (free Might = 80% wins): priced by worth, Mythic banks for them; "fallen creatures feed the foe" told (how-to, results tip)
 - [ ] #47 Balance — per-creature balance from sims
 - [ ] #48 Accessibility — colour-blind friendly team/class cues, text size
 - [ ] #49 Visible Progress — progress across battles

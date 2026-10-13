@@ -1401,7 +1401,7 @@ export class Hud {
       const ref = this.blessRefs[id];
       const rank = me.blessings[id];
       ref.pips.forEach((p, i) => toggle(p, 'on', i < rank));
-      const cost = rank >= BLESSING_MAX_RANK ? -1 : blessingCost(rank, me.age);
+      const cost = rank >= BLESSING_MAX_RANK ? -1 : blessingCost(id, rank, me.age);
       if (cost !== ref.cost) {
         ref.cost = cost;
         ref.buy.disabled = cost < 0;

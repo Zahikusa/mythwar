@@ -599,13 +599,15 @@ export interface BlessingDef {
   id: BlessingId;
   name: string;
   perRank: number;
+  /** Gold per rank at first-age prices (scaled by age, times the rank being bought). */
+  price: number;
   blurb: string;
 }
 
 export const BLESSINGS: Record<BlessingId, BlessingDef> = {
-  might: { id: 'might', name: 'Might', perRank: 0.1, blurb: '+10% damage for all your creatures.' },
-  vitality: { id: 'vitality', name: 'Vitality', perRank: 0.1, blurb: '+10% health for newly summoned creatures.' },
-  bastion: { id: 'bastion', name: 'Bastion', perRank: 0.15, blurb: '+15% citadel health and +7.5% ward and turret damage.' },
+  might: { id: 'might', name: 'Might', perRank: 0.1, price: 360, blurb: '+10% damage for all your creatures.' },
+  vitality: { id: 'vitality', name: 'Vitality', perRank: 0.1, price: 240, blurb: '+10% health for newly summoned creatures.' },
+  bastion: { id: 'bastion', name: 'Bastion', perRank: 0.15, price: 180, blurb: '+15% citadel health and +7.5% ward and turret damage.' },
 };
 export const BLESSING_ORDER: BlessingId[] = ['might', 'vitality', 'bastion'];
 export const BLESSING_MAX_RANK = 5;
@@ -617,9 +619,17 @@ export const BLESSING_MAX_RANK = 5;
  */
 export const BLESSING_PRICE_FLOOR_AGE = 2;
 
-/** Cost of buying the next rank (rank = ranks already owned). Scales with the current age. */
-export function blessingCost(rank: number, age: number): number {
-  return Math.round(120 * (rank + 1) * COST_SCALE[Math.max(age, BLESSING_PRICE_FLOOR_AGE)]);
+/*
+ * Each blessing is priced by what it is worth (Lens #46, `scripts/economy.ts`): at a flat 120 a
+ * free first rank on reaching Asgard won an even Master-vs-Master battle as often as ~2,200 gold
+ * (Might: 79–87% wins), ~1,300 (Vitality) or ~1,000 (Bastion) did — for 528 gold. The AI that
+ * bought them whenever it could won 72% against the same AI that mostly didn't. Now a rank costs
+ * about two thirds of its worth: a good buy, not the only one.
+ */
+
+/** Cost of buying the next rank of a blessing (rank = ranks already owned). Scales with the current age. */
+export function blessingCost(id: BlessingId, rank: number, age: number): number {
+  return Math.round(BLESSINGS[id].price * (rank + 1) * COST_SCALE[Math.max(age, BLESSING_PRICE_FLOOR_AGE)]);
 }
 
 // ---------------------------------------------------------------------------

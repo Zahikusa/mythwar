@@ -886,3 +886,36 @@ the player can use again and again for their imagination?*
   keeps its seed in snapshots, so a save or a reconnect keeps the name (older saves get one too).
 - Checked: unit tests (stable per seed, varied, both name shapes, survives a snapshot);
   screenshots of the banner (desktop, phone), pause (phone) and results; full verify.
+
+## #46 The Lens of Economy
+*How can players earn money? How can they spend it? What happens when they have too much, or
+too little? Are the choices meaningful? Is the economy balanced?*
+- Measured, not guessed: `npm run economy` (new, `scripts/economy.ts`) splits gold earned and
+  spent per age. Even Master battles: kills are 55–70% of income, passive 25–40%, surges 2–4%;
+  creatures take 85–90% of spending, ascending ~10%, turrets a little, **blessings almost
+  nothing** (Master: 0.2 per battle). Nobody ever holds gold with a full queue — there is no
+  "too much money" in Mythwar; gold is always the limit.
+- Is that because blessings are poor? The opposite. Equal-gold tests (a free first rank on
+  reaching Asgard vs a gold gift, 60–80 even Master battles each): a free **Might** won 79–87%
+  — more than 2,112 gold (73%) did; Vitality 65% (~1,300 gold), Bastion 59% (~1,000) — all for
+  528 gold. An AI that bought blessings whenever it could won 72% against the same AI. Blessings
+  were the dominant buy; only the AI's "spare gold" rule hid it. A player who found out would
+  have had a strategy the rest of the game could not answer.
+- Change 1: **each blessing priced by its worth** (Might 360, Vitality 240, Bastion 180 gold per
+  rank at first-age prices, was 120 for all): a first rank at Asgard now costs 1,584 / 1,056 /
+  792 — about two thirds of what it wins. Still a good buy, no longer the only one.
+- Change 2: at these prices nobody has spare gold for a blessing, so **the Mythic general banks
+  for its next one**: it commits in a calm moment (from Asgard until Ragnarök is near) and keeps
+  the bank unless besieged (saved in AI snapshots). Found on the way: banking in calm moments is
+  strong in itself — a saving Master beat the normal one 69% *even in battles where it never
+  bought a blessing* — because creatures trickled into a defended lane die and pay the foe 75%
+  of their cost. So only Mythic got it (Master would have jumped a difficulty step).
+- Change 3: that lesson, the heart of the economy, was never told to the player. The how-to
+  page now says a fallen creature pays its killer three quarters of its cost, and the results
+  tip catches it: "Your fallen creatures paid the enemy 4,000 gold — … Don't feed a held lane
+  one by one: gather a wave (hold the line) and strike together." (new `killGold` stat). The
+  blessing coach tip no longer says "worth it when gold piles up" (it never does): "They are
+  pricey: bank gold in a calm moment to afford one."
+- Checked: designcheck (ladder 100/63/7/0%, even battles 19.0 min, fairness 47%), Mythic vs
+  Master 30–0, unit tests (price order, Mythic banks and buys while Master summons, feeding
+  tip), how-to page on a 667×375 phone; full verify.

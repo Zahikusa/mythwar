@@ -127,7 +127,7 @@ export class Bot {
       if (me.gold >= def.cost + 60) w.apply({ type: 'buildTurret', team: this.team, lane, turretId: def.id });
     }
     for (const id of BLESSING_ORDER) {
-      const cost = blessingCost(me.blessings[id], me.age);
+      const cost = blessingCost(id, me.blessings[id], me.age);
       if (me.gold > cost + 400) w.apply({ type: 'bless', team: this.team, blessing: id });
     }
   }

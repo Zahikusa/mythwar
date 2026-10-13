@@ -419,7 +419,7 @@ export class Menus {
         title: 'Gold, shrines and ages',
         body: [
           art(['treant', 'minotaur', 'jotunn', 'oni', 'titan'], 0),
-          p('Gold flows in over time and from every kill. Stand at a lane’s <b>Ley Shrine</b> with no foes nearby to capture it: it pays extra income until the enemy takes it back. Now and then a <b>Ley Surge</b> flares under one shrine: hold it while it lasts for a flood of gold.'),
+          p('Gold flows in over time and from every kill — a fallen creature pays its killer three quarters of its cost, so creatures thrown away one by one feed the enemy. Stand at a lane’s <b>Ley Shrine</b> with no foes nearby to capture it: it pays extra income until the enemy takes it back. Now and then a <b>Ley Surge</b> flares under one shrine: hold it while it lasts for a flood of gold.'),
           p('<b>XP</b> comes from kills, blows against the enemy citadel and the passing of time. With enough XP and a gold tithe you can <b>Ascend</b> (or, with three quarters of the XP, <b>rush</b> it for a double tithe) through five mythic ages — Fae Wilds, Olympus, Asgard, the Jade Empire and the Celestial realm — each with stronger creatures and a sturdier citadel.'),
         ],
       },
@@ -887,6 +887,10 @@ export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps
   if (cd[0] > 500 && cd[1] < cd[0] * 0.3 && cd[2] > cd[1]) {
     return `Tip: only ${Math.round((cd[1] / cd[0]) * 100)}% of your creatures’ damage hit a class they beat, and ${Math.round((cd[2] / cd[0]) * 100)}% hit one that beats them. Shields beat fangs, fangs beat orbs, orbs beat shields — answer what is in the lane.`;
   }
+  // Every fallen creature pays its killer three quarters of its cost: creatures sent one by one
+  // into a held lane feed the enemy (kills are over half of everyone's income).
+  const fed = world.players[foe].stats.killGold ?? 0;
+  if (fed > Math.max(1500, (P.stats.killGold ?? 0) * 1.5)) return `Tip: your fallen creatures paid the enemy ${fmt(fed)} gold — each pays its killer three quarters of its cost. Don’t feed a held lane one by one: gather a wave (hold the line) and strike together.`;
   const surged = [P.stats.surgeGold ?? 0, world.players[foe].stats.surgeGold ?? 0];
   if (surged[1] > Math.max(100, surged[0] * 2)) return `Tip: the enemy drew ${fmt(surged[1])} gold from Ley Surges. When a shrine starts to flicker, march on it — the surge pays whoever holds it.`;
   if (world.shrines.filter((s) => s.owner === foe).length >= 2) return 'Tip: the enemy held the Ley Shrines. Retake them when a lane is quiet — each one pays extra gold.';

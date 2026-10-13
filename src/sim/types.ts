@@ -91,6 +91,8 @@ export interface TeamStats {
   powersCast: number;
   /** Gold drawn from Ley Surges. */
   surgeGold: number;
+  /** Gold earned from kills (each fallen foe pays KILL_GOLD_MULT of its cost). */
+  killGold: number;
   /** Damage dealt by this side's creatures: [all, into a class they beat, into a class that beats them]. */
   classDamage: [number, number, number];
 }
