@@ -203,6 +203,9 @@ const SCENARIOS: Scenario[] = [
   // Lens #82: the longest general's line (Hippolyta at Ragnarök) in its bubble, desktop and phone.
   { name: 'taunt-ragnarok', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 5000, script: `window.__mythwar.taunt('ragnarok', true)`, after: 400 },
   { name: 'mobile-taunt-ragnarok', query: 'play=adept&seed=4', w: 844, h: 390, mobile: true, dpr: 2, wait: 5000, script: `window.__mythwar.taunt('ragnarok', true)`, after: 400 },
+  // Lens #83: footfalls — guardians and runners kick up the lane (Olympus sand, Asgard snow).
+  { name: 'footfalls-age1', query: 'sandbox&seed=3&theme=1', w: 1600, h: 900, wait: 1500, script: `(() => { const w = window.__mythwar.game.world; const U = window.__mythwarData.UNITS; for (let i = 0; i < 3; i++) ['minotaur', 'centaur'].forEach((id, k) => w.spawnUnit(0, i, U[id], 120 + k * 50)); })()`, after: 3000 },
+  { name: 'footfalls-age2', query: 'sandbox&seed=3&theme=2', w: 1600, h: 900, wait: 1500, script: `(() => { const w = window.__mythwar.game.world; const U = window.__mythwarData.UNITS; for (let i = 0; i < 3; i++) ['jotunn', 'fenrir'].forEach((id, k) => w.spawnUnit(0, i, U[id], 120 + k * 50)); })()`, after: 3000 },
   // Lens #77: creatures frozen mid-gesture after a kill (roar, hop, twirl, rear, loom; both sides).
   {
     name: 'temper-gestures',

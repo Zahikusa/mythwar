@@ -56,6 +56,8 @@ interface UnitVis {
   /** Its temper's gesture after felling a foe: 1 → 0 while playing; not again before `gestNext`. */
   gest: number;
   gestNext: number;
+  /** Footfalls taken (half walk cycles), for the dust they kick up. */
+  step: number;
 }
 
 interface Ghost {
@@ -1549,7 +1551,7 @@ export class Renderer {
         // Creatures already out on the field (a continued battle, which starts paused, or a
         // fast-forwarded one) are fully there; only fresh summons fade and grow in.
         const spawn = Math.min(1, Math.max(0, (simTime - u.bornAt) / SPAWN_TIME));
-        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1, reborn: 0, frozen: null, hx: NaN, hy: NaN, radius: u.def.radius, gest: 0, gestNext: 0 };
+        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1, reborn: 0, frozen: null, hx: NaN, hy: NaN, radius: u.def.radius, gest: 0, gestNext: 0, step: Math.floor((seed * TAU) / Math.PI) };
         this.vis.set(u.id, v);
       }
     }
@@ -1594,6 +1596,17 @@ export class Renderer {
     const xi = u.px + (u.x - u.px) * alpha;
     v.walk += Math.abs(xi - v.lastX) * 0.24;
     v.lastX = xi;
+    // Footfalls (Lens #83): creatures belong to the ground they cross — guardians thud up a puff
+    // of the lane's own earth (or snow, or cloud) at every step, runners a wisp of it.
+    const step = Math.floor(v.walk / Math.PI);
+    if (step !== v.step) {
+      v.step = step;
+      const heavy = u.def.cls === 'guardian';
+      if (!u.flying && (heavy || u.def.cls === 'hunter') && this.quality !== 'low' && this.fx.particles.length < this.fx.maxParticles * 0.5) {
+        const back = (u.team === 0 ? -1 : 1) * u.def.radius * 0.35 * p.s;
+        this.fx.burst(p.x + back, p.y, { count: heavy ? 3 : 1, color: THEMES[this.theme].laneDetail, speed: heavy ? 26 : 16, life: heavy ? 0.6 : 0.45, size: (heavy ? 3 : 2.2) * p.s + 1, size1: (heavy ? 5 : 3.5) * p.s + 1, shape: 'smoke', layer: u.lane, gravity: -10, drag: 3, dir: -Math.PI / 2, spread: 2.4 });
+      }
+    }
     v.flash = Math.max(0, v.flash - dt * 6);
     v.spawn = Math.max(0, Math.min(1, v.spawn + dt / SPAWN_TIME));
     const tc = TEAM_COLORS[u.team];

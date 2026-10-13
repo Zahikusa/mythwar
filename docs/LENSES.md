@@ -1584,3 +1584,21 @@ player ever see it?*
 - Checked: unit test (every general has a Ragnarök line; only a general with a nemesis has
   nemesis lines, others say nothing); screenshots of the longest line on desktop and phone;
   full verify.
+
+## #83 The Lens of the Nameless Quality
+*Does the game have the quality of living things — Christopher Alexander's "quality without a
+name"? Which of his properties (levels of scale, strong centres, roughness, echoes, deep
+interlock, not-separateness…) does it lack?*
+- Walked through Alexander's fifteen properties against a battle. Strong centres (citadels,
+  shrines), levels of scale (citadel → gate → creature → particle), echoes (each age's colours
+  repeat in HUD, backdrop and creatures, #9), contrast and gradients (dusk skies, the god's
+  moment) are there. The weak one was **not-separateness**: the creatures were pasted onto the
+  world. They cast a shadow, but a minotaur charging across the sand of Olympus or a jötunn
+  wading through Asgard's snow left the ground untouched — the field was a backdrop, not a place.
+- Change: **footfalls**. At every step a guardian thuds up a small puff of the lane's own
+  ground colour (sand, snow, jade earth, cloud) behind its feet; runners (hunters) kick a wisp
+  of it; mystics and fliers, light of foot, leave none. Kept deliberately faint — a thing you
+  feel rather than notice. Off in battery saver, and only while the particle pool is under half
+  full, so big fights don't pay for it.
+- Checked: screenshots (Olympus sand, Asgard snow); perfcheck 1.58 ms per frame (budget 3);
+  full verify.
