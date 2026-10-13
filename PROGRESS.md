@@ -4,6 +4,17 @@ Status: **Phase 2 in progress** — 100 design iterations, one per lens of Jesse
 *The Art of Game Design* (started run #5, 2026-10-12). Phase 1 (local Wi-Fi multiplayer) is
 complete; its log follows below the lens plan.
 
+## Run #7 in short (for the morning)
+- Lenses #77–#84 so far. Creatures have a **temper** and a kill gesture (#77); the generals
+  answer the player's deeds from their place on the circumplex (#78), tell their mythic ties at
+  first meetings — Hippolyta is Ares' daughter, Odin drank from Mímir's well (#79) — and show an
+  inner contradiction at Ragnarök (#82); **standing** titles by each seat in the battle room
+  (protocol **v9**, #80); **veterans**: three kills → gold chevron, +20% damage (#81, rules
+  changed: simFingerprint differs); footfall dust (#83); the lobby recognises old rivals (#84).
+- designcheck after veterans: even battles 18.1 min (was 18.6), ladder 100/73/20/7%;
+  `sim 120 master master` 60–60. perfcheck 1.58 ms/frame.
+- The death event now carries `killer` (unit id or -1); a new `veteran` event.
+
 ## Run #6 in short (for the morning)
 - Lenses #45–#76 done (one commit each, reasoning in `docs/LENSES.md`). Highlights: battles are
   fought at named places (#45); **economy** probe `npm run economy` found blessings 4×
