@@ -859,10 +859,16 @@ it prints, inviting, stopping — 2026-10-13.)
 195. [x] Co-op room: under the ally's seat "2 – 2 here · you 3 – 1 overall" frames the ally as an
    opponent (mpmenus.ts ~441–447). In co-op: "Victories together: 2". (Done: co-op rooms show "Victories together: N" under the
    ally and no head-to-head record.)
-196. [ ] Co-op leaving and credit: the leaver's journal records a defeat and the pause note says
+196. [x] Co-op leaving and credit: the leaver's journal records a defeat and the pause note says
    leaving "counts as a defeat" though the side may still win; side-wide feats (Wyrmcaller,
    Favoured, Among the Gods) go to both allies for one ally's deed; a stayer who won alone reads
-   "You and Bo toppled the Novice!".
+   "You and Bo toppled the Novice!". (Done but the feats: in co-op leaving journals no defeat; the pause note says
+   "Leaving hands the battle to your ally, who fights on"; a stayer who won alone reads "You
+   toppled the Novice — after Bo had left." / "Well fought — alone at the end!". Side-wide feats
+   for one ally's deed stay — split into #198.)
+198. [ ] Co-op feats: Wyrmcaller, Favoured, Among the Gods (src/ui/feats.ts ~100–113) are judged on the
+   shared side, so one ally's dragon / rank-5 blessing / Celestial ascent earns them for both.
+   Judge them by the player's own orders (the turn's `seat`), or mark them "together".
 197. [ ] (minor) The co-op chronicle calls the foe by the difficulty label ("First blood to Novice")
    where single player uses the general's name (Puck); the results drop the AI's income note.
 

@@ -29,6 +29,8 @@ export interface OnlineResult {
   foe: string;
   /** Co-op: the ally who fought alongside ('' in a versus battle). */
   ally?: string;
+  /** Co-op: the ally had left by the end (this player finished it alone). */
+  alone?: boolean;
   reason: EndReason;
   /** Wins in this room so far: [mine, theirs]. */
   score: [number, number] | null;
@@ -188,7 +190,7 @@ export class Menus {
   }
 
   /** One-line battle summary shown on the pause screen. `foe`: the other player's name online. */
-  setPauseSummary(world: World, me: Team, difficulty: Difficulty, online?: { foe: string; title: string }, sandbox = false, riddle: Puzzle | null = null): void {
+  setPauseSummary(world: World, me: Team, difficulty: Difficulty, online?: { foe: string; title: string; coop?: boolean }, sandbox = false, riddle: Puzzle | null = null): void {
     if (!this.pauseSummary) return;
     if (this.pauseSaid) this.pauseSaid.textContent = '';
     if (riddle) {
@@ -210,7 +212,7 @@ export class Menus {
     // Online, either player may pause and either may resume; the battle can't restart.
     this.restartBtn?.classList.toggle('hidden', !!online);
     if (this.pauseTitle) this.pauseTitle.textContent = online ? online.title : 'Paused';
-    if (this.pauseNote) this.pauseNote.textContent = online ? 'Leaving the battle counts as a defeat. Either player can resume.' : sandbox ? 'The sandbox keeps no score — leave or restart any time.' : 'Leaving or restarting after the first minute counts as a defeat.';
+    if (this.pauseNote) this.pauseNote.textContent = online?.coop ? 'Leaving hands the battle to your ally, who fights on. Either of you can resume.' : online ? 'Leaving the battle counts as a defeat. Either player can resume.' : sandbox ? 'The sandbox keeps no score — leave or restart any time.' : 'Leaving or restarting after the first minute counts as a defeat.';
   }
 
   /** One laurel per difficulty the player has beaten (shown on the title screen). */
@@ -1185,6 +1187,7 @@ function starsRow(parts: { label: string; got: boolean }[]): HTMLElement {
 function verdictLine(won: boolean, online?: OnlineResult, place = ''): string {
   if (online?.ally) {
     if (online.reason !== 'citadel') return won ? 'The battle is yours.' : 'You and your ally were away too long.';
+    if (online.alone) return won ? `You toppled the ${online.foe} — after ${online.ally} had left.` : `The ${online.foe} broke the citadel you held alone.`;
     return won ? `You and ${online.ally} toppled the ${online.foe}!` : `The ${online.foe} broke your shared citadel.`;
   }
   if (online?.reason === 'forfeit') return won ? `${online.foe} left the battle.` : 'You left the battle.';
@@ -1194,7 +1197,7 @@ function verdictLine(won: boolean, online?: OnlineResult, place = ''): string {
 }
 
 function scoreLine(o: OnlineResult): string {
-  if (o.ally) return o.score && o.score[0] ? `Victories together in this room: ${o.score[0]}` : 'Well fought, together!';
+  if (o.ally) return o.alone ? 'Well fought — alone at the end!' : o.score && o.score[0] ? `Victories together in this room: ${o.score[0]}` : 'Well fought, together!';
   if (!o.score) return 'Well fought!';
   const [a, b] = o.score;
   return `Score in this room: you ${a} – ${b} ${o.foe}`;

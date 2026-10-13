@@ -794,7 +794,7 @@ export class App {
       this.netMenuLocal = true;
       const running = !g.netPause && g.countdownEnd <= performance.now();
       const title = running ? (outOfPauses ? 'Menu — no pauses left, the battle goes on' : menuOnly ? 'Menu — the battle goes on' : 'Menu') : 'Menu';
-      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title });
+      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title, coop: !!g.coop });
       this.hud.cancelTargeting();
       this.hud.hideTooltip();
       if (this.hud.panelOpen) this.hud.togglePanel('none');
@@ -982,6 +982,7 @@ export class App {
             this.menus.showResults(g.world, g.playerTeam, this.difficulty, g.history, g.ageUps, {
               foe: g.foeName,
               ally: g.allyName,
+              alone: !!g.coop && !seats?.[g.seat === 0 ? 1 : 0],
               reason: g.result?.reason ?? 'citadel',
               // (Once the other player has left the room, there's no running score.)
               score: seats?.[g.seat === 0 ? 1 : 0] ? [seats?.[g.seat]?.wins ?? 0, seats[g.seat === 0 ? 1 : 0]!.wins] : null,
@@ -1093,9 +1094,10 @@ export class App {
     // Leaving a battle still on forfeits it ("counts as a defeat", says the menu): the opponent
     // counts a win, so this side counts the loss — and the playtest journal notes it.
     const g = this.game;
-    if (inBattle && g instanceof NetGame && !g.over && !g.options.demo) {
-      if (!g.coop) recordOnline(this.settings, g.foeName.replace(/ \(2\)$/, ''), false);
-      this.journal(g, false, g.coop ? 'coop' : 'online', g.coop ?? g.foeName, 0);
+    // (Co-op: the ally plays on and may still win — no defeat to note.)
+    if (inBattle && g instanceof NetGame && !g.over && !g.options.demo && !g.coop) {
+      recordOnline(this.settings, g.foeName.replace(/ \(2\)$/, ''), false);
+      this.journal(g, false, 'online', g.foeName, 0);
     }
     this.mp?.leave();
     if (inBattle) this.toTitle();
@@ -1233,7 +1235,7 @@ export class App {
     const cur = this.menus.current;
     if (want && (cur === 'none' || (cur === 'pause' && this.netMenuLocal))) {
       this.netMenuLocal = false;
-      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title: `Paused by ${p!.seat === g.seat ? 'you' : g.names[p!.seat]}${pausesNote(g.pausesLeft[g.seat])}` });
+      this.menus.setPauseSummary(g.world, g.playerTeam, this.difficulty, { foe: g.foeName, title: `Paused by ${p!.seat === g.seat ? 'you' : g.names[p!.seat]}${pausesNote(g.pausesLeft[g.seat])}`, coop: !!g.coop });
       this.hud.cancelTargeting();
       this.hud.hideTooltip();
       if (this.hud.panelOpen) this.hud.togglePanel('none');
