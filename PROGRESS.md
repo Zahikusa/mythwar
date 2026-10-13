@@ -433,8 +433,9 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
 99. [ ] Reset records across tabs: tab A resets; tab B (open, still holding the old records in
    memory) merges them back on its next save. A reset marker (time) stored with the progress copy,
    honoured by `mergeProgress`, would let other tabs drop pre-reset records.
-100. [ ] `scripts/mpsmoke.ts` doesn't cover #88 (rematch note when the other player's tab closed):
-   close B's page on the results and check A's note says "lost the connection".
+100. [x] `scripts/mpsmoke.ts` doesn't cover #88 (rematch note when the other player's tab closed):
+   close B's page on the results and check A's note says "lost the connection". (Done: B's
+   connection is closed on the results, A's note says so, and clears when B is back.)
 101. [ ] `scripts/smoke.ts` runs its 14 flows one after another (~6 min of `npm run verify`); the
    independent ones could run on parallel pages (they share storage — group the ones that care).
 102. [x] `server/main.ts`: no last-resort `uncaughtException` handler — a fault outside the lobby's

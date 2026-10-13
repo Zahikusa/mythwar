@@ -392,6 +392,13 @@ async function main(): Promise<void> {
     const own = await b.evaluate(() => document.querySelector('.screen.over .vemoteline')?.textContent ?? '');
     check('results: a quick message after the battle reaches the other player', said.endsWith(': Well played!') && own === 'You: Well played!', `${said} | ${own}`);
     await shot(b, '11-results-phone');
+    // (Backlog 88/100) B's connection drops on the results: A's rematch note says so — not
+    // "Waiting for Bo…" for the minute the seat is kept.
+    await b.evaluate(() => (window as any).__mythwar.mp.conn.close());
+    await waitFor(a, 'A told B lost the connection', () => (document.querySelector('.screen.over .rmatch')?.textContent ?? '').includes('lost the connection'), 6000);
+    check('results: the rematch note says when the other player lost the connection', true);
+    await b.evaluate(() => (window as any).__mythwar.mp.conn.open());
+    await waitFor(a, 'B back: the note clears', () => !(document.querySelector('.screen.over .rmatch')?.textContent ?? '').includes('lost the connection'), 8000);
 
     console.log('== leaving the room ==');
     await press(a, '.screen.over', 'Leave room');
