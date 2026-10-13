@@ -524,9 +524,10 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 122. [x] Settings: the sigil button (`.mbtn.ssigil`, menus.css ~1815, 18 px) is much larger than the
    controls around it, on phones and desktop (visual review). (Done: `small` had no rule — it was a
    full-size menu button; now 6×16 px padding, 16 px, as tall as the name field.)
-123. [ ] README screenshots (`docs/*.jpg`, refreshed in run #7) predate run #8's HUD changes (the
+123. [x] README screenshots (`docs/*.jpg`, refreshed in run #7) predate run #8's HUD changes (the
    "!" danger badge, clearer lane tabs, the hold shield's place, opaque phone panels): refresh the
-   phone battle shot.
+   phone battle shot. (Done: `docs/mobile.jpg` re-shot (`shoot mobile-land`, 1200×554 JPEG): danger
+   badges, clearer tabs, the shield below the strength bar.)
 124. [x] `npm run smoke -- --only desktop,rotated` fails ("Play opens the difficulty screen —
    pause") though each passes alone and the full run passes: flows inherit storage (an autosave,
    settings) from the ones before them. Give each flow a clean profile (clear storage at its
