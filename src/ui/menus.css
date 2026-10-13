@@ -1047,6 +1047,29 @@
   color: var(--muted);
 }
 
+/* Settings' way to the app (ui/install.ts). */
+.sapp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: #d9ccf5;
+}
+
+.sapp > span {
+  flex: 1;
+}
+
+.sapp .mbtn {
+  flex: none;
+}
+
+.sapp.hidden {
+  display: none;
+}
+
 .sprogrow {
   display: flex;
   gap: 8px;
@@ -1849,7 +1872,8 @@
     align-self: end;
   }
 
-  .sprog {
+  .sprog,
+  .sapp {
     grid-column: 1 / -1;
   }
 }
@@ -1935,4 +1959,259 @@
 /* The other player's words on the menu (online) take no room until there are some. */
 .screen.pause .vemoteline:empty {
   display: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Getting the app (ui/install.ts)                                     */
+/* ------------------------------------------------------------------ */
+.tnote.tinstall.small {
+  width: 44px;
+  padding: 0;
+  justify-content: center;
+}
+
+.tnote.tinstall.small i {
+  width: 20px;
+  height: 20px;
+}
+
+/* "Not now" on the title's offer: a 44-px target around a small cross. */
+.tclose {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  margin: -8px -10px -8px 0;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  color: var(--muted);
+}
+
+.isheetback {
+  /* (On the page, upright like the browser — not on the turned stage.) */
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  padding: 0 var(--safe-r, 0px) 0 var(--safe-l, 0px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(5, 2, 12, 0);
+  transition: background 0.25s;
+  pointer-events: auto;
+}
+
+.isheetback.show {
+  background: rgba(5, 2, 12, 0.6);
+}
+
+/* A bottom sheet: up from the bottom edge, down again with a swipe. */
+.isheet {
+  width: min(540px, calc(100% - 16px));
+  max-height: calc(100% - 10px - var(--safe-t, 0px));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 18px max(14px, calc(var(--safe-b, 0px) + 6px));
+  border-radius: 20px 20px 0 0;
+  background: rgb(24, 16, 42);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5);
+  color: var(--text);
+  transform: translateY(105%);
+  transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+  touch-action: none;
+}
+
+.isheet.arrowbelow {
+  padding-bottom: calc(var(--safe-b, 0px) + 58px);
+}
+
+.isheetback.show .isheet {
+  transform: none;
+}
+
+.igrab {
+  flex: none;
+  width: 40px;
+  height: 5px;
+  margin: 0 auto 8px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.ibody {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+}
+
+.isheet h3 {
+  margin: 2px 0 6px;
+  font-family: var(--title-font);
+  font-size: 22px;
+  color: var(--gold-l);
+}
+
+.ilead {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #e4dcff;
+}
+
+.isteps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.isteps li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.inum {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--gold);
+  color: #1a1030;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* The browser's button as it looks there: blue on a light key. */
+.ipic {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: #f2f0f7;
+  color: #0a7aff;
+}
+
+.inote {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.iqr {
+  width: 172px;
+  height: 172px;
+  margin: 4px auto 6px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.iactions {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+/* Short screens (a phone sideways): the sheet's text a little smaller, its pictures too. */
+@media (max-height: 520px) {
+  .isheet h3 {
+    font-size: 19px;
+    margin-bottom: 4px;
+  }
+
+  .ilead {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .isteps {
+    gap: 6px;
+  }
+
+  .isteps li {
+    font-size: 14px;
+  }
+
+  .ipic {
+    width: 32px;
+    height: 32px;
+    padding: 5px;
+  }
+
+  .iactions {
+    padding-top: 10px;
+  }
+}
+
+/* The arrow to the browser's own button: at the screen's edge, in the screen's orientation
+   (outside the turned stage). */
+.iarrow {
+  position: fixed;
+  z-index: 100;
+  width: 46px;
+  height: 46px;
+  color: #ffd76a;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
+  pointer-events: none;
+  animation: iarrow 0.8s ease-in-out infinite alternate;
+}
+
+.iarrow.bottom {
+  left: calc(50% - 23px);
+  bottom: max(4px, var(--safe-b, 0px));
+}
+
+.iarrow.bottom-right {
+  right: max(12px, var(--safe-r, 0px));
+  bottom: max(4px, var(--safe-b, 0px));
+}
+
+.iarrow.top-right {
+  right: max(12px, var(--safe-r, 0px));
+  top: max(4px, var(--safe-t, 0px));
+  rotate: 180deg;
+}
+
+@keyframes iarrow {
+  to {
+    translate: 0 9px;
+  }
+}
+
+.iarrow.top-right {
+  animation-name: iarrow-up;
+}
+
+@keyframes iarrow-up {
+  to {
+    translate: 0 -9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iarrow {
+    animation: none;
+  }
+
+  .isheet {
+    transition: none;
+  }
 }

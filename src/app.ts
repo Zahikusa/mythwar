@@ -40,6 +40,7 @@ import { JOURNEY, PERSONAS, tauntLine } from './ui/personas.ts';
 import { Sitting } from './ui/wellbeing.ts';
 import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
+import { InstallGuide } from './ui/install.ts';
 import { allyNews, emoteRoute, lostSessionPlan, roomNews, roomTerms, roomView, termsChange } from './ui/roomnews.ts';
 import type { RoomTerms, RoomView } from './ui/roomnews.ts';
 
@@ -119,6 +120,8 @@ export class App {
   mp: MpClient | null = null;
   private mpOff: (() => void) | null = null;
   readonly netOverlay: NetOverlay;
+  /** The way to the best place to play: the installed app, the real browser, the phone (goal C). */
+  readonly install: InstallGuide;
   /** Room code to join once connected (invite link). */
   private pendingJoin: string | null = null;
   /** A history entry is pushed for the phone's Back button (see the constructor). */
@@ -260,6 +263,7 @@ export class App {
         },
         leaveRoom: () => this.leaveRoom(),
       },
+      install: () => this.install.act(),
     });
     // Battle-time network messages sit above the HUD, below the menus.
     this.netOverlay = new NetOverlay(this.stage);
@@ -273,6 +277,18 @@ export class App {
       this.audio.ui(final ? 'summon' : 'select');
       if (final) this.buzz(30);
     };
+    this.install = new InstallGuide({
+      settings: this.settings,
+      save: () => saveSettings(this.settings),
+      sound: (k) => this.audio.ui(k),
+      fullscreen: () => this.goFullscreen(),
+      canFullscreen: () => canFullscreen(),
+      opened: () => this.armBack(true),
+    });
+    this.install.attachTitle(this.menus.titleNotes);
+    const entry = () => this.menus.setInstallEntry(this.install.offered ? this.install.label : null);
+    this.install.onChange(entry);
+    entry();
     window.addEventListener('resize', () => this.resize());
     // Safari's bars and the on-screen keyboard change the visual viewport only; a turn of the
     // phone can report its new size late (iOS), so it is measured again a moment later.
@@ -304,12 +320,7 @@ export class App {
     // session with it). One history entry is kept for it once the player has touched the page
     // (browsers skip entries added before that); on the bare title it isn't, so Back can leave.
     // (Touch devices only: a computer has Esc, and its browser's Back should still leave the page.)
-    const touch = matchMedia('(pointer: coarse)').matches;
-    const arm = () => {
-      if (!touch || this.backArmed || (this.state === 'title' && this.menus.current === 'title')) return;
-      this.backArmed = true;
-      history.pushState({ mythwarBack: true }, '');
-    };
+    const arm = () => this.armBack();
     window.addEventListener('pointerdown', arm, { capture: true, passive: true });
     window.addEventListener('keydown', arm, { capture: true, passive: true });
     window.addEventListener('popstate', () => {
@@ -367,6 +378,12 @@ export class App {
     // stage 90° clockwise, so the screen's top inset becomes the stage's left, bottom → right,
     // right → top and left → bottom.
     const phys = this.safeArea();
+    // (For what's drawn upright on the page, outside the stage: the sheets of ui/install.ts.)
+    const root = document.documentElement.style;
+    root.setProperty('--safe-t', `${phys.t}px`);
+    root.setProperty('--safe-r', `${phys.r}px`);
+    root.setProperty('--safe-b', `${phys.b}px`);
+    root.setProperty('--safe-l', `${phys.l}px`);
     const safe = this.rotated ? { l: phys.t, r: phys.b, t: phys.r, b: phys.l } : phys;
     const w = (this.rotated ? vh : vw) - safe.l - safe.r;
     const h = (this.rotated ? vw : vh) - safe.t - safe.b;
@@ -506,6 +523,8 @@ export class App {
     }
     const theme = p.get('theme');
     if (theme !== null) this.renderer.setTheme(Number(theme), true);
+    // The installed app's first launch: a short welcome (on the title only).
+    if (this.state === 'title' && this.menus.current === 'title') this.install.welcome();
     this.last = this.lastDraw = performance.now();
     requestAnimationFrame((t) => this.frame(t));
   }
@@ -833,7 +852,32 @@ export class App {
    * Escape / P: leave a sub-menu, otherwise toggle pause. `back`: the phone's Back button (online
    * it opens the menu without pausing — see pause()).
    */
+  /**
+   * Keeps the history entry the phone's Back steps into (see the constructor). `force`: a sheet
+   * just opened on the bare title, where Back would otherwise leave the page.
+   */
+  private armBack(force = false): void {
+    const touch = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
+    if (!touch || this.backArmed || (!force && this.state === 'title' && this.menus.current === 'title' && !this.install?.isOpen)) return;
+    this.backArmed = true;
+    history.pushState({ mythwarBack: true }, '');
+  }
+
+  /** Full screen on a player's tap (Android: the "Play full screen" offer), sideways if it can. */
+  private goFullscreen(): void {
+    const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
+    try {
+      const p = el.requestFullscreen?.({ navigationUI: 'hide' }) ?? el.webkitRequestFullscreen?.();
+      if (p && typeof (p as Promise<void>).then === 'function')
+        (p as Promise<void>).then(() => (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.('landscape')).catch(() => {});
+    } catch {
+      // Not here (iPhone Safari): the offer isn't shown there.
+    }
+  }
+
   private escape(back = false): void {
+    // An open sheet (getting the app) is the top of the stack: Back / Esc closes it first.
+    if (this.install.close()) return;
     const m = this.menus.current;
     if (m === 'mp') this.closeMultiplayer();
     else if (m === 'room') {
@@ -1088,7 +1132,11 @@ export class App {
             });
             this.syncRematch();
           } else if (g.riddle) this.menus.showRiddleResult(g.riddle, g.world.winner === g.playerTeam);
-          else this.menus.showResults(g.world, g.playerTeam, this.difficulty, g.history, g.ageUps);
+          else {
+            this.menus.showResults(g.world, g.playerTeam, this.difficulty, g.history, g.ageUps);
+            // The first finished battle: the full offer of the app, once (never in a battle).
+            this.install.afterBattle(() => this.state === 'over' && this.menus.current === 'over');
+          }
         }
       }
       if (g instanceof NetGame) {
@@ -1540,4 +1588,10 @@ export class App {
     demo.fastForward(moments[Math.floor(Math.random() * moments.length)]);
     this.renderer.setTheme(demo.world.players[0].age, true);
   }
+}
+
+/** Whether this browser can take the page full screen (Android, computers; not iPhone Safari). */
+function canFullscreen(): boolean {
+  const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: unknown };
+  return !document.fullscreenElement && (typeof el.requestFullscreen === 'function' || typeof el.webkitRequestFullscreen === 'function') && !/iPhone|iPod/.test(navigator.userAgent);
 }

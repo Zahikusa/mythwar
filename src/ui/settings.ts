@@ -91,6 +91,13 @@ export interface Settings {
   journal: JournalEntry[];
   /** When records were last reset on this device (ms; 0 = never) — other tabs honour it. */
   resetAt: number;
+  /** The title's "get the app" offer (ui/install.ts): 0 = never put away, else when it first
+   *  was (ms; it comes back once, days later), -1 = put away twice (only the small button). */
+  installHint: number;
+  /** The full install sheet was offered after a finished battle (once). */
+  installSheet: boolean;
+  /** The installed app's first-launch welcome was shown. */
+  appWelcome: boolean;
 }
 
 export { SIGILS } from '../net/protocol.ts';
@@ -132,6 +139,9 @@ const DEFAULTS: Settings = {
   sigil: -1,
   journal: [],
   resetAt: 0,
+  installHint: 0,
+  installSheet: false,
+  appWelcome: false,
 };
 
 export function loadSettings(): Settings {
@@ -192,6 +202,9 @@ function sanitize(s: Settings): Settings {
     feats: Array.isArray(s.feats) ? [...new Set(s.feats.filter((x): x is string => typeof x === 'string'))].slice(0, 100) : [],
     journal: sanitizeJournal(s.journal),
     resetAt: typeof s.resetAt === 'number' && Number.isFinite(s.resetAt) ? s.resetAt : 0,
+    installHint: typeof s.installHint === 'number' && Number.isFinite(s.installHint) && s.installHint >= -1 ? s.installHint : 0,
+    installSheet: bool(s.installSheet, false),
+    appWelcome: bool(s.appWelcome, false),
   };
 }
 

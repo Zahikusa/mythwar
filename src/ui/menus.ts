@@ -61,7 +61,8 @@ export interface MenuCallbacks {
   leaveRoom(): void;
   toRoom(): void;
   /** A quick message from the online results ("Well played!"); false if it couldn't be sent. */
-  emote(id: EmoteId): boolean;
+  emote(id: EmoteId): boolean;  /** Settings' "Get the app" entry (ui/install.ts). */
+  install(): void;
 }
 
 /** Distinct ids for the results panel's tabs (a new panel each battle). */
@@ -377,6 +378,16 @@ export class Menus {
 
   /** Small offers in the title screen's top corner (a new version, the installed app) — never in a battle. */
   readonly titleNotes = h('div', { class: 'tnotes' });
+
+  /** Settings' permanent way to the app (hidden where there's nothing to offer, or installed). */
+  private installBtn = this.button('Get the app', 'small', () => this.cb.install());
+  private installRow = h('div', { class: 'sapp hidden' }, h('span', { text: 'Mythwar plays best as an app: full screen, one tap from your Home Screen.' }), this.installBtn);
+
+  /** Shows Settings' entry with this label, or hides it (null). */
+  setInstallEntry(label: string | null): void {
+    this.installRow.classList.toggle('hidden', !label);
+    if (label) this.installBtn.querySelector('span')!.textContent = label;
+  }
 
   /** A newer build is on the server (see update.ts): restarting the game takes it. */
   updateReady(): void {
@@ -889,6 +900,7 @@ export class Menus {
         toggleRow('Opponent’s messages (AI taunts too)', 'emotes'),
         nameRow,
         sigilRow,
+        this.installRow,
         progress,
         h(
           'div',

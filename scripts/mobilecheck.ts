@@ -101,6 +101,8 @@ interface Step {
   script?: string;
   ready2?: string;
   after?: number;
+  /** Only in a tab, or only installed. */
+  only?: 'tab' | 'app';
 }
 
 const battle = 'play=novice&seed=4';
@@ -119,6 +121,9 @@ const STEPS: Step[] = [
   { name: 'pause', query: battle, ready: inBattle, script: `a.pause()`, ready2: `a.menus.current === 'pause'`, after: 700 },
   { name: 'results', query: battle, ready: inBattle, script: `const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, after: 1200 },
   { name: 'lobby', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, after: 900 },
+  // Getting the app (ui/install.ts): the sheet in a tab, the first launch's welcome installed.
+  { name: 'install', query: '', ready: `a.menus.current === 'title'`, script: `a.install.open()`, ready2: `!!document.querySelector('.isheetback.show')`, after: 700, only: 'tab' },
+  { name: 'welcome', query: '', ready: `a.menus.current === 'title'`, script: `a.settings.appWelcome = false; a.install.welcome()`, ready2: `!!document.querySelector('.isheetback.show')`, after: 700, only: 'app' },
   { name: 'room', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, after: 1000 },
 ];
 
@@ -293,11 +298,13 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
     window.matchMedia = (q: string) =>
       mm(q.replace(/\(\s*display-mode:\s*(standalone|fullscreen|minimal-ui)\s*\)/g, sa ? '(min-width: 0px)' : '(max-width: 0px)').replace(/\(\s*display-mode:\s*browser\s*\)/g, sa ? '(max-width: 0px)' : '(min-width: 0px)'));
     if (/iPhone|iPad/.test(navigator.userAgent)) Object.defineProperty(navigator, 'standalone', { configurable: true, value: sa });
+    // (The welcome and the after-battle offer were seen: each has a screen of its own here.)
+    if (!localStorage.getItem('mythwar.settings.v1')) localStorage.setItem('mythwar.settings.v1', JSON.stringify({ appWelcome: true, installSheet: true }));
   }, standalone);
   const lines: string[] = [];
   const tag = `${d.name}-${mode}-${orient}`;
   for (const s of STEPS) {
-    if (!match(fScreen, s.name)) continue;
+    if (!match(fScreen, s.name) || (s.only && s.only !== mode)) continue;
     const page: Page = await ctx.newPage();
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
