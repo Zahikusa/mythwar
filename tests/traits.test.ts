@@ -51,7 +51,7 @@ describe('creature traits', () => {
     expect(d.slowFactor).toBeCloseTo(0.55, 5);
   });
 
-  it('Fenrir heals for a quarter of the damage it deals', () => {
+  it('Fenrir heals for a fifth of the damage it deals', () => {
     const w = new World();
     const f = w.spawnUnit(0, 0, UNITS.fenrir, 480);
     f.hp = f.maxHp * 0.5;
@@ -59,7 +59,7 @@ describe('creature traits', () => {
     const hits = hitsOn(run(w, 3), d.id, 'unit');
     const dealt = hits.reduce((a, h) => a + h.amount, 0);
     expect(dealt).toBeGreaterThan(0);
-    expect(f.hp).toBeCloseTo(f.maxHp * 0.5 + dealt * 0.25, 3);
+    expect(f.hp).toBeCloseTo(f.maxHp * 0.5 + dealt * 0.2, 3);
   });
 
   it("Fenrir's lifesteal counts only the health its victim had left", () => {
@@ -71,7 +71,7 @@ describe('creature traits', () => {
     victim.hp = 2;
     run(w, 3);
     expect(victim.alive).toBe(false);
-    expect(f.hp).toBeCloseTo(f.maxHp * 0.5 + 2 * 0.25, 3);
+    expect(f.hp).toBeCloseTo(f.maxHp * 0.5 + 2 * 0.2, 3);
   });
 
   it('the Oni attacks faster once enraged', () => {

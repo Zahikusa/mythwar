@@ -919,3 +919,31 @@ too little? Are the choices meaningful? Is the economy balanced?*
 - Checked: designcheck (ladder 100/63/7/0%, even battles 19.0 min, fairness 47%), Mythic vs
   Master 30–0, unit tests (price order, Mythic banks and buys while Master summons, feeding
   tip), how-to page on a 667×375 phone; full verify.
+
+## #47 The Lens of Balance
+*Does my game feel right — and why or why not?* (Schell's twelve kinds of balance: most have had
+their own lens already — fairness #30, challenge #31, choices #32, skill vs chance #34, head and
+hands #35, competition/cooperation #36–38, time #39, reward #40, punishment #41, simple vs
+complex #42, detail vs imagination #45. What is left is the oldest kind: are the pieces balanced
+against each other?)
+- The pieces are 15 creatures in a counter triangle per age. `node scripts/classwar.ts` (equal
+  gold, ten guardians' worth) — now with `--matrix`, every composition against every other on
+  both sides. The triangle held everywhere, but two links were limp: in **Asgard the Frost Jötunn
+  beat the Fenrir Wolf it should counter by only +0.09** (6×/20× budgets: +0.26/+0.15) — lifesteal
+  kept the wolves alive — and in the **Jade Empire the Byakko beat the Kitsune by only +0.26**
+  (+0.21/+0.18): foxfire leaping through a pack of tigers at 60%. Every other age sits at
+  +0.4–0.5 (guardian over hunter) and +0.55–0.65 (hunter over mystic). A player who learned "shields
+  beat fangs" in Olympus would find it barely true in Asgard — the triangle *felt* wrong there.
+- Change (parameter scans, both armies on both sides, three budgets): Fenrir's Devour heals a
+  **fifth** of its damage (was a quarter) and the Jötunn has **+8% health**; the Kitsune's foxfire
+  leaps at **40%** (was 60%) and the Byakko has **+10% health**. Asgard G>H now +0.43/+0.44/+0.33,
+  Jade H>M +0.42/+0.45/+0.48, Jade G>H +0.45 — in line with the other ages.
+- Pacing looked worse at first (designcheck median 20.4 min — a fail), but 80-battle runs showed
+  19.4 (new) vs 19.2 (old): the 30-battle median moves a minute either way on a one-point change
+  to one creature. designcheck now plays 60 even battles (19.7 min, pass).
+- Still true and left alone: pure Mystic armies are the best single composition in the matrix
+  (+0.24–0.36 average; only pure Hunters beat them), Guardian+Hunter the worst. That is the
+  triangle doing its job (a massed backline must be answered by hunters), and AI battles use
+  mystics for only 23–25% of summons — but it is worth watching if players start to mass them.
+- Checked: new unit test (every age's three counters win by > 0.3 at equal gold), Fenrir trait
+  tests updated (a fifth), designcheck (ladder 100/60/7/3%, fairness 48%), full verify.

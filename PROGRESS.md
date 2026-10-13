@@ -32,6 +32,12 @@ complete; its log follows below the lens plan.
   before it (a creature could leave the queue between the two reads); it now counts queued +
   summoned and tops up gold first.
 
+- Pacing sits close to its limit: even AI battles 19.4–19.7 min median (limit 20). The
+  30-battle median was too noisy to judge (±1 min from a one-point change), so designcheck now
+  plays 60. A future lens that lengthens battles must pay it back.
+- Pure-Mystic armies are the strongest single composition in `classwar --matrix` (only pure
+  Hunters beat them) — the triangle working, but watch it (#47).
+
 ## Phase 2 — how each iteration works
 - One iteration = one lens (numbering of the book's first edition / the 100-card deck).
   Ask the lens's questions about Mythwar, pick the **one most valuable concrete change** it
@@ -93,7 +99,7 @@ complete; its log follows below the lens plan.
 - [x] #44 Character — the AI difficulties are generals with a voice: Puck, Hippolyta, Odin, Ares (taunts at key moments)
 - [x] #45 Imagination — every battle is fought at a named place from its seed ("The Battle of Weeping Ford"): banner, pause, results, shared result
 - [x] #46 Economy — `npm run economy`; blessings were 4× underpriced (free Might = 80% wins): priced by worth, Mythic banks for them; "fallen creatures feed the foe" told (how-to, results tip)
-- [ ] #47 Balance — per-creature balance from sims
+- [x] #47 Balance — counter matrix (`classwar --matrix`): Asgard G>H (+0.09) and Jade H>M (+0.26) were limp; Fenrir lifesteal ⅕, Jötunn +8% hp, foxfire leaps 40%, Byakko +10% hp → +0.43–0.48 like other ages
 - [ ] #48 Accessibility — colour-blind friendly team/class cues, text size
 - [ ] #49 Visible Progress — progress across battles
 - [ ] #50 Parallelism — parallel lanes: overview

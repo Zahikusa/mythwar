@@ -352,15 +352,17 @@ const UNIT_SPECS: UnitSpec[][] = [
       blurb: 'A giant of the frozen wastes.',
       traitText: 'Cleave: each swing strikes a second foe at full force.',
       traits: [{ kind: 'cleave', targets: 2, falloff: 1 }],
-      mul: { radius: 1.15, speed: 0.95 },
+      // (Lens #47: +8% health and Fenrir's lifesteal down to a fifth — the giant barely beat
+      // the wolf it should counter: +0.09 in equal-gold armies, other ages +0.4–0.5.)
+      mul: { radius: 1.15, speed: 0.95, hp: 1.08 },
     },
     {
       id: 'fenrir',
       name: 'Fenrir Wolf',
       cls: 'hunter',
       blurb: 'The world-devouring wolf, unchained.',
-      traitText: 'Devour: heals for a quarter of the damage it deals.',
-      traits: [{ kind: 'lifesteal', frac: 0.25 }],
+      traitText: 'Devour: heals for a fifth of the damage it deals.',
+      traits: [{ kind: 'lifesteal', frac: 0.2 }],
       mul: { radius: 1.1 },
     },
     {
@@ -391,7 +393,9 @@ const UNIT_SPECS: UnitSpec[][] = [
       cls: 'hunter',
       blurb: 'The White Tiger of the West, swift as wind.',
       traitText: 'Flurry: rapid claw strikes.',
-      mul: { cooldown: 0.62, damage: 0.66, speed: 1.15, radius: 1.15 },
+      // (Lens #47: +10% health and weaker foxfire leaps — the tiger barely beat the fox it should
+      // counter: +0.2 in equal-gold armies, other ages +0.55–0.65; now +0.45.)
+      mul: { cooldown: 0.62, damage: 0.66, speed: 1.15, radius: 1.15, hp: 1.1 },
     },
     {
       id: 'kitsune',
@@ -399,7 +403,7 @@ const UNIT_SPECS: UnitSpec[][] = [
       cls: 'mystic',
       blurb: 'A nine-tailed fox spirit wreathed in foxfire.',
       traitText: 'Foxfire: bolts leap to two more foes.',
-      traits: [{ kind: 'bounce', count: 2, falloff: 0.6, range: 90 }],
+      traits: [{ kind: 'bounce', count: 2, falloff: 0.4, range: 90 }],
       projectile: { kind: 'foxfire', speed: 420, arc: 10 },
     },
   ],

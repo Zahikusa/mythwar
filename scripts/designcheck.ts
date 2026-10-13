@@ -32,7 +32,9 @@ check('each difficulty is harder than the one before', rates.every((r, i) => i =
 
 // 2. Pacing: evenly matched battles last long enough to climb the ages, short enough for a
 //    session on the sofa.
-const n = Math.max(20, games);
+// (Twice the games: battles are chaotic — a one-point change to one creature's health moves a
+// 30-battle median by a minute either way, while 80-battle medians stay within 0.2 min.)
+const n = Math.max(20, games * 2);
 const matches = Array.from({ length: n }, (_, i) => playMatch('master', 'master', 2000 + i));
 const mins = matches.map((m) => m.time / 60).sort((a, b) => a - b);
 const median = mins[Math.floor(mins.length / 2)];

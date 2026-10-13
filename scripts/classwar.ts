@@ -1,4 +1,8 @@
-/** Equal-gold army battles between classes, per age. node scripts/classwar.ts */
+/**
+ * Equal-gold army battles between classes, per age.
+ *   node scripts/classwar.ts            the counter pairs and a few mixes (10 guardians' worth)
+ *   node scripts/classwar.ts --matrix   every composition against every other, both sides
+ */
 import { AGE_UNITS, TICK } from '../src/sim/data.ts';
 import type { UnitDef } from '../src/sim/data.ts';
 import { World } from '../src/sim/world.ts';
@@ -32,8 +36,27 @@ export function battle(a: UnitDef[], b: UnitDef[], budget: number): number {
   return v / budget; // + means A won, magnitude = remaining value share
 }
 
+/** Margin of `a` over `b` with each army once on either side (+ = a wins). */
+export function duel(a: UnitDef[], b: UnitDef[], budget: number): number {
+  return (battle(a, b, budget) - battle(b, a, budget)) / 2;
+}
+
 const names = ['G', 'H', 'M'];
-if ((process.argv[1] ?? '').endsWith('classwar.ts')) for (let age = 0; age < 5; age++) {
+const isMain = (process.argv[1] ?? '').endsWith('classwar.ts');
+if (isMain && process.argv.includes('--matrix')) {
+  const comps: Record<string, number[]> = { G: [0], H: [1], M: [2], GH: [0, 1], HG: [1, 0], GM: [0, 2], MG: [2, 0], HM: [1, 2], GHM: [0, 1, 2] };
+  const keys = Object.keys(comps);
+  for (let age = 0; age < 5; age++) {
+    const u = AGE_UNITS[age];
+    const budget = u[0].cost * 10;
+    console.log(`age ${age + 1} (${u.slice(0, 3).map((x) => x.id).join('/')}) — rows vs ${keys.join(' ')}`);
+    for (const a of keys) {
+      const row = keys.map((b) => (a === b ? '    .' : duel(comps[a].map((i) => u[i]), comps[b].map((i) => u[i]), budget).toFixed(2).padStart(5)));
+      const avg = keys.filter((b) => b !== a).reduce((s, b) => s + duel(comps[a].map((i) => u[i]), comps[b].map((i) => u[i]), budget), 0) / (keys.length - 1);
+      console.log(`${a.padEnd(4)}${row.join(' ')}  avg ${avg.toFixed(2)}`);
+    }
+  }
+} else if (isMain) for (let age = 0; age < 5; age++) {
   const [g, h, m] = AGE_UNITS[age];
   const budget = g.cost * 10;
   const row: string[] = [];
