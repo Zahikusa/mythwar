@@ -24,6 +24,8 @@ complete; its log follows below the lens plan.
   inert controls (#69); **start in any age already reached** (#71); the crowded lane calls for
   your power (#72); tips from **Mímir** (#73); travellers in the far sky (#74); a personal
   **sigil** by your name (#75).
+- End of run #6 (05:25): `npm run verify` and `npm run enginecheck` pass, tree clean. Phase-1
+  backlog #30/#31 closed (#30 was already done).
 - Next run: continue at Lens #77 (Character Traits). New tools this run: `npm run economy`,
   `npm run puzzlecheck`, `node scripts/classwar.ts --matrix`, `shoot --cvd <type>` and
   `shoot --settings '{…}'`. New settings fields: colorblind, riddles, startAge, sigil.
