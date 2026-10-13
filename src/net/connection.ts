@@ -27,6 +27,14 @@ const PING_EVERY = 1000;
 /** No message at all for this long ⇒ the link is dead (Wi-Fi gone, phone asleep): reconnect. */
 const SILENT_LIMIT = 6000;
 const BACKOFF = [250, 500, 1000, 2000, 3000];
+/**
+ * A socket still not open after this long is stuck — a phone that changed Wi-Fi mid-dial can
+ * wait a minute for the browser to give up. Later attempts wait longer (a slow link still gets
+ * through): 5 s, 7.5 s, … up to 15 s.
+ */
+export function dialLimit(attempt: number): number {
+  return 5000 + 2500 * Math.min(attempt, 4);
+}
 
 /**
  * False on a plain static host (the GitHub Pages build, `vite build --mode pages`): there is no
@@ -67,11 +75,14 @@ export class Connection {
   private wanted = false;
   private attempt = 0;
   private lastHeard = 0;
+  private dialedAt = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
   private retry: ReturnType<typeof setTimeout> | null = null;
   private readonly url: string;
   private readonly opts: ConnectionOptions;
   private readonly now: () => number;
+  /** The device's network came back (Wi-Fi rejoined): dial at once rather than after a backoff. */
+  private readonly netUp = () => this.nudge();
 
   constructor(opts: ConnectionOptions) {
     this.opts = opts;
@@ -87,7 +98,10 @@ export class Connection {
   open(): void {
     this.wanted = true;
     if (!this.ws && !this.retry) this.dial();
-    if (!this.timer) this.timer = setInterval(() => this.tickle(), PING_EVERY);
+    if (!this.timer) {
+      this.timer = setInterval(() => this.tickle(), PING_EVERY);
+      if (typeof window !== 'undefined') window.addEventListener('online', this.netUp);
+    }
   }
 
   /** Reconnects right away (e.g. the page became visible again), skipping any backoff. */
@@ -103,7 +117,10 @@ export class Connection {
 
   close(): void {
     this.wanted = false;
-    if (this.timer) clearInterval(this.timer);
+    if (this.timer) {
+      clearInterval(this.timer);
+      if (typeof window !== 'undefined') window.removeEventListener('online', this.netUp);
+    }
     if (this.retry) clearTimeout(this.retry);
     this.timer = null;
     this.retry = null;
@@ -132,6 +149,7 @@ export class Connection {
       return;
     }
     this.ws = ws;
+    this.dialedAt = this.now();
     ws.onopen = () => {
       if (this.ws !== ws) return;
       this.attempt = 0;
@@ -184,6 +202,11 @@ export class Connection {
   }
 
   private tickle(): void {
+    if (this.state === 'connecting' && this.ws && this.now() - this.dialedAt > dialLimit(this.attempt)) {
+      this.drop();
+      this.scheduleRetry();
+      return;
+    }
     if (this.state !== 'online') return;
     if (this.now() - this.lastHeard > SILENT_LIMIT) {
       this.drop();
