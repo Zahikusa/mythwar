@@ -594,6 +594,9 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 138. [ ] `scripts/mpsmoke.ts` still has many fixed `sleep()`s (e.g. 4.5 s before "rematch running",
    1.6 s for the emote gap) — like #134, wait for the condition where one exists (and keep a
    sleep only where time itself is what's tested), for the CI runner (#127).
+139. [ ] Unit tests: the Hall-key tests run real scrypt (~20 ms each, 16 MB) through a fake clock —
+   the cache test (#47) takes ~3 s of the suite. Let LobbyOptions inject the key hash (tests
+   pass a fast one; one test keeps the real scrypt).
 
 
 
@@ -603,8 +606,8 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #8 in short (for the morning)
-- Verification mode, backlog items 38–138: done except the notes #23, #94 and the open
-  #128, #129, #137, #138 (for the next run — start there). Ten independent reviews (netcode; app state;
+- Verification mode, backlog items 38–139: done except the notes #23, #94 and the open
+  #128, #129, #137, #138, #139 (for the next run — start there). Ten independent reviews (netcode; app state;
   simulation/AI/HUD; rendering/persistence; accessibility; docs; two players' flows; data across
   versions; a visual review from screenshots; a review of this run's own diff — which caught
   three regressions, #116–118) found most of them; each was reproduced by a new test or smoke
