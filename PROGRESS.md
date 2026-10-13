@@ -656,9 +656,12 @@ on screen.)
    "nothing should happen" checks and effects that take time. Review once more on the CI runner
    when `.github/workflows/browser-tests.yml` first runs (Open questions) — flakes there name
    the next ones to turn into waits.
-262. [ ] The phone's message line in the room (`.mpflash`) is a single line for all news: two
+262. [x] The phone's message line in the room (`.mpflash`) is a single line for all news: two
    quick events (Bo leaves, Cy joins) overwrite each other within 4.5 s, so the first is never
    read. Queue them (each at least ~2 s) or show the latest two.
+   (Done: `flash(text, { ms, calm, news })` — room news within 2 s of the last waits its turn
+   (each shows ≥ 2 s); the Back prompt, tips and errors still show at once; leaving the room
+   drops waiting news. mpsmoke: two news in a row → the first, then the second.)
 263. [x] `menus.ts` `scoreLine` / `verdictLine` and the results wording now span four cases
    (citadel, forfeit, timeout, co-op alone) × won/lost × score/no score; only `verdictLine` has a
    unit test (via the chronicle tests). A table-driven test of `scoreLine(o, won)` — export it —

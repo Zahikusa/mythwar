@@ -29,6 +29,16 @@ type ButtonFactory = (label: string, cls: string, onClick: () => void, icon?: st
 
 /** After this long without reaching the server, explain how multiplayer is set up. */
 const HELP_AFTER = 3500;
+/** Room news stays on the message line at least this long (ms) before the next takes it. */
+const NEWS_MIN = 2000;
+
+/** The lobby / room message line: how long (ms), calm (news, a tip) or the alarm of an error. */
+export interface FlashOptions {
+  ms?: number;
+  calm?: boolean;
+  /** Room news: waits its turn behind other news (see NEWS_MIN). */
+  news?: boolean;
+}
 
 /** Where the ready-to-run game server (release package) is downloaded. */
 const SERVER_DOWNLOAD = 'https://github.com/Zahikusa/mythwar/releases/latest';
@@ -80,6 +90,10 @@ export class MpScreens {
   private roomNote!: HTMLElement;
   private flashes: HTMLElement[] = [];
   private flashTimer = 0;
+  /** Room news waiting for the line (see flash), when the last news went up, and its turn's timer. */
+  private newsQueue: { text: string; o: FlashOptions }[] = [];
+  private newsAt = -Infinity;
+  private newsTimer = 0;
   private qrFor = '';
   private offlineSince = 0;
   private iAmReady = false;
@@ -102,18 +116,45 @@ export class MpScreens {
 
   /** A short message on the lobby and room screens (errors such as an unknown room code). */
   /** `calm`: news or a tip — not the alarm colour of an error. */
-  flash(text: string, ms = 4500, calm = false): void {
+  flash(text: string, o: FlashOptions = {}): void {
+    const now = performance.now();
+    // Room news within NEWS_MIN of the last waits its turn: two quick events ("Bo left", "Cy
+    // joined") would otherwise cover each other before the first is read.
+    if (o.news && (now - this.newsAt < NEWS_MIN || this.newsQueue.length)) {
+      this.newsQueue.push({ text, o });
+      if (!this.newsTimer) this.newsTimer = window.setTimeout(() => this.nextNews(), Math.max(0, this.newsAt + NEWS_MIN - now));
+      return;
+    }
+    if (o.news) this.newsAt = now;
+    this.showFlash(text, o);
+  }
+
+  private showFlash(text: string, o: FlashOptions): void {
     for (const f of this.flashes) {
       setText(f, text);
       f.classList.add('show');
-      f.classList.toggle('calm', calm);
+      f.classList.toggle('calm', !!o.calm);
     }
     clearTimeout(this.flashTimer);
-    this.flashTimer = window.setTimeout(() => this.unflash(), ms);
+    // (Its time up, the line closes; news still waiting keeps its turn.)
+    this.flashTimer = window.setTimeout(() => this.flashes.forEach((f) => f.classList.remove('show')), o.ms ?? 4500);
   }
 
+  private nextNews(): void {
+    this.newsTimer = 0;
+    const next = this.newsQueue.shift();
+    if (!next) return;
+    this.newsAt = performance.now();
+    this.showFlash(next.text, next.o);
+    if (this.newsQueue.length) this.newsTimer = window.setTimeout(() => this.nextNews(), NEWS_MIN);
+  }
+
+  /** Clears the line — and news still waiting for it (it was about a room just left). */
   unflash(): void {
     clearTimeout(this.flashTimer);
+    clearTimeout(this.newsTimer);
+    this.newsTimer = 0;
+    this.newsQueue = [];
     this.flashes.forEach((f) => f.classList.remove('show'));
   }
 
@@ -282,7 +323,7 @@ export class MpScreens {
         if (this.mySeat !== i) return;
         // (Upright phones show the game rotated but open the keyboard upright — the lobby's tip
         // says so, and a guest who came by QR code never saw the lobby.)
-        if (name.closest('#stage')?.classList.contains('rotated')) this.flash('Tip: turn your phone sideways to type — the keyboard opens upright.', 4500, true);
+        if (name.closest('#stage')?.classList.contains('rotated')) this.flash('Tip: turn your phone sideways to type — the keyboard opens upright.', { calm: true });
         edit.value = this.nameInput.value;
         name.classList.add('hidden');
         edit.classList.remove('hidden');

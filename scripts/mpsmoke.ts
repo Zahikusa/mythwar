@@ -326,6 +326,21 @@ async function main(): Promise<void> {
     await waitFor(a, 'A sees B back', () => (window as any).__mythwar.mp.room?.seats[1]?.connected === true, 8000);
     netCut = false;
     check('room: a phone that lost its seat while locked takes it again', true);
+    // (Backlog 262) Two pieces of room news in a moment ("Bo left", "Cy joined") take turns on the
+    // message line — the first isn't covered before it can be read.
+    {
+      const line = () => b.evaluate(() => document.querySelector('.screen.room .mpflash.show')?.textContent ?? '');
+      await b.evaluate(() => {
+        const mp = (window as any).__mythwar.menus.mp;
+        mp.flash('First news.', { calm: true, news: true });
+        mp.flash('Second news.', { calm: true, news: true });
+      });
+      const first = await line();
+      await sleep(2300);
+      const second = await line();
+      check('room: quick news takes turns on the message line', first === 'First news.' && second === 'Second news.', JSON.stringify({ first, second }));
+      await b.evaluate(() => (window as any).__mythwar.menus.mp.unflash());
+    }
     // (Backlog 166) The phone's Back in the room neither leaves the room nor the page at once…
     const roomUrl = b.url();
     await b.goBack({ timeout: 3000 }).catch(() => null);
