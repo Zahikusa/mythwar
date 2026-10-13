@@ -89,6 +89,16 @@ the improvement backlog below (verified, committed) and add what the review find
    unscaled number is checked.)
 23. [ ] (note) The lobby's old-rival recognition (#84) matches by name; the Hall now tells two Adas
    apart, the rivals list doesn't. Leave unless it confuses players.
+24. [ ] `src/ui/coach.ts`: Mímir never explains veterans (#81) — a rule players meet in every
+   battle, told only on how-to page 6. A tip when the player's first creature rises a veteran.
+25. [ ] `src/ui/bestiary.ts`: the names veterans earn (#88) appear nowhere outside battle; the
+   Bestiary could list them per creature (myth-lovers' detail, and a hint that veterans exist).
+26. [ ] Privacy: the device id (backlog 10) can't be reset — *Reset records* should also give the
+   browser a new id, so its old Hall line is no longer linked to it.
+27. [ ] README screenshots (`docs/*.jpg`) date from runs #1–#4: no sigils, veterans, Hall of
+   champions, results tabs. Refresh the title, a late battle and the battle room.
+28. [ ] Gamepad (#54): nothing checks that D-pad navigation reaches the new results controls (the
+   report tabs, the quick-message chips, "Now bring a friend →").
 
 
 
