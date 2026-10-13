@@ -585,6 +585,11 @@ html.cbfoe .side.right .hpfill {
   visibility: hidden;
 }
 
+/* A banner never shows through a menu: the results would say "Victory" twice. */
+.hud.under-menu .banner {
+  visibility: hidden;
+}
+
 /* Behind a menu the HUD holds still (its pulsing glows would repaint under the pause screen). */
 .hud.under-menu *,
 .hud.under-menu *::before,

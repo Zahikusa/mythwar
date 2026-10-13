@@ -1226,3 +1226,18 @@ of scale? Does the game let them be seen as such?*
   if another banner is up). When it falls, a toast says so ("The enemy's Elder Dragon has
   fallen!"). Danger and spectacle, announced — the moment players will retell.
 - Checked: screenshot of the arrival (Celestial theme); full verify.
+
+## #63 The Lens of Beauty
+*What elements make up the game's look — and which one is least beautiful? How can the parts work
+together into something more beautiful than each alone?*
+- Walked the screens with fresh screenshots (late-age battle, menus, the new riddle screens). The
+  battlefield holds together (one palette per age across sky, ground, citadel, HUD accent). The
+  least beautiful moment was a seam between two layers: when a battle or riddle ends, the HUD's
+  centre banner ("Solved! — The field is clear", "Victory — The enemy citadel crumbles") was
+  still fading when the results screen opened over it, so the screen read **the same words
+  twice**, one ghostly copy behind the other (riddles end faster, so it showed most there).
+- Change: a banner never shows through a menu (results, pause) — the screen says each thing
+  once. And the riddle result, a bare title and buttons, gets the composition of the battle
+  results: verdict and riddle name, the riddle's foe as a portrait (as a battle shows your
+  champion) with its age and purse, the line, the buttons.
+- Checked: screenshot of a solved riddle before and after; full verify.

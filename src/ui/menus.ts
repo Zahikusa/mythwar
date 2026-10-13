@@ -570,7 +570,13 @@ export class Menus {
     const nextOpen = !!next && next.age <= this.settings.ageSeen;
     const solvedAll = PUZZLES.every((p) => this.settings.riddles.includes(p.id));
     el.append(
-      h('div', { class: 'vhead' }, h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Solved' : 'Not yet' }), h('div', { class: 'vs', text: pz.name }))),
+      h(
+        'div',
+        { class: 'vhead' },
+        h('div', { class: `verdict ${won ? 'win' : 'lose'}` }, h('div', { class: 'vt', text: won ? 'Solved' : 'Not yet' }), h('div', { class: 'vs', text: pz.name })),
+        // The riddle's foe, as the battle results show your champion.
+        h('div', { class: 'vportrait' }, portrait(pz.foes[0][1], 96, 1, 1.3, true), h('div', { class: 'vcap', text: `${AGES[pz.age].name} · ${pz.gold} gold` })),
+      ),
       h('div', { class: 'vtip' }, h('span', { text: won ? (solvedAll ? 'Every riddle of war is solved. The rest is a real battle.' : next && !nextOpen ? `The next riddle waits in ${AGES[next.age].name} — reach it in battle.` : 'The field is clear.') : `Hint: ${pz.hint}` })),
       h(
         'div',
