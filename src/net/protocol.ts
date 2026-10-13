@@ -17,7 +17,7 @@ import { World } from '../sim/world.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 14;
+export const PROTOCOL_VERSION = 15;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -109,6 +109,8 @@ export interface RoomInfo {
   seats: [SeatInfo | null, SeatInfo | null];
   /** Co-op: both players share the left side against this AI (null = against each other). */
   coop: Difficulty | null;
+  /** Counts changes to the terms (handicaps, mode, who sits there): a Ready names the terms it saw. */
+  rev: number;
 }
 
 /** An open room in the lobby list. */
@@ -198,7 +200,8 @@ export type ClientMsg =
   | { type: 'watchRooms'; on: boolean }
   | { type: 'host' }
   | { type: 'join'; code: string }
-  | { type: 'ready'; ready: boolean }
+  /** `rev`: the room's terms the player saw (a Ready for older terms is ignored). */
+  | { type: 'ready'; ready: boolean; rev?: number }
   /** This player's own handicaps for the next battle (between battles only). */
   | { type: 'trials'; trials: TrialId[] }
   /** Versus (null) or co-op against an AI of this difficulty (between battles only). */

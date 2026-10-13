@@ -638,6 +638,23 @@ describe('battle', () => {
     expect(host.last('room')!.room.seats[1]).toMatchObject({ name: 'Bo', connected: true });
   });
 
+  it('a Ready sent before the other player changed the terms is ignored (backlog 96)', () => {
+    const { lobby } = setup();
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    a.hello('Ada');
+    b.hello('Bo');
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    const seen = a.last('room')!.room.rev;
+    b.send({ type: 'trials', trials: ['glass'] });
+    // A's Ready was on its way while B's handicap reached the server first.
+    a.send({ type: 'ready', ready: true, rev: seen });
+    expect(a.last('room')!.room.seats[0]!.ready).toBe(false);
+    a.send({ type: 'ready', ready: true, rev: a.last('room')!.room.rev });
+    expect(a.last('room')!.room.seats[0]!.ready).toBe(true);
+  });
+
   it('the Hall of champions counts battles per player across rooms (Lens #86)', () => {
     const { lobby, run, b } = battle();
     const watcher = new FakeClient(lobby);

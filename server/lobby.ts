@@ -138,6 +138,8 @@ interface Room {
   match: Match | null;
   /** Co-op against this AI (null = the two players fight each other). */
   coop: Difficulty | null;
+  /** Changes to the terms (see RoomInfo.rev). */
+  rev: number;
 }
 
 /**
@@ -435,7 +437,7 @@ export class Lobby {
         const hostedHere = s.quota ? [...this.rooms.values()].filter((r) => r.seats.some((x) => x?.session.quota === s.quota)).length : 0;
         if (this.rooms.size >= (this.opts.maxRooms ?? MAX_ROOMS) || hostedHere >= MAX_ROOMS_PER_ADDRESS) return this.error(s.conn, 'rate', 'The server is full right now — try again in a minute.');
         if (room) this.removeFromRoom(s);
-        const r: Room = { code: this.makeCode(), createdAt: now, phase: 'waiting', seats: [null, null], match: null, coop: null };
+        const r: Room = { code: this.makeCode(), createdAt: now, phase: 'waiting', seats: [null, null], match: null, coop: null, rev: 0 };
         this.rooms.set(r.code, r);
         this.seat(s, r, 0);
         this.log(`${s.name} opened room ${r.code}`);
@@ -479,6 +481,7 @@ export class Lobby {
         room.seats[seat]!.trials = cleanTrials(msg.trials);
         // Nobody starts against handicaps they haven't seen: a change takes both seats out of Ready.
         for (const x of room.seats) if (x) x.ready = false;
+        room.rev++;
         this.broadcastRoom(room);
         return;
       }
@@ -487,6 +490,7 @@ export class Lobby {
         const coop = DIFFICULTIES.includes(msg.coop as Difficulty) ? (msg.coop as Difficulty) : null;
         if (coop === room.coop) return;
         room.coop = coop;
+        room.rev++;
         // A different kind of battle: both confirm again, and the running score starts over.
         for (const x of room.seats) {
           if (!x) continue;
@@ -498,6 +502,8 @@ export class Lobby {
       }
       case 'ready': {
         if (!room || seat === null || (room.phase !== 'waiting' && room.phase !== 'over')) return;
+        // A Ready sent before a change of terms reached this player is for terms they never saw.
+        if (msg.ready && typeof msg.rev === 'number' && msg.rev !== room.rev) return this.broadcastRoom(room);
         room.seats[seat]!.ready = !!msg.ready;
         if (room.seats.every((x) => x && x.ready && x.session.conn)) this.startMatch(room);
         else this.broadcastRoom(room);
@@ -623,6 +629,7 @@ export class Lobby {
   private seat(s: Session, room: Room, seat: Team): void {
     room.seats[seat] = { session: s, ready: false, wins: 0, trials: [] };
     for (const other of room.seats) if (other) other.ready = false;
+    room.rev++;
     s.room = room;
     s.seat = seat;
     if (room.phase === 'over') room.phase = 'waiting';
@@ -679,7 +686,7 @@ export class Lobby {
       if (!x) return null;
       return { name: this.nameIn(room, i), connected: x.session.conn !== null, ready: x.ready, away: room.match?.isAway(i) ?? false, wins: x.wins, ping: x.session.rtt, trials: x.trials, rank: x.session.rank, sigil: x.session.sigil };
     };
-    return { code: room.code, phase: room.phase, seats: [seat(0), seat(1)], coop: room.coop };
+    return { code: room.code, phase: room.phase, seats: [seat(0), seat(1)], coop: room.coop, rev: room.rev };
   }
 
   /** A seat's name as shown in its room: "Ada" vs "Ada" becomes "Ada" vs "Ada (2)". */
