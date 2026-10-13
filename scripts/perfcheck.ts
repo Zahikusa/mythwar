@@ -79,6 +79,7 @@ await cdp.send('Profiler.setSamplingInterval', { interval: 200 });
 // makes everything ~3× faster than the same page left alone. The profile afterwards only gives
 // the split, which is stable.)
 const PROFILE_SECS = 4;
+const profiled: typeof samples = [];
 for (let s = 0; s < seconds + 1 + PROFILE_SECS; s++) {
   if (s === seconds + 1) await cdp.send('Profiler.start');
   await new Promise((r) => setTimeout(r, 1000));
@@ -103,6 +104,7 @@ for (let s = 0; s < seconds + 1 + PROFILE_SECS; s++) {
     return out;
   });
   if (s > 0 && s <= seconds) samples.push(sample); // (the first second includes start-up work)
+  else if (s > seconds + 1) profiled.push(sample);
 }
 const median = (xs: number[]) => {
   const v = [...xs].sort((x, y) => x - y);
@@ -121,12 +123,14 @@ for (const id of profile.samples) {
 const scriptShare = script / Math.max(1, script + native);
 const totals = samples.map((x) => x.sim + x.render + x.hud);
 const all = median(totals);
-const total = all * scriptShare;
+// (The split only describes the timed seconds if the load was the same while profiling.)
+const sameLoad = !profiled.some((x) => x.over) && Math.abs(median(profiled.map((x) => x.units)) - median(samples.map((x) => x.units))) <= 0.2 * median(samples.map((x) => x.units));
+const total = sameLoad ? all * scriptShare : all;
 const units = Math.round(median(samples.map((x) => x.units)));
 const ended = samples.some((x) => x.over);
 const ok = total <= BUDGET_MS && errors.length === 0;
 console.log(
-  `${ok ? 'PASS' : 'FAIL'}  ${total.toFixed(2)} ms of our script per frame (budget ${BUDGET_MS} ms) — ${Math.round(scriptShare * 100)}% of ${all.toFixed(2)} ms per frame in all (median of ${samples.length} s, range ${Math.min(...totals).toFixed(2)}–${Math.max(...totals).toFixed(2)}), the rest native canvas calls (here incl. software rasterization); by part: simulation + AI ${median(samples.map((x) => x.sim)).toFixed(2)}, renderer ${median(samples.map((x) => x.render)).toFixed(2)}, HUD ${median(samples.map((x) => x.hud)).toFixed(2)} — ~${units} creatures on the field${ended ? ' (the battle ended during the measurement: a lighter load)' : ''}${errors.length ? ` — errors: ${errors.join('; ')}` : ''}`,
+  `${ok ? 'PASS' : 'FAIL'}  ${total.toFixed(2)} ms of our script per frame (budget ${BUDGET_MS} ms) — ${sameLoad ? `${Math.round(scriptShare * 100)}%` : 'all (the load changed while profiling, so no split)'} of ${all.toFixed(2)} ms per frame in all (median of ${samples.length} s, range ${Math.min(...totals).toFixed(2)}–${Math.max(...totals).toFixed(2)}), the rest native canvas calls (here incl. software rasterization); by part: simulation + AI ${median(samples.map((x) => x.sim)).toFixed(2)}, renderer ${median(samples.map((x) => x.render)).toFixed(2)}, HUD ${median(samples.map((x) => x.hud)).toFixed(2)} — ~${units} creatures on the field${ended ? ' (the battle ended during the measurement: a lighter load)' : ''}${errors.length ? ` — errors: ${errors.join('; ')}` : ''}`,
 );
 await browser.close();
 server.close();
