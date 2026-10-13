@@ -655,6 +655,36 @@ describe('battle', () => {
     expect(a.last('room')!.room.seats[0]!.ready).toBe(true);
   });
 
+  it('a held "back" from a link that closed doesn’t mark the gone player present (backlog 116)', () => {
+    const { run, a, b } = battle();
+    run(1000);
+    b.send({ type: 'away', away: true });
+    run(50);
+    b.send({ type: 'away', away: false }); // (held back: within 250 ms of the last change)
+    run(20);
+    b.disconnect();
+    run(1000);
+    expect(a.last('paused')!.state).toMatchObject({ reason: 'away', seat: 1 });
+    expect(a.last('room')!.room.seats[1]).toMatchObject({ connected: false });
+    const resumedAfter = a.inbox.slice(-20).some((m) => m.type === 'resuming');
+    expect(resumedAfter).toBe(false);
+  });
+
+  it('a host whose page dropped takes their own seat back, not the free guest seat (backlog 117)', () => {
+    const { lobby } = setup();
+    const dev = 'a1a1a1a1a1a1a1a1a1a1a1a1';
+    const a = new FakeClient(lobby);
+    a.hello('Ada', undefined, { device: dev });
+    a.send({ type: 'host' });
+    const code = a.last('room')!.room.code;
+    a.disconnect();
+    const again = new FakeClient(lobby);
+    again.hello('Ada', undefined, { device: dev });
+    again.send({ type: 'join', code });
+    expect(again.last('room')!.seat).toBe(0);
+    expect(again.last('room')!.room.seats[1]).toBeNull();
+  });
+
   it('the Hall of champions counts battles per player across rooms (Lens #86)', () => {
     const { lobby, run, b } = battle();
     const watcher = new FakeClient(lobby);

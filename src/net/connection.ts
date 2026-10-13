@@ -227,6 +227,8 @@ export class Connection {
     const ws = this.ws;
     this.ws = null;
     if (!ws) return;
+    // (A live link given up on here, not closed by the server: no close code to remember.)
+    this.lastClose = 0;
     ws.onopen = ws.onclose = ws.onerror = ws.onmessage = null;
     try {
       ws.close();

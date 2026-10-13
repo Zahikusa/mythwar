@@ -359,6 +359,9 @@ export class Lobby {
       s.conn = conn;
       s.goneAt = null;
       s.network = network;
+      // (Held away/back changes belong to the old link.)
+      s.awayWanted = null;
+      this.awayWaiting.delete(s);
       if (msg.name !== undefined) s.name = this.playerName(msg.name);
       if (msg.rank !== undefined) s.rank = cleanRank(msg.rank);
       if (msg.sigil !== undefined) s.sigil = cleanSigil(msg.sigil);
@@ -451,7 +454,9 @@ export class Lobby {
         const free = r.seats[0] === null ? 0 : r.seats[1] === null ? 1 : -1;
         // The same device back in a new tab (a phone that dropped the page, a re-scanned QR): its
         // own seat, left without a connection, is its to take back — score and handicaps kept.
-        const own = free < 0 && r.phase !== 'playing' && s.device ? ([0, 1] as Team[]).find((i) => r.seats[i]!.session !== s && r.seats[i]!.session.conn === null && r.seats[i]!.session.device === s.device) : undefined;
+        // (Whether or not the other seat is free: a host whose page dropped must not end up as
+        // their own guest.)
+        const own = r.phase !== 'playing' && s.device ? ([0, 1] as Team[]).find((i) => !!r.seats[i] && r.seats[i]!.session !== s && r.seats[i]!.session.conn === null && r.seats[i]!.session.device === s.device) : undefined;
         if (own !== undefined) {
           if (room) this.removeFromRoom(s);
           const old = r.seats[own]!;
@@ -667,6 +672,9 @@ export class Lobby {
 
   private disconnected(s: Session): void {
     s.conn = null;
+    // (An away/back change still held back — see AWAY_GAP — came from the link that just closed.)
+    s.awayWanted = null;
+    this.awayWaiting.delete(s);
     s.watching = false;
     s.goneAt = this.now();
     const room = s.room;

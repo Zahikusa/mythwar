@@ -137,6 +137,18 @@ describe('Connection', () => {
     expect(conn.state).toBe('offline');
   });
 
+  it('remembers the server’s close code, and forgets it when a live link is given up here (backlog 118)', () => {
+    conn.open();
+    sockets[0].open();
+    sockets[0].lose(4002);
+    expect(conn.lastClose).toBe(4002);
+    vi.advanceTimersByTime(250);
+    sockets[1].open();
+    // (The link goes silent and is dropped here: no server close code.)
+    vi.advanceTimersByTime(7500);
+    expect(conn.lastClose).toBe(0);
+  });
+
   it('measures the round trip from pongs', () => {
     conn.open();
     sockets[0].open();
