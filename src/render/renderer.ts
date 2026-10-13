@@ -245,6 +245,11 @@ export class Renderer {
     return 2 * f.x + f.w - x;
   }
 
+  /** A battle taken up midway: the veterans already on the field get their names (as the chronicle's). */
+  adoptHeroes(world: World): void {
+    this.heroes.adopt(world.lanes);
+  }
+
   /** Forgets the visuals of the battle. `resync`: the same battle continues (keep its heroes' names). */
   reset(resync = false): void {
     if (!resync) this.heroes = new HeroNames();

@@ -78,4 +78,13 @@ export class HeroNames {
   has(unitId: number): boolean {
     return this.byUnit.has(unitId);
   }
+
+  /**
+   * A battle taken up midway (Continue, an online rejoin): the veterans already on the field are
+   * named first, oldest first — every view does the same, so they still agree.
+   */
+  adopt(lanes: readonly (readonly { alive: boolean; veteran: boolean; team: number; id: number; def: { id: string } }[])[]): void {
+    const vets = lanes.flat().filter((u) => u.alive && u.veteran && !this.byUnit.has(u.id));
+    for (const u of vets.sort((a, b) => a.id - b.id)) this.rise(u.team, u.def.id, u.id);
+  }
 }

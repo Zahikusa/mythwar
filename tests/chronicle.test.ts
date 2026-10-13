@@ -51,3 +51,38 @@ describe('the chronicle names heroes like the battlefield does (backlog 17)', ()
     expect(view.name('minotaur', second.id)).not.toBe(view.name('minotaur', first.id));
   });
 });
+
+describe('a battle taken up midway (backlog 66)', () => {
+  it('tells no false first blood, no citadel brought low that already was; names agree with the field', async () => {
+    const { HeroNames } = await import('../src/ui/heroes.ts');
+    const w = new World({ seed: 11 });
+    const ais = [new AiController(w, 0, AI_PROFILES.master, 1), new AiController(w, 1, AI_PROFILES.master, 2)];
+    const play = (until: () => boolean, c?: Chronicle, view?: InstanceType<typeof HeroNames>) => {
+      while (w.winner === null && !until()) {
+        for (const a of ais) a.update(TICK);
+        w.step();
+        const ev = w.drainEvents();
+        for (const e of ev) if (e.type === 'veteran') view?.rise(e.team, e.defId, e.unitId);
+        c?.onEvents(ev, w);
+      }
+    };
+    // Until there are veterans on the field (and blood long spilled).
+    play(() => w.time > 60 && w.lanes.flat().some((u) => u.alive && u.veteran));
+    expect(w.winner).toBeNull();
+    w.players[1].baseHp = w.players[1].baseMaxHp * 0.2;
+    const c = new Chronicle(0, 'Odin');
+    c.resume(w);
+    const view = new HeroNames(); // the renderer's, as after Continue
+    view.adopt(w.lanes);
+    const resumedAt = w.time;
+    play(() => w.time > resumedAt + 30, c, view);
+    const lines = c.lines();
+    expect(lines.some((l) => /First blood/.test(l)), lines.join(' | ')).toBe(false);
+    expect(lines.some((l) => /Odin's citadel is brought below/.test(l)), lines.join(' | ')).toBe(false);
+    // The veterans already standing have the same names in the story as on the field.
+    for (const u of w.lanes.flat().filter((x) => x.alive && x.veteran)) {
+      const story = (c as unknown as { names: InstanceType<typeof HeroNames> }).names;
+      expect(story.name(u.def.id, u.id)).toBe(view.name(u.def.id, u.id));
+    }
+  });
+});

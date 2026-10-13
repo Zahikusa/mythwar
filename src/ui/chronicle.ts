@@ -37,6 +37,28 @@ export class Chronicle {
     this.foe = foe;
   }
 
+  /**
+   * A battle taken up midway (Continue, an online rejoin): what already happened isn't news — no
+   * "first blood" at 5:00, no citadel "brought low" that already was; the veterans on the field
+   * keep the names the battlefield gives them, and the hero is sought among them.
+   */
+  resume(world: World): void {
+    if (world.time <= 0) return;
+    this.firstBlood = world.players.some((p) => p.stats.kills > 0);
+    for (const team of [0, 1] as Team[]) {
+      const p = world.players[team];
+      this.low[team] = p.baseHp < p.baseMaxHp * 0.25;
+    }
+    this.names.adopt(world.lanes);
+    for (const lane of world.lanes) {
+      for (const u of lane) {
+        if (!u.alive) continue;
+        if (u.veteran) this.veteran[u.team] = true;
+        if (u.team === this.me && u.kills > (this.hero?.kills ?? 0)) this.hero = { defId: u.def.id, id: u.id, kills: u.kills };
+      }
+    }
+  }
+
   private who(team: Team): string {
     return team === this.me ? 'You' : this.foe;
   }

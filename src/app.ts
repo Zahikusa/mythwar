@@ -532,6 +532,11 @@ export class App {
     });
     this.feats.start(game.world, game.playerTeam);
     this.chronicle = new Chronicle(game.playerTeam, game instanceof NetGame ? game.foeName : PERSONAS[this.difficulty].name);
+    // (Continued or rejoined midway: the story and the battlefield pick up from where it stands.)
+    if (game.world.time > 0) {
+      this.chronicle.resume(game.world);
+      this.renderer.adoptHeroes(game.world);
+    }
     this.taunts = { n: 0, at: -100, said: new Set(), heldShrine: [false, false, false] };
     this.starWarned = { half: false, par: game.world.time > parTime(this.difficulty, game.world.quick) };
     this.immersive();
