@@ -953,7 +953,7 @@ async function largeDesktopFlow(page: Page): Promise<void> {
       await page.mouse.move(pt.x, pt.y);
       await sleep(50);
       cur[k] = await page.evaluate(() => {
-        const c = document.querySelector('canvas')!;
+        const c = document.querySelector<HTMLCanvasElement>('#stage > canvas')!;
         return [c.style.cursor, c.title];
       });
     }
