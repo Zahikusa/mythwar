@@ -29,6 +29,18 @@ docs/PLAYTEST.md is a one-hour plan to close this gap — the most valuable next
   — difficulty ladder, battle length, variety, side fairness; `npm run economy`; `npm run
   puzzlecheck`; `npm run perfcheck`).
 
+## Since then — a review round (run #8)
+
+Six independent reviews of the finished work (netcode, app flows, simulation, persistence,
+accessibility, docs) and two walk-throughs (two players' flows; saved data across versions) found
+about 70 concrete defects; each is fixed and checked, most with a test that failed first
+(PROGRESS.md, items 38–107). The ones you'd notice: **one misbehaving client could crash the LAN
+server** — fixed, and a fault in one battle no longer ends the others; a phone that drops the page
+gets its seat back when it re-scans the QR; "Room" on the results lets you change mode or
+handicaps for the rematch; reconnecting is quicker after a Wi-Fi switch; a save in one tab never
+undoes another's progress. **The rules changed slightly** (team 1 had a one-tick edge in mixed
+fights — now perfectly even), and the **protocol is v15**: server and pages from one build.
+
 ## Things that need your decision
 1. **Try it on two real phones** (docs/PLAYTEST.md). If anything feels off, that beats any
    further lens.

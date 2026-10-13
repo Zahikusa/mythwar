@@ -430,9 +430,11 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
    frame (string building ×7 per frame) — cheap (perfcheck 1.0 ms/frame) but could be keyed on
    a state signature like the rest of the HUD. (Done: rebuilt only when a card's state changes.)
 (Items 99–103: open for the next run.)
-99. [ ] Reset records across tabs: tab A resets; tab B (open, still holding the old records in
+99. [x] Reset records across tabs: tab A resets; tab B (open, still holding the old records in
    memory) merges them back on its next save. A reset marker (time) stored with the progress copy,
-   honoured by `mergeProgress`, would let other tabs drop pre-reset records.
+   honoured by `mergeProgress`, would let other tabs drop pre-reset records. (Done: `resetAt` in
+   settings and the progress copy; between tabs of one device the later reset wins (a stale tab
+   lets its old records go on its next save); never for progress codes from another device; tests.)
 100. [x] `scripts/mpsmoke.ts` doesn't cover #88 (rematch note when the other player's tab closed):
    close B's page on the results and check A's note says "lost the connection". (Done: B's
    connection is closed on the results, A's note says so, and clears when B is back.)
@@ -446,6 +448,19 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
    drops the tab re-scans the QR and gets its seat back; "Room" on the results; the away banner
    with a screen reader). (Done: three on-purpose checks under "What to watch" — the seat back
    after a re-scan, Room → co-op → Ready, the shield beside the gate on a small phone.)
+(Items 104–107: open for the next run.)
+104. [ ] The playtest journal isn't merged between tabs (#92 merges what only grows, the journal
+   too could: by `at`, the last 30) — two tabs playing in turn keep only the last saver's.
+105. [ ] Online results on a 360-px-tall phone now have four buttons in a row (Leave room · Share ·
+   Room · Rematch, #87): check they fit (mpsmoke's phone is 844×390; smoke's results-fit check
+   covers single-player results only) — add a check, wrap to two rows if needed.
+106. [x] CONTRIBUTING.md: say when to bump PROTOCOL_VERSION (any message shape change — v15 now) and
+   the battle save's `v` (a change older builds would misread — v2 now), and that settings
+   fields only ever grow (older builds drop unknown ones; `mythwar.progress.v1` covers that).
+   (Done: rule 6 "Saved data outlives builds"; rule 2 gained the `px` / slain-this-tick detail;
+   rule 4 says v15.)
+107. [x] docs/BRIEF.md (the morning page) doesn't mention run #8's hardening — a short "since the
+   last brief" paragraph: server crash fixes, fairness fix (rules changed), protocol v15. (Done.)
 
 
 

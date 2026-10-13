@@ -18,7 +18,7 @@ docs/LENSES.md why each feature exists; docs/MULTIPLAYER.md the netcode.
 | `scripts/` | Test drivers and design tools (smoke, mpsmoke, designcheck, shoot…) | Node + Chrome/Playwright |
 | `tests/` | Vitest unit tests | |
 
-## The five rules
+## The six rules
 
 1. **The simulation is deterministic, bit for bit, on every engine.** Online play is lockstep:
    the server and every browser (V8, SpiderMonkey, JavaScriptCore) replay the same commands and
@@ -29,8 +29,11 @@ docs/LENSES.md why each feature exists; docs/MULTIPLAYER.md the netcode.
 2. **Blows within one tick are simultaneous.** The two sides are updated one after the other, so
    anything that changes a creature *because of* a blow (lifesteal heals, veteran promotions,
    kills) must take effect at a fixed point after everyone has struck — see `heals` and
-   `promote()` in `world.ts`. The mirrored-armies tests in `tests/sim.test.ts` catch violations:
-   if one of them fails after your change, the change favours a side.
+   `promote()` in `world.ts`. Likewise anything one side *reads* about the other mid-tick: aim
+   at a target's `px` (where it stood when the tick began), and count allies slain this tick as
+   still there until `cleanup()`. The mirrored-armies tests in `tests/sim.test.ts` (one kind per
+   side, and every two-kind army of each age) catch violations: if one fails after your change,
+   the change favours a side.
 3. **Rules changes change the fingerprint.** `simFingerprint()` hashes every balance table and a
    short scripted battle; online, both devices must have the same one (the server refuses a
    mismatch). That's intended — but say so in your commit/PROGRESS note, and run
@@ -38,9 +41,15 @@ docs/LENSES.md why each feature exists; docs/MULTIPLAYER.md the netcode.
    touches balance. Events (`SimEvent`) are not hashed: adding a field to an event is free.
 4. **Protocol changes bump `PROTOCOL_VERSION`** (`src/net/protocol.ts`), and every new field a
    client sends is sanitized on the server (`cleanName`, `cleanRank`, `cleanSigil`, …) — the
-   server never trusts a client. Server and pages always ship from the same build.
+   server never trusts a client. Server and pages always ship from the same build. (v15 now.)
 5. **Single player keeps working with every mechanic.** The AI must use (or at least survive)
    whatever you add; the attract battle on the title screen is AI vs AI and shows it at once.
+6. **Saved data outlives builds.** Players keep their settings and an autosaved battle across
+   updates — and an older build may still be open in another tab. Settings fields only ever get
+   added (an older build drops fields it doesn't know; progress is kept a second time under
+   `mythwar.progress.v1` for that, and every save merges what only grows); sanitize every field on
+   load. Bump the battle save's `v` (`src/game.ts`, v2 now) when older builds would misread it,
+   and keep reading the old ones.
 
 ## Verifying a change
 
