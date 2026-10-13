@@ -1,7 +1,7 @@
 # PROGRESS — Phase 3: a native-app feel on phones
 
 Status: Phase 3 complete, in verification mode (run #12, 2026-10-13). A–E done and verified
-(`npm run mobilecheck`: 7 devices × tab/installed × both orientations × 37 screens, all green;
+(`npm run mobilecheck`: 7 devices × tab/installed × both orientations × 38 screens, all green;
 `npm run verify` green), F decided against. From here: only mobile UX defects seen in
 screenshots or nameable on a real device (backlog below); what needs a physical phone is under
 "Open questions for the human".
