@@ -230,6 +230,21 @@ async function main(): Promise<void> {
     await waitFor(b, 'B battle', () => (window as any).__mythwar.state === 'playing');
     const countdown = await a.evaluate(() => document.querySelector('.ncount')?.textContent ?? '');
     check('countdown shows', /^[123]$/.test(countdown), countdown);
+    // (Backlog 148) The number sits below the opening banner's words, not on them (both screens).
+    for (const [p, who] of [[a, 'desktop'], [b, 'phone']] as const) {
+      const clear = await p.evaluate(() => {
+        const n = document.querySelector('.ncount.show');
+        const words = [...document.querySelectorAll('.hud .banner.show :is(.bkick, .btitle, .bsub, .blore)')].map((e) => e.getBoundingClientRect()).filter((r) => r.height > 0);
+        if (!n || !words.length) return { ok: false, why: `count ${!!n}, banner lines ${words.length}` };
+        const r = n.getBoundingClientRect();
+        // (Rotated phones turn the stage: compare along the stage's vertical, whichever axis that is.)
+        const rotated = (window as any).__mythwar.rotated;
+        const mid = rotated ? innerWidth - (r.left + r.width / 2) : r.top + r.height / 2;
+        const end = Math.max(...words.map((w) => (rotated ? innerWidth - w.left : w.bottom)));
+        return { ok: mid > end, why: `count centre ${Math.round(mid)}, banner ends ${Math.round(end)}` };
+      });
+      check(`countdown below the opening banner (${who})`, clear.ok, clear.why);
+    }
     await shot(b, '4-countdown-phone');
     const ia = await info(a);
     const ib = await info(b);

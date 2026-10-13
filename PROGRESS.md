@@ -644,6 +644,10 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    "Back to room" sat side by side doing the same thing. (Done: "Room" hides while the other seat
    is empty; mpsmoke checks it, and now tests "Room" where it is meant — A goes back to the room
    from the results with the opponent still there, and leaves from the room.)
+148. [x] Online battle start on a phone (`4-countdown-phone`): the countdown's big "3" landed on the
+   opening banner's "VS ADA L · FAE WILDS" and lore line. (Done: while a banner shows, the number
+   sits at 72% instead of 42% — the start countdown (3 s + "Fight!") ends before the 4.5-s banner,
+   so it never jumps; mpsmoke checks the number is below the banner's words on both screens.)
 
 
 
