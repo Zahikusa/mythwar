@@ -609,6 +609,27 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
 250. [x] No `text-size-adjust`: iOS Safari may enlarge text after rotating to landscape (how the
    game is played), overflowing pixel-fitted buttons. `-webkit-text-size-adjust: 100%` on html.
    (Done, on html and body.)
+(Items 251–257: a second visual review of the online screens, 2026-10-13 — #230–234 confirmed
+on screen.)
+251. [ ] Online results on a short phone (667×375, 844×390): the pinned `.vbuttons` row (rematch
+   note, chips, buttons) has no backdrop, so "Ember Treant left the room." is drawn across the
+   stats table. The "more below" backdrop covers `.screen.more > .mrow` only (menus.css ~1731):
+   give `.vbuttons` the same.
+252. [ ] The "is away" notice with Claim is squeezed into half the screen's width on a phone (9
+   lines, the button far below): `.nbanner { position: absolute; left: 50% }` caps its width at
+   the space right of centre. `width: max-content` within the max-width; "Wi-Fi" breaks as
+   "Wi-/Fi" (a no-break hyphen).
+253. [ ] The disabled Ready in the room's pinned row is see-through (`.mbtn:disabled { opacity:
+   .45 }`): the open seat's text shows through it on phones. Solid muted colours instead.
+254. [ ] The room's mode and handicap chips are 27 px tall with 4 px between rows on phones — a
+   thumb aimed at "Novice" can switch on a handicap. ≥ 38 px and ~10 px gaps under
+   `pointer: coarse`.
+255. [ ] Mixed capitalisation: "How to Play" (title, pause) vs "How to play" (room), "Begin
+   Battle" beside "Leave room", "Change foe". Sentence case throughout.
+256. [ ] The room's message line uses the alarm pink for tips too ("Tip: turn your phone
+   sideways…") — `flash(text, ms, kind)` with a calmer colour for tips.
+257. [ ] Results: the first subtitle ("X left the battle.") centres under "Victory" — shifted left
+   by the champion picture — while the lines below centre on the screen: ragged by 70–100 px.
 
 
 
