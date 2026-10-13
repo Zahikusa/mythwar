@@ -55,6 +55,35 @@ describe('settings saved by several tabs and builds (backlog 92)', () => {
     expect(tabB.feats).toContain('mythic');
   });
 
+  it('Reset records in one tab isn’t undone by another tab still holding the old records (backlog 99)', () => {
+    const tabA = loadSettings();
+    recordResult(tabA, 'novice', true, 300, 3, false);
+    saveSettings(tabA);
+    const tabB = loadSettings();
+    expect(tabB.records.novice).toBeDefined();
+    resetRecords(tabA);
+    // B, open all along, saves a slider: the reset stands — and B lets the old records go.
+    tabB.sfx = 0.2;
+    saveSettings(tabB);
+    expect(tabB.records).toEqual({});
+    expect(loadSettings().records).toEqual({});
+    // A win recorded after the reset is kept by both.
+    recordResult(tabB, 'adept', true, 400, 1, false);
+    saveSettings(tabB);
+    saveSettings(tabA);
+    expect(loadSettings().records.adept).toMatchObject({ wins: 1 });
+  });
+
+  it('a progress code from another device never takes records away, whatever its reset time', async () => {
+    const { exportProgress, importProgress } = await import('../src/ui/progress.ts');
+    const here = loadSettings();
+    recordResult(here, 'master', true, 600, 2, false);
+    const there = loadSettings();
+    there.resetAt = Date.now() + 1000;
+    importProgress(here, exportProgress(there));
+    expect(here.records.master).toMatchObject({ wins: 1 });
+  });
+
   it('Reset records does take records back (the one save without a merge)', () => {
     const s = loadSettings();
     recordResult(s, 'novice', true, 300, 3, false);

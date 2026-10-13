@@ -87,6 +87,8 @@ export interface Settings {
   sigil: number;
   /** The last battles, for playtests (Lens #91; most recent last). */
   journal: JournalEntry[];
+  /** When records were last reset on this device (ms; 0 = never) — other tabs honour it. */
+  resetAt: number;
 }
 
 export { SIGILS } from '../net/protocol.ts';
@@ -126,6 +128,7 @@ const DEFAULTS: Settings = {
   startAge: 0,
   sigil: -1,
   journal: [],
+  resetAt: 0,
 };
 
 export function loadSettings(): Settings {
@@ -184,6 +187,7 @@ function sanitize(s: Settings): Settings {
     trials: Array.isArray(s.trials) ? TRIAL_ORDER.filter((t) => s.trials.includes(t)) : [],
     feats: Array.isArray(s.feats) ? [...new Set(s.feats.filter((x): x is string => typeof x === 'string'))].slice(0, 100) : [],
     journal: sanitizeJournal(s.journal),
+    resetAt: typeof s.resetAt === 'number' && Number.isFinite(s.resetAt) ? s.resetAt : 0,
   };
 }
 
@@ -284,7 +288,7 @@ function mergeStored(s: Settings, key: string): void {
     const raw = localStorage.getItem(key);
     const v = raw ? JSON.parse(raw) : null;
     if (!v || typeof v !== 'object') return;
-    mergeProgress(s, key === KEY ? { r: v.records, f: v.feats, a: v.ageSeen, o: v.online, q: v.riddles } : v);
+    mergeProgress(s, key === KEY ? { r: v.records, f: v.feats, a: v.ageSeen, o: v.online, q: v.riddles, z: v.resetAt } : v, true);
   } catch {
     // unreadable: nothing to merge
   }
@@ -325,6 +329,8 @@ export function resetRecords(s: Settings): void {
   s.records = {};
   s.online = {};
   s.journal = [];
+  // (Other tabs still holding the old records see this and let them go — see mergeProgress.)
+  s.resetAt = Date.now();
   write(s);
 }
 

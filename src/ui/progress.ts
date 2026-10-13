@@ -20,11 +20,13 @@ export interface Payload {
   o: Settings['online'];
   /** Riddles solved (added later: older codes have none). */
   q?: string[];
+  /** When records were last reset (ms) — honoured only between tabs of one device. */
+  z?: number;
 }
 
 /** What progress codes carry — and what a save never undoes (see saveSettings). */
 export function progressOf(s: Settings): Payload {
-  return { r: s.records, f: s.feats, a: s.ageSeen, o: s.online, q: s.riddles };
+  return { r: s.records, f: s.feats, a: s.ageSeen, o: s.online, q: s.riddles, z: s.resetAt };
 }
 
 export function exportProgress(s: Settings): string {
@@ -56,7 +58,18 @@ export function importProgress(s: Settings, code: string): boolean {
  * Merges progress into `s` — never losing what `s` has: the larger tallies, the faster best
  * time, the better stars, feats / riddles / ages united. `p` is untrusted (a pasted code, storage).
  */
-export function mergeProgress(s: Settings, p: Partial<Payload>): void {
+export function mergeProgress(s: Settings, p: Partial<Payload>, sameDevice = false): void {
+  // Between tabs of one device, "Reset records" wins over records kept from before it (a code
+  // from another device never takes anything away — its reset is that device's business).
+  if (sameDevice) {
+    const z = Number(p.z) || 0;
+    if (z > s.resetAt) {
+      s.records = {};
+      s.online = {};
+      s.journal = [];
+      s.resetAt = z;
+    } else if (z < s.resetAt) p = { ...p, r: undefined, o: undefined };
+  }
   const num = (v: unknown) => Math.max(0, Math.floor(Number(v) || 0));
   for (const d of DIFFICULTIES) {
     const theirs = p.r?.[d];
