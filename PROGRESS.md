@@ -131,7 +131,7 @@ complete; its log follows below the lens plan.
 - [x] #55 Virtual Interface — the age race was invisible until the foe could ascend: XP rings around both age badges
 - [x] #56 Transparency — the foe screen hides the Trials (handicaps) until a first victory
 - [x] #57 Feedback — countered blows glance off (grey puff, dull tock); "Effective!" / "Resisted" over your creatures now and then
-- [ ] #58 Juiciness — more juice
+- [x] #58 Juiciness — a blessing is felt on the field: shockwaves and flashes through the blessed army (Bastion: the gates)
 - [ ] #59 Channels and Dimensions — map info to new channels (low-HP heartbeat)
 - [ ] #60 Modes — mode clarity (targeting)
 - [ ] #61 The Interest Curve — battle pacing / music intensity

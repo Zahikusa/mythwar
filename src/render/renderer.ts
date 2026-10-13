@@ -615,6 +615,36 @@ export class Renderer {
           this.fx.burst(x, g.y - 30 * this.bodyScale(g), { count: 24, color: col, rgb, speed: 120, life: 1, size: 2.6, shape: 'glow', layer: e.lane, gravity: -30 });
           break;
         }
+        case 'blessing': {
+          // A blessing is felt on the field (Lens #58): Might and Vitality flare through every
+          // creature of that side, Bastion lights its three gates. The foe's too, more softly.
+          const rgb: [number, number, number] = e.blessing === 'might' ? [255, 170, 90] : e.blessing === 'vitality' ? [140, 255, 170] : [255, 230, 170];
+          const color = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+          const mine = e.team === view.playerTeam;
+          const n = mine ? 12 : 6;
+          if (e.blessing === 'bastion') {
+            for (let lane = 0; lane < L.lanes.length; lane++) {
+              const gate = this.gateScreen(e.team, lane);
+              this.fx.timedFx({ kind: 'shockwave', x: gate.x, y: gate.y, dur: 0.9, layer: lane, size: (mine ? 90 : 60) * gate.s, color, rgb });
+              this.fx.timedFx({ kind: 'flashAt', x: gate.x, y: gate.y - 40 * gate.s, dur: 0.7, layer: lane, size: 70 * gate.s, rgb });
+              this.fx.burst(gate.x, gate.y - 40 * gate.s, { count: n * 2, color, rgb, speed: 110, life: 1.2, size: 3, shape: 'glow', layer: lane, gravity: -120, jitter: 26 * gate.s });
+            }
+          } else {
+            let left = 40;
+            for (const lane of world.lanes) {
+              for (const u of lane) {
+                if (!u.alive || u.team !== e.team || left-- <= 0) continue;
+                const p = this.unitScreen(u, 1);
+                const by = p.y - (p.art.body[1] * -1 + p.art.fly) * p.s;
+                const r = (16 + u.def.radius) * p.s;
+                this.fx.timedFx({ kind: 'shockwave', x: p.x, y: p.y, dur: 0.75, layer: u.lane, size: r * (mine ? 2.2 : 1.6), color, rgb });
+                this.fx.timedFx({ kind: 'flashAt', x: p.x, y: by, dur: 0.5, layer: u.lane, size: r * 1.8, rgb });
+                this.fx.burst(p.x, by, { count: n, color, rgb, speed: 90, life: 1.0, size: 3, shape: 'glow', layer: u.lane, gravity: -130, jitter: 12 * p.s });
+              }
+            }
+          }
+          break;
+        }
         case 'turretBuilt': {
           const p = this.gateScreen(e.team, e.lane);
           this.fx.burst(p.x, p.y - 60 * p.s, { count: 18, color: '#ffe9b0', speed: 120, life: 0.7, size: 2.5, shape: 'glow', rgb: [255, 230, 170], layer: e.lane });

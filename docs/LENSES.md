@@ -1138,3 +1138,19 @@ they get, and is it the feedback that teaches?*
   both count. The triangle gets named while it happens, in the lane where it happens.
 - Checked: screenshot of a mixed fight (found the two words stacking — spaced out since), full
   verify; perfcheck 1.97 ms of 3 ms per frame (see open issues: was 0.93 at #14).
+
+## #58 The Lens of Juiciness
+*Is the game juicy — does every action answer with second-order motion that rewards the player?
+Where does a meaningful action get a flat response?*
+- Most actions answer richly already: a summon bumps its card and flares the portal, kills burst
+  and pay "+gold" that merges, routs shout (#3), an ascension raises a pillar of light, powers
+  fill the lane, a turret builds in a puff of light.
+- The flat one: **buying a blessing** — since #46 one of the dearest purchases in the game
+  (1,584 gold for Might's first rank at Asgard) — changed a pip in a panel and nothing on the
+  field. The strength is real but invisible; the player has to trust a number.
+- Change: a blessing is **felt on the field**. Might (orange-gold) and Vitality (green) send a
+  ground shockwave, a flash and rising motes through every creature of that side; Bastion rings
+  and lights all three of its gates. The foe's blessings show too, a little smaller — fair
+  warning that their army just got stronger.
+- Checked: screenshots of Might and Bastion mid-battle (a first version with motes only was
+  barely visible on snow — now shockwave + flash); full verify.

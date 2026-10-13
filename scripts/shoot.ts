@@ -162,6 +162,8 @@ const SCENARIOS: Scenario[] = [
   { name: 'mobile-play-start', query: 'play=novice&seed=4', w: 844, h: 390, mobile: true, dpr: 2, wait: 2500 },
   { name: 'play-start', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 3000 },
   { name: 'card-armed', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 3500, script: `(() => { const a = window.__mythwar; a.game.world.players[0].gold = 8; a.hud.tryTrain('pixie'); })()`, after: 400 },
+  { name: 'blessing-might', query: 'demo&ff=420&seed=5', w: 1600, h: 900, wait: 1500, script: `(() => { const g = window.__mythwar.game; g.world.players[0].gold = 1e5; g.command({ type: 'bless', team: 0, blessing: 'might' }); })()`, after: 250 },
+  { name: 'blessing-bastion', query: 'demo&ff=420&seed=5', w: 1600, h: 900, wait: 1500, script: `(() => { const g = window.__mythwar.game; g.world.players[0].gold = 1e5; g.command({ type: 'bless', team: 0, blessing: 'bastion' }); })()`, after: 300 },
   { name: 'riddles', query: 'screen=difficulty', w: 1600, h: 900, wait: 1500, script: `window.__mythwar.menus.show('riddles')`, after: 500 },
   { name: 'mobile-riddles', query: 'screen=difficulty', w: 844, h: 390, mobile: true, dpr: 2, wait: 1500, script: `window.__mythwar.menus.show('riddles')`, after: 500 },
   { name: 'riddle-start', query: 'screen=difficulty', w: 1600, h: 900, wait: 1500, script: `window.__mythwar.playRiddle('pack')`, after: 1500 },
