@@ -13,8 +13,9 @@ online battle shares only what the other player needs to see.
 | A random device id (24 hex digits, nothing derived from you) | `localStorage` → `mythwar.device` | The Hall of champions knows you by it, not by your name |
 | The game's files (GitHub Pages version) | the service worker's cache | Play offline |
 
-Nothing of this leaves the device by itself. Three buttons copy something to the clipboard, and
-only when you press them: *Copy my code* (progress code), *Copy playtest journal*, *Copy result*.
+Nothing of this leaves the device by itself. Four buttons copy something to the clipboard, and
+only when you press them: *Copy my code* (progress code), *Copy playtest journal*, *Copy result*,
+and *Copy link* in the battle room (the invite address).
 *Reset records* in Settings clears your records, online records and the playtest journal, and
 gives the browser a new device id (its old Hall line is no longer linked to it);
 clearing the site's data in the browser removes everything.
@@ -23,15 +24,23 @@ clearing the site's data in the browser removes everything.
 The game server — the computer that runs `npm run lan` (or, later, a public server) — receives:
 - **your name, standing and sigil** (shown to the other player and in the lobby),
 - **your orders in battle** and your connection's round-trip time (shown to the other player),
-- **your device's network address**, used only to group the open-battle list by network and to
-  limit how much one address can open (abuse protection),
+- **your device's network address**, used only to group the open-battle list by network, to
+  pick which network's Hall of champions you appear in, and to limit how much one address can
+  open (abuse protection),
 - **the random device id** above (never shown to anyone).
 
 The server **keeps**, in memory and in `mythwar-data.json` next to it (`--no-save` to turn
 that off): the **Hall of champions** — per network, each player's name, sigil, battles won and
-lost, co-op victories and on how many days they played. Local networks are stored as `lan`; a
-public network address and the device ids are never written down — only salted hashes of them,
-which can't be turned back. Delete the file to forget everything.
+lost, co-op victories, on how many days they played and the last of them, and a hash of their
+device id. Local networks are stored as `lan`. A public network address and the device ids are
+never written down as such:
+- device ids are random, so their (salted SHA-256) hashes can't be turned back;
+- addresses are few enough to try them all, so they get a slow, memory-hard hash (scrypt,
+  ~20 ms and 16 MB each): recovering an address from the file would take years of computing,
+  not minutes. Still, keep the file as private as any server log.
+
+To forget everything: stop the server, then delete the file (a running server keeps the Hall in
+memory and writes it again).
 
 Its log (the terminal window) shows names, room codes and results — no addresses.
 

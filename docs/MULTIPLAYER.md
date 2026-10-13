@@ -54,7 +54,8 @@ and changing them takes both out of Ready, so nobody starts against handicaps th
 (Recruit → Warden → Champion → Warlord → Conqueror → Legend) and their sigil flies on their keep
 in battle. The lobby lists rooms of people you have battled before first, with your record
 together, and the **Champions of this network** line under the open battles counts every
-head-to-head battle won and lost on this server (and co-op victories) since it started.
+head-to-head battle won and lost on this server (and co-op victories), kept across restarts
+(battles between two tabs of one browser don't count).
 
 During development `npm run dev` hosts rooms as well (open the "Network" address Vite prints).
 `npm run serve` serves an existing build without rebuilding; `node server/main.ts --port 9000`
@@ -71,7 +72,8 @@ picks another port.
   works fine (the computer joins the phone's hotspot).
 - **The right address:** use the `192.168.x.x` / `10.x.x.x` address, not `localhost`. Computers
   with VPNs or virtual adapters may print several; the first one is usually right.
-- **The page loads, but the lobby stays on "Connecting…":** the page came through, the live
+- **The page loads, but the lobby stays on "Connecting to the game server…"** (later "Can't
+  reach the game server — still trying…"): the page came through, the live
   connection (WebSocket) didn't. VPN apps, ad blockers that filter traffic, company proxies and
   some guest Wi-Fis do that — switch the VPN off or try another Wi-Fi / the phone's hotspot.
 - In the lobby the dot next to *Connected* turns red and a help box appears when the game
@@ -131,7 +133,8 @@ A self-signed certificate works too, but every device has to click through a war
   V8 (Chrome, Node) and JavaScriptCore (Safari). It only uses + − × ÷, `Math.min/max/abs/
   floor/round/imul` (exactly specified) and its own seeded RNG.
 - The **server owns the clock**: it runs the battle at 60 ticks/s, applies each player's
-  commands right before its next tick and broadcasts a *turn* every 2 ticks (33 ms) listing the
+  commands right before its next tick and broadcasts a *turn* at least every 2 ticks (33 ms), and
+  right after any command, listing the
   commands and the tick they were applied at. Clients replay exactly that.
 - Each client plays the ticks out through an **adaptive jitter buffer**: it measures how
   irregularly turns arrive and stays just far enough behind the server to absorb Wi-Fi hiccups,
@@ -199,7 +202,8 @@ The design already separates everything that matters for that step:
    process per region) scale horizontally. A match costs ~0.04 % of a CPU core and ~19 MB of
    traffic per hour (`node scripts/servercost.ts`; docs/PROFIT.md has the cost model).
 7. **Later:** accounts and persistent ratings (the Hall of champions is kept in memory per
-   network and keyed by name, saved to `mythwar-data.json` through the small `ServerStore` seam
-   in `server/store.ts` — with accounts a database would sit behind the same two calls), spectators (they would simply receive turns),
+   network and keyed by a hashed device id (the name only for clients without one), saved to
+   `mythwar-data.json` through the small `ServerStore` interface in `server/store.ts` — with
+   accounts a database would sit behind it), spectators (they would simply receive turns),
    replays (seed + command log is a complete replay), and reconnect across devices (the session
    token is already the key).

@@ -89,7 +89,7 @@ Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](doc
   10:00 — the same five ages in roughly 10–11 minutes against Adept or Master instead of 14–16.
 - **Trials:** on the "Choose your foe" screen — Glass Citadel (half health), Godless (no god
   powers), No Walls (no turrets) — for a harder battle; winning under all three is a feat.
-- **Feats:** sixteen deeds to be proud of (beat each foe, summon the Elder Dragon, hold all three
+- **Feats:** eighteen deeds to be proud of (beat each foe, summon the Elder Dragon, hold all three
   shrines, win from below 15%…) — the chip above the title menu lists them.
 - **Bestiary:** the title screen and the pause menu open a bestiary of every creature, god power
   and turret, with the myths behind them. Ages you have never reached stay hidden until you do.

@@ -119,6 +119,17 @@ the improvement backlog below (verified, committed) and add what the review find
    order is the environment's business (Node and the browser bundle: sorted, as the spec says;
    Vitest: declaration order). A bundler change could have split online play by fingerprint.
    (Done: keys sorted explicitly — the value is unchanged for Node and the browser, Vitest agrees.)
+(Items 34–35: a check of the documents against the code, 2026-10-13.)
+34. [x] Privacy: the Hall's network keys are SHA-256(salt + address) with the salt in the same file
+   — whoever has the file can try all ~4 billion IPv4 addresses and recover them. Use a slow,
+   memory-hard hash (scrypt), cached per network, and say plainly what it protects. (Done:
+   scrypt N=2^14 ≈ 19 ms here, once per network per run; PRIVACY.md says what it protects.)
+35. [x] Docs drifted from the code: PRIVACY (deleting the file while the server runs erases
+   nothing; the Hall also stores the last day and the hashed device id; the network address also
+   picks your Hall; four copy buttons, not three), MULTIPLAYER (Hall keyed by device, kept across
+   restarts, two-tab battles not counted; turns also go out right after a command; the lobby's
+   real "Connecting…" texts; "small interface"), README ("sixteen deeds" → eighteen), DESIGN
+   (surges every 100–160 s, not "2–3 minutes"). (Done, all nine.)
 
 
 

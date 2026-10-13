@@ -1862,7 +1862,7 @@ does the game meet them?*
     place to stop — say "You have been at war for over an hour. The gods will wait — a good
     moment for a break.", in a calm colour, and drop the "Face the next general →" nudge that
     time.
-  - **No IP addresses at rest**: public network keys in the hall are a salted SHA-256 hash (the
+  - **No IP addresses at rest**: public network keys in the hall are a salted hash (SHA-256 then; scrypt since backlog 34 — the
     salt lives with the data, so a network finds its hall again after a restart; `lan` stays
     `lan`). The address itself is never written to disk.
   - **Reset records** now also clears the playtest journal (it is a record of play).

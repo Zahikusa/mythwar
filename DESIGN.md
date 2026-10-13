@@ -72,7 +72,7 @@ button shows "Rush · 300g (×2)" with a dashed border — and never chimes for 
   each other's banners.
 - **Ley sight:** holding a lane's shrine shows the foe's summons waiting for that lane (portraits
   above their gate, the one in training with a progress ring) — information is part of the prize.
-- **Ley Surges** (seeded surprise): from ~2 minutes in, every 2–3 minutes the ley lines flare under
+- **Ley Surges** (seeded surprise): from ~2 minutes in, every 100–160 seconds the ley lines flare under
   one shrine (never the same lane twice in a row). A 10 s omen (flickering shrine, toast, hum),
   then for 20 s its holder draws 1.5× their passive age income on top. Both sides see the same
   thing at the same time — a race to the shrine, not a dice roll on who wins. No surges in Ragnarök.
