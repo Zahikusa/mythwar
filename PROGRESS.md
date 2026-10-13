@@ -519,8 +519,9 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    text (`.hud.mobile .panel` at 96% — the header row has no own background). Opaque header or a
    backdrop blur. (Done: the phone panel is opaque; its outer width kept at 444 px after #111's
    border-box (else "range 230" wrapped); checked in the turret-panel shot.)
-122. [ ] Settings: the sigil button (`.mbtn.ssigil`, menus.css ~1815, 18 px) is much larger than the
-   controls around it, on phones and desktop (visual review).
+122. [x] Settings: the sigil button (`.mbtn.ssigil`, menus.css ~1815, 18 px) is much larger than the
+   controls around it, on phones and desktop (visual review). (Done: `small` had no rule — it was a
+   full-size menu button; now 6×16 px padding, 16 px, as tall as the name field.)
 123. [ ] README screenshots (`docs/*.jpg`, refreshed in run #7) predate run #8's HUD changes (the
    "!" danger badge, clearer lane tabs, the hold shield's place, opaque phone panels): refresh the
    phone battle shot.
