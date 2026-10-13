@@ -659,10 +659,12 @@ on screen.)
 262. [ ] The phone's message line in the room (`.mpflash`) is a single line for all news: two
    quick events (Bo leaves, Cy joins) overwrite each other within 4.5 s, so the first is never
    read. Queue them (each at least ~2 s) or show the latest two.
-263. [ ] `menus.ts` `scoreLine` / `verdictLine` and the results wording now span four cases
+263. [x] `menus.ts` `scoreLine` / `verdictLine` and the results wording now span four cases
    (citadel, forfeit, timeout, co-op alone) × won/lost × score/no score; only `verdictLine` has a
    unit test (via the chronicle tests). A table-driven test of `scoreLine(o, won)` — export it —
    pins #234's walkover wording and the co-op lines.
+   (Done: `scoreLine` exported; tests/scoreline.test.ts — 3 tests over duel score / no score ×
+   citadel / forfeit / timeout × won / lost, and co-op.)
 
 
 

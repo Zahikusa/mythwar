@@ -1206,7 +1206,8 @@ function verdictLine(won: boolean, online?: OnlineResult, place = ''): string {
   return won ? `The enemy citadel has fallen${at}.` : `Your citadel lies in ruins${at}.`;
 }
 
-function scoreLine(o: OnlineResult, won: boolean): string {
+/** The online results' line under the verdict: the room's score, or a word on how it ended. */
+export function scoreLine(o: OnlineResult, won: boolean): string {
   if (o.ally) return o.alone ? 'Well fought — alone at the end!' : o.score && o.score[0] ? `Victories together in this room: ${o.score[0]}` : 'Well fought, together!';
   // (No praise for a battle nobody finished: the other left, or one side stayed away.)
   if (!o.score) return o.reason === 'citadel' ? 'Well fought!' : won ? 'A win by walkover.' : '';
