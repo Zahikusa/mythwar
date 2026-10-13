@@ -41,6 +41,17 @@ handicaps for the rematch; reconnecting is quicker after a Wi-Fi switch; a save 
 undoes another's progress. **The rules changed slightly** (team 1 had a one-tick edge in mixed
 fights — now perfectly even), and the **protocol is v15**: server and pages from one build.
 
+## And then — a friend's first visit (run #9)
+
+A walk-through of a first-time guest — scans the QR code on a phone, waits in the room, plays,
+sees the results — and screenshots of every online screen found the rough edges a friend would
+hit first (PROGRESS.md, items 138–166). Now: **the phone's Back button no longer closes the
+game** (in a battle it opens the menu), and a tab that did close rejoins its running battle by
+scanning the code again; a phone that **locked while waiting in the room** takes its seat back
+when it wakes; **Copy result / Copy link work on LAN phones** (plain http has no clipboard API);
+the room has **How to play**; the start countdown, the "is away" notice and the opening banner no
+longer cover each other; the chronicle tells a forfeit as a forfeit. No rules or protocol change.
+
 ## Things that need your decision
 1. **Try it on two real phones** (docs/PLAYTEST.md). If anything feels off, that beats any
    further lens.

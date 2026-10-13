@@ -757,7 +757,14 @@ built, how to see each part working, and the decisions that need you.
   co-op start had been failing (its Readies raced a handicap change) — fixed in the test (#138).
   An independent review of the run's diff found no regressions, tightened four checks (#153).
 - A cp1252 em dash briefly made mpsmoke.ts invalid UTF-8 (#143) — caught, fixed.
-- Tests 256 → 263; `npm run verify` green; `mpengines` (WebKit vs Chrome/Firefox) in sync.
+- Later in the run, a review of a first-time guest's way in (QR code → room → battle → results on
+  a phone) — fixed: Android's Back closed the game (now the game's Esc, #166) and a closed tab
+  couldn't rejoin its running battle by the QR code (#159); a phone locked in the room lost its
+  seat for good (now rejoins, #160); copy buttons failed over LAN http (#162); no how-to in the
+  room (#161); keyboard wording on phones (#163, #164). `shoot` gained a two-player room and an
+  online battle; smoke waits for the app instead of fixed sleeps (#158). docs/BRIEF.md has a
+  run-#9 paragraph.
+- Tests 256 → 268; `npm run verify` green; `mpengines` (WebKit vs Chrome/Firefox) in sync.
 
 ## Run #8 in short (for the morning)
 - Verification mode, backlog items 38–142: done except the notes #23, #94 and the open
