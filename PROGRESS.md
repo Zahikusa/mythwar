@@ -48,9 +48,13 @@ the improvement backlog below (verified, committed) and add what the review find
 12. [x] `src/ui/menus.ts` results panel tabs (Armies / Chronicle / Legend) are plain buttons: no
    `role="tablist"`/`tab`, no `aria-selected` — screen readers don't know which panel shows.
    (Done: tablist, tabs with aria-selected/aria-controls, labelled tabpanels; smoke checks.)
-13. [ ] `scripts/perfcheck.ts`: readings vary up to 3× between runs on this machine (0.48–1.97 ms
+13. [x] `scripts/perfcheck.ts`: readings vary up to 3× between runs on this machine (0.48–1.97 ms
    per frame), so the 3 ms budget check is weak. Take the median of several passes and say
-   how much they spread.
+   how much they spread. (Done — and it found two more things: the "busy" battle had only ~8
+   creatures (now topped up to 30: real AI battles peak at 21–26), and the swings came from the
+   laptop's clock speed (a profiler keeps it boosted: ×3.5). Now: median of per-second samples
+   without the profiler, then a profile for the split — our script 1.2–1.3 ms per frame (31–32%
+   of ~4 ms; the rest is canvas calls incl. headless software raster). Stable across runs.)
 14. [x] `src/app.ts` `breakNote()` (Lens #98) has no unit test: hour boundaries, once per hour,
    two hours. Extract the arithmetic into a pure function and test it. (Done: `src/ui/wellbeing.ts`.)
 15. [ ] Names are free text and, on a public server, shown to strangers (lobby list, Hall of
