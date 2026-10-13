@@ -530,6 +530,22 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
    no false holds from 1-s pings under jitter. `package:check` (the bundled server.mjs) and
    `mpengines` (WebKit vs Chrome/Firefox) green. Found on the way: `mpbot --help` started a bot
    that ran until killed — it prints usage now (exit 1 for an unknown flag), like `shoot`.
+(Items 238–: open for the next run.)
+238. [ ] `scripts/mpengines.ts`'s WebKit phone pass checks Back in a battle (#201) but not the
+   room's "press Back again" (#215) — iOS's swipe-back walks the same history entry. Add: Back
+   once in the room → the line on screen; twice → the lobby, the page still there.
+239. [ ] `src/ui/netoverlay.ts`: when the server holds the battle for *our own* seat while our link
+   is up (#222's silence rule caught a stall, or a tab just shown again), the notice reads
+   "Rejoining the battle…" — true after a reconnect, odd when nothing reconnected. Word it from
+   what the page knows (link up and welcomed: "Your connection stalled — the battle waits for
+   you…"), with a test of the wording.
+240. [ ] `tests/netgame.test.ts` #219's test calls NetGame's private `publish()` / `onOver()`
+   directly — brittle. Drive it through SimNet instead: hold back the server's 'over' message for
+   one page (a hook in FakeSocket's send) while its turns flow, then release it.
+241. [ ] `scripts/smoke.ts` still has ~74 fixed sleeps, most 100–600 ms after in-battle taps or
+   keys (sandbox X, cards, chips, the gate panel). #204 took the menu changes; the next are the
+   ones whose check reads state the tap sets (queue length, a panel open): a small
+   `until(page, fn)` helper and replace them, verify three runs green.
 
 
 
