@@ -4,6 +4,21 @@ Status: **Phase 2 in progress** — 100 design iterations, one per lens of Jesse
 *The Art of Game Design* (started run #5, 2026-10-12). Phase 1 (local Wi-Fi multiplayer) is
 complete; its log follows below the lens plan.
 
+## Run #6 in short (for the morning)
+- Lenses #45–#55 done (one commit each, reasoning in `docs/LENSES.md`). Highlights: battles are
+  fought at named places (#45); **economy** probe `npm run economy` found blessings 4×
+  underpriced — priced by worth, Mythic banks for them (#46); counter-triangle matrix
+  (`classwar --matrix`) fixed Asgard's and Jade's limp counters (#47); **colour-blind setting**
+  (foe in orange) + `shoot --cvd` simulation (#48); the title shows the whole ladder (#49);
+  **each gate trains its own creature** — lanes train in parallel (#50); **Legend of the Ages**
+  capstone feat (#51); **Riddles of war** — 4 hand-made puzzle battles, brute-forced by `npm run
+  puzzlecheck` (#52); unaffordable taps **arm** a card to auto-summon (#53); **gamepad** support
+  (#54); XP rings on the age badges (#55).
+- Bug fixed: loading a progress code erased best star ratings.
+- Rules changed (simFingerprint differs from run #5 builds): blessing prices, Fenrir/Jötunn/
+  Kitsune/Byakko numbers, parallel training. designcheck passes (now 60 even battles; ladder
+  ~100/60/7–20/0%, even battles 18.6–19.7 min); enginecheck: all engines identical.
+
 ## Run #5 in short (for the morning)
 - Phase 2 started: lenses #1–#40 done, one commit each (`git log --oneline | grep Lens`), full
   reasoning per lens in `docs/LENSES.md`.
@@ -286,6 +301,8 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
   the menu just locally, so the waiting player can always leave.
 
 ## Open questions for the human
+- Gamepad support (Lens #54) is tested with a stubbed standard-layout pad only; please try a real
+  controller (PC browser, or paired to a phone).
 - Real devices: tested in Chrome (desktop + emulated phones, simulated lag) and with Playwright's
   WebKit (JavaScriptCore, iPhone's engine) and Firefox — full battles hash identically on all
   engines, and Chrome/Firefox vs WebKit online battles stayed in sync — but not on a physical
