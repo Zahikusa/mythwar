@@ -14,11 +14,15 @@ the improvement backlog below (verified, committed) and add what the review find
 94. [ ] (note) Hall files written between 7ff005c and f1c5f9c (quick-hash keys, this branch only, a
    few hours on 2026-10-13, never released) keep orphaned networks whose keys are recoverable.
    Only dev machines can have them — delete `mythwar-data.json` there; no code change.
-137. [ ] `src/app.ts` keeps growing (run #8 added the multiplayer glue for #48, #54, #72, #87–#90,
+137. [x] `src/app.ts` keeps growing (run #8 added the multiplayer glue for #48, #54, #72, #87–#90,
    #125): the online part — openMultiplayer, onMpChanged, roomChimes, leaveRoom, rematch,
    syncRematch, the emote routing — could move to its own module (`src/onlineapp.ts`) with a
    narrow interface to App, so each half reads on its own. No behaviour change; verify must stay
    green.
+   (Decided, run #10: not moved. Its decisions went to pure, tested modules (#150, #156, #171,
+   #174); what's left (~300 lines) is wiring that reaches into App's HUD, menus, audio, settings,
+   battle state and title — an interface for it would be nearly as wide as App itself. Revisit
+   if the online part grows (accounts, the public server).)
 138. [x] `scripts/mpsmoke.ts` still has many fixed `sleep()`s (e.g. 4.5 s before "rematch running",
    1.6 s for the emote gap) — like #134, wait for the condition where one exists (and keep a
    sleep only where time itself is what's tested), for the CI runner (#127).
