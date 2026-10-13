@@ -1111,6 +1111,11 @@
   text-shadow: 0 1px 3px #000;
 }
 
+/* A break suggestion after an hour of battles (Lens #98): calm, not alarming. */
+.vtip .vbreak {
+  color: #b9ecd2;
+}
+
 .vtip .mbtn.vnext {
   display: inline-flex;
   margin: 0 0 0 8px;

@@ -21,9 +21,11 @@ class FakeClient {
   seq = 0;
 
   readonly lobby: Lobby;
+  readonly network: string;
 
-  constructor(lobby: Lobby) {
+  constructor(lobby: Lobby, network = 'lan') {
     this.lobby = lobby;
+    this.network = network;
     this.handlers = this.connect();
   }
 
@@ -36,7 +38,7 @@ class FakeClient {
       close: () => {
         this.open = false;
       },
-    });
+    }, this.network);
   }
 
   private receive(m: ServerMsg): void {
@@ -598,6 +600,35 @@ describe('battle', () => {
     watcher.hello('Cy');
     watcher.send({ type: 'watchRooms', on: true });
     expect(Object.keys(watcher.last('rooms')!.hall![0]).sort()).toEqual(['coop', 'l', 'name', 'sigil', 'w']);
+  });
+
+  it("a public network's hall is stored under a salted hash, never its address (Lens #98)", () => {
+    const store = memoryStore();
+    const { lobby, run } = setup({ store });
+    const a = new FakeClient(lobby, '203.0.113.7');
+    const b = new FakeClient(lobby, '203.0.113.7');
+    a.hello('Ada');
+    b.hello('Bo');
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    a.send({ type: 'ready', ready: true });
+    b.send({ type: 'ready', ready: true });
+    run(3100);
+    b.send({ type: 'leave' });
+    run(5100);
+    const text = JSON.stringify(store.saved);
+    expect(text).not.toContain('203.0.113');
+    expect(Object.keys(store.saved!.halls)).toEqual([expect.stringMatching(/^n:/)]);
+    // After a restart the same network finds its hall again (same salt); another doesn't.
+    const { lobby: again } = setup({ store });
+    const home = new FakeClient(again, '203.0.113.7');
+    home.hello('Cy');
+    home.send({ type: 'watchRooms', on: true });
+    expect(home.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Ada', 'Bo']);
+    const elsewhere = new FakeClient(again, '198.51.100.1');
+    elsewhere.hello('Dee');
+    elsewhere.send({ type: 'watchRooms', on: true });
+    expect(elsewhere.last('rooms')!.hall).toEqual([]);
   });
 
   it('the file store writes atomically and reads back; a broken file means an empty hall', async () => {

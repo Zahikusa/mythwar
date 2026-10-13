@@ -95,6 +95,9 @@ export class App {
   /** The AI general's lines: how many so far (to rotate them), when the last one was, and the
    *  one-off moments already used (losing / winning). */
   private taunts = { n: 0, at: -100, said: new Set<TauntEvent>(), heldShrine: [false, false, false] };
+  /** Time in battle this sitting (s) and the hours already noted (Lens #98). */
+  private playedSecs = 0;
+  private breakHours = 0;
   /** Feats earned in the current battle (null until one starts). */
   private feats: FeatTracker | null = null;
   private slowSeconds = 0;
@@ -756,6 +759,18 @@ export class App {
     this.menus.show('none');
   }
 
+  /**
+   * Healthy play (Lens #98): after every full hour of battles in one sitting, the results — a
+   * natural place to stop — suggest a break, once. Time in battle is counted frame by frame
+   * (pauses included: it's time spent at the screen; the title and menus between battles not).
+   */
+  private breakNote(): string | null {
+    const hours = Math.floor(this.playedSecs / 3600);
+    if (hours <= this.breakHours) return null;
+    this.breakHours = hours;
+    return `You have been at war for over ${hours === 1 ? 'an hour' : `${hours} hours`}. The gods will wait — a good moment for a break.`;
+  }
+
   private onGameOver(): void {
     const g = this.game!;
     const won = g.world.winner === g.playerTeam;
@@ -775,6 +790,7 @@ export class App {
     if (!(g instanceof NetGame) || g.result) this.feats?.onEnd(g.world, g instanceof NetGame ? null : this.difficulty, g instanceof NetGame && !!g.coop);
     this.menus.featsEarned = this.feats?.earned ?? [];
     this.menus.chronicle = this.chronicle?.lines() ?? [];
+    this.menus.breakNote = this.breakNote();
     if (g instanceof NetGame) {
       // (A battle abandoned by the server restarting has no result to count.)
       // (Co-op battles are against the AI: no head-to-head tally.)
@@ -843,6 +859,8 @@ export class App {
     const dt = Math.max(0, Math.min(0.1, (now - this.last) / 1000));
     this.last = now;
     this.pads.update(dt);
+    // Time spent in battle this sitting (Lens #98; a hidden tab gets no frames, so it isn't counted).
+    if (this.state === 'playing' && this.game && !this.game.options.demo) this.playedSecs += dt;
     this.fpsAcc += dt;
     this.fpsFrames++;
     if (this.fpsAcc >= 1) {

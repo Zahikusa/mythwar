@@ -96,6 +96,8 @@ export class Menus {
   epilogue: { chapter: string; close: string } | null = null;
   /** The battle's chronicle (src/ui/chronicle.ts) for the results shown next. */
   chronicle: string[] = [];
+  /** Lens #98: after an hour of battles, a break suggestion in place of the results tip (or null). */
+  breakNote: string | null = null;
   /** A new best star rating against this foe (0 = not a new best). */
   newBestStars = 0;
   private featList: HTMLElement | null = null;
@@ -686,6 +688,7 @@ export class Menus {
       }
       s.records = {};
       s.online = {};
+      s.journal = [];
       this.cb.settingsChanged(s);
       resetRecords.dataset.armed = '';
       resetRecords.querySelector('span')!.textContent = 'Records cleared';
@@ -930,8 +933,8 @@ export class Menus {
       h(
         'div',
         { class: 'vtip' },
-        h('span', { text: online && (won || online.reason !== 'citadel') ? scoreLine(online) : battleTip(world, me, difficulty, ageUps, this.settings.advice) }),
-        online ? null : this.flowButton(won, difficulty),
+        h('span', { class: this.breakNote ? 'vbreak' : undefined, text: this.breakNote ?? (online && (won || online.reason !== 'citadel') ? scoreLine(online) : battleTip(world, me, difficulty, ageUps, this.settings.advice)) }),
+        online || this.breakNote ? null : this.flowButton(won, difficulty),
       ),
       h('div', { class: 'vstats' }, table, this.storyPanel(history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null, story, best > 0 ? champion : null)),
       online ? this.onlineResultButtons(share) : h(

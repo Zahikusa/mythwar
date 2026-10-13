@@ -210,6 +210,8 @@ async function main(): Promise<void> {
     const ib = await info(b);
     check('online games, seats 0 and 1', ia.online && ib.online && ia.seat === 0 && ib.seat === 1);
     check('right-side player sees a mirrored field', !ia.mirror && ib.mirror);
+    // (The badge fills in on the HUD's next update after the battle starts.)
+    await waitFor(b, "A's name in B's badge", () => (document.querySelector('.hud .nfoe')?.textContent ?? '') !== '', 4000);
     const sig = await b.evaluate(() => ({ keeps: (window as any).__mythwar.renderer.sigils, badge: document.querySelector('.hud .nfoe')?.textContent ?? '' }));
     check("B sees A's sigil on A's keep and by A's name", sig.keeps[0] === 1 && sig.keeps[1] === -1 && sig.badge.includes('☾'), JSON.stringify(sig));
     await waitFor(a, 'battle running', () => !(window as any).__mythwar.game.paused, 6000);

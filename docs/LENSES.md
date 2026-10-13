@@ -1847,3 +1847,28 @@ value?*
   myths behind, not only a score. (The tabs were generalised from two to any number of panels.)
 - Checked: `shoot results-legend` (a short battle with redcaps: Armies · Chronicle · Legend,
   the Legend open); without a champion the tab stays away; full verify.
+
+## #98 The Lens of Responsibility
+*What responsibilities do I have to the players — their time, their wellbeing, their data — and
+does the game meet them?*
+- Time: Mythwar is built to keep people playing (journey, stars, feats, rivals, a Hall of
+  champions, "Face the next general →" on every victory). Nothing ever said *enough for now*.
+  Data: nobody had written down what the game keeps; and going through it turned up a real
+  problem for the internet upgrade — the Hall of champions (#86/#92) was keyed by network, which
+  on a public server is a home's **public IP address**, written to `mythwar-data.json`.
+- Changes:
+  - **A break, suggested once an hour**: time in battle is counted frame by frame (pauses count,
+    the title and menus between battles don't); after each full hour the results — a natural
+    place to stop — say "You have been at war for over an hour. The gods will wait — a good
+    moment for a break.", in a calm colour, and drop the "Face the next general →" nudge that
+    time.
+  - **No IP addresses at rest**: public network keys in the hall are a salted SHA-256 hash (the
+    salt lives with the data, so a network finds its hall again after a restart; `lan` stays
+    `lan`). The address itself is never written to disk.
+  - **Reset records** now also clears the playtest journal (it is a record of play).
+  - **docs/PRIVACY.md**: what is kept on the device (each storage key), what the server receives,
+    keeps and logs, what is copied only on request, how to erase it all; no accounts,
+    analytics, ads or third parties.
+- Checked: server test (a public network's hall saved hashed, the address nowhere in the file,
+  found again after a restart, other networks don't see it); `shoot results-break` (the note
+  after an hour, no next-foe nudge); full verify.

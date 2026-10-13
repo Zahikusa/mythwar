@@ -9,7 +9,9 @@ import type { HallEntry } from '../src/net/protocol.ts';
 
 export interface StoredState {
   v: 1;
-  /** Hall of champions per network key (see networkOf), most recently active last. */
+  /** Salt for the hashed network keys (a public IP address is never stored as such). */
+  salt?: string;
+  /** Hall of champions per network key ('lan', or a salted hash of a public network), most recently active last. */
   halls: Record<string, HallEntry[]>;
 }
 

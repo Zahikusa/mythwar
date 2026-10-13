@@ -1,5 +1,6 @@
 import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName, cleanRank, cleanSigil, cleanTrials } from '../src/net/protocol.ts';
 import type { ClientMsg, HallEntry, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
+import { createHash, randomBytes } from 'node:crypto';
 import type { ServerStore } from './store.ts';
 import type { TrialId } from '../src/sim/data.ts';
 import { DIFFICULTIES } from '../src/ai/ai.ts';
@@ -116,6 +117,8 @@ export class Lobby {
   /** Hall of champions per network (most recently active last). */
   private readonly halls = new Map<string, Map<string, HallEntry>>();
   private hallDirty = false;
+  /** Salt for the halls' network keys (kept with them; see hallKey). */
+  private hallSalt = randomBytes(16).toString('hex');
   private lastHallSave = -Infinity;
   private readonly now: () => number;
   private readonly random: () => number;
@@ -135,6 +138,7 @@ export class Lobby {
   private loadHalls(): void {
     const state = this.opts.store?.load();
     if (!state) return;
+    if (typeof state.salt === 'string' && state.salt.length >= 16) this.hallSalt = state.salt;
     const n = (v: unknown) => Math.max(0, Math.floor(Number(v) || 0));
     for (const [network, entries] of Object.entries(state.halls).slice(-HALL_NETWORKS)) {
       if (!Array.isArray(entries)) continue;
@@ -155,7 +159,7 @@ export class Lobby {
     this.lastHallSave = this.now();
     const halls: Record<string, HallEntry[]> = {};
     for (const [network, hall] of this.halls) halls[network] = [...hall.values()];
-    this.opts.store.save({ v: 1, halls });
+    this.opts.store.save({ v: 1, salt: this.hallSalt, halls });
   }
 
   get roomCount(): number {
@@ -570,10 +574,11 @@ export class Lobby {
 
   /** A player's line in their network's Hall of champions (created, and moved to most recent). */
   private hallEntry(s: Session): HallEntry {
-    let hall = this.halls.get(s.network);
-    if (hall) this.halls.delete(s.network);
+    const net = this.hallKey(s.network);
+    let hall = this.halls.get(net);
+    if (hall) this.halls.delete(net);
     else hall = new Map();
-    this.halls.set(s.network, hall);
+    this.halls.set(net, hall);
     if (this.halls.size > HALL_NETWORKS) this.halls.delete(this.halls.keys().next().value!);
     const key = s.name.toLowerCase();
     const e = hall.get(key) ?? { name: s.name, sigil: s.sigil, w: 0, l: 0, coop: 0 };
@@ -592,9 +597,17 @@ export class Lobby {
     return e;
   }
 
+  /**
+   * The key a network's hall is kept under (Lens #98): on a public server a network is a home's
+   * public IP address, which must not end up in a file — so it is a salted hash ('lan' stays).
+   */
+  private hallKey(network: string): string {
+    return network === 'lan' ? 'lan' : `n:${createHash('sha256').update(this.hallSalt).update(network).digest('base64url').slice(0, 22)}`;
+  }
+
   /** The network's champions: most head-to-head wins first (then fewest losses, co-op wins). */
   private hallOf(network: string): HallEntry[] {
-    const hall = this.halls.get(network);
+    const hall = this.halls.get(this.hallKey(network));
     if (!hall) return [];
     return [...hall.values()]
       .sort((a, b) => b.w - a.w || a.l - b.l || b.coop - a.coop)
