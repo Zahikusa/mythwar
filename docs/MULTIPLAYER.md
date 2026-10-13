@@ -50,6 +50,12 @@ can step away (or leave) and the other fights on; the battle waits only when bot
 Godless, No Walls) so a newer friend has a real chance. Both players see each other's handicaps,
 and changing them takes both out of Ready, so nobody starts against handicaps they haven't seen.
 
+**Who's who:** each seat shows the player's standing from their own single-player journey
+(Recruit → Warden → Champion → Warlord → Conqueror → Legend) and their sigil flies on their keep
+in battle. The lobby lists rooms of people you have battled before first, with your record
+together, and the **Champions of this network** line under the open battles counts every
+head-to-head battle won and lost on this server (and co-op victories) since it started.
+
 During development `npm run dev` hosts rooms as well (open the "Network" address Vite prints).
 `npm run serve` serves an existing build without rebuilding; `node server/main.ts --port 9000`
 picks another port.
@@ -189,6 +195,7 @@ The design already separates everything that matters for that step:
    64 kB maximum frame size. Responses are brotli/gzip-compressed.
 6. **Scale:** rooms are independent, so several server processes behind sticky sessions (or one
    process per region) scale horizontally. A match costs well under 1 % of a CPU core.
-7. **Later:** accounts and persistent ratings, spectators (they would simply receive turns),
+7. **Later:** accounts and persistent ratings (the Hall of champions is kept in memory per
+   network and keyed by name — with accounts it would live in a database), spectators (they would simply receive turns),
    replays (seed + command log is a complete replay), and reconnect across devices (the session
    token is already the key).

@@ -1,5 +1,5 @@
 import { CODE_ALPHABET, CODE_LENGTH, EMOTES, PROTOCOL_VERSION, START_COUNTDOWN, cleanCode, cleanName, cleanRank, cleanSigil, cleanTrials } from '../src/net/protocol.ts';
-import type { ClientMsg, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
+import type { ClientMsg, HallEntry, OpenRoom, RoomInfo, RoomPhase, ServerMsg } from '../src/net/protocol.ts';
 import type { TrialId } from '../src/sim/data.ts';
 import { DIFFICULTIES } from '../src/ai/ai.ts';
 import type { Difficulty } from '../src/ai/ai.ts';
@@ -46,6 +46,10 @@ const MAX_SESSIONS = 10000;
 /** Per public address / IPv6 /64 (LAN addresses are exempt). */
 const MAX_SESSIONS_PER_ADDRESS = 64;
 const MAX_ROOMS_PER_ADDRESS = 8;
+/** Hall of champions: names kept per network, networks kept, entries shown. */
+const HALL_NAMES = 64;
+const HALL_NETWORKS = 256;
+const HALL_SHOWN = 5;
 /** Open-battle lists go out at most this often (ms). */
 const ROOM_LIST_EVERY = 250;
 /** Minimum ms between two emotes from one player. */
@@ -101,6 +105,8 @@ interface Room {
 export class Lobby {
   private readonly sessions = new Map<string, Session>();
   private readonly rooms = new Map<string, Room>();
+  /** Hall of champions per network (most recently active last). */
+  private readonly halls = new Map<string, Map<string, HallEntry>>();
   private readonly now: () => number;
   private readonly random: () => number;
   private readonly opts: LobbyOptions;
@@ -267,7 +273,7 @@ export class Lobby {
         return;
       case 'watchRooms':
         s.watching = !!msg.on;
-        if (s.watching) this.send(s, { type: 'rooms', rooms: this.openRooms(s.network) });
+        if (s.watching) this.send(s, { type: 'rooms', rooms: this.openRooms(s.network), hall: this.hallOf(s.network) });
         return;
       case 'host': {
         // Already waiting alone in an open room (a double tap): keep it.
@@ -404,11 +410,21 @@ export class Lobby {
         }
         // (Co-op: a victory counts for both allies; the AI's wins aren't kept.)
         if (coop) {
-          if (winner === 0) for (const x of room.seats) if (x) x.wins++;
+          if (winner === 0)
+            for (const x of room.seats) {
+              if (!x) continue;
+              x.wins++;
+              this.hallEntry(x.session).coop++;
+            }
         } else {
           const w = room.seats[winner];
+          const l = room.seats[winner === 0 ? 1 : 0];
           if (w) w.wins++;
+          // (A battle abandoned by a server shutdown never gets here; a forfeit does count.)
+          if (w) this.hallEntry(w.session).w++;
+          if (l) this.hallEntry(l.session).l++;
         }
+        this.roomsDirty = true;
         this.log(`room ${room.code}: ${coop ? (winner === 0 ? `${names.join(' & ')} beat the ${coop} AI` : `the ${coop} AI wins`) : `${names[winner]} wins`} (${reason})`);
         // (The 'over' message went out first; now the room with the new score.)
         this.broadcastRoom(room);
@@ -513,13 +529,37 @@ export class Lobby {
     return out.sort((a, b) => a.age - b.age);
   }
 
+  /** A player's line in their network's Hall of champions (created, and moved to most recent). */
+  private hallEntry(s: Session): HallEntry {
+    let hall = this.halls.get(s.network);
+    if (hall) this.halls.delete(s.network);
+    else hall = new Map();
+    this.halls.set(s.network, hall);
+    if (this.halls.size > HALL_NETWORKS) this.halls.delete(this.halls.keys().next().value!);
+    const key = s.name.toLowerCase();
+    const e = hall.get(key) ?? { name: s.name, sigil: s.sigil, w: 0, l: 0, coop: 0 };
+    hall.delete(key);
+    e.name = s.name;
+    e.sigil = s.sigil;
+    hall.set(key, e);
+    if (hall.size > HALL_NAMES) hall.delete(hall.keys().next().value!);
+    return e;
+  }
+
+  /** The network's champions: most head-to-head wins first (then fewest losses, co-op wins). */
+  private hallOf(network: string): HallEntry[] {
+    const hall = this.halls.get(network);
+    if (!hall) return [];
+    return [...hall.values()].sort((a, b) => b.w - a.w || a.l - b.l || b.coop - a.coop).slice(0, HALL_SHOWN).map((e) => ({ ...e }));
+  }
+
   private sendRoomLists(): void {
     this.roomsDirty = false;
     const lists = new Map<string, ServerMsg>();
     for (const s of this.sessions.values()) {
       if (!s.watching || !s.conn) continue;
       let msg = lists.get(s.network);
-      if (!msg) lists.set(s.network, (msg = { type: 'rooms', rooms: this.openRooms(s.network) }));
+      if (!msg) lists.set(s.network, (msg = { type: 'rooms', rooms: this.openRooms(s.network), hall: this.hallOf(s.network) }));
       this.send(s, msg);
     }
   }

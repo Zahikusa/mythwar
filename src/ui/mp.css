@@ -171,7 +171,7 @@
   display: block;
 }
 
-#stage .screen.mp.noserver > :is(.mpnamerow, .mpstatus, .mpflash, .mprotate, .mphelp, .mpactions, .mplisthead, .mplist) {
+#stage .screen.mp.noserver > :is(.mpnamerow, .mpstatus, .mpflash, .mprotate, .mphelp, .mpactions, .mplisthead, .mplist, .mphall) {
   display: none;
 }
 
@@ -243,6 +243,22 @@
   flex-direction: column;
   gap: 8px;
   width: min(460px, 92cqw);
+}
+
+.mphall {
+  width: min(460px, 92cqw);
+  font-size: 13px;
+  color: #d9ccf5;
+  text-align: center;
+}
+
+.mphall:empty {
+  display: none;
+}
+
+.mphall b {
+  color: var(--gold-l);
+  font-weight: 700;
 }
 
 .mpempty {

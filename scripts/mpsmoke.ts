@@ -361,6 +361,11 @@ async function main(): Promise<void> {
     console.log('== leaving the room ==');
     await press(a, '.screen.over', 'Leave room');
     await waitFor(a, 'A in lobby', () => (window as any).__mythwar.menus.current === 'mp');
+    // The server's Hall of champions remembers both battles (Lens #86).
+    await waitFor(a, 'hall shown', () => (document.querySelector('.mphall')?.textContent ?? '').includes('Champions'), 4000);
+    const hallText = await a.evaluate(() => document.querySelector('.mphall')?.textContent ?? '');
+    check('lobby: the Hall of champions counts the battles', /Ada L 2–0/.test(hallText), hallText);
+    await shot(a, '13-lobby-hall');
     await press(a, '.screen.mp', 'Back');
     await waitFor(a, 'A at title', () => (window as any).__mythwar.menus.current === 'title');
 

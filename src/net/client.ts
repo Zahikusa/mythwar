@@ -6,7 +6,7 @@ import { Connection } from './connection.ts';
 import type { ConnState, SocketLike } from './connection.ts';
 import { NetGame } from './netgame.ts';
 import { PROTOCOL_VERSION, cleanName, cleanRank, cleanSigil } from './protocol.ts';
-import type { EmoteId, ErrorCode, OpenRoom, RoomInfo, ServerMsg } from './protocol.ts';
+import type { EmoteId, ErrorCode, HallEntry, OpenRoom, RoomInfo, ServerMsg } from './protocol.ts';
 
 export interface MpClientOptions {
   name: string;
@@ -45,6 +45,8 @@ export class MpClient {
   room: RoomInfo | null = null;
   seat: Team | null = null;
   openRooms: OpenRoom[] = [];
+  /** This network's Hall of champions (best first). */
+  hall: HallEntry[] = [];
   game: NetGame | null = null;
   /** Set once the server has greeted us (and after every reconnect). */
   welcomed = false;
@@ -275,6 +277,7 @@ export class MpClient {
         break;
       case 'rooms':
         this.openRooms = msg.rooms;
+        this.hall = msg.hall ?? [];
         break;
       case 'left':
         this.leaving = false;

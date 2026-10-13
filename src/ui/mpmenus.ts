@@ -1,6 +1,6 @@
 import qrcode from 'qrcode-generator';
 import type { MpClient } from '../net/client.ts';
-import { CODE_LENGTH, NAME_MAX, RANKS, cleanCode } from '../net/protocol.ts';
+import { CODE_LENGTH, NAME_MAX, RANKS, SIGILS, cleanCode } from '../net/protocol.ts';
 import type { SeatInfo } from '../net/protocol.ts';
 import { h, onTap, setText, toggle } from './dom.ts';
 import { ICONS } from './icons.ts';
@@ -49,6 +49,8 @@ const RANK_NOTE = [
 export class MpScreens {
   /** Open rooms hosted by someone already battled, as last listed (a new one chimes). */
   private friendRooms = new Set<string>();
+  /** The network's Hall of champions under the open battles (Lens #86). */
+  private hallEl = h('div', { class: 'mphall', role: 'note' });
   private listSeen = false;
   readonly lobby: HTMLElement;
   readonly room: HTMLElement;
@@ -202,6 +204,7 @@ export class MpScreens {
       ),
       h('div', { class: 'mplisthead', text: 'Open battles on this network' }),
       this.list,
+      this.hallEl,
       h('div', { class: 'mrow' }, back),
     );
   }
@@ -384,6 +387,16 @@ export class MpScreens {
       if (this.listSeen && friends.some((code) => !this.friendRooms.has(code))) this.cb.sound('ready');
       this.friendRooms = new Set(friends);
       this.listSeen = true;
+    }
+
+    // The Hall of champions: who has won the most battles on this server (hidden until someone has).
+    const hall = c.hall.filter((e) => e.w > 0 || e.coop > 0);
+    const hallText = hall.map((e) => `${e.sigil >= 0 ? `${SIGILS[e.sigil] ?? ''} ` : ''}${e.name} ${e.w}–${e.l}${e.coop ? ` (+${e.coop} co-op)` : ''}`).join(' · ');
+    if (this.hallEl.dataset.text !== hallText) {
+      this.hallEl.dataset.text = hallText;
+      this.hallEl.innerHTML = '';
+      if (hallText) this.hallEl.append(h('b', { text: 'Champions of this network: ' }), hallText);
+      this.hallEl.title = hall.length ? 'Battles won and lost on this game server (since it started)' : '';
     }
 
     // Room.

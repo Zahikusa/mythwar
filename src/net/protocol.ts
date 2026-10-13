@@ -17,7 +17,7 @@ import { World } from '../sim/world.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 10;
+export const PROTOCOL_VERSION = 11;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -115,6 +115,19 @@ export interface OpenRoom {
   age: number;
 }
 
+/**
+ * One player in a network's Hall of champions (Lens #86): head-to-head battles won and lost on
+ * this server, across rooms, and co-op victories over the AI. Kept by the server per network
+ * (until it restarts), by name.
+ */
+export interface HallEntry {
+  name: string;
+  sigil: number;
+  w: number;
+  l: number;
+  coop: number;
+}
+
 export interface HistorySample {
   t: number;
   army: [number, number];
@@ -201,7 +214,7 @@ export type ServerMsg =
       resumed: boolean;
     }
   | { type: 'error'; code: ErrorCode; message: string }
-  | { type: 'rooms'; rooms: OpenRoom[] }
+  | { type: 'rooms'; rooms: OpenRoom[]; hall?: HallEntry[] }
   | { type: 'room'; room: RoomInfo; seat: Team }
   | { type: 'left' }
   | { type: 'start'; seed: number; seat: Team; names: [string, string]; countdown: number; trials: [TrialId[], TrialId[]]; coop: Difficulty | null }

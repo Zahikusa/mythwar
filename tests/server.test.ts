@@ -540,6 +540,21 @@ describe('battle', () => {
     expect(c.last('room')!.seat).toBe(1);
   });
 
+  it('the Hall of champions counts battles per player across rooms (Lens #86)', () => {
+    const { lobby, run, b } = battle();
+    const watcher = new FakeClient(lobby);
+    watcher.hello('Cy');
+    watcher.send({ type: 'watchRooms', on: true });
+    expect(watcher.last('rooms')!.hall).toEqual([]);
+    run(2000);
+    b.send({ type: 'leave' });
+    run(300);
+    expect(watcher.last('rooms')!.hall).toEqual([
+      { name: 'Ada', sigil: -1, w: 1, l: 0, coop: 0 },
+      { name: 'Bo', sigil: -1, w: 0, l: 1, coop: 0 },
+    ]);
+  });
+
   it('orders not yet applied when the battle pauses are dropped', () => {
     const { run, a, b } = battle();
     run(1000);

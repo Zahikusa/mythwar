@@ -1636,3 +1636,20 @@ find each other again?*
 - Checked: screenshots (moon on the Fae keep, crown on the Celestial spire, Ada's moon on the
   guest's mirrored view); server test (sigils sanitized and shown to both); new mpsmoke check
   (B sees A's sigil on the keep and in the badge); full verify.
+
+## #86 The Lens of Community
+*What makes the players a community — a shared place, shared history, shared identity? What
+does the game do to foster it?*
+- Mythwar's multiplayer community is small and real: a household, a group of friends, a class,
+  all on one Wi-Fi with one game server. Schell's community needs a place to gather and a
+  shared history. The lobby is the place, but it had no memory: every room was an island; who
+  had won what lived only on each device, privately (#84's records are per pair).
+- Change: the server keeps a **Hall of champions** per network — every head-to-head battle won
+  and lost on it, across rooms, plus co-op victories over the AI — and the lobby shows the top
+  five under the open battles: "**Champions of this network:** ☾ Ada 5–2 · Bo 3–4 (+2 co-op)".
+  The evening's story ("who's on top tonight?") now belongs to everyone in the room. Players
+  without a win aren't listed (a hall of champions, not a wall of shame). Kept in memory, keyed
+  by name, per network like the open-battle list (scoped for a public server), bounded (64
+  names per network, 256 networks). Protocol v11 (`rooms` carries `hall`).
+- Checked: server test (a forfeit counts 1–0 / 0–1 for the watcher's hall); new mpsmoke step
+  (after two battles the lobby shows "☾ Ada L 2–0"), screenshot; full verify.
