@@ -47,7 +47,7 @@ docs/LENSES.md why each feature exists; docs/MULTIPLAYER.md the netcode.
 | Change | Run at least |
 |---|---|
 | Anything | `npx tsc --noEmit` and `npx vitest run` |
-| UI / app | `npm run smoke` (+ look: `npm run shoot -- <scenario>`, `--list` for names) |
+| UI / app | `npm run smoke` (one flow: `npm run smoke -- --only journal`; + look: `npm run shoot -- <scenario>`, `--list` for names) |
 | Netcode, server, protocol, app flows used online | `npm run mpsmoke` (`--shots` for screenshots) |
 | Simulation rules / balance | `npm run designcheck`, `npm run sim -- 120 master master` (sides ~50/50) |
 | Rendering cost | `npm run perfcheck` (budget 3 ms of JS per frame) |

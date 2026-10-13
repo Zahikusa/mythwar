@@ -358,8 +358,9 @@ chronicle, 2026-10-13 — renderer/fx/layout/lobby held up.)
 85. [ ] `public/sw.js`: navigation is network-first with no time limit — with the LAN server switched
    off but the Wi-Fi up, a reload waits for the TCP timeout (tens of seconds on phones) before the
    cached page shows. Race the network against ~4 s, then serve the cache.
-86. [ ] `scripts/smoke.ts` (~1300 lines, ~6 min) can only run whole — add `--only <flow>` (e.g.
-   `npm run smoke -- --only journal`) for quick iteration on one flow.
+86. [x] `scripts/smoke.ts` (~1300 lines, ~6 min) can only run whole — add `--only <flow>` (e.g.
+   `npm run smoke -- --only journal`) for quick iteration on one flow. (Done: the flows are a
+   named list; a typo lists the names; CONTRIBUTING says so.)
 
 
 

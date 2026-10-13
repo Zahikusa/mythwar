@@ -1,6 +1,7 @@
 /**
  * End-to-end smoke test: drives the built game in Chrome like a player would.
  *   npm run build && node scripts/smoke.ts
+ *   node scripts/smoke.ts --only journal,sandbox     (just those flows; names listed on a typo)
  * Exits non-zero on any failed check or console error.
  */
 import { createServer } from 'node:http';
@@ -1244,67 +1245,49 @@ async function main(): Promise<void> {
   base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--autoplay-policy=no-user-gesture-required'] });
   const errors: string[] = [];
+  // Each flow on a fresh page (one browser profile: storage carries over, as it would for a player).
+  const viewports = [
+    { name: 'desktop', label: 'desktop', width: 1600, height: 900, mobile: false },
+    { name: 'phone', label: 'phone landscape', width: 844, height: 390, mobile: true },
+    { name: 'portrait', label: 'phone portrait (rotated)', width: 390, height: 844, mobile: true },
+  ];
+  const flows: { name: string; label: string; consoleErrors?: boolean; go: (page: Page) => Promise<void> }[] = [
+    ...viewports.map((vp) => ({ name: vp.name, label: vp.label, consoleErrors: true, go: (page: Page) => run(page, vp.label, vp) })),
+    { name: 'resume', label: 'resume', go: resumeFlow },
+    { name: 'rotated', label: 'rotated menus', go: rotatedMenusFlow },
+    { name: 'phone-menus', label: 'phone menus', go: phoneMenusFit },
+    { name: 'service-worker', label: 'service worker', go: serviceWorkerFlow },
+    { name: 'tutorial', label: 'tutorial', go: tutorialHandoffFlow },
+    { name: 'sandbox', label: 'sandbox', go: sandboxFlow },
+    { name: 'gamepad', label: 'gamepad', go: gamepadFlow },
+    { name: 'armed', label: 'armed', go: armedFlow },
+    { name: 'riddles', label: 'riddles', go: riddleFlow },
+    { name: 'journal', label: 'journal', go: journalFlow },
+    { name: 'large-desktop', label: 'large desktop', consoleErrors: true, go: largeDesktopFlow },
+  ];
+  // `--only journal,sandbox`: just those flows (quick iteration; the whole run takes minutes).
+  const i = process.argv.indexOf('--only');
+  const only = i >= 0 ? (process.argv[i + 1] ?? '').split(',').filter(Boolean) : [];
+  const unknown = only.filter((n) => !flows.some((f) => f.name === n));
+  if (i >= 0 && (!only.length || unknown.length)) {
+    console.error(`--only takes flow names, comma-separated: ${flows.map((f) => f.name).join(', ')}${unknown.length ? ` (unknown: ${unknown.join(', ')})` : ''}`);
+    await browser.close();
+    server.close();
+    process.exit(2);
+  }
   try {
-    for (const vp of [
-      { label: 'desktop', width: 1600, height: 900, mobile: false },
-      { label: 'phone landscape', width: 844, height: 390, mobile: true },
-      { label: 'phone portrait (rotated)', width: 390, height: 844, mobile: true },
-    ]) {
+    for (const f of flows) {
+      if (only.length && !only.includes(f.name)) continue;
       const page = await browser.newPage();
-      page.on('pageerror', (e) => errors.push(pageError(vp.label, e)));
-      page.on('console', (m) => {
-        if (m.type() === 'error') errors.push(`${vp.label}: ${m.text()}`);
-      });
-      await run(page, vp.label, vp);
+      page.on('pageerror', (e) => errors.push(pageError(f.label, e)));
+      if (f.consoleErrors) {
+        page.on('console', (m) => {
+          if (m.type() === 'error') errors.push(`${f.label}: ${m.text()}`);
+        });
+      }
+      await f.go(page);
       await page.close();
     }
-    const page = await browser.newPage();
-    page.on('pageerror', (e) => errors.push(pageError('resume', e)));
-    await resumeFlow(page);
-    await page.close();
-    const page2 = await browser.newPage();
-    page2.on('pageerror', (e) => errors.push(pageError('rotated menus', e)));
-    await rotatedMenusFlow(page2);
-    await page2.close();
-    const page6 = await browser.newPage();
-    page6.on('pageerror', (e) => errors.push(pageError('phone menus', e)));
-    await phoneMenusFit(page6);
-    await page6.close();
-    const page5 = await browser.newPage();
-    page5.on('pageerror', (e) => errors.push(pageError('service worker', e)));
-    await serviceWorkerFlow(page5);
-    await page5.close();
-    const page4 = await browser.newPage();
-    page4.on('pageerror', (e) => errors.push(pageError('tutorial', e)));
-    await tutorialHandoffFlow(page4);
-    await page4.close();
-    const page10 = await browser.newPage();
-    page10.on('pageerror', (e) => errors.push(pageError('sandbox', e)));
-    await sandboxFlow(page10);
-    await page10.close();
-    const page9 = await browser.newPage();
-    page9.on('pageerror', (e) => errors.push(pageError('gamepad', e)));
-    await gamepadFlow(page9);
-    await page9.close();
-    const page8 = await browser.newPage();
-    page8.on('pageerror', (e) => errors.push(pageError('armed', e)));
-    await armedFlow(page8);
-    await page8.close();
-    const page7 = await browser.newPage();
-    page7.on('pageerror', (e) => errors.push(pageError('riddles', e)));
-    await riddleFlow(page7);
-    await page7.close();
-    const page11 = await browser.newPage();
-    page11.on('pageerror', (e) => errors.push(pageError('journal', e)));
-    await journalFlow(page11);
-    await page11.close();
-    const page3 = await browser.newPage();
-    page3.on('pageerror', (e) => errors.push(pageError('large desktop', e)));
-    page3.on('console', (m) => {
-      if (m.type() === 'error') errors.push(`large desktop: ${m.text()}`);
-    });
-    await largeDesktopFlow(page3);
-    await page3.close();
   } finally {
     await browser.close();
     server.close();
