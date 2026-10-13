@@ -1860,6 +1860,17 @@ html.cbfoe .side.right .hpfill {
   transform: translate(-50%, -50%) scale(1);
 }
 
+/* A soft dark pool behind the words: over a lit path or a shrine the italic lines stay legible
+   (the banner's transform keeps it behind its own text). */
+.banner::before {
+  content: '';
+  position: absolute;
+  inset: -22px -48px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(10, 6, 20, 0.62), rgba(10, 6, 20, 0.35) 60%, rgba(10, 6, 20, 0));
+}
+
 .banner .btitle {
   font-family: var(--title-font);
   font-size: calc(54px * var(--ui));

@@ -487,9 +487,10 @@ how-to, bestiary, feats and desktop battles showed nothing worth reporting.)
    at `top: calc(100% + 5px)`, the tab scaled 1.18 when selected; shield at `g.y + 10·s`).
    (Done: the phone shield sits 8 px lower — the bar shows whole; hit-area and gate-tap checks
    still pass.)
-113. [ ] Battle intro banner ("VS HIPPOLYTA, QUEEN OF THE AMAZONS" + the chapter line): no backing
+113. [x] Battle intro banner ("VS HIPPOLYTA, QUEEN OF THE AMAZONS" + the chapter line): no backing
    plate — over the top lane's path and shrine the italic line is hard to read (`.banner`,
-   `.banner .bsub`, hud.css ~1850–1910).
+   `.banner .bsub`, hud.css ~1850–1910). (Done: a soft dark pool behind every banner's words;
+   checked in the `queue-parallel` shot.)
 114. [x] Unselected lane tabs are nearly invisible on the dark wall (35%-opacity ring, 60% text —
    `.lanetab`, hud.css ~1375); only a queue badge makes them noticeable. (Done: ring 60%, text
    85%, a slightly darker disc — clearly visible, still plainly not the selected one.)
