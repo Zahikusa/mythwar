@@ -168,6 +168,7 @@ gold for them (calibrated against the scripted bots in `scripts/bots.ts`).
   tritanopia [--settings '{"colorblind":true}']`.
 - **Motion:** screen shake, vibration and the title's camera drift share one switch, off by
   default when the OS asks for reduced motion; CSS animations stop under the same preference.
-- **Input:** everything has a key (1–5 summon, Q/E or the wheel for lanes, Space power, G hold,
-  T turrets, B blessings, U ascend, Esc pause); every action also works by tap; buttons carry
-  aria-labels and a visible keyboard focus ring.
+- **Input:** everything has a key (1–4 summon, W/S, arrows, Q/A/Z or the mouse wheel for lanes,
+  Space power, G hold, T turrets, B blessings, U ascend, Backspace undo, Esc/P pause, H or ? for
+  the key list); every action also works by tap; buttons carry aria-labels and a visible
+  keyboard focus ring.
