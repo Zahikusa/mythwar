@@ -1011,6 +1011,13 @@ export class App {
             this.audio.ui('select');
             return;
           }
+          // A menu covers the battle (online it may run on behind it): their words on the menu, as
+          // the speech bubbles hide under menus.
+          if (this.menus.current === 'pause') {
+            this.menus.pauseSay(`${this.mp?.room?.seats[seat]?.name ?? (g.coop ? g.allyName : g.foeName)}: ${EMOTES[id] ?? ''}`);
+            this.audio.ui('select');
+            return;
+          }
           if (g.coop) {
             // An ally's call: by our own side, with their name — and a lane call lights the lane.
             this.hud.showEmote('mine', `${g.allyName}: ${EMOTES[id] ?? ''}`);

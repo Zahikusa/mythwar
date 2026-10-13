@@ -1840,3 +1840,8 @@
 .screen h2:focus {
   outline: none;
 }
+
+/* The other player's words on the menu (online) take no room until there are some. */
+.screen.pause .vemoteline:empty {
+  display: none;
+}

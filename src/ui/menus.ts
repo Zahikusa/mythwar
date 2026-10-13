@@ -96,6 +96,8 @@ export class Menus {
   readonly mp: MpScreens;
   private restartBtn: HTMLButtonElement | null = null;
   private pauseNote: HTMLElement | null = null;
+  /** What the other player said while the menu covers the battle (online). */
+  private pauseSaid: HTMLElement | null = null;
   private pauseTitle: HTMLElement | null = null;
   private rematchBtn: HTMLButtonElement | null = null;
   private rematchNote: HTMLElement | null = null;
@@ -167,9 +169,15 @@ export class Menus {
     return this.screen;
   }
 
+  /** A quick message from the other player, shown on the menu covering the battle ("Ada: Good luck!"). */
+  pauseSay(text: string): void {
+    if (this.pauseSaid) this.pauseSaid.textContent = text;
+  }
+
   /** One-line battle summary shown on the pause screen. `foe`: the other player's name online. */
   setPauseSummary(world: World, me: Team, difficulty: Difficulty, online?: { foe: string; title: string }, sandbox = false, riddle: Puzzle | null = null): void {
     if (!this.pauseSummary) return;
+    if (this.pauseSaid) this.pauseSaid.textContent = '';
     if (riddle) {
       this.pauseSummary.textContent = `Riddle: ${riddle.name} · ${fmtTime(world.time)} of ${fmtTime(riddle.limit)}`;
       if (this.pauseGoals) this.pauseGoals.textContent = `${riddle.brief} Clear the field before any foe reaches your citadel.`;
@@ -870,12 +878,14 @@ export class Menus {
     this.pauseTitle = h('h2', { text: 'Paused' });
     this.restartBtn = this.button('Restart', '', () => this.cb.restart());
     this.pauseNote = h('div', { class: 'mnote', text: 'Leaving or restarting after the first minute counts as a defeat.' });
+    this.pauseSaid = h('div', { class: 'vemoteline', role: 'status' });
     return h(
       'div',
       { class: 'screen pause' },
       this.pauseTitle,
       this.pauseSummary,
       this.pauseGoals,
+      this.pauseSaid,
       h(
         'div',
         { class: 'mbuttons' },

@@ -325,6 +325,10 @@ async function main(): Promise<void> {
     console.log('== leaving forfeits ==');
     await b.keyboard.press('Escape'); // (a phone keyboard isn't a thing, but the key works)
     await waitFor(b, 'B pause menu', () => (window as any).__mythwar.menus.current === 'pause');
+    // (Backlog 125) A's quick message reaches B on the menu (bubbles hide under menus).
+    await sleep(1600);
+    await a.evaluate(() => (window as any).__mythwar.mp.emote('gl'));
+    await waitFor(b, 'B reads A on the menu', () => /: Good luck!/.test(document.querySelector('.screen.pause .vemoteline')?.textContent ?? ''), 4000);
     await press(b, '.screen.pause', 'Leave battle');
     await waitFor(a, 'A wins', () => (window as any).__mythwar.game.over && (window as any).__mythwar.game.world.winner === 0);
     await waitFor(a, 'A results', () => (window as any).__mythwar.menus.current === 'over', 6000);

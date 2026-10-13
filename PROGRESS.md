@@ -532,9 +532,10 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    settings) from the ones before them. Give each flow a clean profile (clear storage at its
    start, or one incognito context per flow) so `--only` combinations behave like the full run.
    (Done: a fresh browser context per flow; the full run and `--only desktop,rotated` pass.)
-125. [ ] Online with no pauses left, the local menu covers a running battle — and since #115 the
+125. [x] Online with no pauses left, the local menu covers a running battle — and since #115 the
    opponent's quick messages (speech bubbles) are hidden under it. Show them on the menu (a line
-   like the results' "Ada: Well played!") while it's open.
+   like the results' "Ada: Well played!") while it's open. (Done: on the pause menu, a status line
+   "Ada: Good luck!"; mpsmoke sends one while B's menu is open.)
 126. [x] `.mbtn.small` has no CSS rule (found in #122): "Copy my code", "Load", "Copy playtest
    journal" are full-size menu buttons despite the class. Define it (as #122's sigil size) or drop
    the class. (Done: those three were compact through `.sprogrow .mbtn` already; `.mbtn.small`
