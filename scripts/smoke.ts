@@ -292,6 +292,12 @@ async function journalFlow(page: Page): Promise<void> {
     const p = await centerText(page, scope, text);
     await page.mouse.click(p.x, p.y);
     await sleep(300);
+    // (Backlog 76) Focus followed the screens: inside Settings once it opens, not left on the
+    // (now hidden) title.
+    if (text === 'Settings') {
+      const focusIn = await page.evaluate(() => document.activeElement?.closest('.screen')?.className ?? document.activeElement?.tagName);
+      check('focus follows the menu screens (into Settings)', /settings/.test(String(focusIn)), String(focusIn));
+    }
   }
   const copy = await page.evaluate(() => ({
     text: (window as unknown as { __copied: string[] }).__copied[0] ?? '',
@@ -570,6 +576,34 @@ async function phoneMenusFit(page: Page): Promise<void> {
     check(`${w}x${h}: Settings' Done button is on screen`, done.fits, JSON.stringify(done));
     await page.goto(`${base}/?play=adept&seed=4`, { waitUntil: 'load' });
     await sleep(1000);
+    // (Backlog 81) The pause summary wraps rather than cutting its end off; Resume stays on screen.
+    const pause = await page.evaluate(async () => {
+      const app = (window as unknown as { __mythwar: any }).__mythwar;
+      app.pause();
+      await new Promise((r) => setTimeout(r, 400));
+      const el = document.querySelector('.screen.pause .psummary') as HTMLElement;
+      const r = document.querySelector('.screen.pause .mbtn.primary')!.getBoundingClientRect();
+      const out = { text: el.textContent, cut: el.scrollWidth > el.clientWidth + 1, resumeFits: r.top >= 0 && r.bottom <= innerHeight };
+      app.resume();
+      return out;
+    });
+    check(`${w}x${h}: the pause summary is whole and Resume on screen`, !pause.cut && pause.resumeFits, JSON.stringify(pause));
+    // (Backlog 78) Finger-sized hit areas: just above a lane tab is still the tab, just below its
+    // hold shield still the shield.
+    // (Shields show from the start once their tip was seen; the resumed battle's menu fades out.)
+    await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.hud.holdKnown = true));
+    await sleep(700);
+    const hits = await page.evaluate(() => {
+      const tab = document.querySelector('.hud .lanetab')!.getBoundingClientRect();
+      const hold = document.querySelector('.hud .holdbtn')!.getBoundingClientRect();
+      const at = (x: number, y: number) => {
+        const e = document.elementFromPoint(x, y);
+        return e?.closest('.lanetab, .holdbtn')?.className.split(' ')[0] ?? `${e?.tagName}.${e?.className}`;
+      };
+      return { above: at(tab.left + tab.width / 2, tab.top - 6), below: at(hold.left + hold.width / 2, hold.bottom + 6), tab: Math.round(tab.width), hold: Math.round(hold.width) };
+    });
+    check(`${w}x${h}: lane tab and hold shield have finger-sized hit areas`, hits.above === 'lanetab' && hits.below === 'holdbtn', JSON.stringify(hits));
+    await sleep(300);
     await page.evaluate(() => {
       const w = (window as unknown as { __mythwar: any }).__mythwar.game.world;
       w.players[1].baseHp = 1;

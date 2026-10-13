@@ -318,23 +318,48 @@ chronicle, 2026-10-13 — renderer/fx/layout/lobby held up.)
    at a fault is told "restarted"), README (`npm test` covers server and netcode too), `--help`
    ($PORT, the release package's game/ folder, ports up to 8797). (Done, all.)
 (Items 76–81: an independent accessibility review, 2026-10-13 — the rules text checked out.)
-76. [ ] `src/ui/menus.ts` `show()` (and HUD `togglePanel`): focus isn't moved when a screen changes —
+76. [x] `src/ui/menus.ts` `show()` (and HUD `togglePanel`): focus isn't moved when a screen changes —
    the old screen goes `visibility:hidden`, focus falls to `<body>`, the new `role="dialog"`
    screen isn't announced. Focus the new screen's heading (tabindex -1) or first button; return
-   focus to the opener when a HUD panel closes.
-77. [ ] `src/ui/netoverlay.ts` ~39/86: the away banner is a polite live region whose sub-line counts
+   focus to the opener when a HUD panel closes. (Done: the new screen's heading — or the screen —
+   takes focus when it would otherwise be lost; never a button, so Enter still presses the main
+   one (a first try focused the title's laurels and smoke caught Enter opening Feats). A closing
+   HUD panel hands focus back to its button; opened from a keyboard-focused button it takes it.)
+77. [x] `src/ui/netoverlay.ts` ~39/86: the away banner is a polite live region whose sub-line counts
    down every second — a screen reader re-reads it every second. Mímir's bubble (`coach.ts`
-   ~205) has no live region at all. Countdown aria-hidden; coach text `role="status"`.
-78. [ ] Phones: the hold shield (28×28) and lane tab (26×26) sit ~32 px apart (`hud.css` ~1437,
+   ~205) has no live region at all. Countdown aria-hidden; coach text `role="status"`. (Done: the
+   counting line is aria-hidden, a steady `.sronly` wording is read instead; Mímir's text is a
+   status.)
+78. [x] Phones: the hold shield (28×28) and lane tab (26×26) sit ~32 px apart (`hud.css` ~1437,
    ~2457) — the shield is the only touch way to hold a lane. Hit areas ≥ 40 px via `::before`.
-79. [ ] `src/ui/hud.ts` ~1349: a card's `aria-label` hides "Counter!", "in Ns", "Queue full" (and
+   (Done: 42 px wide, the tab's reaching up, the shield's down — they never overlap — and only
+   leftwards: mpsmoke caught a first version stealing taps meant for the gate right beside them
+   (Chrome's touch adjustment snapped them onto the tab); smoke probes both on two phone sizes.)
+79. [x] `src/ui/hud.ts` ~1349: a card's `aria-label` hides "Counter!", "in Ns", "Queue full" (and
    reads "(Guardian) , 30 gold"); lane tabs show the selected one by colour only (no
-   aria-pressed); "danger" at a gate is a red pulse only.
-80. [ ] `src/ui/mpmenus.ts` ~274: renaming yourself in the room is a tappable `div` (no focus, no
-   role); every open battle's button is just "Join" (no host/code in its name).
-81. [ ] `src/ui/menus.css` ~71: the pause summary is one `nowrap` line with an ellipsis — on a 360-px
+   aria-pressed); "danger" at a gate is a red pulse only. (Done: the card's label adds "counters
+   this lane / not enough gold yet / queue full / armed"; tabs have aria-pressed and say "foes at
+   your gate!"; a "!" badge marks danger (top-left: the queue count sits top-right).)
+80. [x] `src/ui/mpmenus.ts` ~274: renaming yourself in the room is a tappable `div` (no focus, no
+   role); every open battle's button is just "Join" (no host/code in its name). (Done: your own
+   seat name is a focusable button (Enter/Space edit it); "Join Ada's battle (room QH7K)".)
+81. [x] `src/ui/menus.css` ~71: the pause summary is one `nowrap` line with an ellipsis — on a 360-px
    phone the age comparison and kills are cut ("…The Battle of the Weald of the Hanged Moon ·
-   vs Hippolyta (Adept) · 12:34 · Jade Empire vs Celestial · 123 foes slain").
+   vs Hippolyta (Adept) · 12:34 · Jade Empire vs Celestial · 123 foes slain"). (Done: it wraps,
+   balanced; smoke checks it isn't cut and Resume stays on screen at 844×390 and 640×360.)
+(Items 82–86: smaller ones left from run #8's reviews, and found on the way.)
+82. [ ] `src/ui/menus.ts` ~557: the how-to page dots mark the current page by an `.on` class only —
+   add `aria-current="step"` (and a label "Page 3 of 7").
+83. [ ] `src/ui/hud.css` ~601: the phone panels' close button is 36 px — under the ~40 px used for
+   every other touch target now (#78).
+84. [ ] `src/ui/mpmenus.ts` ~226: the room code is a `div` with an `aria-label` that screen readers
+   ignore on a plain div — give it a role (e.g. `role="text"` isn't standard: use a visible label
+   "Room code" + the code in one element, or `role="status"` when it first appears).
+85. [ ] `public/sw.js`: navigation is network-first with no time limit — with the LAN server switched
+   off but the Wi-Fi up, a reload waits for the TCP timeout (tens of seconds on phones) before the
+   cached page shows. Race the network against ~4 s, then serve the cache.
+86. [ ] `scripts/smoke.ts` (~1300 lines, ~6 min) can only run whole — add `--only <flow>` (e.g.
+   `npm run smoke -- --only journal`) for quick iteration on one flow.
 
 
 
