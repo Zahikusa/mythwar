@@ -41,6 +41,18 @@ async function state(page: Page): Promise<{ gold: number; queue: number; summone
   });
 }
 
+/**
+ * After a citadel falls: waits for the results to be on screen (shown ~2.6 s later, then a short
+ * fade) — instead of a fixed pause, so a slow machine (a CI runner) doesn't flake and a fast one
+ * doesn't wait. A timeout lets the check that follows fail with its own message.
+ */
+async function resultsShown(page: Page): Promise<void> {
+  await page
+    .waitForFunction(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current === 'over', { timeout: 12_000, polling: 100 })
+    .catch(() => {});
+  await sleep(450);
+}
+
 async function center(page: Page, selector: string): Promise<{ x: number; y: number }> {
   const box = await (await page.$(selector))!.boundingBox();
   return { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
@@ -267,7 +279,7 @@ async function journalFlow(page: Page): Promise<void> {
       app.game.world.players[1].baseHp = 1;
       app.game.world.damageBase(1, 10, 0, 0);
     });
-    await sleep(3600);
+    await resultsShown(page);
     return page.evaluate(() => {
       const el = document.querySelector('.screen.over');
       return {
@@ -381,7 +393,7 @@ async function gamepadFlow(page: Page): Promise<void> {
     w.players[1].baseHp = 1;
     w.damageBase(1, 10, 0, 0);
   });
-  await sleep(3600);
+  await resultsShown(page);
   const reach = await page.evaluate(() => {
     const app = (window as unknown as { __mythwar: any }).__mythwar;
     const screen = document.querySelector('.screen.over') as HTMLElement;
@@ -627,7 +639,7 @@ async function phoneMenusFit(page: Page): Promise<void> {
       w.players[1].baseHp = 1;
       w.damageBase(1, 10, 0, 0);
     });
-    await sleep(3600);
+    await resultsShown(page);
     const rematch = await visible('.screen.over .mbtn.primary');
     check(`${w}x${h}: Results' Rematch button is on screen`, rematch.fits, JSON.stringify(rematch));
   }
@@ -1168,7 +1180,7 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     const w = (window as unknown as { __mythwar: any }).__mythwar.game.world;
     w.damageBase(1, 10, 0, 0);
   });
-  await sleep(3600);
+  await resultsShown(page);
   s = await state(page);
   check('destroying the citadel ends the game with results', s.over && s.menu === 'over', `over=${s.over} menu=${s.menu}`);
   const verdict = await page.evaluate(() => document.querySelector('.verdict .vt')?.textContent);
