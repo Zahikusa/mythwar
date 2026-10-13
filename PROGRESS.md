@@ -883,6 +883,23 @@ it prints, inviting, stopping — 2026-10-13.)
 200. [x] #191's "is away" toast and #194's co-op notice had no end-to-end check. (Done: in mpsmoke's
    co-op battle A steps away — B is told; B too — A's notice names the ally, no claim, no "you
    win"; both back, the battle runs.)
+201. [x] #162's copy fallback and #166's Back handling were only checked in Chrome — iPhones run
+   WebKit. (Done: `mpengines` gained a WebKit phone pass — Settings → "Copy my code" with no
+   Clipboard API at all says "Copied" (execCommand works there); Back in a battle opens the menu
+   and the page stays.)
+(Items 202–: open for the next run.)
+202. [ ] PROGRESS.md is ~1250 lines; each run reads it first. Move the done items 1–137 and the
+   run #5–#7 summaries to docs/PROGRESS-archive.md (linked), keeping the open items, decisions,
+   open questions and the last two run summaries here.
+203. [ ] `allyNews` (#191) toasts "Bo is away" / "Bo is back" on every blip of the ally's link
+   (`away || !connected`): on poor Wi-Fi that could flicker a toast every few seconds. Hold "away"
+   for ~2 s before saying it (and say "back" only after an "away" was said).
+204. [ ] smoke still has ~90 short fixed sleeps (100–600 ms) between taps and checks — on the CI
+   runner (#127) the timing-sensitive ones may flake. Turn the ones that wait for a state into
+   `waitForFunction`s (as #134/#158 did for results and page loads).
+205. [ ] The `browser-tests` workflow (#127) hasn't run on GitHub yet and now has `package:check`
+   to consider: add `npm run package:check` to it (it needs no browser) so every PR proves the
+   release package starts.
 197. [ ] (minor) The co-op chronicle calls the foe by the difficulty label ("First blood to Novice")
    where single player uses the general's name (Puck); the results drop the AI's income note.
 

@@ -89,6 +89,38 @@ async function duel(hostName: string, launchHost: () => Promise<Browser>, launch
   }
 }
 
+/**
+ * Run #9's phone behaviours in WebKit (every iPhone browser): copying without the Clipboard API
+ * (a LAN page is plain http — backlog 162) and the Back gesture opening the battle menu instead of
+ * leaving the page (backlog 166).
+ */
+async function webkitPhone(launch: () => Promise<Browser>, base: string): Promise<void> {
+  console.log('== WebKit phone: copy over http, Back in a battle ==');
+  const browser = await launch();
+  try {
+    const ctx = await browser.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true });
+    // (As on http://192.168…: no navigator.clipboard at all.)
+    await ctx.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined }));
+    const page = await ctx.newPage();
+    await page.goto(`${base}/?screen=settings&mode=mobile`);
+    await page.waitForFunction(() => (window as any).__mythwar?.menus?.current === 'settings');
+    await page.locator('.screen.settings button', { hasText: 'Copy my code' }).tap();
+    await page.waitForFunction(() => (document.querySelector('.sprogstatus')?.textContent ?? '') !== '', undefined, { timeout: 3000 }).catch(() => {});
+    const status = await page.evaluate(() => document.querySelector('.sprogstatus')?.textContent ?? '');
+    check('WebKit: "Copy my code" copies without the Clipboard API', status.startsWith('Copied'), status);
+    await page.goto(`${base}/?play=adept&seed=4&mode=mobile`);
+    await page.waitForFunction(() => (window as any).__mythwar?.state === 'playing' && (window as any).__mythwar.game.world.tick > 0);
+    await page.touchscreen.tap(420, 200);
+    const url = page.url();
+    await page.goBack({ timeout: 3000 }).catch(() => null);
+    await page.waitForFunction(() => (window as any).__mythwar.menus.current === 'pause', undefined, { timeout: 3000 }).catch(() => {});
+    const menu = await page.evaluate(() => (window as any).__mythwar.menus.current);
+    check('WebKit: Back in a battle opens the menu, the page stays', menu === 'pause' && page.url() === url, `${menu} ${page.url() === url}`);
+  } finally {
+    await browser.close();
+  }
+}
+
 async function main(): Promise<void> {
   const root = resolve('dist');
   if (!existsSync(join(root, 'index.html'))) throw new Error('Run "npm run build" first');
@@ -101,6 +133,7 @@ async function main(): Promise<void> {
   try {
     if (chrome) await duel('Chrome', () => chromium.launch({ executablePath: chrome }), () => webkit.launch(), base);
     await duel('Firefox', () => firefox.launch(), () => webkit.launch(), base);
+    await webkitPhone(() => webkit.launch(), base);
   } finally {
     mp.close();
     http.close();
