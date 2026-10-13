@@ -50,7 +50,7 @@ green, marble gold, glacier blue, lacquer vermilion, starlight).
 
 ## Battle length
 Standard battles against Adept/Master take ~14–16 minutes for a competent player (even AI
-battles ~19). **Quick battles** (an option on the foe screen, single player): XP ×2.2, 300
+battles ~18 since veterans, Lens #81; the limit is 20). **Quick battles** (an option on the foe screen, single player): XP ×2.2, 300
 starting gold, Ragnarök at 10:00 (90 s after both reach the final age), a ×3 siege ramp and
 crumbling after 4 minutes of Ragnarök — ~10–11 minutes, all five ages. Par times for the third
 star are two thirds of the standard ones; best times are kept for standard battles only.
@@ -98,6 +98,17 @@ dominate because melee fight one at a time), each class has a formation rule:
 Verified with `node scripts/classwar.ts` (equal-gold army battles per age).
 Final age adds a **Legend** (Elder Dragon): expensive, neutral, splash fire.
 
+**Veterans (Lens #81):** a creature that fells three foes rises a veteran — a gold chevron, +20%
+damage from then on, a quarter of its wounds healed — and earns a name out of its myth
+(Asterion, Sköll, Brynhild…, #88). Promotion happens at the end of the tick (blows in a tick are
+simultaneous). It makes keeping a creature alive a decision: pull it back behind a held line,
+or hunt the foe's.
+
+**Character (Lenses #76–#77):** each class's card leads with its job in the army (front line,
+striker, backline, siege-breaker); each creature has a temper (the oni *wrathful*, the kitsune
+*sly*…) shown in the Bestiary and in the gesture it makes when it fells a foe (roar, hop, twirl,
+rear, loom).
+
 ## Ages
 | # | Age | Guardian | Hunter | Mystic | God power |
 |---|---|---|---|---|---|
@@ -122,6 +133,11 @@ turret (splash). Turrets can be sold for 50%.
   `npm run economy` and equal-gold tests): a first rank at Asgard costs Might 1,584, Vitality
   1,056, Bastion 792 gold — about two thirds of what it wins you. Gold never piles up (creatures
   absorb it), so a blessing means banking gold in a calm moment; the Mythic general does so.
+- **Ragnarök:** at 18:00, or 3 minutes after both sides reach the final age, the wards fall
+  silent, turrets fire at half their rate (since #39: stalemates at defended gates had dragged even
+  battles to a 20-minute median), and damage to citadels ramps +150% per minute (raised from
+  +100% in phase 2: the stronger defensive tools had stretched even battles past 20 minutes) —
+  long stalemates end. It is foretold three minutes ahead, with drums that build (#61).
 
 ## Economy (Lens #46, `npm run economy`)
 Kills are 55–70% of everyone's income (a fallen creature pays its killer 75% of its cost),
@@ -130,9 +146,6 @@ passive income 25–40%, Ley Surges 2–4%. Creatures take ~85–90% of all spen
 queue, is the limit. The consequence players must learn — creatures thrown one by one into a
 held lane feed the enemy — is said on the how-to page and by a results tip; hold the line is the
 tool for it.
-- **Ragnarök:** at 18:00, or 3 minutes after both sides reach the final age, the wards fall
-  silent, turrets fire at half their rate (since #39: stalemates at defended gates had dragged even
-  battles to a 20-minute median), and damage to citadels ramps +150% per minute (raised from +100% in phase 2: the stronger defensive tools had stretched even battles past 20 minutes) — long stalemates end.
 
 ## Controls
 - **Desktop:** click a lane (or W/S, ↑/↓, Q/A/Z) to select it; click a creature card
@@ -142,6 +155,8 @@ tool for it.
 - **Mobile (landscape):** creature cards on the left thumb column, powers on
   the right. Tap lane to select, tap card to summon, or drag a card onto a lane.
   Long-press a card for info. Portrait is supported by rotating the game.
+- **Gamepad (Lens #54):** face buttons summon the cards as they sit on the pad, D-pad picks
+  lanes, shoulders cast / hold / ascend / undo; menus by D-pad and A/B.
 
 ## AI generals
 Each difficulty is a general out of myth with a voice: **Puck**, the Wandering Spirit (Novice),
@@ -167,6 +182,33 @@ meetings (each general's `meet` line) and in the journey chapters:
 - **Ares** fights for his daughter's honour, and scorns Odin's watching and Mímir's whispering.
 - **Mímir** (the coach's tips) is the player's mentor; the player is the stranger who walks
   through all of their stories.
+
+At Ragnarök each shows an **inner contradiction** (Lens #82): Puck, who loves games, wants this
+one to stop; Hippolyta would have given Heracles her girdle freely; Odin gave an eye to learn how
+this ends and half wishes he hadn't; Ares, war itself, is hated by his own father. Odin has a
+**nemesis**: the first Fenrir the player fields against him makes the all-seeing god falter.
+
+## Single player: modes and meta
+- **The ladder** of four generals is one war in four chapters — The Call, The Threshold, The
+  Ordeal, The Return (#68, #70) — told in the opening until each general is beaten.
+- **Three stars** per battle (victory, citadel above half, par time; #20), best per general on its
+  card; **18 feats**, topped by *Legend of the Ages* (three stars against every general).
+- **Quick battles**, **Trials** (Glass Citadel, Godless, No Walls — unlocked by a first victory),
+  **start in any age already reached** (#71, no stars), **Riddles of war** (below),
+  **Sandbox** (no foe, endless gold, summon for either side), **Bestiary** (every creature's
+  myth and temper; unreached ages hidden).
+- **Progress codes** carry records, feats and ages between devices (merging, never losing).
+- **Mímir**, keeper of the well, is the player's mentor: the coach's tips are his.
+
+## Multiplayer: the social layer
+- Versus or **co-op** against a server-run AI; **handicaps** (the trials) per player.
+- **Standing** (#80): Recruit, Warden, Champion, Warlord, Conqueror, Legend — how far each
+  player's own journey has gone, shown by their seat. **Sigils** (#75, #85) fly on each player's
+  keep and stand by their name on the other's screen.
+- The lobby **recognises old rivals** (#84: listed first, with your record together) and shows the
+  network's **Hall of champions** (#86: battles won and lost on this server).
+- **Three pauses** per player per battle (#87); being away (app in the background, lost Wi-Fi)
+  holds the battle without a cap, with a forfeit timer and a claim after 20 s.
 
 ## AI
 Same command API as the player. Four difficulties: Novice, Adept, Master, Mythic.

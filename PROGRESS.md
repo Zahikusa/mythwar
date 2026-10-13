@@ -191,7 +191,7 @@ complete; its log follows below the lens plan.
 - [x] #87 Griefing — 3 pauses per player per online battle (server-enforced; away holds uncapped), then the menu opens only locally (protocol v12)
 - [x] #88 Love — veterans earn a name out of their myth (Asterion, Sköll, Brynhild…); the chronicle names the hero of the battle
 - [x] #89 The Team — CONTRIBUTING.md: the five non-obvious rules (determinism, same-tick fairness, fingerprint, protocol, AI), what to run per change, the add-a-creature checklist
-- [ ] #90 Documentation — design doc refresh
+- [x] #90 Documentation — DESIGN.md refreshed: veterans, character, the modes and meta, the multiplayer social layer, gamepad, Ragnarök filed under systems
 - [ ] #91 Playtesting — playtest kit / local stats
 - [ ] #92 Technology — performance/tech improvement
 - [ ] #93 The Crystal Ball — roadmap

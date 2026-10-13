@@ -1706,3 +1706,19 @@ without breaking it?*
   checklist (spec, art, cry, myth, temper, hero names, then classwar/designcheck/gallery), and
   the style the code and texts follow — linked from the README.
 - Checked: every command and file named in it exists and runs as described.
+
+## #90 The Lens of Documentation
+*Does the design document still describe the game — and does it help the people who use it make
+decisions?*
+- Read DESIGN.md against the game as it is after 89 iterations. The core (essence, problem
+  statement, triangle, lanes, ages, economy) was current, but it described the game of run #5:
+  nothing about veterans (which change the core loop's decisions), the creatures' character,
+  the single-player modes and meta-progression (journey, stars, feats, trials, later starts,
+  sandbox, bestiary, progress codes, Mímir), the multiplayer social layer (standing, sigils,
+  rivals, Hall of champions, the pause limit), the generals' inner contradictions, or gamepads;
+  the pacing figure was stale (19 → 18 min) and Ragnarök sat under *Economy* by accident.
+- Change: DESIGN.md refreshed — veterans and character under the creature classes, two new
+  sections (*Single player: modes and meta*, *Multiplayer: the social layer*), the generals'
+  contradictions, gamepad controls, Ragnarök moved to the systems it belongs to, numbers
+  updated. Each entry names its lens so the reasoning is one search away in LENSES.md.
+- Checked: every number and name in the new text against the code (e.g. 18 feats, 3 pauses).
