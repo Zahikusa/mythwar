@@ -5,6 +5,7 @@ import { MpClient } from '../src/net/client.ts';
 import type { SocketLike } from '../src/net/connection.ts';
 import type { NetGame } from '../src/net/netgame.ts';
 import { hashWorld } from '../src/sim/hash.ts';
+import type { World } from '../src/sim/world.ts';
 
 /**
  * A simulated network on a fake clock: an in-process server, sockets with latency, jitter and
@@ -350,6 +351,57 @@ describe('NetGame over a simulated network', () => {
     expect(gb.result).toEqual({ winner: 1, reason: 'forfeit' });
     expect(gb.over).toBe(true);
     expect(b.room!.phase).toBe('waiting');
+  });
+
+  it('a phone that missed a citadel’s fall sees the result when it reconnects (backlog 218)', () => {
+    // Co-op (the battle goes on while one ally is away): Bo's phone locks, Ada wins alone.
+    net = new SimNet();
+    const a = net.client('Ada');
+    const b = net.client('Bo');
+    net.run(400);
+    a.host();
+    net.run(400);
+    a.setCoop('novice');
+    b.join(a.room!.code);
+    net.run(400);
+    a.ready(true);
+    b.ready(true);
+    net.run(3400);
+    const gb = b.game!;
+    let ended = 0;
+    gb.onEvents((ev) => (ended += ev.filter((e) => e.type === 'gameOver').length));
+    b.conn.close();
+    net.run(1000);
+    const match = (net.lobby as unknown as { rooms: Map<string, { match: { world: World } }> }).rooms.get(a.room!.code)!.match;
+    match.world.players[1].baseHp = 1;
+    match.world.damageBase(1, 10, 0, 0);
+    net.run(5000);
+    expect(a.game!.result).toMatchObject({ winner: 0 });
+    expect(gb.over).toBe(false);
+    // Back: the battle's end is replayed (a snapshot of the fallen citadel, then 'over').
+    b.conn.open();
+    net.run(2000);
+    expect(gb.result).toMatchObject({ winner: 0 });
+    expect(gb.over).toBe(true);
+    expect(ended).toBe(1);
+  });
+
+  it('a replica that reaches the last tick before the verdict waits for it (backlog 219)', () => {
+    const { ga } = twoPlayers();
+    net.run(3000);
+    const ends: (string | null)[] = [];
+    ga.onEvents((ev) => ev.some((e) => e.type === 'gameOver') && ends.push(ga.result?.reason ?? null));
+    // The citadel falls on this replica's last tick, but the server's 'over' is late (a lost
+    // packet resent): no results yet — they'd say nothing of who won or why.
+    ga.world.players[1].baseHp = 1;
+    ga.world.damageBase(1, 10, 0, 0);
+    ga.world.step();
+    (ga as unknown as { publish(): void }).publish();
+    expect(ends).toEqual([]);
+    expect(ga.over).toBe(false);
+    (ga as unknown as { onOver(m: unknown): void }).onOver({ type: 'over', winner: 0, reason: 'citadel' });
+    expect(ends).toEqual(['citadel']);
+    expect(ga.over).toBe(true);
   });
 
   it('repairs a diverged replica from a snapshot', () => {

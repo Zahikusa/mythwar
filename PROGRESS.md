@@ -411,16 +411,20 @@ it prints, inviting, stopping — 2026-10-13.)
    rejoins. Plain, latency and portrait green.)
 (Items 218–221: an independent review of the client netcode — connection, client, NetGame,
 the overlay and the app's online wiring — 2026-10-13.)
-218. [ ] **A phone that missed a citadel-fall ending freezes in the battle.** Reconnecting with
+218. [x] **A phone that missed a citadel-fall ending freezes in the battle.** Reconnecting with
    `battle: true`, the server replays `lastOver` (snapshot with `winner` set, then `over`);
    `NetGame.onOver` (src/net/netgame.ts ~314) emits `gameOver` only when the world's winner is
    unset or different — a freshly loaded world queued no events, so no results, `game.over`
    true, and `pause()` refuses (no menu) — stuck until a reload. Likely in co-op (a phone locks,
    the ally finishes). Emit `gameOver` once per battle in `onOver` if it hasn't gone out.
-219. [ ] The replica can step to the final tick before `over` arrives (two frames; a late
+   (Done with #219: NetGame sends the end exactly once — `overSent` — and `onOver` sends it if
+   the world's own events didn't. Test (co-op: Bo's link closed, the AI's citadel falls, Bo
+   reconnects → results, one gameOver) — failed before the fix: no gameOver at all.)
+219. [x] The replica can step to the final tick before `over` arrives (two frames; a late
    packet): `gameOver` fires with `g.result === null`, so app.ts skips the online record, the
    journal and the feats as for a server restart, and `onOver` later has nothing to emit. Hold
    back `gameOver` while `result` is null; emit it from `onOver` (with #218: exactly once).
+   (Done: `NetGame.emit` holds a gameOver back until the verdict is in; test — failed before.)
 220. [ ] After a version mismatch (`error` code `version` → `conn.close()` clears `onclose`) or a
    takeover by another tab (4001), `mp.room` stays: the battle overlay says "Reconnecting…"
    forever, the room says "Reconnecting…" with Ready dimmed, and the "reload" explanation is only

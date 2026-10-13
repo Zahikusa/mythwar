@@ -2,7 +2,7 @@ import { Game } from '../game.ts';
 import { AGES, QUEUE_MAX, SELL_REFUND, TICK, TURRETS, UNITS, blessingCost } from '../sim/data.ts';
 import type { TrialId } from '../sim/data.ts';
 import { hashWorld } from '../sim/hash.ts';
-import type { Command, CommandResult, Team } from '../sim/types.ts';
+import type { Command, CommandResult, SimEvent, Team } from '../sim/types.ts';
 import { World } from '../sim/world.ts';
 import type { ClientMsg, EndReason, NetCommand, PauseState, ScheduledCommand, ServerMsg } from './protocol.ts';
 import { PAUSES_PER_BATTLE, battleWorld } from './protocol.ts';
@@ -52,6 +52,8 @@ export class NetGame extends Game {
   readonly coop: Difficulty | null;
   /** The server's verdict once the battle is decided. */
   result: { winner: Team; reason: EndReason } | null = null;
+  /** The battle's end (the gameOver event) has gone out to the listeners — once, with `result` set. */
+  private overSent = false;
   /** Set while the server holds the battle (a player paused or is away). */
   netPause: PauseState | null = null;
   /** Pauses each seat may still call in this battle (the server decides; Lens #87). */
@@ -311,13 +313,31 @@ export class NetGame extends Game {
     this.netPause = null;
     this.countdownEnd = 0;
     this.result = { winner: msg.winner, reason: msg.reason };
-    if (this.world.winner === null || this.world.winner !== msg.winner) {
+    if (this.world.winner !== msg.winner) {
       // Forfeit / timeout (or, should replicas ever disagree, the server's word is final).
       this.world.winner = msg.winner;
       this.world.drainEvents();
-      this.emit([{ type: 'gameOver', winner: msg.winner }]);
-    } else this.publish();
+    }
+    // The last ticks' events — with the citadel's fall, if that's how it ended.
+    this.publish();
+    // A forfeit, a timeout, an end held back until now (see emit), or an ending replayed to a
+    // page that reconnected (a fresh snapshot's world has no events to tell it).
+    if (!this.overSent) this.emit([{ type: 'gameOver', winner: msg.winner }]);
     this.over = true;
+  }
+
+  /**
+   * The end goes out once, and only with the server's verdict: a replica that steps onto the
+   * final tick before 'over' arrives (two messages; a late packet) waits for it — without the
+   * verdict the app would take the battle for one a server restart dropped (no record, no feats).
+   */
+  protected override emit(events: SimEvent[]): void {
+    if (events.some((e) => e.type === 'gameOver')) {
+      if (this.result === null || this.overSent) events = events.filter((e) => e.type !== 'gameOver');
+      else this.overSent = true;
+      if (!events.length) return;
+    }
+    super.emit(events);
   }
 
   private applySnapshot(msg: Extract<ServerMsg, { type: 'snapshot' }>, initial = false): void {
