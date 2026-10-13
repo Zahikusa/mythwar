@@ -552,9 +552,13 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    beside "Test & publish" — Chrome from the runner, Ubuntu 24.04's AppArmor userns restriction
    lifted for its sandbox. Not run yet: nothing is pushed from here; its first run on GitHub will
    tell whether timings hold on a shared runner — see Open questions.)
-128. [ ] The menus' focus handling (#76) and the HUD's accessibility labels (#79) are covered only by
+128. [x] The menus' focus handling (#76) and the HUD's accessibility labels (#79) are covered only by
    smoke checks; unit tests can't reach DOM code (no DOM environment in vitest). Decide whether a
-   DOM environment (happy-dom) is worth a dev dependency, or keep them in smoke.
+   DOM environment (happy-dom) is worth a dev dependency, or keep them in smoke. (Decided in run
+   #9: keep them in smoke. Those checks test layout — `offsetParent`, bounding boxes,
+   `elementFromPoint`, what is visible and reachable — and happy-dom/jsdom compute no layout, so
+   they would pass where a real browser fails. Logic that can leave the DOM is pulled out and
+   unit-tested instead, as #150 did for the room's news.)
 129. [x] (decided, see #146: left as is) (#23 made concrete) Rival records on the device are keyed by the opponent's name — two Adas
    share a line, a renamed friend starts a new one. The server knows each player's device: it
    could send, with the seats, an opaque per-pair rival id (a hash of both devices and the
