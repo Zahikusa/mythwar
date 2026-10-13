@@ -24,7 +24,7 @@ Already in the code before Phase 3, and kept:
 ## Plan (milestones, in TASK order)
 
 - [x] **M0** Archive the old PROGRESS, write this plan. *(run #12)*
-- [ ] **M1 `npm run mobilecheck`** (the measuring tool for A–E): Playwright WebKit (iPhone SE
+- [x] **M1 `npm run mobilecheck`** (the measuring tool for A–E): Playwright WebKit (iPhone SE
   375×667, iPhone 15 393×852, iPhone 16 Pro Max 440×956) + Chromium (Pixel 7 412×915, Galaxy
   S9-size 360×740), portrait + landscape, **tab** (viewport minus the browser's bars) and
   **standalone** (full screen, simulated safe-area insets via `?safe=t,r,b,l`). It visits every
@@ -53,6 +53,27 @@ Already in the code before Phase 3, and kept:
 ## Done
 
 - (run #12) M0: old PROGRESS.md appended whole to docs/PROGRESS-archive.md.
+- (run #12) M1: `npm run mobilecheck` (scripts/mobilecheck.ts): 5 phones × tab/app × portrait/
+  landscape × 14 screens, screenshots in `screenshots/mobile/`. The installed case is simulated
+  with `?safe=t,r,b,l` (App.safeArea) and a stubbed `display-mode`/`navigator.standalone`. On
+  the Androids (Chromium) it also pinches and swipes with real touch events (CDP
+  `Input.dispatchTouchEvent`; `synthesizeScrollGesture` did nothing in this setup). ~15 min for
+  the whole matrix; filters `--device --screen --mode --orient`. First run: 1021 small targets,
+  63 screens scrolling as a whole and passing their overscroll on, no document scroll.
+- (run #12) A, first part:
+  - Menu screens are head / body / buttons (Menus' `frame()`, run on every show): only `.sbody`
+    scrolls (momentum, `overscroll-behavior: contain`, fading edges via `more`/`above`). Found
+    on the way: in WebKit a `position: sticky` button row ignores a rotated ancestor, so on an
+    upright iPhone SE in Safari Settings' Done was off screen.
+  - Battle sheets (turrets, blessings, controls): the title row with Close stays, `.pbody`
+    scrolls (hud.ts `withBody`).
+  - `src/stillpage.ts`: touchmove outside a panel that can scroll is cancelled (iOS bounce),
+    pinch/double-tap blocked, no long-press context menu on touch, the page scrolls back to 0
+    once nobody types; `-webkit-touch-callout: none`; text fields keep `user-select: text`;
+    viewport `maximum-scale=1`.
+  - `App.resize()` uses `visualViewport` (bars, keyboard), re-measures after `orientationchange`,
+    `#app` follows the visual viewport's offset while typing (`follow()`, also in `toStage`), and
+    the focused field is scrolled into view after a resize.
 
 ## Decisions
 
@@ -67,7 +88,10 @@ Already in the code before Phase 3, and kept:
 
 ## Approaches that failed
 
-(none yet)
+- `position: sticky` for a screen's buttons: broken in WebKit under the rotated stage.
+- `overflow-x: hidden` (or `touch-action: pan-y`) on a scroller inside the rotated stage: Chrome
+  applies both in screen axes, so an upright phone could not scroll it at all. Scrollers inside
+  the stage use `overflow-y: auto` alone and `touch-action: pan-x pan-y`.
 
 ## Open questions for the human
 
