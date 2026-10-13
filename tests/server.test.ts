@@ -676,6 +676,21 @@ describe('battle', () => {
     expect(w2.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Queen Ada', 'Ada', 'Bo']);
   });
 
+  it('a blocklist keeps unwanted names off a public server (backlog)', () => {
+    const lobby = new Lobby({ blockedWords: ['badword'] });
+    const a = new FakeClient(lobby);
+    const b = new FakeClient(lobby);
+    a.hello('B.a.d W-o-r-d');
+    b.hello('Ada');
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    expect(b.last('room')!.room.seats.map((s) => s!.name)).toEqual(['Player', 'Ada']);
+    a.send({ type: 'name', name: 'xXbadwordXx' });
+    expect(b.last('room')!.room.seats[0]!.name).toBe('Player');
+    a.send({ type: 'name', name: 'Bo' });
+    expect(b.last('room')!.room.seats[0]!.name).toBe('Bo');
+  });
+
   it('the file store writes atomically and reads back; a broken file means an empty hall', async () => {
     const { mkdtempSync, writeFileSync } = await import('node:fs');
     const { join } = await import('node:path');

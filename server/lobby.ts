@@ -36,6 +36,11 @@ export interface LobbyOptions {
   maxSessions?: number;
   /** Where the Hall of champions survives restarts (none: kept in memory only). */
   store?: ServerStore;
+  /**
+   * Words no player name may contain (case-insensitive; a name with one becomes "Player"). For a
+   * public server, where strangers see each other's names (`--names <file>`, one word per line).
+   */
+  blockedWords?: string[];
   /** Today as a day number (injectable for tests; default: localDay()). */
   today?: () => number;
 }
@@ -142,6 +147,16 @@ export class Lobby {
     this.now = opts.now ?? (() => performance.now());
     this.random = opts.random ?? Math.random;
     this.loadHalls();
+  }
+
+  /** A player's name as others will see it: sanitized, and not one with a blocked word in it. */
+  private playerName(raw: unknown): string {
+    const name = cleanName(raw);
+    const words = this.opts.blockedWords;
+    if (!words?.length) return name;
+    // (Compared without spaces, dots and the like, so "b.a.d" or "b a d" don't slip through.)
+    const flat = name.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
+    return words.some((w) => w && flat.includes(w)) ? 'Player' : name;
   }
 
   /** Restores the Hall of champions from the store (sanitized: the file may be hand-edited). */
@@ -266,7 +281,7 @@ export class Lobby {
       s.conn = conn;
       s.goneAt = null;
       s.network = network;
-      if (msg.name !== undefined) s.name = cleanName(msg.name);
+      if (msg.name !== undefined) s.name = this.playerName(msg.name);
       if (msg.rank !== undefined) s.rank = cleanRank(msg.rank);
       if (msg.sigil !== undefined) s.sigil = cleanSigil(msg.sigil);
       if (msg.device !== undefined) s.device = cleanDevice(msg.device);
@@ -283,7 +298,7 @@ export class Lobby {
       }
       s = {
         token: this.makeToken(),
-        name: cleanName(msg.name),
+        name: this.playerName(msg.name),
         rank: cleanRank(msg.rank),
         sigil: cleanSigil(msg.sigil),
         device: cleanDevice(msg.device),
@@ -323,7 +338,7 @@ export class Lobby {
     const now = this.now();
     switch (msg.type) {
       case 'name':
-        s.name = cleanName(msg.name);
+        s.name = this.playerName(msg.name);
         if (msg.rank !== undefined) s.rank = cleanRank(msg.rank);
         if (msg.sigil !== undefined) s.sigil = cleanSigil(msg.sigil);
         if (room) {

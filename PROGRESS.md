@@ -57,9 +57,10 @@ the improvement backlog below (verified, committed) and add what the review find
    of ~4 ms; the rest is canvas calls incl. headless software raster). Stable across runs.)
 14. [x] `src/app.ts` `breakNote()` (Lens #98) has no unit test: hour boundaries, once per hour,
    two hours. Extract the arithmetic into a pure function and test it. (Done: `src/ui/wellbeing.ts`.)
-15. [ ] Names are free text and, on a public server, shown to strangers (lobby list, Hall of
+15. [x] Names are free text and, on a public server, shown to strangers (lobby list, Hall of
    champions): a server-side blocklist (`--names <file>`) would be the minimum before going
-   public (ROADMAP *Next*).
+   public (ROADMAP *Next*). (Done: `--names <file>`; a name with a listed word, compared case- and
+   punctuation-blind, becomes "Player" — at hello and on rename.)
 
 
 

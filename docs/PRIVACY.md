@@ -35,7 +35,8 @@ which can't be turned back. Delete the file to forget everything.
 Its log (the terminal window) shows names, room codes and results — no addresses.
 
 Quick messages are fixed phrases ("Good luck!", "Well played!") — strangers can't send each other
-free text. Names are free text; on a public server they would need moderation (ROADMAP, *Next*).
+free text. Names are free text; a public server can refuse names with listed words
+(`--names <file>`), and would need more moderation than that (ROADMAP, *Next*).
 
 ## The GitHub Pages version
 The single-player page is hosted by GitHub Pages; GitHub sees the requests for the game's files

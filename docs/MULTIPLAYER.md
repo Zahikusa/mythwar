@@ -187,6 +187,8 @@ The design already separates everything that matters for that step:
    already scoped: all private addresses count as one LAN, while on a public server players see
    only rooms from their own home network (same public IP / IPv6 prefix). Behind a reverse proxy
    start the server with `--trust-proxy` so it reads the client address from X-Forwarded-For.
+   Strangers see each other's names there: `--names <file>` (one word per line) turns any name
+   containing a listed word — case- and punctuation-blind — into "Player".
    A matchmaking queue would be the next step.
 4. **Latency:** the jitter buffer adapts by itself (tested with 20–140 ms delays); for long
    distances raise `turnTicks` in `attachMultiplayer` to save packets if needed.

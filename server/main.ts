@@ -34,6 +34,7 @@ if (args.includes('--help') || args.includes('-h')) {
   --data <file>        where the Hall of champions is kept (default: mythwar-data.json
                        next to the server)
   --no-save            keep the Hall of champions in memory only
+  --names <file>       words no player name may contain, one per line (a public server)
   --quiet              no log lines for joins, battles and results
   --help               this text`);
   process.exit(0);
@@ -73,7 +74,16 @@ const log = quiet ? undefined : (l: string) => console.log(stamp(l));
 // The Hall of champions survives restarts in a small JSON file (Lens #92), unless --no-save.
 const dataFile = resolve(arg('data') ?? join(here, 'mythwar-data.json'));
 const store = args.includes('--no-save') ? undefined : fileStore(dataFile, (l) => console.log(stamp(l)));
-const mp = attachMultiplayer(http, { latency, jitter, trustProxy: args.includes('--trust-proxy'), log, store });
+// --names: a blocklist for names strangers will see (one word per line, compared case- and
+// punctuation-blind).
+const namesFile = arg('names');
+const blockedWords = namesFile
+  ? readFileSync(namesFile, 'utf8')
+      .split(/\r?\n/)
+      .map((w) => w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, ''))
+      .filter(Boolean)
+  : undefined;
+const mp = attachMultiplayer(http, { latency, jitter, trustProxy: args.includes('--trust-proxy'), log, store, blockedWords });
 
 http.on('error', (e: NodeJS.ErrnoException) => {
   // The default port is busy (another copy running?): try the next few, unless one was asked for.
