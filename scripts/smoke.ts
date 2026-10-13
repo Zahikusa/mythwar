@@ -4,7 +4,7 @@
  * Exits non-zero on any failed check or console error.
  */
 import { createServer } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
 import puppeteer from 'puppeteer-core';
 import type { Page } from 'puppeteer-core';
@@ -184,6 +184,16 @@ async function serviceWorkerFlow(page: Page): Promise<void> {
     return (await (await fetch('./manifest.webmanifest')).text()).includes('"stale"');
   });
   check('service worker fetches the manifest fresh (not a stale cached copy)', !manifest, String(manifest));
+  // (Backlog 73) A lazily loaded chunk of a newer build replaces its older copy in the cache.
+  const qr = (await readdir(resolve('dist/assets'))).find((f) => /^qrcode-.*\.js$/.test(f))!;
+  const lazy = await page.evaluate(async (qr: string) => {
+    const c = await caches.open('mythwar-v4');
+    await c.put(new Request('./assets/qrcode-OLDBUILD.js'), new Response('// old qr'));
+    await fetch(`./assets/${qr}`);
+    await new Promise((r) => setTimeout(r, 300));
+    return (await c.keys()).map((r) => new URL(r.url).pathname);
+  }, qr);
+  check('service worker drops older copies of a lazily loaded chunk', !lazy.some((k) => k.includes('qrcode-OLDBUILD')) && lazy.some((k) => k.endsWith(qr)) && lazy.some((k) => k.includes('lazy-ABCDEFGH')), JSON.stringify(lazy));
 }
 
 /** Sandbox: X switches the cards to the foe's (a mode that shows), and summons go to the foe. */

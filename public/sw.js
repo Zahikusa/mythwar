@@ -32,6 +32,19 @@ async function storePage(res) {
   }
 }
 
+/** Drops cached builds of `path`'s bundle other than this one ("qrcode-OLD.js" for "qrcode-NEW.js"). */
+async function dropOlder(path) {
+  const c = await caches.open(CACHE);
+  const file = path.slice(path.lastIndexOf('/assets/') + 8);
+  for (const key of await c.keys()) {
+    const p = new URL(key.url).pathname;
+    const i = p.lastIndexOf('/assets/');
+    if (i < 0) continue;
+    const other = p.slice(i + 8);
+    if (other !== file && stem(other) === stem(file)) await c.delete(key);
+  }
+}
+
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
@@ -54,8 +67,20 @@ self.addEventListener('fetch', (e) => {
     return res;
   };
   // ("index-C8zgltL0.js": a content hash in the name — that exact file never changes.)
-  if (/\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.[a-z0-9]+$/.test(new URL(req.url).pathname)) {
-    e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then(store)));
+  const path = new URL(req.url).pathname;
+  if (/\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.[a-z0-9]+$/.test(path)) {
+    e.respondWith(
+      caches.match(req).then(
+        (hit) =>
+          hit ||
+          fetch(req).then((res) => {
+            // A newer build of a chunk the page loads lazily (named nowhere in it, so storePage
+            // can't tell): the older copies of the same name go.
+            if (res.ok) e.waitUntil(dropOlder(path).catch(() => {}));
+            return store(res);
+          }),
+      ),
+    );
     return;
   }
   e.respondWith(
