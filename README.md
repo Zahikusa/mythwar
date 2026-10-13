@@ -168,3 +168,5 @@ Code map: `src/sim` (deterministic simulation and all balance data), `src/ai` (o
 `src/net` + `server/` (multiplayer client and server),
 `src/render` (canvas renderer, creature art, effects), `src/ui` (HUD, menus, tips),
 `src/audio` (synth), `DESIGN.md` (game design), `PROGRESS.md` (development log).
+**Working on the code? Read [CONTRIBUTING.md](CONTRIBUTING.md) first** — the determinism and
+fairness rules, what to run for which change, and the checklist for adding a creature.

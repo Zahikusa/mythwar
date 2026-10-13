@@ -190,7 +190,7 @@ complete; its log follows below the lens plan.
 - [x] #86 Community — the server's Hall of champions per network (wins/losses across rooms, co-op victories) in the lobby (protocol v11)
 - [x] #87 Griefing — 3 pauses per player per online battle (server-enforced; away holds uncapped), then the menu opens only locally (protocol v12)
 - [x] #88 Love — veterans earn a name out of their myth (Asterion, Sköll, Brynhild…); the chronicle names the hero of the battle
-- [ ] #89 The Team — contributor guide
+- [x] #89 The Team — CONTRIBUTING.md: the five non-obvious rules (determinism, same-tick fairness, fingerprint, protocol, AI), what to run per change, the add-a-creature checklist
 - [ ] #90 Documentation — design doc refresh
 - [ ] #91 Playtesting — playtest kit / local stats
 - [ ] #92 Technology — performance/tech improvement

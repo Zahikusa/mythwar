@@ -1690,3 +1690,19 @@ does the game do to foster it?*
   that says someone cared.
 - Checked: unit tests (names for every creature, stable; a full AI battle's chronicle names
   its hero, still in time order and ending with the verdict); full verify.
+
+## #89 The Lens of the Team
+*Does the team share an understanding of the game — and could someone new join and contribute
+without breaking it?*
+- Mythwar has been built by a succession of runs that only share the repository. The design is
+  written down (DESIGN.md, LENSES.md), the commands are in the README — but the rules a
+  newcomer breaks first were scattered through 1,700 lines of logs: the simulation must stay
+  bit-identical across JavaScript engines (no `Math.sin`); anything caused by a blow must wait
+  for the end of the tick (lens #81 tripped over this today); a rules change splits online
+  play by fingerprint; a protocol change needs a version bump and server-side sanitizing; the
+  AI must handle every mechanic. Adding a creature touches six files nobody lists.
+- Change: **CONTRIBUTING.md** — where things live, the five rules (each with the test or tool
+  that catches a violation), which checks to run for which kind of change, the add-a-creature
+  checklist (spec, art, cry, myth, temper, hero names, then classwar/designcheck/gallery), and
+  the style the code and texts follow — linked from the README.
+- Checked: every command and file named in it exists and runs as described.
