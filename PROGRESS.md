@@ -597,8 +597,8 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #8 in short (for the morning)
-- Verification mode, backlog items 38–128: done except the notes #23, #94 and the open #101,
-  #120, #123, #127, #128 (for the next run). Ten independent reviews (netcode; app state;
+- Verification mode, backlog items 38–137: done except the notes #23, #94 and the open #101,
+  #128, #129, #134, #137 (for the next run — start there). Ten independent reviews (netcode; app state;
   simulation/AI/HUD; rendering/persistence; accessibility; docs; two players' flows; data across
   versions; a visual review from screenshots; a review of this run's own diff — which caught
   three regressions, #116–118) found most of them; each was reproduced by a new test or smoke
@@ -633,6 +633,12 @@ built, how to see each part working, and the decisions that need you.
   screens, screen-reader wording, finger-sized hit areas clear of the gate, "!" for danger);
   docs corrected (#75); `npm run smoke -- --only <flow>` (#86).
 - **Protocol is now v15** (`RoomInfo.rev`, `ready.rev` — #96): server and pages from one build.
+- Items 110–136 (late in the run): a visual review from screenshots (fades under pinned buttons,
+  phone panels sized and opaque, the shield clear of the lane bar, clearer lane tabs, a pool
+  behind banners, bubbles/badges hidden under menus, seat names wrap, the lobby's empty list);
+  a review of the run's own diff caught three regressions (#116–118, fixed with tests); smoke
+  flows run in fresh profiles (#124); `shoot` takes several names and has multiplayer scenarios;
+  `npm run docshot`; a "Browser tests" workflow for GitHub (#127, not yet run — Open questions).
 - The release package (`npm run package`) was started and probed: brotli, immutable hashed
   assets, no-cache page/sw/manifest, path escapes refused, stray upgrades closed.
 
