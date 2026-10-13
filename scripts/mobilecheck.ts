@@ -6,7 +6,7 @@
  * control a 44-px target, and let panels that overflow scroll inside themselves.
  *
  *   npm run build && node scripts/mobilecheck.ts [--device iphone-se] [--screen title]
- *     [--mode tab|app] [--orient p|l] [--no-shots]
+ *     [--mode tab|app] [--orient p|l] [--no-shots] [--quick]
  *   (filters match as substrings; several of one kind are comma-separated)
  *
  * Screenshots: screenshots/mobile/<device>-<tab|app>-<p|l>-<screen>.png — look at them: a check
@@ -338,7 +338,9 @@ const opt = (k: string) => {
   const i = args.indexOf(k);
   return i >= 0 ? args[i + 1].split(',') : null;
 };
-const fDevice = opt('--device');
+// --quick: three phones that span the range (the smallest iPhone, an Android, a tablet) — for
+// iterating; the whole matrix before committing a layout change.
+const fDevice = opt('--device') ?? (args.includes('--quick') ? ['iphone-se', 'pixel-7', 'ipad-mini'] : null);
 const fScreen = opt('--screen');
 const fMode = opt('--mode');
 const fOrient = opt('--orient');

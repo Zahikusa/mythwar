@@ -130,7 +130,9 @@ export function guideFor(s: Situation, advice: Advice): Guide | null {
         spot: none,
       };
     case 'install':
-      return { title: 'Install Mythwar', lead, steps: [{ pic: 'add', text: 'Tap Install app, then Install.' }, { pic: 'home', text: 'Mythwar opens from your home screen, full screen.' }], spot: none };
+      return s.os === 'desktop'
+        ? { title: 'Install Mythwar', lead: 'Its own window, no browser bars, one click from your start menu or dock — and it plays offline.', steps: [{ pic: 'add', text: 'Click Install app, then Install.' }, { pic: 'open', text: 'Mythwar opens in its own window.' }], spot: none }
+        : { title: 'Install Mythwar', lead, steps: [{ pic: 'add', text: 'Tap Install app, then Install.' }, { pic: 'home', text: 'Mythwar opens from your home screen, full screen.' }], spot: none };
     case 'android-menu': {
       const menu: Record<string, [Step, Step, Spot]> = {
         chrome: [{ pic: 'vdots', text: 'Tap the menu ⋮ (top right).' }, { pic: 'add', text: 'Tap Add to home screen (or Install app), then Install.' }, 'top-right'],

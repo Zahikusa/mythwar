@@ -44,6 +44,12 @@ describe('guideFor: the steps for this browser', () => {
     const s = at(SAMSUNG, { hostname: '192.168.1.20', secure: false });
     expect(guideFor(s, 'lan')!.note).toMatch(/zahikusa\.github\.io\/mythwar/);
   });
+  it('a computer with an install dialog clicks, and gets a window (not a home screen)', () => {
+    const s = detect({ ua: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36', touchPoints: 0, secure: true, hostname: 'zahikusa.github.io' });
+    const t = text(guideFor(s, advise(s, true)));
+    expect(t).toMatch(/Click Install app.*own window/);
+    expect(t).not.toMatch(/Tap|home screen/i);
+  });
   it('every offer has words (and nothing is offered once installed)', () => {
     for (const a of ['escape', 'ios-add', 'ios-safari', 'install', 'android-menu', 'qr', 'lan'] as const) expect(guideFor(at(SAMSUNG), a)?.title).toBeTruthy();
     expect(guideFor(at(SAMSUNG), 'none')).toBeNull();

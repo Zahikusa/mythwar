@@ -208,12 +208,12 @@ Already in the code before Phase 3, and kept:
    Taptic Engine when an `<input type="checkbox" switch>` toggles — a known trick some web
    games use for haptics. Worth a real-device experiment behind the Vibration switch (which
    would then show on iPhones too); undocumented behaviour, so only with a device to test on.
-17. [ ] (desktop) With Chrome's install dialog on a computer, the sheet says "Tap Install app"
+17. [x] (desktop) With Chrome's install dialog on a computer, the sheet says "Tap Install app"
    and "opens from your home screen": a computer clicks, and the app opens in its own window.
-   Word `guideFor('install')` by `s.os`.
-18. [ ] The whole mobilecheck matrix now takes ~25 min (8 devices × 4 views × 22 screens): a
+   Word `guideFor('install')` by `s.os`. (Done, with a unit test.)
+18. [x] The whole mobilecheck matrix now takes ~25 min (8 devices × 4 views × 22 screens): a
    `--quick` set (SE, Pixel 7, iPad mini; tab and installed; the screens that changed most)
-   for iterating, the full matrix before a commit that touches layout.
+   for iterating, the full matrix before a commit that touches layout. (Done: `--quick`.)
 
 ## Decisions
 
