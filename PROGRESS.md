@@ -13,8 +13,14 @@ complete; its log follows below the lens plan.
   **each gate trains its own creature** — lanes train in parallel (#50); **Legend of the Ages**
   capstone feat (#51); **Riddles of war** — 4 hand-made puzzle battles, brute-forced by `npm run
   puzzlecheck` (#52); unaffordable taps **arm** a card to auto-summon (#53); **gamepad** support
-  (#54); XP rings on the age badges (#55).
-- Bug fixed: loading a progress code erased best star ratings.
+  (#54); XP rings on the age badges (#55); trials hidden until a first win (#56); countered
+  blows glance off + "Effective!/Resisted" words (#57); blessings felt on the field (#58);
+  **citadel heartbeat** below 30% (#59); sandbox foe mode on the cards (#60); Ragnarök foretold
+  3 min ahead with building drums (#61); the Elder Dragon's arrival as an event (#62); no
+  banner through the results (#63); **your name** by your citadel and in the generals' mouths
+  (#64); **battle chronicle** on the results and in Copy result (#65).
+- Bugs fixed: loading a progress code erased best star ratings; the intermittent "arc radius is
+  negative" (a negative frame time step ran a summon animation backwards).
 - Rules changed (simFingerprint differs from run #5 builds): blessing prices, Fenrir/Jötunn/
   Kitsune/Byakko numbers, parallel training. designcheck passes (now 60 even battles; ladder
   ~100/60/7–20/0%, even battles 18.6–19.7 min); enginecheck: all engines identical.
