@@ -24,6 +24,7 @@ export class Chronicle {
   readonly moments: Moment[] = [];
   private firstBlood = false;
   private low: [boolean, boolean] = [false, false];
+  private veteran: [boolean, boolean] = [false, false];
 
   /** `foe`: the opponent's name as the story calls them ("Hippolyta", "Ada"). */
   constructor(me: Team, foe: string) {
@@ -56,6 +57,11 @@ export class Chronicle {
         this.add(t, e.team === this.me ? `Your Elder Dragon takes wing in the ${LANES[e.lane]} lane.` : `${this.foe}'s Elder Dragon takes wing in the ${LANES[e.lane]} lane.`, 3);
       } else if (e.type === 'death' && e.defId === 'dragon') {
         this.add(t, e.team === this.me ? 'Your Elder Dragon is brought down.' : `${this.foe}'s Elder Dragon is brought down.`, 3);
+      } else if (e.type === 'veteran' && !this.veteran[e.team]) {
+        // Each side's first veteran (Lens #81).
+        this.veteran[e.team] = true;
+        const name = UNITS[e.defId]?.name ?? 'creature';
+        this.add(t, e.team === this.me ? `Your ${name} rises a veteran in the ${LANES[e.lane]} lane.` : `${this.foe}'s ${name} rises a veteran in the ${LANES[e.lane]} lane.`, e.team === this.me ? 2 : 1);
       } else if (e.type === 'ragnarok') {
         this.add(t, 'Ragnarök: the wards fall silent.', 2);
       } else if (e.type === 'gameOver') {

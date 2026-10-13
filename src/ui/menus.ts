@@ -491,6 +491,7 @@ export class Menus {
           art(['jotunn', 'fenrir', 'valkyrie'], 0),
           p('<b>Hold the line:</b> the shield under a lane’s ▶ marker (or <b>G</b>) stops that lane’s creatures just past its shrine. Gather a wave outside the enemy gate’s reach — the dashed line in front of it — then let it loose together.'),
           p('<b>Ley sight:</b> while you hold a lane’s shrine you see the enemy’s next summons for that lane above their gate. <b>Brittle frost:</b> frozen foes take 50% more damage — strike while they are frozen.'),
+          p('<b>Veterans:</b> a creature that fells three foes rises a veteran (a gold chevron over its head): it strikes 20% harder and its wounds partly close. Keep your veterans alive.'),
         ],
       },
     ];

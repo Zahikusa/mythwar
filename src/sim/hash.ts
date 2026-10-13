@@ -60,7 +60,7 @@ export function hashWorld(w: World): number {
       h.num(u.slowTimer);
       h.num(u.rootTimer);
       h.num(u.freezeTimer);
-      h.num((u.charged ? 1 : 0) | (u.enraged ? 2 : 0) | (u.rebirthUsed ? 4 : 0) | (u.moving ? 8 : 0));
+      h.num((u.charged ? 1 : 0) | (u.enraged ? 2 : 0) | (u.rebirthUsed ? 4 : 0) | (u.moving ? 8 : 0) | (u.veteran ? 16 : 0));
     }
     h.num(-1);
   }

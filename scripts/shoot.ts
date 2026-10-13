@@ -190,6 +190,16 @@ const SCENARIOS: Scenario[] = [
   // Lens #79: a first meeting with Odin — the chapter that names Mímir, then his line about him.
   { name: 'meet-odin', query: 'play=master&seed=4', w: 1600, h: 900, wait: 1200 },
   { name: 'meet-odin-line', query: 'play=master&seed=4', w: 1600, h: 900, wait: 4200 },
+  // Lens #81: veterans — the gold chevron, and one rising (flare + word) at the moment of the shot.
+  {
+    name: 'veterans',
+    query: 'sandbox&seed=3&theme=2',
+    w: 1600,
+    h: 900,
+    wait: 1500,
+    script: `(() => { const a = window.__mythwar; const w = a.game.world; const U = window.__mythwarData.UNITS; const us = [['jotunn', 0, 330], ['fenrir', 0, 400], ['valkyrie', 0, 250], ['fenrir', 1, 640]].map(([id, team, x]) => { const u = w.spawnUnit(team, 1, U[id], x); u.def = { ...u.def, speed: 0, damage: 0 }; return u; }); us[0].veteran = us[3].veteran = true; us[0].hp *= 0.6; setTimeout(() => { us[1].veteran = true; w.emit({ type: 'veteran', unitId: us[1].id, team: 0, lane: 1, x: us[1].x, defId: 'fenrir' }); }, 1500); })()`,
+    after: 1900,
+  },
   // Lens #77: creatures frozen mid-gesture after a kill (roar, hop, twirl, rear, loom; both sides).
   {
     name: 'temper-gestures',

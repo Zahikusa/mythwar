@@ -1539,3 +1539,27 @@ stands where?*
   would keep it itself (noted in the protocol).
 - Checked: server test (ranks in seats and lists, sanitized, kept on a rename), `playerRank`
   test; mpsmoke screenshots of the room and the lobby list; full verify.
+
+## #81 The Lens of Character Transformation
+*How do my characters change over the course of the game? Is the change visible, and does it
+matter?*
+- The generals change (a chapter opens and closes, #68/#70) and the player's army changes age
+  by age — but no single creature ever changed. A Fenrir that had held a lane alone for a
+  minute and torn down five foes was the same wolf as the one summoned a second ago. The sim
+  even counted each creature's kills (`Unit.kills`) and nothing used them.
+- Change: **veterans**. A creature that fells three foes rises a veteran: a golden flare and a
+  brass call, "Veteran!" over the player's own, and from then on a **gold chevron** over its
+  head; it **strikes 20% harder** and **a quarter of its wounds close** as it rises. The hover
+  label says "Fenrir Wolf · Veteran"; the chronicle records each side's first; how-to page 6
+  tells the rule. The transformation matters to decisions: a veteran is worth pulling back
+  behind a held line (#24) rather than throwing at a gate, and worth hunting on the other side.
+- Fairness: blows within a tick are simultaneous, so a promotion mid-tick would let whichever
+  side is updated first strike or heal as a veteran sooner — the mirrored-armies tests caught
+  exactly that. Promotions now happen at a fixed point at the end of the tick.
+- Rules changed (simFingerprint differs); hashed (veteran bit) and saved (old saves load as
+  non-veterans).
+- Measured: designcheck passes — even battles 18.6 → 18.1 min (a little pacing budget back), the
+  ladder for the scripted player 100/57/20/0% → 100/73/20/7% (it keeps creatures alive; still
+  inside every criterion); `sim 120 master master` 60–60, so no side bias.
+- Checked: `tests/tempers.test.ts` (promotion at three kills, the heal, +20% on the next blow,
+  survives a save); mirrored fairness tests; `shoot veterans`; designcheck; full verify.

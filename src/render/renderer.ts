@@ -576,6 +576,17 @@ export class Renderer {
           this.vis.delete(e.unitId);
           break;
         }
+        case 'veteran': {
+          // A creature rises a veteran: a golden flare, and over the player's own the word for it.
+          const g = L.lanes[e.lane];
+          const v = this.vis.get(e.unitId);
+          const x = v && !Number.isNaN(v.hx) ? v.hx : laneX(g, e.x);
+          const y = v && !Number.isNaN(v.hy) ? v.hy : g.y - 30 * this.bodyScale(g);
+          this.fx.timedFx({ kind: 'flashAt', x, y, dur: 0.5, layer: e.lane, size: 40 * this.bodyScale(g), rgb: [255, 215, 110] });
+          this.fx.burst(x, y, { count: 14, color: '#ffd76a', rgb: [255, 215, 110], speed: 90, life: 0.8, size: 2.4, shape: 'glow', layer: e.lane, gravity: -70, drag: 2 });
+          if (e.team === view.playerTeam && !view.demo) this.fx.text(x, y - 34 * this.bodyScale(g), 'Veteran!', '#ffd76a', 14);
+          break;
+        }
         case 'rebirth': {
           const g = L.lanes[e.lane];
           const x = laneX(g, e.x);
@@ -1725,6 +1736,25 @@ export class Renderer {
       ctx.fillRect(bx, by, w * realFrac, h);
       ctx.globalAlpha = 1;
     }
+    // A veteran (Lens #81) wears a gold chevron above its head for the rest of its life.
+    if (u.veteran) {
+      const k = Math.max(0.8, Math.min(1.3, this.bodyScale(g)));
+      const cy = y - (art.height + 6) * p.s - 9 * k;
+      ctx.beginPath();
+      ctx.moveTo(p.x - 6 * k, cy + 3 * k);
+      ctx.lineTo(p.x, cy - 3 * k);
+      ctx.lineTo(p.x + 6 * k, cy + 3 * k);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = 'rgba(30, 16, 8, 0.85)';
+      ctx.lineWidth = 4.5 * k;
+      ctx.stroke();
+      ctx.strokeStyle = '#ffd76a';
+      ctx.lineWidth = 2.4 * k;
+      ctx.stroke();
+      ctx.lineCap = 'butt';
+      ctx.lineJoin = 'miter';
+    }
   }
 
   /**
@@ -1757,7 +1787,7 @@ export class Renderer {
   /** Small name / class / health label above the creature under the mouse. */
   private drawHoverLabel(ctx: CanvasRenderingContext2D, u: Unit, x: number, y: number, view: ViewState): void {
     const mine = u.team === view.playerTeam;
-    const name = u.def.name;
+    const name = u.veteran ? `${u.def.name} · Veteran` : u.def.name;
     const hp = `${Math.ceil(u.hp)} / ${Math.ceil(u.maxHp)}`;
     // The counter rule, right where you look: what beats this foe / what yours is good against.
     const cls = u.def.cls;

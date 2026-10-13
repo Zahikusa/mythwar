@@ -437,6 +437,10 @@ export class Audio {
         case 'meteor':
           if (this.allow('meteor', 0.12)) this.tone({ freq: 1800, to: 300, dur: e.fall, vol: 0.05, pan: this.panFor(e.x) });
           break;
+        case 'veteran':
+          // A short rising brass call, louder for your own.
+          if (this.allow('veteran', 0.4)) [0, 4, 7].forEach((n, i) => this.tone({ freq: midi(67 + n), dur: 0.22, vol: e.team === this.playerTeam ? 0.07 : 0.035, type: 'triangle', delay: i * 0.07, pan: this.panFor(e.x) }));
+          break;
         case 'rebirth':
           [0, 5, 9, 12].forEach((n, i) => this.tone({ freq: midi(69 + n), dur: 0.6, vol: 0.07, delay: i * 0.05 }));
           break;

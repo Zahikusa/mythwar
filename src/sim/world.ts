@@ -9,6 +9,9 @@ import {
   GLASS_CITADEL,
   KILL_GOLD_MULT,
   KILL_XP_MULT,
+  VETERAN_DAMAGE,
+  VETERAN_HEAL,
+  VETERAN_KILLS,
   LANE_COUNT,
   LANE_LENGTH,
   MAX_AGE,
@@ -170,6 +173,8 @@ export class World {
   private startDist: number[] = [];
   /** Lifesteal earned during a lane update, applied once both sides have struck. */
   private heals: { u: Unit; amount: number }[] = [];
+  /** Creatures that felled their VETERAN_KILLS-th foe this tick (promoted once the tick is over). */
+  private promotions: Unit[] = [];
 
   constructor(opts: WorldOptions = {}) {
     this.seed = opts.seed ?? 12345;
@@ -309,7 +314,7 @@ export class World {
       w.lanes[i] = lane.map((u) => {
         const def = UNITS[u.def];
         if (!def) throw new Error(`Unknown creature ${u.def}`);
-        const unit: Unit = { ...u, def };
+        const unit: Unit = { ...u, def, veteran: u.veteran ?? false };
         w.unitById.set(unit.id, unit);
         return unit;
       });
@@ -629,6 +634,7 @@ export class World {
     this.updateProjectiles(dt);
     updatePowers(this, dt);
     this.updateShrines(dt);
+    this.promote();
     this.cleanup();
     this.checkWin();
   }
@@ -777,6 +783,7 @@ export class World {
       rebirthUsed: false,
       lastHitAt: -10,
       kills: 0,
+      veteran: false,
       renderKey: 0,
     };
     this.lanes[lane].push(u);
@@ -958,7 +965,7 @@ export class World {
 
   private meleeHit(u: Unit, target: Unit | null, list: Unit[]): void {
     const def = u.def;
-    let dmg = def.damage * this.mightMult(u.team);
+    let dmg = this.unitDamage(u);
     const charge = trait(def, 'charge');
     if (charge && u.charged) {
       dmg *= charge.mult;
@@ -995,6 +1002,11 @@ export class World {
     }
   }
 
+  /** A creature's blow before class counters: its damage, the Might blessing, veterancy. */
+  private unitDamage(u: Unit): number {
+    return u.def.damage * this.mightMult(u.team) * (u.veteran ? VETERAN_DAMAGE : 1);
+  }
+
   private fireProjectileFromUnit(u: Unit, target: Unit | null): void {
     const def = u.def;
     const spec = def.projectile!;
@@ -1014,7 +1026,7 @@ export class World {
       tx,
       speed: spec.speed,
       arc: spec.arc,
-      damage: def.damage * this.mightMult(u.team),
+      damage: this.unitDamage(u),
       cls: def.cls,
       splash: splash ? splash.radius : 0,
       slow: slow ? { factor: slow.factor, duration: slow.duration } : undefined,
@@ -1257,8 +1269,23 @@ export class World {
     killer.stats.goldEarned += gold;
     killer.stats.killGold += gold;
     this.players[u.team].stats.losses++;
-    if (attacker) attacker.kills++;
     this.emit({ type: 'death', unitId: u.id, team: u.team, lane: u.lane, x: u.x, defId: u.def.id, flying: u.flying, gold, killer: attacker ? attacker.id : -1 });
+    if (attacker && ++attacker.kills === VETERAN_KILLS) this.promotions.push(attacker);
+  }
+
+  /**
+   * Veterans rise at the end of the tick, not the moment of the kill: blows within a tick are
+   * simultaneous, so whichever side happens to be updated first mustn't strike or heal as a
+   * veteran earlier than the other.
+   */
+  private promote(): void {
+    for (const u of this.promotions) {
+      if (!u.alive || u.veteran) continue;
+      u.veteran = true;
+      u.hp = Math.min(u.maxHp, u.hp + u.maxHp * VETERAN_HEAL);
+      this.emit({ type: 'veteran', unitId: u.id, team: u.team, lane: u.lane, x: u.x, defId: u.def.id });
+    }
+    this.promotions.length = 0;
   }
 
   damageBase(team: Team, rawAmount: number, lane: number, attackerTeam: Team): void {

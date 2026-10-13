@@ -45,3 +45,45 @@ describe('creature tempers (Lens #77)', () => {
     expect(d2 && d2.type === 'death' && d2.killer).toBe(-1);
   });
 });
+
+describe('veterans (Lens #81)', () => {
+  it('a creature that fells three foes rises a veteran at the end of the tick: heals and strikes harder', async () => {
+    const { VETERAN_DAMAGE, VETERAN_HEAL, VETERAN_KILLS } = await import('../src/sim/data.ts');
+    const w = new World();
+    const hero = w.spawnUnit(0, 0, UNITS.minotaur, 400);
+    hero.hp = hero.maxHp * 0.5;
+    const log: SimEvent[] = [];
+    for (let k = 0; k < VETERAN_KILLS; k++) {
+      const foe = w.spawnUnit(1, 0, UNITS.redcap, 440);
+      foe.hp = 1;
+      foe.def = { ...foe.def, damage: 0 };
+      for (let i = 0; i < Math.round(5 / TICK) && foe.alive; i++) {
+        w.step();
+        log.push(...w.drainEvents());
+      }
+      expect(foe.alive).toBe(false);
+    }
+    expect(hero.kills).toBe(VETERAN_KILLS);
+    expect(hero.veteran).toBe(true);
+    expect(log.filter((e) => e.type === 'veteran').map((e) => e.type === 'veteran' && e.unitId)).toEqual([hero.id]);
+    expect(hero.hp).toBeGreaterThanOrEqual(hero.maxHp * (0.5 + VETERAN_HEAL) - 1e-6);
+    // Its next blow: 20% more than a fresh minotaur's against the same target.
+    const dummy = w.spawnUnit(1, 0, UNITS.minotaur, 440);
+    dummy.hp = dummy.maxHp = 1e7;
+    dummy.def = { ...dummy.def, damage: 0 };
+    const hits: number[] = [];
+    for (let i = 0; i < Math.round(4 / TICK) && hits.length === 0; i++) {
+      w.step();
+      for (const e of w.drainEvents()) if (e.type === 'hit' && e.targetId === dummy.id) hits.push(e.amount);
+    }
+    expect(hits[0]).toBeCloseTo(UNITS.minotaur.damage * VETERAN_DAMAGE, 6);
+  });
+
+  it('veterancy survives a save', () => {
+    const w = new World();
+    const u = w.spawnUnit(0, 1, UNITS.oni, 300);
+    u.veteran = true;
+    const back = World.deserialize(w.serialize());
+    expect(back.unitById.get(u.id)!.veteran).toBe(true);
+  });
+});

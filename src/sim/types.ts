@@ -36,6 +36,8 @@ export interface Unit {
   rebirthUsed: boolean;
   lastHitAt: number;
   kills: number;
+  /** Felled VETERAN_KILLS foes: deals VETERAN_DAMAGE times as much. */
+  veteran: boolean;
   /** Scratch value owned by the renderer (draw order); not used by the simulation. */
   renderKey: number;
 }
@@ -159,6 +161,7 @@ export type SimEvent =
   | { type: 'baseHit'; team: Team; lane: number; amount: number }
   | { type: 'death'; unitId: number; team: Team; lane: number; x: number; defId: string; flying: boolean; gold: number; killer: number }
   | { type: 'rebirth'; unitId: number; team: Team; lane: number; x: number }
+  | { type: 'veteran'; unitId: number; team: Team; lane: number; x: number; defId: string }
   | { type: 'projectile'; projId: number; team: Team; lane: number; kind: ProjectileKind; fromTurret: boolean }
   | { type: 'impact'; id: number; team: Team; lane: number; x: number; kind: ProjectileKind; splash: number }
   | { type: 'turretFire'; team: Team; lane: number }

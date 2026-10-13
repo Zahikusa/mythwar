@@ -171,7 +171,7 @@ complete; its log follows below the lens plan.
 - [x] #78 The Interpersonal Circumplex — the generals answer the player's deeds (ascending, a god power on them, a shrine taken back) from their place on the circumplex
 - [x] #79 The Character Web — the myths' own ties (Hippolyta is Ares' daughter, Odin drank from Mímir's well, Puck is Oberon's) in first-meeting lines and the chapters
 - [x] #80 Status — a standing earned on the journey (Recruit → Warden → Champion → Warlord → Conqueror → Legend) by each seat and in the open-battle list (protocol v9)
-- [ ] #81 Character Transformation — veteran creatures
+- [x] #81 Character Transformation — veterans: three kills and a creature rises (gold chevron, +20% damage, a quarter healed), promoted at the end of the tick for fairness
 - [ ] #82 Inner Contradiction — character depth
 - [ ] #83 The Nameless Quality — feel polish
 - [ ] #84 Friendship — multiplayer friendship tools (copy invite link)

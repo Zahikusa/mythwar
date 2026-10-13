@@ -152,6 +152,13 @@ export const START_POWER_COOLDOWN = 25;
 export const PASSIVE_XP = 1.5; // xp / second
 export const KILL_GOLD_MULT = 0.75;
 export const KILL_XP_MULT = 1.0;
+/**
+ * Veterans (Lens #81): a creature that fells this many foes is changed by it — it deals more
+ * damage from then on and its wounds partly close at the moment it rises.
+ */
+export const VETERAN_KILLS = 3;
+export const VETERAN_DAMAGE = 1.2;
+export const VETERAN_HEAL = 0.25;
 export const BASE_DAMAGE_XP = 0.15; // xp per point of base damage, divided by attacker age power scale
 export const SELL_REFUND = 0.5;
 /** Frozen creatures are brittle: every blow against them (creature, turret, ward, power) deals this much more. */
