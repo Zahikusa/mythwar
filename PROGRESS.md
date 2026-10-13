@@ -84,6 +84,18 @@ built, how to see each part working, and the decisions that need you.
   hero of the battle (#88); **CONTRIBUTING.md** (#89); DESIGN.md refreshed (#90); a local
   **playtest journal** (Settings → Copy playtest journal) and **docs/PLAYTEST.md** (#91).
 - Protocol is now **v13** (v13: device ids for the Hall): server and pages must come from the same build.
+- Lenses #93–#100 finished Phase 2 (ROADMAP, BRIEF, PITCH + link-preview card, PROFIT +
+  `npm run servercost`, PRIVACY + a break note after each hour, the Raven's mpsmoke check of a
+  battle starting in a hidden tab, "Now bring a friend →" when the war is won).
+- Verification mode: improvement backlog items 1–15 all done (unique hero names, local-day hall,
+  "Well played!" on online results, results-fit check in smoke (found a real 22-px overflow),
+  gesture timing, script aliases, cross-platform Chrome lookup, lone-sigil label, device ids for
+  the Hall, async hall saves, accessible report tabs, a trustworthy perfcheck, break-note tests,
+  a name blocklist).
+- perfcheck now measures a heavy 30-creature field: ~1.25 ms of our script per frame (budget 3);
+  in headless Chrome ~2/3 of the frame is canvas calls incl. software raster (`ctx.stroke` of
+  the outlined art) — on phones that raster runs on the GPU; low-end devices fall back to the
+  automatic battery saver.
 
 ## Run #6 in short (for the morning)
 - Lenses #45–#76 done (one commit each, reasoning in `docs/LENSES.md`). Highlights: battles are
