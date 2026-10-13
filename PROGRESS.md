@@ -551,10 +551,18 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
    on the server and both replicas at one tick (no desync), resumes with Ada's 'over' held: her
    replica sees the fall, no results; released → results with the verdict. Fails against the
    pre-#219 NetGame.)
-241. [ ] `scripts/smoke.ts` still has ~74 fixed sleeps, most 100–600 ms after in-battle taps or
+241. [x] `scripts/smoke.ts` still has ~74 fixed sleeps, most 100–600 ms after in-battle taps or
    keys (sandbox X, cards, chips, the gate panel). #204 took the menu changes; the next are the
    ones whose check reads state the tap sets (queue length, a panel open): a small
    `until(page, fn)` helper and replace them, verify three runs green.
+   (Done for those: `settled(page, fn)` — 12 more sleeps (74 → 62): the sandbox's X / card /
+   chip, the armed card, lane taps and clicks, a card tap, the drag (which also waits for the
+   HUD's chips — a frame after the queue). Left: "nothing should happen" checks, drag/key/pad
+   steps, effects that take time. Three runs green — after #242.)
+242. [x] Faster taps in smoke surfaced a console warning on phones: "Ignored attempt to cancel a
+   touchend event with cancelable=false" — `src/main.ts`'s double-tap-zoom blocker cancelled a
+   second touchend within 300 ms even while the page scrolled (not cancelable). A player
+   double-tapping a card mid-scroll logs it too. (Done: only cancelable touchends.)
 
 
 

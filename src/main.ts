@@ -14,7 +14,8 @@ document.addEventListener(
   'touchend',
   (e) => {
     const now = performance.now();
-    if (now - lastTouchEnd < 300 && !(e.target instanceof HTMLInputElement)) e.preventDefault();
+    // (Not while the page is scrolling: that touchend can't be cancelled — the browser says so.)
+    if (now - lastTouchEnd < 300 && e.cancelable && !(e.target instanceof HTMLInputElement)) e.preventDefault();
     lastTouchEnd = now;
   },
   { passive: false },

@@ -103,6 +103,14 @@ async function menuIs(page: Page, want: string, timeout = 6000): Promise<void> {
     .catch(() => {});
 }
 
+/**
+ * After a tap or key whose effect the next check reads: waits until `fn` holds in the page
+ * (instead of a fixed pause). A timeout lets that check fail with its own message.
+ */
+async function settled(page: Page, fn: () => boolean, timeout = 3000): Promise<void> {
+  await page.waitForFunction(fn, { timeout, polling: 30 }).catch(() => {});
+}
+
 async function center(page: Page, selector: string): Promise<{ x: number; y: number }> {
   const box = await (await page.$(selector))!.boundingBox();
   return { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
@@ -274,24 +282,24 @@ async function sandboxFlow(page: Page): Promise<void> {
   await page.goto(`${base}/?sandbox&seed=3`, { waitUntil: 'load' });
   await appUp(page);
   await page.keyboard.press('x');
-  await sleep(200);
+  await settled(page, () => !!document.querySelector('.hud.foeside'));
   const foe = await page.evaluate(() => !!document.querySelector('.hud.foeside'));
   check('sandbox: X turns the cards into the foe’s (marked)', foe, String(foe));
   const card = await center(page, '.card.cls-hunter');
   await page.mouse.click(card.x, card.y);
-  await sleep(200);
+  await settled(page, () => (window as unknown as { __mythwar: any }).__mythwar.game.world.players[1].queue.length === 1);
   const q = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.players.map((p: any) => p.queue.length));
   check('sandbox: in foe mode a card summons for the foe', q[0] === 0 && q[1] === 1, JSON.stringify(q));
   // (Backlog 61) The queue shown is the foe's — and its chip cancels the foe's order.
-  await sleep(200);
+  await settled(page, () => document.querySelectorAll('.hud .qchip').length === 1);
   const chips = await page.evaluate(() => document.querySelectorAll('.hud .qchip').length);
   const chip = await center(page, '.hud .qchip');
   await page.mouse.click(chip.x, chip.y);
-  await sleep(200);
+  await settled(page, () => (window as unknown as { __mythwar: any }).__mythwar.game.world.players[1].queue.length === 0);
   const q2 = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.players.map((p: any) => p.queue.length));
   check('sandbox: in foe mode the queue shows the foe’s orders, and a chip cancels one', chips === 1 && q2[0] === 0 && q2[1] === 0, JSON.stringify({ chips, q2 }));
   await page.keyboard.press('x');
-  await sleep(200);
+  await settled(page, () => !document.querySelector('.hud.foeside'));
   const back = await page.evaluate(() => !document.querySelector('.hud.foeside'));
   check('sandbox: X again switches back to your side', back, String(back));
 }
@@ -494,14 +502,14 @@ async function armedFlow(page: Page): Promise<void> {
   await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].gold = 5));
   const card = await center(page, '.card.cls-guardian');
   await page.mouse.click(card.x, card.y);
-  await sleep(200);
+  await settled(page, () => !!document.querySelector('.card.cls-guardian.armed'));
   const armed = await page.evaluate(() => ({ armed: !!document.querySelector('.card.cls-guardian.armed'), queue: (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.length }));
   check('tapping a card you cannot afford arms it (nothing summoned yet)', armed.armed && armed.queue === 0, JSON.stringify(armed));
   await page.evaluate(() => {
     const g = (window as unknown as { __mythwar: any }).__mythwar.game;
     g.world.players[0].gold = 200;
   });
-  await sleep(300);
+  await settled(page, () => (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.length === 1);
   const after = await page.evaluate(() => ({ armed: !!document.querySelector('.card.armed'), queue: (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.map((q: any) => q.unitId) }));
   check('the armed card summons itself once the gold is there', !after.armed && after.queue.length === 1, JSON.stringify(after));
   // Tapping an armed card again disarms it.
@@ -755,7 +763,7 @@ async function rotatedMenusFlow(page: Page): Promise<void> {
   });
   check('rotated: stage keeps clear of notch and home bar', Math.abs(ins.top - 47) < 1 && Math.abs(ins.bottom - (844 - 34)) < 1, JSON.stringify(ins));
   await page.touchscreen.tap(ins.lane.x, ins.lane.y);
-  await sleep(150);
+  await settled(page, () => (window as unknown as { __mythwar: any }).__mythwar.game.view.selectedLane === 2);
   const laneSel = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.view.selectedLane);
   check('rotated with insets: tapping a lane selects it', laneSel === 2, `lane=${laneSel}`);
   await page.evaluate(() => {
@@ -937,7 +945,7 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   const l0 = await laneScreen(page, 0);
   if (viewport.mobile) await page.touchscreen.tap(l0.x, l0.y);
   else await page.mouse.click(l0.x, l0.y);
-  await sleep(100);
+  await settled(page, () => (window as unknown as { __mythwar: any }).__mythwar.game.view.selectedLane === 0);
   s = await state(page);
   check('clicking a lane selects it', s.lane === 0, `lane=${s.lane}`);
   // (Backlog 149) A coach tip lets taps through to the field under it; only "Got it" takes one.
@@ -986,7 +994,7 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   const card = await center(page, '.card:nth-child(2)');
   if (viewport.mobile) await page.touchscreen.tap(card.x, card.y);
   else await page.mouse.click(card.x, card.y);
-  await sleep(100);
+  await settled(page, () => (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.length === 1);
   s = await state(page);
   check('tapping a card queues a creature', s.queue === 1 && s.gold < g0, `queue=${s.queue} gold=${s.gold.toFixed(0)}`);
   const laneOfQueued = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue[0]?.lane);
@@ -1014,7 +1022,11 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     }
     await page.mouse.up();
   }
-  await sleep(120);
+  // (…and the HUD's chips caught up with it, a frame later — checked below.)
+  await settled(page, () => {
+    const q = (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue;
+    return q.some((x: any) => x.lane === 2) && document.querySelectorAll('.qchip').length === q.length;
+  });
   const lanes = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.map((q: any) => q.lane));
   check('dragging a card onto a lane summons there', lanes.includes(2), `queue lanes=${JSON.stringify(lanes)}`);
   if (!viewport.mobile) {
