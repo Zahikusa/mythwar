@@ -306,10 +306,24 @@
   color: #ff7a8a;
 }
 
-/* Offers on the title (Menus.titleNotes): pills among the menu's own buttons — wrapped with
-   them, so they never cover the logo or another button on any screen. */
+/* Offers on the title (Menus.titleNotes): in the top-right corner beside the logo where the
+   menu is a column (tablets, computers); on short stages (phones) pills among the menu's own
+   buttons — wrapped with them, so they never cover the logo or another button. */
 .tnotes {
-  display: contents;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: min(300px, 30cqw);
+}
+
+@container stage (max-height: 520px) {
+  .tnotes {
+    display: contents;
+  }
 }
 
 .tnote {

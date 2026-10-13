@@ -75,6 +75,15 @@ const DEVICES: Device[] = [
     app: [{ w: 440, h: 956, safe: { t: 62, r: 0, b: 34, l: 0 } }, { w: 956, h: 440, safe: { t: 0, r: 62, b: 21, l: 62 } }],
   },
   {
+    // A tablet: Safari's bar on top only; installed, the status bar and the home bar.
+    name: 'ipad-mini',
+    engine: 'webkit',
+    ua: 'Mozilla/5.0 (iPad; CPU OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1',
+    dpr: 2,
+    tab: [{ w: 744, h: 1059, safe: NO }, { w: 1133, h: 670, safe: NO }],
+    app: [{ w: 744, h: 1133, safe: { t: 24, r: 0, b: 20, l: 0 } }, { w: 1133, h: 744, safe: { t: 24, r: 0, b: 20, l: 0 } }],
+  },
+  {
     name: 'pixel-7',
     engine: 'chromium',
     ua: android('Pixel 7'),
