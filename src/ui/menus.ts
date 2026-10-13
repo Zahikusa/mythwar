@@ -349,7 +349,7 @@ export class Menus {
       this.continueBtn,
       this.playBtn,
       this.button('Multiplayer', 'mpbtn', () => this.cb.multiplayer(), ICONS.versus),
-      this.button('How to Play', '', () => this.show('howto'), ICONS.info),
+      this.button('How to play', '', () => this.show('howto'), ICONS.info),
       this.button('Bestiary', '', () => this.show('bestiary'), ICONS.book),
       this.button('Settings', '', () => this.show('settings'), ICONS.sound),
     );
@@ -410,7 +410,7 @@ export class Menus {
       this.diffCards[d] = card;
       grid.appendChild(card);
     });
-    const begin = this.button('Begin Battle', 'primary big', () => this.begin(this.selected), ICONS.swords);
+    const begin = this.button('Begin battle', 'primary big', () => this.begin(this.selected), ICONS.swords);
     const back = this.button('Back', 'ghost', () => this.goBack());
     // The toy: no foe, endless gold — play with the creatures and try match-ups.
     const sandbox = this.button('Sandbox', 'ghost', () => this.cb.sandbox());
@@ -907,7 +907,7 @@ export class Menus {
         'div',
         { class: 'mbuttons' },
         this.button('Resume', 'primary big', () => this.cb.resume(), ICONS.play),
-        this.button('How to Play', '', () => this.show('howto'), ICONS.info),
+        this.button('How to play', '', () => this.show('howto'), ICONS.info),
         this.button('Bestiary', '', () => this.show('bestiary'), ICONS.book),
         this.button('Settings', '', () => this.show('settings'), ICONS.sound),
         this.restartBtn,

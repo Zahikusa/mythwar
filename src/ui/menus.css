@@ -1665,9 +1665,29 @@
     font-size: 48px;
   }
 
+  /* The champion beside "Victory", and the line under them ("Ada left the battle.") centred on the
+     screen like the lines below it — not under the title, which the picture pushes aside. */
   .vhead {
     flex-direction: row;
-    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    column-gap: 14px;
+    row-gap: 0;
+  }
+
+  .vhead > .verdict {
+    display: contents;
+  }
+
+  .vhead .vt,
+  .vhead .vs {
+    animation: logoin 0.9s cubic-bezier(0.2, 1, 0.3, 1) both;
+  }
+
+  .vhead .vs {
+    order: 1;
+    flex-basis: 100%;
+    text-align: center;
   }
 
   .vportrait canvas {

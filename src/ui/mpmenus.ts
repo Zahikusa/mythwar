@@ -101,10 +101,12 @@ export class MpScreens {
   }
 
   /** A short message on the lobby and room screens (errors such as an unknown room code). */
-  flash(text: string, ms = 4500): void {
+  /** `calm`: news or a tip — not the alarm colour of an error. */
+  flash(text: string, ms = 4500, calm = false): void {
     for (const f of this.flashes) {
       setText(f, text);
       f.classList.add('show');
+      f.classList.toggle('calm', calm);
     }
     clearTimeout(this.flashTimer);
     this.flashTimer = window.setTimeout(() => this.unflash(), ms);
@@ -280,7 +282,7 @@ export class MpScreens {
         if (this.mySeat !== i) return;
         // (Upright phones show the game rotated but open the keyboard upright — the lobby's tip
         // says so, and a guest who came by QR code never saw the lobby.)
-        if (name.closest('#stage')?.classList.contains('rotated')) this.flash('Tip: turn your phone sideways to type — the keyboard opens upright.');
+        if (name.closest('#stage')?.classList.contains('rotated')) this.flash('Tip: turn your phone sideways to type — the keyboard opens upright.', 4500, true);
         edit.value = this.nameInput.value;
         name.classList.add('hidden');
         edit.classList.remove('hidden');

@@ -200,7 +200,7 @@ async function resumeFlow(page: Page): Promise<void> {
     await page.mouse.click(nb.x, nb.y);
     await menuIs(page, 'difficulty');
     const note = await page.evaluate(() => !document.querySelector('.dnote')!.classList.contains('hidden'));
-    const bb = await centerText(page, '.screen.difficulty', 'Begin Battle');
+    const bb = await centerText(page, '.screen.difficulty', 'Begin battle');
     await page.mouse.click(bb.x, bb.y);
     await menuIs(page, 'none');
     const after = (await page.evaluate(`(() => { const a = (${app})(); return { losses: a.settings.records.adept?.losses ?? 0, state: a.state }; })()`)) as { losses: number; state: string };
@@ -793,7 +793,7 @@ async function rotatedMenusFlow(page: Page): Promise<void> {
   check('rotated: Play opens the difficulty screen', menu === 'difficulty', menu);
   const begin = await center(page, '.screen.difficulty .mbtn.primary');
   const inView = begin.x > 0 && begin.x < 390 && begin.y > 0 && begin.y < 844;
-  check('rotated: Begin Battle is on screen', inView, JSON.stringify(begin));
+  check('rotated: Begin battle is on screen', inView, JSON.stringify(begin));
   await page.touchscreen.tap(begin.x, begin.y);
   await menuIs(page, 'howto');
   // A first-time player sees the how-to first, with a Skip button straight into battle.
@@ -1331,7 +1331,7 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     await page.keyboard.press('Escape');
     await sleep(400);
     s = await state(page);
-    check('Escape in How to Play returns to the pause menu', s.paused && s.menu === 'pause', `paused=${s.paused} menu=${s.menu}`);
+    check('Escape in How to play returns to the pause menu', s.paused && s.menu === 'pause', `paused=${s.paused} menu=${s.menu}`);
   }
   const rb = await center(page, '.screen.pause .mbtn.primary');
   if (viewport.mobile) await page.touchscreen.tap(rb.x, rb.y);

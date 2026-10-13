@@ -192,6 +192,11 @@
   max-height: 60px;
 }
 
+/* News and tips ("Bo left the room", "Press Back again…") — calm; errors keep the alarm pink. */
+.mpflash.calm {
+  color: #efe4ff;
+}
+
 .mpactions {
   display: flex;
   align-items: flex-start;

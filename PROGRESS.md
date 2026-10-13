@@ -628,12 +628,19 @@ on screen.)
    `pointer: coarse`. (Done: 38 px, 10-px row gaps, the handicap row 6 px further down.)
    Also: smoke's "queue chips match the queue" read the HUD a frame early once — it waits for
    the chips now (two runs green).
-255. [ ] Mixed capitalisation: "How to Play" (title, pause) vs "How to play" (room), "Begin
+255. [x] Mixed capitalisation: "How to Play" (title, pause) vs "How to play" (room), "Begin
    Battle" beside "Leave room", "Change foe". Sentence case throughout.
-256. [ ] The room's message line uses the alarm pink for tips too ("Tip: turn your phone
+   (Done: "How to play", "Begin battle" — the only title-case buttons left but "Download
+   Mythwar Server", which names the download. smoke's lookups follow. The docs' older pictures
+   still show the old case.)
+256. [x] The room's message line uses the alarm pink for tips too ("Tip: turn your phone
    sideways…") — `flash(text, ms, kind)` with a calmer colour for tips.
-257. [ ] Results: the first subtitle ("X left the battle.") centres under "Victory" — shifted left
+   (Done: `flash(text, ms, calm)` — room news, the Back prompt and tips are calm; errors and the
+   lobby's notes after a lost seat keep the pink.)
+257. [x] Results: the first subtitle ("X left the battle.") centres under "Victory" — shifted left
    by the champion picture — while the lines below centre on the screen: ragged by 70–100 px.
+   (Done on short stages, CSS only: the verdict box is `display: contents`, so the title and the
+   champion share a row and the subtitle takes its own, centred. Re-shot at 844×390.)
 
 
 

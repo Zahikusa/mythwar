@@ -796,7 +796,7 @@ export class App {
         this.leaveRoom();
       } else {
         this.roomBackAt = now;
-        this.menus.mp.flash('Press Back again to leave the room.', ROOM_BACK_WINDOW);
+        this.menus.mp.flash('Press Back again to leave the room.', ROOM_BACK_WINDOW, true);
       }
     }
     else if (m === 'howto' || m === 'settings' || m === 'bestiary' || m === 'feats' || m === 'difficulty' || m === 'riddles') this.menus.goBack();
@@ -1264,7 +1264,7 @@ export class App {
     const news = roomNews(prev, now, performance.now() - this.ownCoopAt <= 2000);
     if (news.chime) this.audio.ui(news.chime);
     if (news.chime === 'ready') this.buzz([20, 40, 20]);
-    if (news.said && this.menus.current === 'room') this.menus.mp.flash(news.said);
+    if (news.said && this.menus.current === 'room') this.menus.mp.flash(news.said, 4500, true);
   }
 
   private onMpError(code: string, message: string): void {
