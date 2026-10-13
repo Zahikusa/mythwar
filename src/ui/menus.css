@@ -55,11 +55,13 @@
   gap: inherit;
   margin: -6px calc(-1 * var(--spad, 20px));
   padding: 6px var(--spad, 20px);
-  overflow-x: hidden;
+  /* (Not overflow-x: hidden — Chrome judges a turned scroller's axes on the screen: hiding x
+     stopped every swipe on an upright phone.) */
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  /* (Both axes: on an upright phone the stage is turned, and touch-action reads the screen's axes.) */
+  touch-action: pan-x pan-y;
 }
 
 /* More above / below than is shown: the edge fades ("scroll for more", not "cut off"). */

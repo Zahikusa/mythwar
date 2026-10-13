@@ -206,6 +206,61 @@ function inspect(safe: Insets): Problem[] {
   return out;
 }
 
+/**
+ * Real finger gestures (Chromium only: WebKit has no way to synthesize them): a pinch and swipes
+ * must leave the page where it is; a swipe on a screen's body that has more to show scrolls it
+ * (on an upright phone the stage is turned, so "down the screen" is sideways under the finger).
+ */
+async function gestures(page: Page): Promise<Problem[]> {
+  const out: Problem[] = [];
+  const cdp = await page.context().newCDPSession(page);
+  const vw = page.viewportSize()!.width;
+  const vh = page.viewportSize()!.height;
+  const still = () =>
+    page.evaluate(() => ({ x: scrollX, y: scrollY, scale: visualViewport?.scale ?? 1, top: visualViewport?.offsetTop ?? 0, left: visualViewport?.offsetLeft ?? 0 }));
+  const moved = (s: Awaited<ReturnType<typeof still>>) => s.x !== 0 || s.y !== 0 || Math.abs(s.scale - 1) > 0.01 || s.top !== 0 || s.left !== 0;
+  // A finger (or two) dragged in steps, as a hand would.
+  const drag = async (from: [number, number][], dx: number, dy: number, spread = 0) => {
+    const at = (i: number) => from.map(([x, y], k) => ({ x: x + (dx * i) / 10 + (k ? spread : -spread) * (i / 10), y: y + (dy * i) / 10, id: k }));
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at(0) });
+    for (let i = 1; i <= 10; i++) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: at(i) });
+      await page.waitForTimeout(16);
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await page.waitForTimeout(250);
+  };
+  const c: [number, number] = [vw / 2, vh / 2];
+  await drag([[c[0] - 30, c[1]], [c[0] + 30, c[1]]], 0, 0, 90);
+  let s = await still();
+  if (moved(s)) out.push({ kind: 'zoom', what: `a pinch zoomed the page (${JSON.stringify(s)})` });
+  for (const [dx, dy] of [[0, 160], [0, -160], [160, 0], [-160, 0]]) {
+    await drag([c], dx, dy);
+    s = await still();
+    if (moved(s)) {
+      out.push({ kind: 'scroll', what: `a swipe (${dx},${dy}) moved the page (${JSON.stringify(s)})` });
+      await page.evaluate(() => scrollTo(0, 0));
+    }
+  }
+  const body = await page.evaluate(() => {
+    const b = document.querySelector<HTMLElement>('.screen.active > .sbody');
+    if (!b || b.scrollHeight <= b.clientHeight + 40) return null;
+    b.scrollTop = 0;
+    const r = b.getBoundingClientRect();
+    return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2, rotated: !!document.querySelector('#stage.rotated') };
+  });
+  if (body) {
+    // (Finger towards the stage's top: up the screen, or rightwards on a turned stage.)
+    await drag([[body.x, body.y]], body.rotated ? 120 : 0, body.rotated ? 0 : -120);
+    const top = await page.evaluate(() => document.querySelector<HTMLElement>('.screen.active > .sbody')!.scrollTop);
+    if (top < 20) out.push({ kind: 'panel', what: `a swipe on the screen's body did not scroll it (scrollTop ${top})` });
+    s = await still();
+    if (moved(s)) out.push({ kind: 'scroll', what: `a swipe on the screen's body moved the page (${JSON.stringify(s)})` });
+  }
+  await cdp.detach();
+  return out;
+}
+
 const args = process.argv.slice(2);
 const opt = (k: string) => {
   const i = args.indexOf(k);
@@ -257,6 +312,7 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
       await page.waitForTimeout(s.after ?? 500);
       problems.push(...(await page.evaluate(inspect, v.safe)));
       if (shots) await page.screenshot({ path: `screenshots/mobile/${tag}-${s.name}.png` });
+      if (d.engine === 'chromium') problems.push(...(await gestures(page)));
     } catch (e) {
       problems.push({ kind: 'error', what: (e as Error).message.split('\n')[0] });
     }

@@ -2475,7 +2475,8 @@ html.cbfoe .side.right .hpfill {
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  /* (Both axes: on an upright phone the stage is turned, and touch-action reads the screen's axes.) */
+  touch-action: pan-x pan-y;
   margin: 0 -12px;
   padding: 0 12px;
 }
