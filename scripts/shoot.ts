@@ -343,7 +343,9 @@ async function main(): Promise<void> {
     }
   });
   // (Multiplayer next to the game, as `npm run lan` has it: the lobby and room scenarios.)
-  const mp = attachMultiplayer(server);
+  // (A fixed example address for the invite: pictures stay the same between shots and say nothing
+  // about the machine they were made on.)
+  const mp = attachMultiplayer(server, { lanUrls: () => ['http://192.168.1.20:8787/'] });
   await new Promise<void>((r) => server.listen(0, '127.0.0.1', () => r()));
   const port = (server.address() as { port: number }).port;
   await mkdir('screenshots', { recursive: true });

@@ -379,10 +379,11 @@ it prints, inviting, stopping — 2026-10-13.)
 215. [ ] Back in the battle room (phones, #166/#209) does nothing — like Esc, so a stray swipe can't
    drop a friend's seat. But an Android player pressing Back there expects to go back: offer a
    small "Leave the room?" confirm (Leave / Stay) on Back instead of nothing; Esc unchanged.
-216. [ ] `shoot`'s multiplayer scenarios show this machine's real LAN address and port in the invite
+216. [x] `shoot`'s multiplayer scenarios show this machine's real LAN address and port in the invite
    (README's `docs/mp-room.jpg`: 192.168.1.105:62535). Give shoot's server a fixed example
    (`lanUrls: () => ['http://192.168.1.20:8787/']` — an `attachMultiplayer` option already) so
-   pictures are stable between shots and say nothing about the machine they were made on.
+   pictures are stable between shots and say nothing about the machine they were made on. (Done:
+   shoot's server announces http://192.168.1.20:8787/; docs/mp-room.jpg re-made with it.)
 
 
 
@@ -429,7 +430,7 @@ built, how to see each part working, and the decisions that need you.
 - Late in the run: the WebKit (iPhone engine) pass in `mpengines` checks the http copy fallback and
   Back (#201); Back is guarded on touch devices only (#209); PROGRESS.md split — history in
   docs/PROGRESS-archive.md (#202); README's two multiplayer pictures re-shot (#187, #206); a flaky
-  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #204, #215, #216 (#211, #213, #214 done at the very end).
+  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #204, #215 (#211, #213, #214 done at the very end).
 - **Open question added:** the downloadable release (v1.0.0) is ~280 commits old.
 - Tests 256 → 285; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
   frame); `mpengines` (WebKit vs Chrome/Firefox) in sync.
