@@ -508,6 +508,12 @@ async function main(): Promise<void> {
       document.dispatchEvent(new Event('visibilitychange'));
     });
     await waitFor(a, 'B back: the rematch runs', () => !(window as any).__mythwar.game.netPause && !(window as any).__mythwar.game.paused, 10000);
+    // (Backlog 169) …and the opening banner the notice covered is back, its time not used up.
+    const reopened = await a.evaluate(() => {
+      const el = document.querySelector<HTMLElement>('.hud .banner.show');
+      return { shown: !!el && getComputedStyle(el).visibility === 'visible', title: el?.querySelector('.btitle')?.textContent ?? '' };
+    });
+    check('the opening banner shows again once the away notice goes', reopened.shown && reopened.title === 'Topple their citadel', JSON.stringify(reopened));
     await waitFor(a, 'the rematch past its first ticks', () => (window as any).__mythwar.game.world.tick > 30, 8000);
     const a6 = await info(a);
     check('rematch running', a6.tick > 30 && !a6.paused, `tick ${a6.tick}`);

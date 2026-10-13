@@ -742,10 +742,13 @@ battle, results — 2026-10-13.)
 168. [x] `scripts/shoot.ts`: a guest scenario waited its `after` twice (after the host's script and
    again after the guest's) — 21 s for `mp-battle`. (Done: the guest has its own `wait`; 13 s.)
 (Items 169–: open for the next run.)
-169. [ ] The opening banner shown under the online "is away" notice (#145) is `visibility: hidden`,
+169. [x] The opening banner shown under the online "is away" notice (#145) is `visibility: hidden`,
    so its `aria-live` text is never announced to a screen reader, and it may be gone before the
    opponent is back (its timer runs on). Hold the banner (and its announcement) until the notice
-   goes, or announce the battle's name with the notice.
+   goes, or announce the battle's name with the notice. (Done: the banner's time already stood still while the battle
+   is held; `Hud.holdBanner()` — fed by `NetOverlay.noticeShowing` — also holds it under a notice
+   that doesn't hold the battle (connection lost) and says it again when the notice goes; mpsmoke
+   checks the banner is back after the hidden-tab rematch start.)
 170. [x] `scripts/mpsmoke.ts` ~168: the wait for `mp.name === 'Ada'` proves nothing — the client sets
    the name before anything is sent. Wait for the server's echo instead (the open-battles list or
    the room seat shows "Ada"). (Done: checked on the server's room seat once A hosts.)

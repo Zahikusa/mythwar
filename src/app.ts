@@ -998,6 +998,7 @@ export class App {
       }
     }
     this.netOverlay.update(g instanceof NetGame && this.state !== 'title' ? g : null, performance.now());
+    this.hud.holdBanner(this.netOverlay.noticeShowing);
   }
 
   // -------------------------------------------------------------------------

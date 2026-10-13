@@ -99,6 +99,8 @@ export class Hud {
   private toastTimer = 0;
   private toastQueue: { text: string; kind: 'bad' | 'good' | 'info' | 'feat' }[] = [];
   private bannerTimer = 0;
+  /** An online notice ("Ada is away") covers the banner (see holdBanner). */
+  private bannerHeld = false;
   private panel: 'none' | 'turret' | 'bless' | 'keys' = 'none';
   private turretRows: HTMLElement[] = [];
   private blessRows: Record<string, HTMLElement> = {};
@@ -743,6 +745,22 @@ export class Hud {
   }
 
   /** True while a centre-screen banner (ascension, Ragnarök, verdict) is showing. */
+  /**
+   * Online, "Ada is away" / "Connection lost" takes the banner's place (hud.css hides it): its time
+   * doesn't run meanwhile, and once the notice goes it is said again — screen readers don't
+   * announce what changed while it was hidden.
+   */
+  holdBanner(held: boolean): void {
+    if (held === this.bannerHeld) return;
+    this.bannerHeld = held;
+    if (held || this.bannerTimer <= 0) return;
+    for (const line of this.el.banner.children) {
+      const text = line.textContent;
+      line.textContent = '';
+      line.textContent = text;
+    }
+  }
+
   get bannerShowing(): boolean {
     return this.bannerTimer > 0;
   }
@@ -1315,7 +1333,7 @@ export class Hud {
         else E.toast.classList.remove('show');
       }
     }
-    if (this.bannerTimer > 0) {
+    if (this.bannerTimer > 0 && !this.bannerHeld) {
       this.bannerTimer -= tdt;
       if (this.bannerTimer <= 0) E.banner.classList.remove('show');
     }

@@ -22,6 +22,11 @@ export class NetOverlay {
     return this.banner.classList.contains('show') || this.count.classList.contains('show');
   }
 
+  /** The status notice ("Ada is away", "Connection lost"…) is showing. */
+  get noticeShowing(): boolean {
+    return this.banner.classList.contains('show');
+  }
+
   /** Countdown ticks and "Fight!" (sound / vibration). */
   onBeat: (final: boolean) => void = () => {};
   /** The player takes the win (the opponent has been away long enough). */
