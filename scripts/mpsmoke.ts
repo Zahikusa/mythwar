@@ -47,6 +47,19 @@ async function waitFor(page: Page, what: string, fn: () => boolean, timeout = 80
   }
 }
 
+/** Polls a condition that spans both pages (node side) until it holds; a FAIL if it never does. */
+async function until(what: string, fn: () => Promise<boolean>, timeout = 8000): Promise<boolean> {
+  const end = Date.now() + timeout;
+  for (;;) {
+    if (await fn()) return true;
+    if (Date.now() > end) {
+      check(`waiting for: ${what}`, false, 'timed out');
+      return false;
+    }
+    await sleep(50);
+  }
+}
+
 /** Taps / clicks the visible button with this text inside `scope`. */
 async function press(page: Page, scope: string, text: string): Promise<void> {
   const at = await page.evaluate(
@@ -152,7 +165,7 @@ async function main(): Promise<void> {
     await a.click('.mpname', { count: 3 });
     await a.keyboard.type('Ada');
     await a.keyboard.press('Enter');
-    await sleep(100);
+    await waitFor(a, 'the name taken', () => (window as any).__mythwar.mp.name === 'Ada', 4000);
     // (Backlog 131) Connected with nothing open: the list says so (not the offline "â€”").
     await waitFor(a, 'the empty list says None yet', () => (document.querySelector('.mplist')?.textContent ?? '').includes('None yet'), 4000);
     await shot(a, '1-lobby-desktop');
@@ -187,7 +200,8 @@ async function main(): Promise<void> {
     await dup.evaluateOnNewDocument((t) => sessionStorage.setItem('mythwar.mp.session', t ?? ''), token);
     await dup.goto(`${base}/?mp`, { waitUntil: 'load' });
     await waitFor(dup, 'duplicate tab connected', () => document.querySelector('.mpstatus.ok') !== null);
-    await sleep(300);
+    // (The welcome carries the session's room: once welcomed, a taken-over seat would show.)
+    await waitFor(dup, 'duplicate tab welcomed', () => (window as any).__mythwar.mp.welcomed === true);
     const dupRoom = await dup.evaluate(() => (window as any).__mythwar.mp.room?.code ?? null);
     const aStill = await a.evaluate(() => ({ online: (window as any).__mythwar.mp.state, room: (window as any).__mythwar.mp.room?.code }));
     check('duplicated tab gets its own session', dupRoom === null && aStill.online === 'online' && aStill.room === code, JSON.stringify({ dupRoom, aStill }));
@@ -209,8 +223,7 @@ async function main(): Promise<void> {
 
     console.log('== battle ==');
     await press(a, '.screen.room', 'Ready');
-    await sleep(200);
-    check('A ready, waiting for B', (await a.evaluate(() => document.querySelector('.rnote')?.textContent ?? '')).includes('Waiting'));
+    await waitFor(a, 'A ready, waiting for B', () => (document.querySelector('.rnote')?.textContent ?? '').includes('Waiting'), 4000);
     await press(b, '.screen.room', 'Ready');
     await waitFor(a, 'A battle', () => (window as any).__mythwar.state === 'playing');
     await waitFor(b, 'B battle', () => (window as any).__mythwar.state === 'playing');
@@ -229,13 +242,16 @@ async function main(): Promise<void> {
     // A summons with the keyboard, B taps a card.
     await a.keyboard.press('1');
     await a.keyboard.press('2');
-    await sleep(300);
     const card = await b.evaluate(() => {
       const r = document.querySelector('.card')!.getBoundingClientRect();
       return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
     });
     await b.touchscreen.tap(card.x, card.y);
-    await sleep(4000);
+    // (Orders take a turn or two to cross; the ticks show both clocks running.)
+    await until('orders crossed over, both clocks past tick 200', async () => {
+      const [x, y] = [await info(a), await info(b)];
+      return y.summoned[0] >= 2 && x.summoned[1] >= 1 && x.tick > 200 && y.tick > 200;
+    }, 12_000);
     const a2 = await info(a);
     const b2 = await info(b);
     check('Aâ€™s orders reached B', b2.summoned[0] >= 2, `B sees ${b2.summoned[0]} summons by A`);
@@ -295,7 +311,7 @@ async function main(): Promise<void> {
     check('frozen while paused', (await info(b)).tick === t0);
     await press(b, '.screen.pause', 'Resume');
     await waitFor(a, 'A resumes after countdown', () => (window as any).__mythwar.menus.current === 'none' && !(window as any).__mythwar.game.paused, 6000);
-    await sleep(500);
+    await until('B ticking again', async () => (await info(b)).tick > t0, 4000);
     check('ticking again', (await info(b)).tick > t0);
 
     console.log('== app in the background ==');
@@ -325,7 +341,8 @@ async function main(): Promise<void> {
     const b4 = await info(b);
     check('reloaded player sees the battle so far', b4.summoned[0] >= 2 && b4.tick > 200, `tick ${b4.tick}`);
     check('still mirrored after reload', b4.mirror);
-    await sleep(2500);
+    // (A desync would show within a few seconds of turns: let both run ~150 more ticks.)
+    await until('both run on after the reload', async () => (await info(a)).tick > b4.tick + 150 && (await info(b)).tick > b4.tick + 150, 10_000);
     const a5 = await info(a);
     const b5 = await info(b);
     check('no desyncs', a5.desyncs === 0 && b5.desyncs === 0, `${a5.desyncs} / ${b5.desyncs}`);
@@ -334,9 +351,12 @@ async function main(): Promise<void> {
     await b.keyboard.press('Escape'); // (a phone keyboard isn't a thing, but the key works)
     await waitFor(b, 'B pause menu', () => (window as any).__mythwar.menus.current === 'pause');
     // (Backlog 125) A's quick message reaches B on the menu (bubbles hide under menus).
-    await sleep(1600);
-    await a.evaluate(() => (window as any).__mythwar.mp.emote('gl'));
-    await waitFor(b, 'B reads A on the menu', () => /: Good luck!/.test(document.querySelector('.screen.pause .vemoteline')?.textContent ?? ''), 4000);
+    // (The server takes one quick message per 1.5 s and drops the rest: send until it lands.)
+    await until('B reads A on the menu', async () => {
+      await a.evaluate(() => (window as any).__mythwar.mp.emote('gl'));
+      await sleep(300);
+      return b.evaluate(() => /: Good luck!/.test(document.querySelector('.screen.pause .vemoteline')?.textContent ?? ''));
+    }, 5000);
     await press(b, '.screen.pause', 'Leave battle');
     await waitFor(a, 'A wins', () => (window as any).__mythwar.game.over && (window as any).__mythwar.game.world.winner === 0);
     await waitFor(a, 'A results', () => (window as any).__mythwar.menus.current === 'over', 6000);
@@ -383,7 +403,7 @@ async function main(): Promise<void> {
       document.dispatchEvent(new Event('visibilitychange'));
     });
     await waitFor(a, 'B back: the rematch runs', () => !(window as any).__mythwar.game.netPause && !(window as any).__mythwar.game.paused, 10000);
-    await sleep(4500);
+    await waitFor(a, 'the rematch past its first ticks', () => (window as any).__mythwar.game.world.tick > 30, 8000);
     const a6 = await info(a);
     check('rematch running', a6.tick > 30 && !a6.paused, `tick ${a6.tick}`);
 
@@ -418,7 +438,6 @@ async function main(): Promise<void> {
       check(`online results: all buttons fit a ${w}Ã—${h} phone`, fit.n === 4 && fit.inside && !fit.overlap, JSON.stringify(fit));
     }
     await b.setViewport({ width: portrait ? 390 : 844, height: portrait ? 844 : 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
-    await sleep(300);
     // (Backlog 88/100) B's connection drops on the results: A's rematch note says so â€” not
     // "Waiting for Boâ€¦" for the minute the seat is kept.
     await b.evaluate(() => (window as any).__mythwar.mp.conn.close());
@@ -481,6 +500,9 @@ async function main(): Promise<void> {
     await a.evaluate(() => (window as any).__mythwar.mp.setTrials(['glass']));
     await waitFor(b, 'B told about the handicap', () => /now fights under Glass Citadel/.test(document.querySelector('.screen.room .mpflash')?.textContent ?? ''), 4000);
     await a.evaluate(() => (window as any).__mythwar.mp.setTrials([]));
+    // (A Ready sent before the room's latest change is ignored as stale — backlog 96: both wait
+    // until they see the handicap gone.)
+    for (const p of [a, b]) await waitFor(p, 'the handicap gone', () => ((window as any).__mythwar.mp.room?.seats[0]?.trials.length ?? 1) === 0, 4000);
     for (const p of [a, b]) await p.evaluate(() => (window as any).__mythwar.mp.ready(true));
     await waitFor(a, 'A in the co-op battle', () => (window as any).__mythwar.state === 'playing' && (window as any).__mythwar.game.coop === 'novice', 8000);
     await waitFor(b, 'B in the co-op battle', () => (window as any).__mythwar.state === 'playing' && (window as any).__mythwar.game.coop === 'novice', 8000);
@@ -488,7 +510,7 @@ async function main(): Promise<void> {
     // Both allies summon for the left side; the server's AI fights back on the right.
     for (const p of [a, b]) await p.evaluate(() => (window as any).__mythwar.game.command({ type: 'train', team: 0, unitId: 'redcap', lane: 1 }));
     await waitFor(a, 'the AI summons', () => (window as any).__mythwar.game.world.players[1].stats.summoned > 0, 20_000);
-    await sleep(2500);
+    await until('both allies see both orders', async () => (await info(a)).summoned[0] >= 2 && (await info(b)).summoned[0] >= 2, 8000);
     const ca = await info(a);
     const cb2 = await info(b);
     check('co-op: both allies play the left side, unmirrored', ca.seat === 0 && cb2.seat === 0 && !ca.mirror && !cb2.mirror, JSON.stringify([ca.seat, cb2.seat, ca.mirror, cb2.mirror]));
@@ -505,7 +527,10 @@ async function main(): Promise<void> {
     check('co-op: a lane call lights that lane for the ally', lit);
     // A steps out of the battle: B fights on alone.
     await a.evaluate(() => (window as any).__mythwar.leaveRoom());
-    await sleep(1500);
+    // (B is told A left — the seat empties — and the battle must keep running after that.)
+    await waitFor(b, 'B sees the ally leave', () => (window as any).__mythwar.mp.room?.seats.filter(Boolean).length === 1, 6000);
+    const leftAt = (await info(b)).tick;
+    await until('B plays on', async () => (await info(b)).tick > leftAt + 60, 6000);
     const solo = await info(b);
     check('co-op: the ally plays on when the other leaves', !solo.over && !solo.paused && solo.netPause === null, JSON.stringify(solo));
     await b.evaluate(() => (window as any).__mythwar.leaveRoom());

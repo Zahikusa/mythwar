@@ -591,9 +591,14 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    syncRematch, the emote routing — could move to its own module (`src/onlineapp.ts`) with a
    narrow interface to App, so each half reads on its own. No behaviour change; verify must stay
    green.
-138. [ ] `scripts/mpsmoke.ts` still has many fixed `sleep()`s (e.g. 4.5 s before "rematch running",
+138. [x] `scripts/mpsmoke.ts` still has many fixed `sleep()`s (e.g. 4.5 s before "rematch running",
    1.6 s for the emote gap) — like #134, wait for the condition where one exists (and keep a
    sleep only where time itself is what's tested), for the CI runner (#127).
+   (Done: 11 of 16 sleeps became waits — a node-side `until()` polls conditions spanning both
+   pages; kept: the drag's 16-ms steps, "frozen while paused" (time is what's tested), the
+   resize settle, the shot fade. 61 s → 53 s. Found on the way: under `--latency 60 --jitter 80`
+   the co-op battle never started — both Readies raced A's "handicap off" and were ignored as
+   stale (#96, right); the test now waits for both to see the change. Latency and portrait pass.)
 139. [x] Unit tests: the Hall-key tests run real scrypt (~20 ms each, 16 MB) through a fake clock —
    the cache test (#47) takes ~3 s of the suite. Let LobbyOptions inject the key hash (tests
    pass a fast one; one test keeps the real scrypt). (Done: `LobbyOptions.hallHash`, still applied
