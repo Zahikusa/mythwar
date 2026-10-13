@@ -561,7 +561,8 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 130. [x] `mobile-mp-room` (844×390): your own seat's name is cut with an ellipsis ("Jade Valkyrie
    (you)…" — the " ✎" edit mark pushes it over) although the seat box has room to spare; let the
    name wrap or drop "(you)" on phones (the seat is outlined as yours anyway). (Done: on phones the
-   seat name wraps; checked with `--settings '{"playerName":"Jade Valkyrie"}'`.)
+   seat name wraps — on desktop too (it was cut there the same way); checked with
+   `--settings '{"playerName":"Jade Valkyrie"}'` in `mp-room` and `mobile-mp-room`.)
 131. [x] Lobby: connected with no open battles, the list showed the offline placeholder "—" — it only
    re-rendered when the rooms changed, and going online doesn't change them (seen in the new
    `mp-lobby` shot). (Done: being online is part of the list's signature; mpsmoke checks for

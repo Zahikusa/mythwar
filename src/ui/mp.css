@@ -463,9 +463,9 @@
 .sname {
   font-size: 18px;
   font-weight: 800;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* (A long name with " (you) ✎" wraps to a second line rather than losing its end.) */
+  overflow-wrap: anywhere;
+  line-height: 1.2;
 }
 
 .rseat.mine .sname {
@@ -843,12 +843,8 @@
     padding: 8px 12px;
   }
 
-  /* (160-px seats: "Jade Valkyrie (you) ✎" wraps to a second line rather than losing its end.) */
   .sname {
     font-size: 15px;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    line-height: 1.2;
   }
 
   .ncount {
