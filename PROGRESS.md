@@ -888,7 +888,7 @@ it prints, inviting, stopping — 2026-10-13.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #9 in short (for the morning)
-- Verification mode, backlog items 138–186. Open from run #8: #138 and #142 done; #128 (DOM tests)
+- Verification mode, backlog items 138–199. Open from run #8: #138 and #142 done; #128 (DOM tests)
   and #129 (rival ids) decided against, with reasons; #137 (split app.ts) started with a pure,
   tested `src/ui/roomnews.ts`.
 - A look at the online flows through screenshots (mpsmoke `--shots`, landscape and upright phone,
@@ -916,8 +916,14 @@ built, how to see each part working, and the decisions that need you.
   that the zip was unpacked; macOS 15's Gatekeeper steps; `npm run package:check` starts the
   packaged server.mjs (also in release.yml). Plus #167 (Back online spends no pause), #169, #171,
   #174 (more pure, tested online logic), #186 (gamepad in the room).
+- Then co-op (a review of two allies against the AI, #188–#199): **leaving while the ally had
+  switched apps for a moment lost the battle at once** (#188, fixed, server test); a gone ally no
+  longer gets the win; a room its ally left opens again; the stayer is told the ally left / is
+  away; co-op wording in the away notice, the room's score, the rematch note, the pause note and
+  the verdict; the results say when an offered rematch is a different battle (#193, both modes).
+  Open: #198 (side-wide feats for one ally's deed), #197 (minor wording).
 - **Open question added:** the downloadable release (v1.0.0) is ~280 commits old.
-- Tests 256 → 279; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
+- Tests 256 → 284; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
   frame); `mpengines` (WebKit vs Chrome/Firefox) in sync.
 
 ## Run #8 in short (for the morning)
