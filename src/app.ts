@@ -158,6 +158,11 @@ export class App {
       this.settings.lowQualityAuto = false;
     }
     this.difficulty = this.settings.difficulty;
+    // Behind the stage: the scene continued beside the notch and under the home bar (paintAmbient).
+    this.ambient = document.createElement('canvas');
+    this.ambient.className = 'ambient';
+    this.ambient.setAttribute('aria-hidden', 'true');
+    root.appendChild(this.ambient);
     this.stage = document.createElement('div');
     this.stage.id = 'stage';
     root.appendChild(this.stage);
@@ -403,6 +408,14 @@ export class App {
     this.stage.style.transformOrigin = '0 0';
     // Rotated: stage (0,0) sits at the screen's top-right corner inside the insets.
     this.stage.style.transform = this.rotated ? `translate(${vw - phys.r}px, ${phys.t}px) rotate(90deg)` : `translate(${safe.l}px, ${safe.t}px)`;
+    // Strips around the stage (a notch, the home bar): the ambient copy of the scene fills them.
+    const strips = phys.l + phys.r + phys.t + phys.b > 0;
+    this.ambient.classList.toggle('on', strips);
+    if (strips) {
+      this.ambient.width = Math.max(1, Math.ceil(vw / 8));
+      this.ambient.height = Math.max(1, Math.ceil(vh / 8));
+      this.ambientAt = -Infinity;
+    }
     const toStage = (px: number, py: number): [number, number] => {
       // (Page coordinates → the game's: less the visible part's offset — see follow().)
       const cx = px - this.shift[0];
@@ -437,6 +450,30 @@ export class App {
     const y = vv ? Math.round(vv.offsetTop) : 0;
     this.shift = [x, y];
     this.root.style.transform = x || y ? `translate(${x}px, ${y}px)` : '';
+  }
+
+  /** The scene, blurred, where the stage leaves strips for the notch and home bar. */
+  private readonly ambient: HTMLCanvasElement;
+  private ambientAt = -Infinity;
+
+  /**
+   * Native games draw under the notch and the home bar and keep only their controls clear of
+   * them: here the stage stays inside the safe area and a small, blurred, dimmed copy of the
+   * scene — stretched to the whole screen, a few times a second — fills the strips around it.
+   */
+  private paintAmbient(now: number): void {
+    const c = this.ambient;
+    if (!c.classList.contains('on') || now - this.ambientAt < 250) return;
+    this.ambientAt = now;
+    const g = c.getContext('2d');
+    if (!g) return;
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    if (this.rotated) {
+      // (The stage is turned a quarter clockwise: its x runs down the screen, its y leftwards.)
+      g.translate(c.width, 0);
+      g.rotate(Math.PI / 2);
+      g.drawImage(this.canvas, 0, 0, c.height, c.width);
+    } else g.drawImage(this.canvas, 0, 0, c.width, c.height);
   }
 
   /** How far follow() moved the game down/right the page (0, 0 but while typing on iOS). */
@@ -1129,6 +1166,7 @@ export class App {
       // A paused battle is a true freeze-frame: effects stop too.
       this.renderer.speed = g.speed;
       this.renderer.render(g.world, alpha, g.paused ? 0 : dt, g.view);
+      this.paintAmbient(now);
       if (this.state === 'playing' || this.state === 'over') this.hud.update(dt);
       if (this.renderer.fx.coinsArrived !== this.coinsSeen) {
         this.coinsSeen = this.renderer.fx.coinsArrived;

@@ -34,6 +34,21 @@ textarea {
   overflow: hidden;
 }
 
+/* Beside the notch, under the home bar: the scene continued, blurred and dimmed (App.paintAmbient). */
+#app > canvas.ambient {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  filter: blur(6px) brightness(0.55);
+  transform: scale(1.08);
+}
+
+#app > canvas.ambient.on {
+  display: block;
+}
+
 #stage {
   position: absolute;
   left: 0;
