@@ -739,6 +739,25 @@ battle, results — 2026-10-13.)
    easy to make by accident (the phone's cards sit at the left edge). (Done: from Back, online,
    the menu opens on this device only — "Menu — the battle goes on"; Esc and the pause button
    still pause for both; mpsmoke checks A isn't held and no pause is spent.)
+168. [x] `scripts/shoot.ts`: a guest scenario waited its `after` twice (after the host's script and
+   again after the guest's) — 21 s for `mp-battle`. (Done: the guest has its own `wait`; 13 s.)
+(Items 169–: open for the next run.)
+169. [ ] The opening banner shown under the online "is away" notice (#145) is `visibility: hidden`,
+   so its `aria-live` text is never announced to a screen reader, and it may be gone before the
+   opponent is back (its timer runs on). Hold the banner (and its announcement) until the notice
+   goes, or announce the battle's name with the notice.
+170. [ ] `scripts/mpsmoke.ts` ~168: the wait for `mp.name === 'Ada'` proves nothing — the client sets
+   the name before anything is sent. Wait for the server's echo instead (the open-battles list or
+   the room seat shows "Ada").
+171. [ ] (#137, next slice) `src/app.ts` `onMpChanged`'s lost-session branch (which note, whether to
+   rejoin, whether to leave the results) is decision logic mixed with DOM — a pure
+   `sessionLostAction(lost, state, menu, lostRoom)` with tests, like #150/#156.
+172. [ ] Back (#166) on the online results does nothing (Esc does nothing there either); on a phone,
+   Back from the results could mean "Room" (the friend-facing next step) — or leave it: the
+   buttons are right there. Decide after a playtest (docs/PLAYTEST.md).
+173. [ ] `docs/PLAYTEST.md` predates run #9: add what to watch for the new phone behaviours — Back in
+   a battle opens the menu (and doesn't spend a pause online), a locked phone rejoins the room,
+   Copy result on a LAN phone.
 
 
 
