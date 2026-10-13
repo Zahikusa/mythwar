@@ -17,6 +17,8 @@ import { TEAM_COLORS, THEMES, setColorPerspective, setFoePalette } from './theme
 
 export interface ViewState {
   playerTeam: Team;
+  /** The title screen's attract battle (AI vs AI): no player-facing callouts. */
+  demo?: boolean;
   selectedLane: number;
   hoverLane: number;
   /** Lane highlight mode while choosing a lane for a power / drag-drop. */
@@ -123,6 +125,8 @@ export class Renderer {
   /** Ambient particles (fireflies, snow, petals…); `th` = the theme they belong to. */
   private ambient: { x: number; y: number; p: number; s: number; th: number }[] = [];
   private time = 0;
+  /** When each lane last showed "Effective!" / "Resisted" over the player's creatures. */
+  private wordAt: [number, number][] = [[-99, -99], [-99, -99], [-99, -99]];
   /** Seconds since the previous rendered frame (0 while paused). */
   private frameDt = 0;
   private shake = 0;
@@ -493,8 +497,23 @@ export class Renderer {
             if (u && u.freezeTimer > 0) this.fx.burst(px, by, { count: 5, color: '#d8f4ff', speed: 150, life: 0.45, size: 2.4, shape: 'shard', layer: e.lane, gravity: 260 });
             if (e.mult > 1) {
               this.fx.burst(px, by, { count: 6, color: '#ffe27a', speed: 120, life: 0.35, size: 2.2, shape: 'spark', layer: e.lane, drag: 4 });
+            } else if (e.mult < 1) {
+              // A countered blow glances off: a dull grey puff instead of sparks (Lens #57).
+              this.fx.burst(px, by, { count: 4, color: '#8e97ab', speed: 45, life: 0.3, size: 2.6, shape: 'smoke', layer: e.lane, drag: 3 });
             } else if (e.source === 'unit') {
               this.fx.burst(px, by, { count: 3, color: '#ffffff', speed: 70, life: 0.25, size: 1.8, shape: 'spark', layer: e.lane, drag: 4 });
+            }
+            // Over the player's own creatures, now and then, the word for it: their blows are
+            // "Effective!" (×1.5, they counter their target) or "Resisted" (×0.75, they are
+            // countered) — the triangle named while it happens. Once per lane and kind every 5 s.
+            if ((e.source === 'unit' || e.source === 'projectile') && e.mult !== 1 && e.team !== view.playerTeam && view.playerTeam >= 0 && !view.demo) {
+              const kind = e.mult > 1 ? 0 : 1;
+              const last = this.wordAt[e.lane];
+              // (Never both words on top of each other in a mixed fight: 1.5 s between any two.)
+              if (this.time - last[kind] > 5 && this.time - Math.max(last[0], last[1]) > 1.5) {
+                last[kind] = this.time;
+                this.fx.text(px, by - 26, kind === 0 ? 'Effective!' : 'Resisted', kind === 0 ? '#ffe27a' : '#a9b3c9', 13);
+              }
             }
             // Melee blows ('unit' source) cut a slash across the target (one per target at a time).
             if (e.source === 'unit' && v && this.time - v.lastSlash > 0.2) {

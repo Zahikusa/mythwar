@@ -1122,3 +1122,19 @@ Is it invisible, the way a good tool is?*
   switched off). Quick battle stays: a short session is a newcomer's choice too.
 - Checked: smoke (fresh profile: only Quick battle; after a win: Quick battle and the three
   trials), screenshots of the foe screen on desktop and a 667×375 phone.
+
+## #57 The Lens of Feedback
+*What do players need to know at this moment — and what do they want to know? What feedback do
+they get, and is it the feedback that teaches?*
+- The counter triangle is the core skill, so its feedback matters most. A counter hit (×1.5)
+  already had gold sparks, a gold slash and a bright "ting". The other half — a *countered* hit
+  (×0.75), your creatures in the wrong match-up — looked and sounded exactly like a normal blow.
+  The player learned it only from the outcome (a lost lane) or from the results (#27).
+- Change: countered blows **glance off** — a dull grey puff instead of sparks and a muffled
+  wooden "tock" (rate-limited). And over the player's *own* creatures, now and then, the word for
+  what is happening: gold **"Effective!"** when they hit what they counter, grey **"Resisted"**
+  when what they hit counters them — once per lane and kind every 5 s, never both within 1.5 s
+  in one lane, not in the title screen's attract battle. Melee and ranged (projectile) blows
+  both count. The triangle gets named while it happens, in the lane where it happens.
+- Checked: screenshot of a mixed fight (found the two words stacking — spaced out since), full
+  verify; perfcheck 1.97 ms of 3 ms per frame (see open issues: was 0.93 at #14).

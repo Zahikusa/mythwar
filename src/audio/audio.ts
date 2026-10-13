@@ -343,6 +343,8 @@ export class Audio {
             this.noiseBurst({ dur: 0.08, vol: 0.32, freq: 900 + Math.random() * 900, q: 1.5, pan: this.panFor(e.x) });
             this.tone({ freq: 140 + Math.random() * 40, to: 70, dur: 0.1, vol: 0.18, pan: this.panFor(e.x) });
             if (e.mult > 1 && this.allow('crit', 0.15)) this.tone({ freq: 1500, to: 1100, dur: 0.08, vol: 0.06, pan: this.panFor(e.x) });
+            // A countered blow lands dull: a muffled wooden tock (Lens #57).
+            else if (e.mult < 1 && this.allow('resist', 0.2)) this.tone({ freq: 260, to: 180, type: 'triangle', dur: 0.07, vol: 0.07, pan: this.panFor(e.x) });
           }
           break;
         case 'projectile':

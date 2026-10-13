@@ -84,7 +84,7 @@ export class Game {
     this.playerTeam = opts.online ? (opts.team ?? 0) : 0;
     this.ai = opts.online || opts.sandbox || this.riddle ? null : new AiController(this.world, 1, AI_PROFILES[opts.difficulty], seed ^ 0x5bd1e995);
     this.demoAi = opts.demo ? new AiController(this.world, 0, AI_PROFILES[opts.difficulty], seed ^ 0x1234567) : null;
-    this.view = { playerTeam: this.playerTeam, selectedLane: opts.demo ? -1 : 1, hoverLane: -1, targeting: 'none', paused: false };
+    this.view = { playerTeam: this.playerTeam, demo: !!opts.demo, selectedLane: opts.demo ? -1 : 1, hoverLane: -1, targeting: 'none', paused: false };
   }
 
   /** Practice, not a battle: the sandbox or a riddle (no records, feats, autosave or taunts). */

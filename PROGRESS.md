@@ -54,6 +54,9 @@ complete; its log follows below the lens plan.
 - Pure-Mystic armies are the strongest single composition in `classwar --matrix` (only pure
   Hunters beat them) — the triangle working, but watch it (#47).
 
+- perfcheck reads 1.97 ms of game JS per frame (budget 3 ms; renderer 1.81) — #14 measured
+  0.93. Within budget, but find out what grew (Lens #92 Technology at the latest).
+
 ## Phase 2 — how each iteration works
 - One iteration = one lens (numbering of the book's first edition / the 100-card deck).
   Ask the lens's questions about Mythwar, pick the **one most valuable concrete change** it
@@ -125,7 +128,7 @@ complete; its log follows below the lens plan.
 - [x] #54 Physical Interface — gamepads: face buttons summon the cards as they sit on the pad (X A B, Y), D-pad lanes, shoulders power/hold/ascend/undo; menus by D-pad + A/B
 - [x] #55 Virtual Interface — the age race was invisible until the foe could ascend: XP rings around both age badges
 - [x] #56 Transparency — the foe screen hides the Trials (handicaps) until a first victory
-- [ ] #57 Feedback — feedback for counters/hits
+- [x] #57 Feedback — countered blows glance off (grey puff, dull tock); "Effective!" / "Resisted" over your creatures now and then
 - [ ] #58 Juiciness — more juice
 - [ ] #59 Channels and Dimensions — map info to new channels (low-HP heartbeat)
 - [ ] #60 Modes — mode clarity (targeting)
