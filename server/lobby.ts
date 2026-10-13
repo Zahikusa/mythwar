@@ -43,6 +43,8 @@ export interface LobbyOptions {
   blockedWords?: string[];
   /** Today as a day number (injectable for tests; default: localDay()). */
   today?: () => number;
+  /** Hall keys kept at hand (default HALL_KEYS_MAX; small in tests). */
+  hallKeysMax?: number;
 }
 
 /**
@@ -81,6 +83,8 @@ const MAX_ROOMS_PER_ADDRESS = 8;
 const HALL_NAMES = 64;
 const HALL_NETWORKS = 256;
 const HALL_SHOWN = 5;
+/** Networks whose hall key (a slow hash each) is kept at hand. */
+const HALL_KEYS_MAX = 4096;
 /** Open-battle lists go out at most this often (ms). */
 const ROOM_LIST_EVERY = 250;
 /** Minimum ms between two emotes from one player. */
@@ -676,10 +680,23 @@ export class Lobby {
     scrypt(network, this.hallSalt, 16, { N: 16384, r: 8, p: 1 }, (err, buf) => {
       this.hallKeyPending.delete(network);
       if (err || this.hallKeys.has(network)) return;
-      if (this.hallKeys.size >= 4096) this.hallKeys.clear();
-      this.hallKeys.set(network, `n:${buf.toString('base64url')}`);
+      this.cacheHallKey(network, `n:${buf.toString('base64url')}`);
       this.roomsDirty = true;
     });
+  }
+
+  /**
+   * Keeps a network's hall key, least recently used first out past HALL_KEYS_MAX (a whole cache
+   * thrown away at once would hide every connected network's Hall and send each battle's end
+   * through a slow hash on the server's loop).
+   */
+  private cacheHallKey(network: string, key: string): void {
+    this.hallKeys.delete(network);
+    this.hallKeys.set(network, key);
+    for (const old of this.hallKeys.keys()) {
+      if (this.hallKeys.size <= (this.opts.hallKeysMax ?? HALL_KEYS_MAX)) break;
+      this.hallKeys.delete(old);
+    }
   }
 
   private hallKey(network: string): string {
@@ -687,19 +704,20 @@ export class Lobby {
     // A slow, memory-hard hash (scrypt, ~20 ms and 16 MB each): the salt is kept with the file,
     // so a quick hash would let whoever has the file try all ~4 billion IPv4 addresses in
     // minutes; this makes that years of work. Computed once per network and cached.
-    let key = this.hallKeys.get(network);
-    if (!key) {
-      key = `n:${scryptSync(network, this.hallSalt, 16, { N: 16384, r: 8, p: 1 }).toString('base64url')}`;
-      if (this.hallKeys.size >= 4096) this.hallKeys.clear();
-      this.hallKeys.set(network, key);
-    }
+    const key = this.hallKeys.get(network) ?? `n:${scryptSync(network, this.hallSalt, 16, { N: 16384, r: 8, p: 1 }).toString('base64url')}`;
+    // (Used now: to the back of the queue.)
+    this.cacheHallKey(network, key);
     return key;
   }
 
   /** The network's champions: most head-to-head wins first (then fewest losses, co-op wins). */
   private hallOf(network: string): HallEntry[] {
     // (Not ready yet — its slow hash is still running: no Hall in this list; the next one has it.)
-    if (network !== 'lan' && !this.hallKeys.has(network)) return [];
+    if (network !== 'lan' && !this.hallKeys.has(network)) {
+      // (Dropped from the cache meanwhile: hashed again in the background.)
+      this.warmHallKey(network);
+      return [];
+    }
     const hall = this.halls.get(this.hallKey(network));
     if (!hall) return [];
     // (Champions only — someone with a victory — before the top five are taken: a co-op hero

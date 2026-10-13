@@ -186,9 +186,11 @@ the improvement backlog below (verified, committed) and add what the review find
    reset when back for only a moment); rate-limit toggles. (Done: an absence soon after another
    continues its clocks, less the time back — to stall, a player must be back as long as away,
    and the opponent can claim at any point the clock reaches 20 s; tests; MULTIPLAYER.md.)
-47. [ ] `server/lobby.ts` ~679–702: past 4096 networks `hallKeys.clear()` empties the whole cache —
+47. [x] `server/lobby.ts` ~679–702: past 4096 networks `hallKeys.clear()` empties the whole cache —
    every connected network's Hall shows empty until a reconnect, and every battle end runs a
    `scryptSync` (~20 ms) on the 4-ms loop. Evict oldest-first; re-warm keys of live sessions.
+   (Done: least recently used out first — networks whose lists keep going out stay fresh; a
+   network found missing is hashed again in the background; test with a 2-key cache.)
 48. [ ] `src/net/client.ts` ~217–290: `leave()` only sets `leaving` when the send fails — a `room`
    or `start` message already on its way puts the room back / starts a battle the player just
    left (then forfeited). Set `leaving` always; clear it on `left`.

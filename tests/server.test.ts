@@ -86,7 +86,7 @@ class FakeClient {
   }
 }
 
-function setup(opts: { awayGrace?: number; store?: ServerStore; today?: () => number } = {}) {
+function setup(opts: { awayGrace?: number; store?: ServerStore; today?: () => number; hallKeysMax?: number } = {}) {
   let now = 1000;
   let r = 0.37;
   const lobby = new Lobby({
@@ -96,6 +96,7 @@ function setup(opts: { awayGrace?: number; store?: ServerStore; today?: () => nu
     awayGrace: opts.awayGrace ?? 90,
     store: opts.store,
     today: opts.today,
+    hallKeysMax: opts.hallKeysMax,
   });
   const run = (ms: number) => {
     for (let t = 0; t < ms; t += 5) {
@@ -665,6 +666,47 @@ describe('battle', () => {
     }
     expect(home.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Ada']);
     expect(elsewhere.last('rooms')!.hall).toEqual([]);
+  });
+
+  it('a full hall-key cache drops the least recently used network, and a live one finds its Hall again (backlog 47)', async () => {
+    const { lobby, run } = setup({ hallKeysMax: 2 });
+    const settle = async (until: () => boolean) => {
+      for (let i = 0; i < 100 && !until(); i++) {
+        await new Promise((r) => setTimeout(r, 20));
+        run(300);
+      }
+    };
+    const a = new FakeClient(lobby, '203.0.113.7');
+    const b = new FakeClient(lobby, '203.0.113.7');
+    a.hello('Ada');
+    b.hello('Bo');
+    a.send({ type: 'host' });
+    b.send({ type: 'join', code: a.last('room')!.room.code });
+    a.send({ type: 'ready', ready: true });
+    b.send({ type: 'ready', ready: true });
+    run(3100);
+    b.send({ type: 'leave' });
+    run(300);
+    const home = new FakeClient(lobby, '203.0.113.7');
+    home.hello('Cy');
+    home.send({ type: 'watchRooms', on: true });
+    await settle(() => !!home.last('rooms')?.hall?.length);
+    expect(home.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Ada']);
+    // (A network whose lists keep going out keeps its key fresh; this one looks away a while.)
+    home.send({ type: 'watchRooms', on: false });
+    // Three other networks show up: the home network's key is pushed out of the cache…
+    const others = ['198.51.100.1', '198.51.100.2', '198.51.100.3'].map((ip, i) => {
+      const c = new FakeClient(lobby, ip);
+      c.hello(`Guest ${i}`);
+      return c;
+    });
+    await settle(() => false);
+    expect(others.length).toBe(3);
+    // …and is hashed again in the background: the Hall comes back without a reconnect.
+    home.send({ type: 'watchRooms', on: true });
+    expect(home.last('rooms')!.hall).toEqual([]);
+    await settle(() => !!home.last('rooms')?.hall?.length);
+    expect(home.last('rooms')!.hall!.map((e) => e.name)).toEqual(['Ada']);
   });
 
   it('a day is the server’s local calendar day, not UTC (backlog)', () => {
