@@ -60,6 +60,7 @@ docs/LENSES.md why each feature exists; docs/MULTIPLAYER.md the netcode.
 | Netcode, server, protocol, app flows used online | `npm run mpsmoke` (`--shots` for screenshots) |
 | Simulation rules / balance | `npm run designcheck`, `npm run sim -- 120 master master` (sides ~50/50) |
 | Rendering cost | `npm run perfcheck` (budget 3 ms of JS per frame) |
+| Server start-up, its messages, the release package | `npm run package:check` (packages, then starts the package's own `server.mjs` and plays a lobby round trip) |
 | Before committing | `npm run verify` (typecheck, tests, build, smoke, mpsmoke) |
 | A rules change, before committing | `npm run verify:all` (verify, then enginecheck, designcheck, puzzlecheck, perfcheck — one build) |
 
