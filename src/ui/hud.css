@@ -2554,3 +2554,10 @@ html.cbfoe .side.right .hpfill {
     animation: none !important;
   }
 }
+
+/* Riddles (Lens #69): actions that can mean nothing there are not offered. */
+.hud.inriddle .act.ascend,
+.hud.inriddle .actpair,
+.hud.inriddle .xprow {
+  visibility: hidden;
+}

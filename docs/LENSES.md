@@ -1332,3 +1332,17 @@ ordeal, a return? Does the game tell it?*
   and the banner returns to the age's lore.
 - Checked: screenshots (foe screen on a 667×375 phone, the opening against Hippolyta); full
   verify.
+
+## #69 The Lens of the Weirdest Thing
+*What is the weirdest thing in the game — and does it serve the game or just confuse it?*
+- Walking the new modes of this run looking for the oddest sight, the winner was inside a riddle
+  (#52): an **"Ascend · Olympus · 150g"** button for a battle with no XP, **Turrets** in a battle
+  with no walls, **Blessings** that would eat the fixed purse, and an XP bar frozen at "0 / 800".
+  Four controls that could never do anything sensible, next to a question that is all about
+  spending a small purse well — weird, and a trap (U/T/B keys too).
+- Change: in a riddle the HUD offers only what the riddle is about — the purse, the creature
+  cards, the god power (locked, or once) — and the U/E/T/B keys do nothing there.
+- Found on the way, and weirder still: the first version named the HUD's class `riddle`, which
+  the riddle *cards* on the menu also use — so their dark card background painted over the whole
+  battlefield. Renamed (`inriddle`); a reminder that CSS class names are global.
+- Checked: riddle screenshots before/after; full verify.

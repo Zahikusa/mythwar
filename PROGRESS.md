@@ -149,7 +149,7 @@ complete; its log follows below the lens plan.
 - [x] #66 The Obstacle — riddles stopped at Asgard: The White Tigers (Jade) and Sky and Stone (Celestial), brute-forced
 - [x] #67 Simplicity and Transcendence — your god power is a god's moment: time slows to a third and the field darkens around the struck lane
 - [x] #68 The Hero's Journey — the four generals are chapters (Call, Threshold, Ordeal, Return): on the foe cards and told at the first battles
-- [ ] #69 The Weirdest Thing — fix the weirdest thing
+- [x] #69 The Weirdest Thing — riddles offered Ascend/Turrets/Blessings and a frozen XP bar: hidden there (keys too)
 - [ ] #70 Story — story framing
 - [ ] #71 Freedom — custom battle options
 - [ ] #72 Indirect Control — guide via visuals

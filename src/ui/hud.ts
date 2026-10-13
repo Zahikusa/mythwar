@@ -353,6 +353,8 @@ export class Hud {
     this.cancelDrag();
     this.game = game;
     this.armed = null;
+    // A riddle has no XP, no walls and a fixed purse: no Ascend, Turrets, Blessings or XP bar.
+    this.root.classList.toggle('inriddle', !!game.riddle);
     this.ragWarned = game.world.ragnarokStarted || game.world.ragnarokAt - game.world.time < 60;
     toggle(this.el.speed, 'hidden', !!game.options.online);
     toggle(this.el.net, 'hidden', !game.options.online);

@@ -178,6 +178,8 @@ export class Input {
     const active = document.activeElement;
     if (active instanceof HTMLElement && active !== document.body && active.closest('.hud') && !active.matches(':focus-visible')) active.blur();
     const me = g.world.players[g.playerTeam];
+    // (In a riddle there is nothing to ascend to, no walls to mount, no purse to spare.)
+    if (g.riddle && (k === 'u' || k === 'e' || k === 't' || k === 'b')) return false;
     if (k >= '1' && k <= '4') {
       const def = AGE_UNITS[me.age][Number(k) - 1];
       if (def) this.hud.tryTrain(def.id);
