@@ -704,7 +704,15 @@ export class Hud {
   togglePanel(which: 'none' | 'turret' | 'bless' | 'keys'): void {
     toggle(this.el.emotes, 'hidden', true);
     if (this.panel === which) which = 'none';
+    // Focus never falls out of a panel as it closes: back to the button that opens it. A panel
+    // opened from its (focused) button takes the focus in — keyboard users go on inside it.
+    const panels = { turret: [this.el.turretPanel, this.el.turretBtn], bless: [this.el.blessPanel, this.el.blessBtn], keys: [this.el.keysPanel, this.el.keysBtn] } as const;
+    const active = document.activeElement;
+    const leaving = this.panel !== 'none' && this.panel !== which ? panels[this.panel] : null;
+    // (Keyboard focus only — after a click, Enter must not land on a buy button.)
+    const opener = which !== 'none' && active === panels[which][1] && active.matches(':focus-visible') ? panels[which][0] : null;
     this.panel = which;
+    if (leaving && active && leaving[0].contains(active)) leaving[1].focus({ preventScroll: true });
     toggle(this.el.turretPanel, 'hidden', which !== 'turret');
     toggle(this.el.blessPanel, 'hidden', which !== 'bless');
     toggle(this.el.keysPanel, 'hidden', which !== 'keys');
@@ -714,6 +722,7 @@ export class Hud {
     toggle(this.el.turretBtn, 'on', which === 'turret');
     toggle(this.el.blessBtn, 'on', which === 'bless');
     if (which !== 'none') this.cancelTargeting();
+    opener?.querySelector<HTMLElement>('button:not([disabled])')?.focus({ preventScroll: true });
   }
 
   openTurretPanel(lane: number): void {
@@ -1134,6 +1143,11 @@ export class Hud {
       if (c.el.dataset.why !== label) c.el.dataset.why = label;
       toggle(c.el, 'advised', advice === c.def.cls);
       toggle(c.el, 'armed', this.armed?.unitId === c.def.id);
+      // What the card shows by colour and badges, in words for screen readers.
+      const base = (c.el.dataset.base ??= c.el.getAttribute('aria-label') ?? '');
+      const state = [advice === c.def.cls ? 'counters this lane' : '', label ? label.toLowerCase() : poor ? 'not enough gold yet' : '', this.armed?.unitId === c.def.id ? 'armed: summons when the gold is there' : ''].filter(Boolean).join('; ');
+      const aria = state ? `${base} — ${state}` : base;
+      if (c.el.getAttribute('aria-label') !== aria) c.el.setAttribute('aria-label', aria);
     }
 
     // Queue
@@ -1166,6 +1180,10 @@ export class Hud {
         if (u.alive && u.team !== g.playerTeam && (g.playerTeam === 0 ? u.x < 280 : u.x > 720)) danger = true;
       }
       toggle(tab, 'danger', danger);
+      if (tab.dataset.danger !== String(danger)) {
+        tab.dataset.danger = String(danger);
+        tab.setAttribute('aria-label', `Select the ${LANE_NAMES[i].toLowerCase()} lane${danger ? ' — foes at your gate!' : ''}`);
+      }
       // Lane strength: our share of the creature value in this lane.
       let mine = 0;
       let theirs = 0;
@@ -1179,6 +1197,8 @@ export class Hud {
       toggle(bar, 'show', mine > 0 && theirs > 0);
       if (mine > 0 && theirs > 0) setStyle(fill, 'width', `${((mine / (mine + theirs)) * 100).toFixed(0)}%`);
       toggle(tab, 'sel', g.view.selectedLane === i);
+      const pressed = String(g.view.selectedLane === i);
+      if (tab.getAttribute('aria-pressed') !== pressed) tab.setAttribute('aria-pressed', pressed);
       const holding = me.hold[i];
       const hb = this.holdBtns[i];
       // Progressive disclosure: in a newcomer's battles the shields appear with their tip (2:30).
@@ -1346,7 +1366,7 @@ export class Hud {
       const save = h('div', { class: 'save' });
       const el = h(
         'button',
-        { class: `card cls-${def.cls}`, style: `--cls:${CLASS_COLOR[def.cls]}`, 'aria-label': `Summon ${def.name} (${CLASS_NAME[def.cls]}) ${team === 1 ? 'for the foe' : ''}, ${def.cost} gold` },
+        { class: `card cls-${def.cls}`, style: `--cls:${CLASS_COLOR[def.cls]}`, 'aria-label': `Summon ${def.name} (${CLASS_NAME[def.cls]})${team === 1 ? ' for the foe' : ''}, ${def.cost} gold` },
         h('div', { class: 'portrait' }, portrait(def.id, size, team as Team, 0.4, team === 1, this.zoom)),
         h('div', { class: 'clsico', html: CLASS_ICON[def.cls] }),
         h('div', { class: 'name', text: def.name }),

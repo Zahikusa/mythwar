@@ -12,6 +12,7 @@ export class NetOverlay {
   private readonly banner: HTMLElement;
   private readonly title: HTMLElement;
   private readonly sub: HTMLElement;
+  private readonly srSub: HTMLElement;
   private readonly claimBtn: HTMLButtonElement;
   private lastCount = '';
   private fightUntil = 0;
@@ -29,10 +30,12 @@ export class NetOverlay {
   constructor(parent: HTMLElement) {
     this.count = h('div', { class: 'ncount', 'aria-live': 'assertive' });
     this.title = h('div', { class: 'nbtitle' });
-    this.sub = h('div', { class: 'nbsub' });
+    // (The sub-line counts down every second: screen readers get a steady wording instead.)
+    this.sub = h('div', { class: 'nbsub', 'aria-hidden': 'true' });
+    this.srSub = h('span', { class: 'sronly' });
     this.claimBtn = h('button', { class: 'mbtn primary nclaim hidden', text: 'Claim victory' });
     onTap(this.claimBtn, () => this.onClaim());
-    this.banner = h('div', { class: 'nbanner', role: 'status', 'aria-live': 'polite' }, h('i', { class: 'nspin' }), h('div', null, this.title, this.sub), this.claimBtn);
+    this.banner = h('div', { class: 'nbanner', role: 'status', 'aria-live': 'polite' }, h('i', { class: 'nspin' }), h('div', null, this.title, this.sub, this.srSub), this.claimBtn);
     this.root = h('div', { class: 'netoverlay hidden' }, this.count, this.banner);
     parent.appendChild(this.root);
   }
@@ -70,6 +73,7 @@ export class NetOverlay {
     // Status banner.
     let title = '';
     let sub = '';
+    let srSub = '';
     let claim = false;
     const pause = game.netPause;
     if (game.over) {
@@ -86,11 +90,13 @@ export class NetOverlay {
       // Waited long enough: no need to sit out the whole timer.
       claim = pause.claimIn !== undefined && waited >= pause.claimIn;
       sub = `Their app is in the background or lost the Wi-Fi. The battle waits — if they aren’t back in ${fmtTime(left)}, you win${claim ? ', or claim the victory now' : ''}.`;
+      srSub = `Their app is in the background or lost the Wi-Fi. The battle waits — if they don’t come back in time, you win${claim ? '. You may claim the victory now' : ''}.`;
     } else if (pause?.reason === 'away') {
       title = 'Rejoining the battle…';
     }
     setText(this.title, title);
     setText(this.sub, sub);
+    setText(this.srSub, srSub || sub);
     toggle(this.banner, 'show', !!title);
     toggle(this.claimBtn, 'hidden', !claim);
   }

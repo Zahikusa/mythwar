@@ -273,13 +273,20 @@ export class MpScreens {
         }
       });
       edit.addEventListener('blur', done);
-      onTap(name, () => {
+      const startEdit = () => {
         if (this.mySeat !== i) return;
         edit.value = this.nameInput.value;
         name.classList.add('hidden');
         edit.classList.remove('hidden');
         edit.focus();
         edit.select();
+      };
+      onTap(name, startEdit);
+      // (Your own name is a button for the keyboard too — see renderSeat.)
+      name.addEventListener('keydown', (e) => {
+        if (this.mySeat !== i || (e.key !== 'Enter' && e.key !== ' ')) return;
+        e.preventDefault();
+        startEdit();
       });
       const el = h('div', { class: 'rseat' }, name, edit, side, state, wins, trials);
       this.seats.push({ el, name, side, rank, state, wins, edit, trials });
@@ -378,6 +385,8 @@ export class MpScreens {
       }
       for (const r of rooms) {
         const join = this.button('Join', 'primary', () => this.cb.join(r.code), ICONS.play);
+        // (A list of "Join, Join, Join" says nothing to a screen reader.)
+        join.setAttribute('aria-label', `Join ${r.host}’s battle (room ${r.code})`);
         const meta = `${RANKS[r.rank] ?? RANKS[0]} · Room ${r.code}`;
         const host = h('div', { class: 'mphost' }, h('b', { text: r.sigil >= 0 && SIGILS[r.sigil] ? `${SIGILS[r.sigil]} ${r.host}` : r.host }), h('span', { text: r.rec ? `${meta} · you ${r.rec.w} – ${r.rec.l}` : meta }));
         this.list.appendChild(h('div', { class: `mproom${r.rec ? ' friend' : ''}`, role: 'listitem', title: r.rec ? `You have battled ${r.host} before` : '' }, h('i', { html: ICONS.swords }), host, join));
@@ -457,6 +466,15 @@ export class MpScreens {
     toggle(v.el, 'ready', !!s?.ready);
     setText(v.name, s ? s.name + (mine ? ' (you) ✎' : '') : 'Open seat');
     v.name.title = mine ? 'Tap to change your name' : '';
+    if (mine) {
+      v.name.setAttribute('role', 'button');
+      v.name.tabIndex = 0;
+      v.name.setAttribute('aria-label', `Your name: ${s?.name ?? ''} — change it`);
+    } else {
+      v.name.removeAttribute('role');
+      v.name.removeAttribute('tabindex');
+      v.name.removeAttribute('aria-label');
+    }
     setText(v.rank, s ? ` · ${RANKS[s.rank] ?? RANKS[0]}` : '');
     v.rank.dataset.rank = String(s?.rank ?? 0);
     v.side.title = s ? RANK_NOTE[s.rank] ?? '' : '';

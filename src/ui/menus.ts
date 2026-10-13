@@ -272,6 +272,22 @@ export class Menus {
     if (screen === 'feats') this.refreshFeats();
     if (screen === 'riddles') this.refreshRiddles();
     if (screen === 'settings') for (const f of this.syncers) f();
+    if (screen !== 'none') this.focusScreen(screen);
+  }
+
+  /**
+   * Focus follows the screen (keyboard and screen-reader users): the old one is hidden, so focus
+   * left on it would fall to the page — the new screen's heading (or the screen itself) takes it
+   * and the screen is announced. Never a button: Enter must still press the screen's main one.
+   * Focus already inside the new screen, or outside the menus, stays.
+   */
+  private focusScreen(screen: Screen): void {
+    const el = this.screens[screen];
+    const active = document.activeElement;
+    if (!el || (active && active !== document.body && (el.contains(active) || !this.root.contains(active)))) return;
+    const target = el.querySelector<HTMLElement>('h2') ?? el;
+    if (!target.hasAttribute('tabindex')) target.tabIndex = -1;
+    target.focus({ preventScroll: true });
   }
 
   private button(label: string, cls: string, onClick: () => void, icon?: string): HTMLButtonElement {

@@ -38,3 +38,16 @@ body {
   top: 0;
   display: block;
 }
+
+/* Read by screen readers, not shown (a steady wording for text that changes every second). */
+.sronly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

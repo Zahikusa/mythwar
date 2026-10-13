@@ -1403,6 +1403,21 @@ html.cbfoe .side.right .hpfill {
   animation: dangerpulse 0.7s ease-in-out infinite alternate;
 }
 
+/* (Not by colour alone: a "!" badge too.) */
+.lanetab.danger::after {
+  content: '!';
+  position: absolute;
+  top: -7px;
+  left: -7px; /* (the queue count sits top-right) */
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  font: 700 11px/14px system-ui, sans-serif;
+  text-align: center;
+}
+
 .lanetab.danger.sel {
   box-shadow: 0 0 16px rgba(63, 184, 255, 0.8), 0 0 0 3px rgba(var(--red-rgb), 0.8);
 }
@@ -2460,6 +2475,22 @@ html.cbfoe .side.right .hpfill {
   margin-left: -13px;
   margin-top: -13px;
   font-size: 11px;
+}
+
+/* Phones: the lane tab and the hold shield below it are small to look at but get finger-sized hit
+   areas (≥ 40 px wide) — the tab's reaching up, the shield's down, so they never overlap; and
+   both only leftwards: the gate (a tap opens its turret slot) is right next to them. */
+.hud.mobile .lanetab::before,
+.hud.mobile .holdbtn::before {
+  content: '';
+  position: absolute;
+}
+.hud.mobile .lanetab::before {
+  inset: -10px 0 -2px -16px;
+  border-radius: 50%;
+}
+.hud.mobile .holdbtn::before {
+  inset: -2px 0 -10px -14px;
 }
 
 /* ------------------------------------------------------------------ */

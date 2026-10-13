@@ -187,7 +187,8 @@ export class Coach {
   constructor(stage: HTMLElement, settings: Settings, parent: HTMLElement = stage) {
     this.stage = stage;
     this.settings = settings;
-    this.text = h('div', { class: 'ctext' });
+    // (Read out when a tip appears.)
+    this.text = h('div', { class: 'ctext', role: 'status' });
     const close = h('button', { class: 'cclose', text: 'Got it' });
     onTap(close, () => this.finish());
     // The tips have a speaker (Lens #73): Mímir, the wise head kept by the well, the mentor of
