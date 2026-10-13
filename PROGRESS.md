@@ -1,6 +1,12 @@
 # PROGRESS — Phase 3: a native-app feel on phones
 
-Status: in progress (started run #12, 2026-10-13). Phases 1–2 (LAN multiplayer, the 100 lenses)
+Status: Phase 3 complete, in verification mode (run #12, 2026-10-13). A–E done and verified
+(`npm run mobilecheck`: 6 devices × tab/installed × both orientations × 16 screens, all green;
+`npm run verify` green), F decided against. From here: only mobile UX defects seen in
+screenshots or nameable on a real device (backlog below); what needs a physical phone is under
+"Open questions for the human".
+
+Started run #12, 2026-10-13. Phases 1–2 (LAN multiplayer, the 100 lenses)
 are finished; their log, backlog and open questions are in
 [docs/PROGRESS-archive.md](docs/PROGRESS-archive.md) (last section).
 
@@ -45,9 +51,9 @@ Already in the code before Phase 3, and kept:
 - [x] **D** Navigation and gestures: one history model for Back on every screen/sheet, swipe
   down to dismiss sheets, ≥ 44-pt targets, no hover dependence, smooth screen changes, a
   haptics switch in Settings.
-- [ ] **E** Small-screen polish (375×667 up to tablets), from the screenshots.
+- [x] **E** Small-screen polish (375×667 up to tablets), from the screenshots.
 - [x] **F** (stretch) Android APK (TWA/Capacitor): decided against for now (see Decisions).
-- [ ] Docs: real-device checklist in `docs/PLAYTEST.md`; the LAN trade-off in
+- [x] Docs: real-device checklist in `docs/PLAYTEST.md`; the LAN trade-off in
   `docs/MULTIPLAYER.md`.
 
 ## Done
@@ -109,6 +115,40 @@ Already in the code before Phase 3, and kept:
   (document still, controls inside the safe area, targets ≥ 44, panels scroll themselves,
   real swipes and pinches on the Androids).
 
+- (run #12) E: contact-sheet review of every screen on the SE (tab, both ways), the shortest
+  stage (Galaxy sideways in Chrome, 292 px), the notched Pro Max installed (both ways) and an
+  iPad mini (added to mobilecheck). Fixed: a screen body's children were squeezed instead of
+  scrolled (the how-to's text cut off); the title's offers covered the logo/Settings (now
+  among the buttons on phones, in the corner on tall stages); the title's creature parade
+  gives way below 330 px; the foe cards' 9-px labels → 10 px. mobilecheck gained: overlapping
+  controls, text under 10 px, one browser per view, settled screens (no transitions).
+
+## Improvement backlog (verification mode, phase 3)
+
+1. [ ] Installed, sideways, on a notched iPhone: the stage stays inside the safe area, so
+   59–62-px dark strips run down both sides of the battle (screenshots/mobile/
+   iphone-16-pro-max-app-l-battle.png). A native game draws its scene under the notch and keeps
+   only the controls inside. Needs the renderer to draw beyond the stage (canvas wider than
+   the HUD's box) — a careful change in App.resize / Renderer.resize.
+2. [ ] `public/splash/`: 40 PNGs, 3.8 MB in the repo and in the LAN server's release zip. Flat
+   colour + one icon: palette PNGs (or one image per aspect ratio) would be a tenth of that.
+3. [ ] `src/update.ts` has a unit test for the bundle name only: nothing exercises the "New
+   version ready — restart" offer end to end (smoke could serve a page whose bundle name differs
+   and fire visibilitychange).
+4. [ ] smoke's "card tooltip sits above the card, on screen" (large desktop) failed once when
+   run with `--only desktop,large-desktop` (bottom 3 px past the card's top), passed alone
+   twice and in the full verify: a timing-dependent measure — make it wait for the tooltip's
+   final position.
+5. [ ] The install sheet's arrow places are best guesses for some browsers (Firefox/Edge on
+   iPhone, Samsung Internet, iOS 26 Safari sideways, in-app browsers): confirm on devices
+   (PLAYTEST.md's checklist) and correct `guideFor`'s `spot`s.
+6. [ ] Upright phone + text field (lobby name, room code): the stage is turned but the keyboard
+   comes up upright. The lobby says "turn your phone sideways before typing"; an upright input
+   overlay (like the install sheet: drawn on the page, not the stage) would remove the need.
+7. [ ] mobilecheck can't simulate the LAN origin (127.0.0.1 is a dev machine to platform.ts):
+   a `?lanpreview` (or hostname override in the check) would let it shoot the LAN line in
+   Settings and the "Play full screen" offer.
+
 ## Decisions
 
 - **Portrait:** keep rotating the stage 90° on an upright phone (the game is a side-view
@@ -155,6 +195,18 @@ Already in the code before Phase 3, and kept:
 
 ## Open questions for the human
 
-- Everything in Phase 3 is tested with Playwright's WebKit and Chromium device profiles, which
-  do not draw Safari's real bars or the home indicator. The real-device checklist in
-  docs/PLAYTEST.md lists what only a physical iPhone/Android can confirm.
+- **Please run the 10-minute phone check** in docs/PLAYTEST.md ("Phones: the native-app
+  check") on one iPhone and one Android phone. Everything in Phase 3 is tested with
+  Playwright's WebKit and Chromium device profiles, which don't draw Safari's real bars, the
+  home indicator, the keyboard or the install dialogs. In particular:
+  - iOS 26 Safari's floating tab bar: content can extend under it; the game sizes itself to the
+    visual viewport minus the safe-area insets — confirm no card or button sits under the bar.
+  - The keyboard in the lobby on an iPhone (the stage follows `visualViewport` while typing).
+  - The install sheet's steps and arrow match what each browser shows (backlog 5).
+  - The first launch of the installed app is dark (launch images) and shows the welcome.
+- The installed iPhone app keeps its own records (iOS gives a home-screen app its own storage):
+  the sheet offers "Copy my progress" and the welcome explains where to paste it. If that is
+  too clumsy in practice, the next step would be passing the progress code in the URL when the
+  icon is added (fragile; not done).
+- `related_applications` in the manifest names https://zahikusa.github.io/mythwar/manifest.webmanifest:
+  if the game moves to another address, update it (Android's "You have the app" note uses it).
