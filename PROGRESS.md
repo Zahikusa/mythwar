@@ -531,14 +531,19 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
    `mpengines` (WebKit vs Chrome/Firefox) green. Found on the way: `mpbot --help` started a bot
    that ran until killed — it prints usage now (exit 1 for an unknown flag), like `shoot`.
 (Items 238–: open for the next run.)
-238. [ ] `scripts/mpengines.ts`'s WebKit phone pass checks Back in a battle (#201) but not the
+238. [x] `scripts/mpengines.ts`'s WebKit phone pass checks Back in a battle (#201) but not the
    room's "press Back again" (#215) — iOS's swipe-back walks the same history entry. Add: Back
    once in the room → the line on screen; twice → the lobby, the page still there.
-239. [ ] `src/ui/netoverlay.ts`: when the server holds the battle for *our own* seat while our link
+   (Done — in a waiting room at 844×390, so it also proves #230's fix in WebKit: the line on
+   screen.)
+239. [x] `src/ui/netoverlay.ts`: when the server holds the battle for *our own* seat while our link
    is up (#222's silence rule caught a stall, or a tab just shown again), the notice reads
    "Rejoining the battle…" — true after a reconnect, odd when nothing reconnected. Word it from
    what the page knows (link up and welcomed: "Your connection stalled — the battle waits for
    you…"), with a test of the wording.
+   (Decided: left. The notice can only show once the page hears the server again — and by then
+   its pings reach the server too, so the hold ends within about a second; "Rejoining the
+   battle…" reads right for that moment and for a real reconnect alike.)
 240. [ ] `tests/netgame.test.ts` #219's test calls NetGame's private `publish()` / `onOver()`
    directly — brittle. Drive it through SimNet instead: hold back the server's 'over' message for
    one page (a hook in FakeSocket's send) while its turns flow, then release it.

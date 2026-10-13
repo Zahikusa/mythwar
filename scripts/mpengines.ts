@@ -95,7 +95,7 @@ async function duel(hostName: string, launchHost: () => Promise<Browser>, launch
  * leaving the page (backlog 166).
  */
 async function webkitPhone(launch: () => Promise<Browser>, base: string): Promise<void> {
-  console.log('== WebKit phone: copy over http, Back in a battle ==');
+  console.log('== WebKit phone: copy over http, Back in a battle and in the room ==');
   const browser = await launch();
   try {
     const ctx = await browser.newContext({ viewport: { width: 844, height: 390 }, hasTouch: true });
@@ -116,6 +116,25 @@ async function webkitPhone(launch: () => Promise<Browser>, base: string): Promis
     await page.waitForFunction(() => (window as any).__mythwar.menus.current === 'pause', undefined, { timeout: 3000 }).catch(() => {});
     const menu = await page.evaluate(() => (window as any).__mythwar.menus.current);
     check('WebKit: Back in a battle opens the menu, the page stays', menu === 'pause' && page.url() === url, `${menu} ${page.url() === url}`);
+    // (Backlog 215/238) In the battle room, a first Back (iOS: the swipe) asks for a second, on
+    // screen; the second leaves the room for the lobby — still on the page.
+    await page.goto(`${base}/?mp&mode=mobile`);
+    await page.waitForFunction(() => !!document.querySelector('.mpstatus.ok'));
+    await page.evaluate(() => (window as any).__mythwar.mp.host());
+    await page.waitForFunction(() => (window as any).__mythwar.menus.current === 'room');
+    await page.touchscreen.tap(420, 30);
+    const roomUrl = page.url();
+    await page.goBack({ timeout: 3000 }).catch(() => null);
+    await page.waitForTimeout(400);
+    const first = await page.evaluate(() => {
+      const r = document.querySelector('.screen.room .mpflash.show')?.getBoundingClientRect();
+      return { menu: (window as any).__mythwar.menus.current, seen: !!r && r.height > 10 && r.top >= 0 && r.bottom <= innerHeight, text: document.querySelector('.screen.room .mpflash')?.textContent ?? '' };
+    });
+    check('WebKit: a first Back in the room asks for a second, on screen', first.menu === 'room' && first.seen && /Press Back again/.test(first.text) && page.url() === roomUrl, JSON.stringify(first));
+    await page.goBack({ timeout: 3000 }).catch(() => null);
+    await page.waitForFunction(() => (window as any).__mythwar.menus.current === 'mp', undefined, { timeout: 3000 }).catch(() => {});
+    const second = await page.evaluate(() => ({ menu: (window as any).__mythwar.menus.current, room: !!(window as any).__mythwar.mp.room }));
+    check('WebKit: a second Back leaves the room, the page stays', second.menu === 'mp' && !second.room && page.url() === roomUrl, JSON.stringify(second));
   } finally {
     await browser.close();
   }
