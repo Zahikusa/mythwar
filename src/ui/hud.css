@@ -597,11 +597,11 @@ html.cbfoe .side.right .hpfill {
   animation-play-state: paused !important;
 }
 
-/* Thumb-sized close buttons on phones. */
+/* Thumb-sized close buttons on phones (40 px, like every touch target). */
 .hud.mobile .pclose {
-  width: 36px;
-  height: 36px;
-  padding: 8px;
+  width: 40px;
+  height: 40px;
+  padding: 10px;
 }
 
 /* Centred with auto margins: `translate` belongs to the panelin animation (a translate here

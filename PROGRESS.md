@@ -348,13 +348,15 @@ chronicle, 2026-10-13 — renderer/fx/layout/lobby held up.)
    vs Hippolyta (Adept) · 12:34 · Jade Empire vs Celestial · 123 foes slain"). (Done: it wraps,
    balanced; smoke checks it isn't cut and Resume stays on screen at 844×390 and 640×360.)
 (Items 82–86: smaller ones left from run #8's reviews, and found on the way.)
-82. [ ] `src/ui/menus.ts` ~557: the how-to page dots mark the current page by an `.on` class only —
-   add `aria-current="step"` (and a label "Page 3 of 7").
-83. [ ] `src/ui/hud.css` ~601: the phone panels' close button is 36 px — under the ~40 px used for
-   every other touch target now (#78).
-84. [ ] `src/ui/mpmenus.ts` ~226: the room code is a `div` with an `aria-label` that screen readers
+82. [x] `src/ui/menus.ts` ~557: the how-to page dots mark the current page by an `.on` class only —
+   add `aria-current="step"` (and a label "Page 3 of 7"). (Done: aria-current on the open page's dot;
+   the dots were already labelled "Page N: title".)
+83. [x] `src/ui/hud.css` ~601: the phone panels' close button is 36 px — under the ~40 px used for
+   every other touch target now (#78). (Done: 40 px; the phone turret panel checked in a shot.)
+84. [x] `src/ui/mpmenus.ts` ~226: the room code is a `div` with an `aria-label` that screen readers
    ignore on a plain div — give it a role (e.g. `role="text"` isn't standard: use a visible label
-   "Room code" + the code in one element, or `role="status"` when it first appears).
+   "Room code" + the code in one element, or `role="status"` when it first appears). (Done: the
+   visible "Room code" label right before it already reads with it; the ignored aria-label went.)
 85. [x] `public/sw.js`: navigation is network-first with no time limit — with the LAN server switched
    off but the Wi-Fi up, a reload waits for the TCP timeout (tens of seconds on phones) before the
    cached page shows. Race the network against ~4 s, then serve the cache. (Done: NAV_WAIT 4 s,

@@ -228,7 +228,8 @@ export class MpScreens {
   }
 
   private buildRoom(): HTMLElement {
-    this.roomCode = h('div', { class: 'rcode', 'aria-label': 'Room code' });
+    // (Read with the visible "Room code" label beside it; an aria-label on a plain div is ignored.)
+    this.roomCode = h('div', { class: 'rcode' });
     this.qr = h('div', { class: 'rqr', 'aria-hidden': 'true' });
     this.link = h('div', { class: 'rlink' });
     // On a desktop the invite is easier to paste into a chat than to read off the screen.

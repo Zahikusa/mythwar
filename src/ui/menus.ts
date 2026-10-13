@@ -569,7 +569,12 @@ export class Menus {
       // Hidden pages are only faded out: keep screen readers and Tab on the visible one.
       p.inert = k !== i;
     });
-    this.howtoDots?.querySelectorAll('.hdot').forEach((d, k) => d.classList.toggle('on', k === i));
+    this.howtoDots?.querySelectorAll('.hdot').forEach((d, k) => {
+      d.classList.toggle('on', k === i);
+      // (Not by the highlight alone: screen readers hear which page is open.)
+      if (k === i) d.setAttribute('aria-current', 'step');
+      else d.removeAttribute('aria-current');
+    });
     const next = this.screens.howto?.querySelector('.hnext span');
     if (next) next.textContent = i === this.howtoPages.length - 1 ? (this.afterHowto ? 'To battle!' : 'Got it') : 'Next';
   }
