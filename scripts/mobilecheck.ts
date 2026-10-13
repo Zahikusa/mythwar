@@ -136,13 +136,14 @@ const STEPS: Step[] = [
   { name: 'battle', query: battle, ready: inBattle, after: 1500 },
   { name: 'turrets', query: battle, ready: inBattle, script: `a.game.world.players[0].gold = 900; a.hud.togglePanel('turret')`, after: 700 },
   { name: 'blessings', query: battle, ready: inBattle, script: `a.game.world.players[0].gold = 900; a.hud.togglePanel('bless')`, after: 700 },
-  // The first minutes' overlays: a coach tip (a veteran rises), the next age's preview (a long
+  // The first minutes' overlays: a coach tip, the next age's preview (a long
   // press on Ascend) and a card's details (a long press on a card).
-  { name: 'tip', query: battle, ready: inBattle, script: `const w = a.game.world; const u = w.spawnUnit(0, 1, window.__mythwarData.UNITS.treant, 380); u.veteran = true`, ready2: `!!document.querySelector('.coach.show')`, after: 700 },
+  // (Whatever tip comes first: the earlier screens of this phone may have used some up.)
+  { name: 'tip', query: battle, ready: inBattle, script: `a.settings.hints = true; a.settings.hintsSeen = []; a.game.speed = 4`, ready2: `!!document.querySelector('.coach.show')`, after: 700 },
   { name: 'preview', query: battle, ready: inBattle, script: `document.querySelector('.act.ascend').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true }))`, ready2: `!document.querySelector('.tooltip').classList.contains('hidden')`, after: 500 },
   { name: 'card', query: battle, ready: inBattle, script: `a.hud.showTooltip(window.__mythwarData.UNITS.treant, document.querySelector('.card'))`, ready2: `!document.querySelector('.tooltip').classList.contains('hidden')`, after: 500 },
   { name: 'pause', query: battle, ready: inBattle, script: `a.pause()`, ready2: `a.menus.current === 'pause'`, after: 700 },
-  { name: 'results', query: battle, ready: inBattle, script: `const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, after: 1200 },
+  { name: 'results', query: battle, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, after: 1200 },
   { name: 'lobby', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, after: 900 },
   // Getting the app (ui/install.ts): the sheet in a tab, the first launch's welcome installed.
   { name: 'install', query: '', ready: `a.menus.current === 'title'`, script: `a.install.open()`, ready2: `!!document.querySelector('.isheetback.show')`, after: 700, only: 'tab' },
@@ -355,7 +356,9 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
   const ctx: BrowserContext = await browser.newContext({
     viewport: { width: v.w, height: v.h },
     screen: { width: v.w, height: v.h },
-    deviceScaleFactor: d.dpr,
+    // (At most 2: the game draws at 2x at most anyway, and headless WebKit rasterizes on the CPU —
+    // at 3x a big installed phone ran the battle at a third of its speed.)
+    deviceScaleFactor: Math.min(2, d.dpr),
     isMobile: true,
     hasTouch: true,
     userAgent: d.ua,
@@ -388,7 +391,7 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
     const problems: Problem[] = [];
     try {
       await page.goto(`${base}/?${q}`);
-      const wait = (expr: string) => page.waitForFunction(`(() => { const a = window.__mythwar; return !!a && (${expr}); })()`, undefined, { timeout: 30000 });
+      const wait = (expr: string) => page.waitForFunction(`(() => { const a = window.__mythwar; return !!a && (${expr}); })()`, undefined, { timeout: 45000 });
       await wait(s.ready);
       if (s.script) await page.evaluate(`(() => { const a = window.__mythwar; ${s.script}; })()`);
       if (s.ready2) await wait(s.ready2);
