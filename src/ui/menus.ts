@@ -401,12 +401,18 @@ export class Menus {
 
   /** Settings' permanent way to the app (hidden where there's nothing to offer, or installed). */
   private installBtn = this.button('Get the app', 'small', () => this.cb.install());
-  private installRow = h('div', { class: 'sapp hidden' }, h('span', { text: 'Mythwar plays best as an app: full screen, one tap from your Home Screen.' }), this.installBtn);
+  private installText = h('span', { text: 'Mythwar plays best as an app: full screen, one tap from your Home Screen.' });
+  private installRow = h('div', { class: 'sapp hidden' }, this.installText, this.installBtn);
 
-  /** Shows Settings' entry with this label, or hides it (null). */
-  setInstallEntry(label: string | null): void {
-    this.installRow.classList.toggle('hidden', !label);
+  /**
+   * Settings' entry: a button with this label (null: none), and the line beside it (`note`, else
+   * the usual one). Neither: the row is hidden (installed already).
+   */
+  setInstallEntry(label: string | null, note?: string): void {
+    this.installRow.classList.toggle('hidden', !label && !note);
+    this.installBtn.classList.toggle('hidden', !label);
     if (label) this.installBtn.querySelector('span')!.textContent = label;
+    this.installText.textContent = note ?? 'Mythwar plays best as an app: full screen, one tap from your Home Screen.';
   }
 
   /** A newer build is on the server (see update.ts): restarting the game takes it. */

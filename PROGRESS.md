@@ -46,7 +46,7 @@ Already in the code before Phase 3, and kept:
   down to dismiss sheets, ≥ 44-pt targets, no hover dependence, smooth screen changes, a
   haptics switch in Settings.
 - [ ] **E** Small-screen polish (375×667 up to tablets), from the screenshots.
-- [ ] **F** (stretch) Android APK (TWA/Capacitor): decide, record.
+- [x] **F** (stretch) Android APK (TWA/Capacitor): decided against for now (see Decisions).
 - [ ] Docs: real-device checklist in `docs/PLAYTEST.md`; the LAN trade-off in
   `docs/MULTIPLAYER.md`.
 
@@ -129,6 +129,22 @@ Already in the code before Phase 3, and kept:
   button remains (plus Settings).
 - Edge-to-edge drawing under the notch (installed, landscape) is left for E: the stage stays
   inside the safe area, the notch strips show the page's dark background.
+
+- **F: no downloadable Android app (TWA/Capacitor APK) for now.** (1) Chrome on Android
+  already makes the installed game a WebAPK — a real app in the drawer with its icon, splash,
+  full screen, offline — through the install dialog the game now offers; a sideloaded APK adds
+  nothing a player would see, and needs "install unknown apps", which looks unsafe. (2) A TWA
+  only drops the URL bar once Digital Asset Links verify the origin: `assetlinks.json` must sit
+  at https://zahikusa.github.io/.well-known/ — the owner's user-site repo, not this one —
+  otherwise it shows a browser bar (worse than the PWA). (3) Capacitor/Bubblewrap need a JDK +
+  Android SDK in the release workflow and a signing keystore as a repo secret: owner setup,
+  outward-facing. (4) The one real gain a native shell could bring — a phone hosting the LAN
+  server, no PC needed — is a project of its own (a WebSocket server plugin), not a 2-run
+  stretch. Revisit if Play Store presence or phone-hosted rooms become goals.
+- Tablets turn the stage like phones when upright (an iPad mini upright, unturned, had lanes
+  ~560 px wide and stretched cards; turned, it uses its 1059-px height).
+- 10 px is the smallest text (HUD numbers, the foe cards' small labels); mobilecheck fails
+  anything smaller.
 
 ## Approaches that failed
 

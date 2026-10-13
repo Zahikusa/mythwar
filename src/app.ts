@@ -288,7 +288,7 @@ export class App {
       opened: () => this.armBack(true),
     });
     this.install.attachTitle(this.menus.titleNotes);
-    const entry = () => this.menus.setInstallEntry(this.install.offered ? this.install.label : null);
+    const entry = () => this.menus.setInstallEntry(this.install.offered ? this.install.label : null, this.install.lanNote ?? undefined);
     this.install.onChange(entry);
     entry();
     window.addEventListener('resize', () => this.resize());

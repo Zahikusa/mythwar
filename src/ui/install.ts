@@ -245,6 +245,15 @@ export class InstallGuide {
     return this.advice !== 'none' && !this.situation.installed;
   }
 
+  /**
+   * The LAN page's one line about the app (TASK goal C: don't push installing it, say where the
+   * app comes from) — for Settings, on every device there; null elsewhere.
+   */
+  get lanNote(): string | null {
+    if (!this.situation.lan || this.situation.installed) return null;
+    return `The installable app (Home Screen, offline) comes from the public address, ${PUBLIC_URL.replace('https://', '').replace(/\/$/, '')}. Battles with friends use this page.`;
+  }
+
   /** The label of the permanent entry (Settings). */
   get label(): string {
     switch (this.advice) {

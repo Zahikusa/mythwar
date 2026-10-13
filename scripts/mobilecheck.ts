@@ -345,6 +345,13 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
     window.matchMedia = (q: string) =>
       mm(q.replace(/\(\s*display-mode:\s*(standalone|fullscreen|minimal-ui)\s*\)/g, sa ? '(min-width: 0px)' : '(max-width: 0px)').replace(/\(\s*display-mode:\s*browser\s*\)/g, sa ? '(max-width: 0px)' : '(min-width: 0px)'));
     if (/iPhone|iPad/.test(navigator.userAgent)) Object.defineProperty(navigator, 'standalone', { configurable: true, value: sa });
+    // Each screen in its settled state: no transitions or entrance animations (under load,
+    // headless WebKit sometimes didn't advance them — a sheet stayed at its invisible first frame).
+    document.addEventListener('DOMContentLoaded', () => {
+      const st = document.createElement('style');
+      st.textContent = '*, *::before, *::after { transition-duration: 0s !important; transition-delay: 0s !important; animation-duration: 0s !important; animation-delay: 0s !important; }';
+      document.head.appendChild(st);
+    });
     // (The welcome and the after-battle offer were seen: each has a screen of its own here.)
     if (!localStorage.getItem('mythwar.settings.v1')) localStorage.setItem('mythwar.settings.v1', JSON.stringify({ appWelcome: true, installSheet: true }));
   }, standalone);
