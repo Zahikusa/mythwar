@@ -44,8 +44,10 @@ const hostRoom = `(async () => { const a = window.__mythwar; a.openMultiplayer()
 const guestReady = { settings: { playerName: 'Bo the Bold', sigil: 3 }, script: `(() => { const m = window.__mythwar.mp; m.setTrials(['glass']); setTimeout(() => m.ready(true), 400); })()`, wait: 1200 };
 
 /** The guest just readies; the host readies after it (`afterGuest`): an online battle starts. */
-const guestBattle = { settings: { playerName: 'Bo the Bold', sigil: 3 }, script: `window.__mythwar.mp.ready(true)`, wait: 9000 };
-const hostReady = `setTimeout(() => window.__mythwar.mp.ready(true), 500)`;
+// (Both sides summon once the countdown is over: creatures meet in the middle by the shot.)
+const summon = (lanes: string) => `setTimeout(() => { const g = window.__mythwar.game; ${lanes}.forEach(([u, l]) => g.command({ type: 'train', team: g.playerTeam, unitId: u, lane: l })); }, 4500)`;
+const guestBattle = { settings: { playerName: 'Bo the Bold', sigil: 3, hints: false }, script: `(() => { window.__mythwar.mp.ready(true); ${summon("[['treant', 1], ['redcap', 1], ['pixie', 2]]")}; })()`, wait: 13000 };
+const hostReady = `(() => { setTimeout(() => window.__mythwar.mp.ready(true), 500); ${summon("[['redcap', 1], ['pixie', 1], ['treant', 0]]")}; })()`;
 
 const cast = (age: number, lane: number) =>
   `(() => { const a = window.__mythwar; const w = a.game.world; const p = w.players[0]; p.age = ${age}; p.powerCooldown = 0; a.game.command({ type: 'power', team: 0, lane: ${lane} }); })()`;

@@ -59,7 +59,7 @@ citadel and purse). Battles survive app switches, Wi-Fi blips and reloads; leavi
 take a handicap in the room (half a citadel, no god powers, no turrets) to give a friend a chance.
 Details, troubleshooting (firewall!) and how it works: [docs/MULTIPLAYER.md](docs/MULTIPLAYER.md).
 
-| Battle room: code + QR invite | The guest's phone: every player sees their own citadel on the left |
+| Battle room: code + QR invite | A phone in an online battle: every player sees their own citadel on the left, both sigils flying |
 |---|---|
 | ![Room](docs/mp-room.jpg) | ![Phone](docs/mp-phone.jpg) |
 

@@ -825,6 +825,10 @@ it prints, inviting, stopping — 2026-10-13.)
 186. [x] Gamepad: the battle room (now with How to play, #161) had no D-pad reachability check (the
    results have one, #109). (Done: mpsmoke walks the room's 11 controls — mode and handicap chips,
    Leave room, How to play, Ready — all reachable.)
+187. [x] README's `docs/mp-phone.jpg` (run #7) showed an old HUD under Mímir's lanes tip. (Done:
+   `mobile-mp-battle` now has both players summon after the countdown; re-shot with tips off —
+   `shoot mobile-mp-battle --settings '{"hints":false,"playerName":"Ada","sigil":1}'` then
+   `docshot … docs/mp-phone.jpg 960`; caption fixed — it is the host's phone.)
 
 
 
