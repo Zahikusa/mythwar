@@ -13,8 +13,10 @@ the improvement backlog below (verified, committed) and add what the review find
 2. [x] `server/lobby.ts` `hallEntry`: "days played" uses UTC days, so a European evening that
    runs past 01:00/02:00 local time counts as two days and inflates "came back on another day".
    Use the server's local calendar day. (Done: `localDay()`, tested across local midnight.)
-3. [ ] Online results: no way to say "Well played!" after the battle (quick messages only exist
-   in battle) — phase-1 backlog #25, still open.
+3. [x] Online results: no way to say "Well played!" after the battle (quick messages only exist
+   in battle) — phase-1 backlog #25. (Done: Well played! / Good luck! / Thanks! chips on the
+   online results, the other player's words shown there; hidden once they leave; on short
+   screens the results' buttons are now pinned like every other screen's. mpsmoke checks it.)
 4. [ ] `scripts/smoke.ts`: nothing checks that the results screen fits a 1600×900 / 1366×768
    window in its fullest form (new feats + new best + chapter close + break note + chronicle);
    several lenses added lines to it and two of them overflowed until spotted in screenshots.
@@ -431,7 +433,7 @@ The single-player development log (runs #1–#3) moved to `docs/PROGRESS-singlep
 24. [x] Results screen overflowed laptop-height windows (1366×768: title cut off, buttons below
     the fold, single player too) — found by the e2e run; now a side-by-side layout up to 860 px
     high and `justify-content: safe center` so overflow scrolls instead of clipping.
-25. [ ] Online results screen: no way to say "Well played!" after the battle (emotes only exist
+25. [x] Online results screen: no way to say "Well played!" after the battle (emotes only exist
     in battle); a small emote row on the results would fit the rematch flow.
 26. [x] `server/main.ts`: no `--help`; the flags (--port, --cert/--key, --trust-proxy,
     --latency/--jitter, --dir, --quiet) are only documented in the file header / docs.

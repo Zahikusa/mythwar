@@ -369,6 +369,12 @@ async function main(): Promise<void> {
     await press(a, '.netoverlay', 'Claim victory');
     await waitFor(a, 'A results after claiming', () => (window as any).__mythwar.menus.current === 'over', 8000);
     await waitFor(b, 'B results (lost: away too long)', () => (window as any).__mythwar.menus.current === 'over', 8000);
+    // After the battle B says "Well played!" from the results; A reads it on theirs (backlog #25).
+    await press(b, '.screen.over', 'Well played!');
+    await waitFor(a, 'A hears B on the results', () => (document.querySelector('.screen.over .vemoteline')?.textContent ?? '').includes('Well played!'), 4000);
+    const said = await a.evaluate(() => document.querySelector('.screen.over .vemoteline')?.textContent ?? '');
+    const own = await b.evaluate(() => document.querySelector('.screen.over .vemoteline')?.textContent ?? '');
+    check('results: a quick message after the battle reaches the other player', said.endsWith(': Well played!') && own === 'You: Well played!', `${said} | ${own}`);
     await shot(b, '11-results-phone');
 
     console.log('== leaving the room ==');

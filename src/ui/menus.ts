@@ -20,8 +20,8 @@ import type { Puzzle } from '../sim/puzzles.ts';
 import { exportProgress, importProgress } from './progress.ts';
 import type { Feat } from './feats.ts';
 import type { MpMenuCallbacks } from './mpmenus.ts';
-import type { EndReason } from '../net/protocol.ts';
-import { cleanName } from '../net/protocol.ts';
+import type { EmoteId, EndReason } from '../net/protocol.ts';
+import { EMOTES, cleanName } from '../net/protocol.ts';
 
 /** Results of a battle against another player (instead of an AI difficulty). */
 export interface OnlineResult {
@@ -51,7 +51,12 @@ export interface MenuCallbacks {
   rematch(): void;
   leaveRoom(): void;
   toRoom(): void;
+  /** A quick message from the online results ("Well played!"); false if it couldn't be sent. */
+  emote(id: EmoteId): boolean;
 }
+
+/** Quick messages offered on the online results (sportsmanship, and an invitation to go again). */
+const RESULT_EMOTES: EmoteId[] = ['wp', 'gl', 'thx'];
 
 type Screen = 'none' | 'title' | 'difficulty' | 'howto' | 'settings' | 'bestiary' | 'feats' | 'riddles' | 'pause' | 'over' | 'mp' | 'room';
 
@@ -88,6 +93,8 @@ export class Menus {
   private pauseTitle: HTMLElement | null = null;
   private rematchBtn: HTMLButtonElement | null = null;
   private rematchNote: HTMLElement | null = null;
+  private emoteLine: HTMLElement | null = null;
+  private emoteRow: HTMLElement | null = null;
   private bestiary!: Bestiary;
   private pauseGoals: HTMLElement | null = null;
   /** Feats earned in the battle whose results are shown next. */
@@ -991,12 +998,37 @@ export class Menus {
   private onlineResultButtons(share: HTMLButtonElement): HTMLElement {
     this.rematchBtn = this.button('Rematch', 'primary', () => this.cb.rematch(), ICONS.swords);
     this.rematchNote = h('div', { class: 'mnote rmatch' });
+    // Say something after the battle (phase-1 backlog #25): a few chips, and what was said.
+    this.emoteLine = h('div', { class: 'vemoteline', role: 'status' });
+    const chips = RESULT_EMOTES.map((id) => {
+      const chip = h('button', { class: 'trial vemote', text: EMOTES[id] }) as HTMLButtonElement;
+      onTap(chip, () => {
+        if (!this.cb.emote(id)) return;
+        this.cb.sound('select');
+        this.resultEmote(`You: ${EMOTES[id]}`);
+        // (The server takes one message every 1.5 s.)
+        for (const c of chips) c.disabled = true;
+        window.setTimeout(() => chips.forEach((c) => (c.disabled = false)), 1600);
+      });
+      return chip;
+    });
+    this.emoteRow = h('div', { class: 'vemotes' }, ...chips, this.emoteLine);
     return h(
       'div',
       { class: 'vbuttons' },
+      this.emoteRow,
       this.rematchNote,
       h('div', { class: 'mrow' }, this.button('Leave room', 'ghost', () => this.cb.leaveRoom()), share, this.rematchBtn),
     );
+  }
+
+  /** A quick message said on the online results ("Ada: Well played!"), shown by the chips. */
+  resultEmote(text: string): void {
+    if (!this.emoteLine) return;
+    this.emoteLine.textContent = text;
+    this.emoteLine.classList.remove('pop');
+    void this.emoteLine.offsetWidth; // restart the pop animation
+    this.emoteLine.classList.add('pop');
   }
 
   /**
@@ -1008,6 +1040,8 @@ export class Menus {
     const note = this.rematchNote;
     if (!btn || !note) return;
     const span = btn.querySelector('span')!;
+    // (Nobody to talk to once they've left.)
+    this.emoteRow?.classList.toggle('hidden', theirs === null);
     if (theirs === null) {
       span.textContent = 'Back to room';
       note.textContent = `${foe} left the room.`;

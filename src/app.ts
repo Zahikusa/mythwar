@@ -192,6 +192,7 @@ export class App {
       rematch: () => this.rematch(),
       leaveRoom: () => this.leaveRoom(),
       toRoom: () => this.menus.show('room'),
+      emote: (id) => !!this.mp && this.mp.emote(id),
       mp: {
         sound: (k) => this.audio.ui(k),
         exit: () => this.closeMultiplayer(),
@@ -958,6 +959,12 @@ export class App {
         emote: (seat, id) => {
           const g = this.game;
           if (!(g instanceof NetGame) || seat === g.seat || this.state === 'title' || !this.settings.emotes) return;
+          // After the battle the results cover the HUD: their words appear by the result chips.
+          if (this.state === 'over' && this.menus.current === 'over') {
+            this.menus.resultEmote(`${g.coop ? g.allyName : g.foeName}: ${EMOTES[id] ?? ''}`);
+            this.audio.ui('select');
+            return;
+          }
           if (g.coop) {
             // An ally's call: by our own side, with their name — and a lane call lights the lane.
             this.hud.showEmote('mine', `${g.allyName}: ${EMOTES[id] ?? ''}`);
