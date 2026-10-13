@@ -223,6 +223,13 @@ async function main(): Promise<void> {
     // (With A's sigil before it, as in the lobby list.)
     await waitFor(b, 'B sees the new name, with the sigil', () => [...document.querySelectorAll('.rseat .sname')].some((e) => /^☾\S* Ada L$/u.test(e.textContent ?? '')));
     await shot(b, '3-room-phone');
+    // (Backlog 161) A guest who came by QR code never saw the how-to: the room offers it, and Back
+    // (on its first page) returns to the room, still seated.
+    await press(b, '.screen.room', 'How to play');
+    await waitFor(b, 'B reads the how-to', () => (window as any).__mythwar.menus.current === 'howto', 4000);
+    await press(b, '.screen.howto', 'Back');
+    await waitFor(b, 'B back in the room from the how-to', () => (window as any).__mythwar.menus.current === 'room', 4000);
+    check('room: How to play and back, still seated', await b.evaluate(() => (window as any).__mythwar.mp.seat === 1 && !!(window as any).__mythwar.mp.room));
 
     console.log('== battle ==');
     await press(a, '.screen.room', 'Ready');

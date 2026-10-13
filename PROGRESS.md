@@ -703,8 +703,9 @@ battle, results — 2026-10-13.)
    lock after 30 s) loses its seat after 12 s + 60 s and lands in the lobby with "away too long".
    Hold a disconnected seat longer while the room is waiting (and say "keep your screen on" in the
    room on phones?).
-161. [ ] The battle room has no way to the how-to: a QR guest never saw it (it shows before a first
-   *local* battle) and Leave room → Back disconnects. A "How to play" in the room, Back to the room.
+161. [x] The battle room has no way to the how-to: a QR guest never saw it (it shows before a first
+   *local* battle) and Leave room → Back disconnects. A "How to play" in the room, Back to the room. (Done: "How to play" between Leave room and Ready — fits a 844×390 phone; a battle
+   starting meanwhile closes it like any menu; mpsmoke goes there and back, still seated.)
 162. [x] "Copy result" (results) and "Copy link" (room) always fail on LAN phones — `navigator.
    clipboard` needs a secure context (http://192.168… isn't); Settings' progress code has the
    select-the-text fallback, these don't (menus.ts ~973, mpmenus.ts ~236). A shared copy helper

@@ -220,6 +220,7 @@ export class App {
         },
         host: () => this.mp?.host(),
         join: (code) => this.mp?.join(code),
+        howto: () => this.menus.show('howto'),
         ready: (on) => {
           // Online battles start on a message from the server, not a tap: phones go
           // fullscreen (a gesture is required) when the player says they're ready.

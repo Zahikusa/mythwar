@@ -21,6 +21,8 @@ export interface MpMenuCallbacks {
   /** Versus (null) or co-op against an AI of this difficulty. */
   coop(coop: Difficulty | null): void;
   leaveRoom(): void;
+  /** The how-to (Back returns to the room): a guest who came by QR code never saw it. */
+  howto(): void;
 }
 
 type ButtonFactory = (label: string, cls: string, onClick: () => void, icon?: string) => HTMLButtonElement;
@@ -323,6 +325,7 @@ export class MpScreens {
     }
     this.roomNote = h('div', { class: 'mnote rnote' });
     const leave = this.button('Leave room', 'ghost', () => this.cb.leaveRoom());
+    const howto = this.button('How to play', 'ghost', () => this.cb.howto(), ICONS.info);
     return h(
       'div',
       { class: 'screen room' },
@@ -333,7 +336,7 @@ export class MpScreens {
       handicap,
       this.makeFlash(),
       this.roomNote,
-      h('div', { class: 'mrow' }, leave, this.readyBtn),
+      h('div', { class: 'mrow' }, leave, howto, this.readyBtn),
     );
   }
 
