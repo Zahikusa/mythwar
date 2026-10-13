@@ -470,7 +470,8 @@ export class App {
    */
   private paintAmbient(now: number): void {
     const c = this.ambient;
-    if (!c.classList.contains('on') || now - this.ambientAt < 250) return;
+    // (Four times a second; once with the battery saver on — it only fills the strips.)
+    if (!c.classList.contains('on') || now - this.ambientAt < (this.settings.lowQuality ? 1000 : 250)) return;
     this.ambientAt = now;
     const g = c.getContext('2d');
     if (!g) return;

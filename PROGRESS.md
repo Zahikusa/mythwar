@@ -180,9 +180,19 @@ Already in the code before Phase 3, and kept:
    sees in the first minutes.
    (Done: `tip`, `preview` and `card` screens — all fit on every phone; looked at on the SE
    both ways and the Galaxy sideways.)
-10. [ ] Back while the upright typing echo is up (ui/upright.ts): the screen behind changes
+10. [x] Back while the upright typing echo is up (ui/upright.ts): the screen behind changes
    (lobby → title) but the field may keep the focus and the echo its place — check that the
    echo always goes with its screen.
+   (Checked, no change needed: Back in the upright lobby with the name field focused — in
+   Chromium and WebKit the focus moves to the title (Menus.focusScreen), the field's focusout
+   hides the echo.)
+11. [x] The ambient strips (backlog 1) redraw 4× a second even with the battery saver on.
+   (Done: once a second then.)
+12. [ ] PLAYTEST.md's phone check predates "Paste my progress" and the upright typing echo: add
+   a line for each (installed iPhone: paste from Safari; upright lobby: the echo while typing).
+13. [ ] An iPad 9.7"/10.2" in a Safari tab sideways (1024×~690): the title's corner offer sits
+   beside a logo that's wider relative to the screen than on the iPad mini — add that size to
+   mobilecheck and look.
 
 ## Decisions
 
