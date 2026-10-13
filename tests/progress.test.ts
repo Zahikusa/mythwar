@@ -30,6 +30,34 @@ describe('progress codes', () => {
     expect(JSON.stringify(phone)).toBe(once);
   });
 
+  it('carry solved riddles; unknown feats and riddles are left out; older codes still load', () => {
+    const pc = loadSettings();
+    pc.riddles = ['pack', 'wall'];
+    pc.feats = ['first', 'made-up'];
+    const phone = loadSettings();
+    phone.riddles = ['winter'];
+    expect(importProgress(phone, exportProgress(pc))).toBe(true);
+    expect(phone.riddles.sort()).toEqual(['pack', 'wall', 'winter']);
+    expect(phone.feats).toEqual(['first']);
+    const forged = (p: object) => 'MW1:' + btoa(JSON.stringify(p));
+    const s = loadSettings();
+    expect(importProgress(s, forged({ r: {}, f: Array.from({ length: 200 }, (_, i) => `junk${i}`), a: 0, o: {}, q: ['nope', 'pack'] }))).toBe(true);
+    expect(s.feats).toEqual([]);
+    expect(s.riddles).toEqual(['pack']);
+    // A code from before riddles were carried.
+    const old = loadSettings();
+    expect(importProgress(old, forged({ r: {}, f: ['first'], a: 2, o: {} }))).toBe(true);
+    expect(old.riddles).toEqual([]);
+    expect(old.ageSeen).toBe(2);
+  });
+
+  it('a "__proto__" name in the online tallies is ignored (no prototype swap)', () => {
+    const s = loadSettings();
+    expect(importProgress(s, 'MW1:' + btoa('{"r":{},"f":[],"a":0,"o":{"__proto__":{"w":3,"l":1},"Ada":{"w":1,"l":0}}}'))).toBe(true);
+    expect(Object.getPrototypeOf(s.online)).toBe(Object.prototype);
+    expect(Object.keys(s.online)).toEqual(['Ada']);
+  });
+
   it('rejects anything that is not a progress code', () => {
     const s = loadSettings();
     const before = JSON.stringify(s);

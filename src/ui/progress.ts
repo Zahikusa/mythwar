@@ -1,10 +1,12 @@
 import { DIFFICULTIES } from '../ai/ai.ts';
 import type { Settings } from './settings.ts';
-import { MAX_STARS, PINNACLE, starTotal } from './feats.ts';
+import { FEATS, MAX_STARS, PINNACLE, starTotal } from './feats.ts';
+import { PUZZLES } from '../sim/puzzles.ts';
 
 /**
- * Progress codes: a player's records, feats, discovered ages and online tallies as one line of
- * text, to carry from a PC to a phone (or keep as a backup when the browser's storage is cleared).
+ * Progress codes: a player's records, feats, discovered ages, online tallies and solved riddles
+ * as one line of text, to carry from a PC to a phone (or keep as a backup when the browser's
+ * storage is cleared).
  * Loading a code *merges* — nothing already earned on this device is ever lost, and loading the
  * same code twice changes nothing.
  */
@@ -15,10 +17,12 @@ interface Payload {
   f: string[];
   a: number;
   o: Settings['online'];
+  /** Riddles solved (added later: older codes have none). */
+  q?: string[];
 }
 
 export function exportProgress(s: Settings): string {
-  const p: Payload = { r: s.records, f: s.feats, a: s.ageSeen, o: s.online };
+  const p: Payload = { r: s.records, f: s.feats, a: s.ageSeen, o: s.online, q: s.riddles };
   const bytes = new TextEncoder().encode(JSON.stringify(p));
   let bin = '';
   for (const b of bytes) bin += String.fromCharCode(b);
@@ -48,13 +52,16 @@ export function importProgress(s: Settings, code: string): boolean {
     const stars = Math.max(mine.stars ?? 0, Math.min(3, num(theirs.stars)));
     s.records[d] = { wins: Math.max(mine.wins, num(theirs.wins)), losses: Math.max(mine.losses, num(theirs.losses)), best: best.length ? Math.min(...best) : 0, streak: mine.streak ?? 0, stars };
   }
-  if (Array.isArray(p.f)) for (const f of p.f) if (typeof f === 'string' && !s.feats.includes(f) && s.feats.length < 100) s.feats.push(f);
+  // (Only feats and riddles this game knows: a made-up code can't fill the lists with junk.)
+  if (Array.isArray(p.f)) for (const f of p.f) if (FEATS.some((k) => k.id === f) && !s.feats.includes(f)) s.feats.push(f);
+  if (Array.isArray(p.q)) for (const q of p.q) if (PUZZLES.some((k) => k.id === q) && !s.riddles.includes(q)) s.riddles.push(q);
   // Stars from both devices together may complete the pinnacle.
   if (starTotal(s.records) >= MAX_STARS && !s.feats.includes(PINNACLE)) s.feats.push(PINNACLE);
   s.ageSeen = Math.max(s.ageSeen, Math.min(4, num(p.a)));
   if (p.o && typeof p.o === 'object') {
     for (const [name, r] of Object.entries(p.o)) {
-      if (!r || typeof r !== 'object' || name.length > 40) continue;
+      // (JSON.parse makes "__proto__" an ordinary key; assigning it would swap the object's prototype.)
+      if (!r || typeof r !== 'object' || name.length > 40 || name === '__proto__') continue;
       const mine = s.online[name] ?? { w: 0, l: 0 };
       s.online[name] = { w: Math.max(mine.w, num(r.w)), l: Math.max(mine.l, num(r.l)) };
     }

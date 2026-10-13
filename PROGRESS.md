@@ -158,6 +158,12 @@ the improvement backlog below (verified, committed) and add what the review find
    a host updating the folder) kept every old bundle's brotli and gzip copy in memory forever.
    No tests for the static server at all. (Done: at most 48 copies, least recently used dropped;
    tests/static.test.ts — headers, gzip body, the cap, path escapes, bad methods and URLs.)
+42. [x] `src/ui/progress.ts`: progress codes don't carry solved riddles (#52/#66) — a player who
+   solved them on the PC finds them unsolved on the phone; any string is accepted as a feat (a
+   forged code with 100 junk ids filled the list, and the load-time cap of 100 then cut real
+   feats earned later); an online name "__proto__" swapped the tallies object's prototype.
+   (Done: `q` carries riddles (older codes still load), feats/riddles filtered to known ids,
+   "__proto__" skipped; tests.)
 
 
 
