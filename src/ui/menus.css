@@ -1690,3 +1690,9 @@
     width: 400px;
   }
 }
+
+/* Before a first victory the foe screen offers no handicaps (Lens #56). */
+.trials.notrials .tlabel,
+.trials.notrials .handicap {
+  display: none;
+}

@@ -268,6 +268,17 @@ async function riddleFlow(page: Page): Promise<void> {
   await page.evaluateOnNewDocument(() => localStorage.setItem('mythwar.settings.v1', JSON.stringify({ tutorialSeen: true, hintsSeen: [] })));
   await page.goto(`${base}/?screen=difficulty`, { waitUntil: 'load' });
   await sleep(900);
+  const chips = () => page.evaluate(() => [...document.querySelectorAll('.screen.difficulty .trial')].filter((c) => (c as HTMLElement).offsetParent !== null).map((c) => c.textContent));
+  const freshChips = await chips();
+  check('a newcomer’s foe screen offers Quick battle but no trials yet', freshChips.length === 1 && freshChips[0] === 'Quick battle', JSON.stringify(freshChips));
+  await page.evaluate(() => {
+    const app = (window as unknown as { __mythwar: any }).__mythwar;
+    app.settings.records.novice = { wins: 1, losses: 0, best: 600, stars: 1 };
+    app.menus.show('title');
+    app.menus.show('difficulty');
+  });
+  const wonChips = await chips();
+  check('after a first victory the trials appear', wonChips.length === 4, JSON.stringify(wonChips));
   const btn = await centerText(page, '.screen.difficulty', 'Riddles');
   await page.mouse.click(btn.x, btn.y);
   await sleep(400);

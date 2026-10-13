@@ -124,7 +124,7 @@ complete; its log follows below the lens plan.
 - [x] #53 Control — tapping a card you cannot afford yet arms it: it summons itself once the gold is there (tap again to cancel)
 - [x] #54 Physical Interface — gamepads: face buttons summon the cards as they sit on the pad (X A B, Y), D-pad lanes, shoulders power/hold/ascend/undo; menus by D-pad + A/B
 - [x] #55 Virtual Interface — the age race was invisible until the foe could ascend: XP rings around both age badges
-- [ ] #56 Transparency — declutter the interface
+- [x] #56 Transparency — the foe screen hides the Trials (handicaps) until a first victory
 - [ ] #57 Feedback — feedback for counters/hits
 - [ ] #58 Juiciness — more juice
 - [ ] #59 Channels and Dimensions — map info to new channels (low-HP heartbeat)

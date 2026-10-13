@@ -1107,3 +1107,18 @@ do — and does the interface tell them, or get in the way?*
   (First version: a 2-px ring nobody would notice — the mask's percentages were measured to the
   corner; now 5 px.)
 - Checked: screenshots (desktop, phone landscape), how-to page on a 667×375 phone; full verify.
+
+## #56 The Lens of Transparency
+*What does the player want to feel, and does the interface let them — or does it get in the way?
+Is it invisible, the way a good tool is?*
+- In battle the HUD keeps to the edges and the field speaks for itself (checked again on desktop
+  and phone screenshots). The opaque spot is a menu: phase 2 grew the foe screen from four foes
+  and a button into four foes, a Quick battle switch, three Trials, Sandbox, Riddles (#52), Back
+  and Begin. For the one moment that matters most to a newcomer — *choose who to fight* — that
+  is a wall of options, and three of them (Glass Citadel, Godless, No Walls) are handicaps that
+  mean nothing before you've won once.
+- Change: **progressive disclosure on the foe screen** — the Trials row appears after a first
+  victory (or if trials are already chosen, e.g. merged from another device, so they can be
+  switched off). Quick battle stays: a short session is a newcomer's choice too.
+- Checked: smoke (fresh profile: only Quick battle; after a win: Quick battle and the three
+  trials), screenshots of the foe screen on desktop and a 667×375 phone.

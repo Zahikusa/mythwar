@@ -94,6 +94,7 @@ export class Menus {
   newBestStars = 0;
   private featList: HTMLElement | null = null;
   private riddleList: HTMLElement | null = null;
+  private trialsRow: HTMLElement | null = null;
   private featChip: HTMLButtonElement | null = null;
 
   constructor(parent: HTMLElement, settings: Settings, cb: MenuCallbacks) {
@@ -345,6 +346,7 @@ export class Menus {
     this.saveNote = h('div', { class: 'dnote hidden', text: 'A new battle replaces your saved one (after its first minute, that counts as a defeat).' });
     // Battle length, then trials: optional handicaps for players who want a harder fight.
     const trials = h('div', { class: 'trials' });
+    this.trialsRow = trials;
     const quick = h('button', { class: 'trial quickchip', title: 'Quick battle: faster ages, more starting gold, an earlier Ragnarök — about two thirds of the time', 'aria-pressed': 'false' }, 'Quick battle') as HTMLButtonElement;
     const syncQuick = () => {
       quick.classList.toggle('on', this.settings.quick);
@@ -360,7 +362,7 @@ export class Menus {
     trials.append(quick, h('span', { class: 'tlabel', text: 'Trials:' }));
     for (const id of TRIAL_ORDER) {
       const t = TRIALS[id];
-      const chip = h('button', { class: 'trial', title: t.blurb, 'aria-pressed': 'false' }, t.name) as HTMLButtonElement;
+      const chip = h('button', { class: 'trial handicap', title: t.blurb, 'aria-pressed': 'false' }, t.name) as HTMLButtonElement;
       const sync = () => {
         const on = this.settings.trials.includes(id);
         chip.classList.toggle('on', on);
@@ -398,6 +400,9 @@ export class Menus {
     const rec = this.settings.records;
     const next = recommendedDifficulty(rec);
     const fresh = DIFFICULTIES.every((d) => !rec[d]?.wins);
+    // Trials are for a harder fight: they appear after a first victory (Lens #56) — or when some
+    // are already chosen (from a progress code), so they can always be switched off again.
+    this.trialsRow?.classList.toggle('notrials', fresh && this.settings.trials.length === 0);
     for (const d of DIFFICULTIES) {
       this.diffCards[d].classList.toggle('sel', d === this.selected);
       // Which foe is for me? The first one not beaten yet.
