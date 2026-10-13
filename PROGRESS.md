@@ -332,11 +332,13 @@ it prints, inviting, stopping — 2026-10-13.)
    release package starts. (Done: a last step in browser-tests.yml.)
 206. [x] README's `docs/mp-room.jpg` predated the room's "How to play" and the sigil by the seat
    name. (Done: `shoot mp-room --settings '{"playerName":"Ada","sigil":1}'` → docshot 960.)
-207. [ ] No end-to-end check of a co-op battle *finished* — the verdict for a stayer who won alone
+207. [x] No end-to-end check of a co-op battle *finished* — the verdict for a stayer who won alone
    (#196: "You toppled the Novice — after Bo had left"), the results' co-op score line, the Hall's
    co-op count for the allies still in it (#190). mpsmoke's co-op battle ends by both leaving; a
    test hook that ends a battle on the server (`attachMultiplayer` option, test-only) would let it
-   play out to the results.
+   play out to the results. (Done without a hook: mpsmoke already holds the server — it ends the co-op battle
+   through the lobby's room and checks B's verdict "You toppled the Novice — after Ada L had
+   left.", "Back to room", and the room open again.)
 
 
 

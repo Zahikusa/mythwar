@@ -712,6 +712,15 @@ async function main(): Promise<void> {
     await until('B plays on', async () => (await info(b)).tick > leftAt + 60, 6000);
     const solo = await info(b);
     check('co-op: the ally plays on when the other leaves', !solo.over && !solo.paused && solo.netPause === null, JSON.stringify(solo));
+    // (Backlog 207) B wins alone (the server ends the battle — reaching into its rooms, as only a
+    // test may): the results say so, and the room is open again for a new ally (#192).
+    {
+      const coopRoom = await b.evaluate(() => (window as any).__mythwar.mp.room.code as string);
+      ((mp.lobby as any).rooms.get(coopRoom).match as { finish(w: number, r: string): void }).finish(0, 'citadel');
+      await waitFor(b, 'B co-op results', () => (window as any).__mythwar.menus.current === 'over', 8000);
+      const won = await b.evaluate(() => ({ verdict: document.querySelector('.screen.over .verdict')?.textContent ?? '', btns: [...document.querySelectorAll('.screen.over .mrow button')].filter((x) => (x as HTMLElement).offsetParent !== null).map((x) => x.textContent?.trim()), phase: (window as any).__mythwar.mp.room?.phase }));
+      check('co-op: a stayer who won alone is told so; the room is open again', /You toppled the .+ — after .+ had left\./.test(won.verdict) && won.btns.includes('Back to room') && won.phase === 'waiting', JSON.stringify(won));
+    }
     await b.evaluate(() => (window as any).__mythwar.leaveRoom());
     await waitFor(b, 'B in the lobby after co-op', () => (window as any).__mythwar.menus.current === 'mp', 8000);
     // (B waits in a fresh room for the restart check below.)
