@@ -1174,3 +1174,21 @@ dimension?*
   dimension (health) mapped to tempo — the channel the player can follow without looking.
 - Checked: smoke (a spy on the heartbeat: none at 80%, beats at 25%, more at 3% in the same
   time); full verify.
+
+## #60 The Lens of Modes
+*What modes does the game have? Are they necessary, clearly shown, never conflicting? Does the
+player ever act in one mode believing they're in another?*
+- The modes: **power targeting** (hint "choose a lane", lanes light, Esc/right-click cancel);
+  **hold the line** per lane (shield button + war banner on the field); **2× speed** (button
+  label); the **armed card** (#53: dashed pulsing frame, "auto · Ns"); paused / menus; riddle and
+  sandbox as whole-game modes; online's held states (overlays); and the sandbox's **"For: Foe"**
+  switch — the one mode where the same tap does the opposite thing.
+- In "For: Foe" every card summons for the enemy, but the only sign was a small "For: Foe" chip
+  under the clock; the cards — where the eyes and fingers are — looked exactly the same. The
+  classic mode error: forget the switch, summon an army for the wrong side.
+- Change: in foe mode **the cards become the foe's** — portraits redrawn in the foe's colours
+  facing the other way, a foe-coloured frame on every card, and on desktop a label beside them:
+  "Summoning for the foe — X to switch". The mode now lives where the action is. (On phones the
+  cards sit in a side column; frames and portraits carry it there.)
+- Checked: smoke (X → cards marked, a tap summons for the foe, X → back), screenshots on desktop
+  and phone; full verify.

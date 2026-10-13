@@ -82,6 +82,8 @@ export class Hud {
   /** A creature ordered before it could be paid for: summoned once the gold is there. */
   private armed: { unitId: string; lane: number } | null = null;
   private cardAge = -1;
+  /** Whose creatures the cards show: 1 in the sandbox's "For: Foe" mode. */
+  private cardTeam = 0;
   private el: Record<string, HTMLElement> = {};
   private laneTabs: HTMLButtonElement[] = [];
   /** Per lane: hold the line at the shrine / advance. */
@@ -1010,7 +1012,9 @@ export class Hud {
     const foe = w.players[g.playerTeam === 0 ? 1 : 0];
     const E = this.el;
 
-    if (this.cardAge !== me.age) this.rebuildCards(me.age);
+    // (Sandbox "For: Foe": the cards become the foe's — a mode you can't miss, Lens #60.)
+    const cardTeam = g.options.sandbox && g.sandboxFoe ? 1 : 0;
+    if (this.cardAge !== me.age || this.cardTeam !== cardTeam) this.rebuildCards(me.age, cardTeam);
     this.serviceArmed();
 
     // Top bar
@@ -1282,9 +1286,11 @@ export class Hud {
     return counterOf(dominant as UnitDef['cls']);
   }
 
-  private rebuildCards(age: number): void {
+  private rebuildCards(age: number, team = 0): void {
     const E = this.el;
     this.cardAge = age;
+    this.cardTeam = team;
+    this.root.classList.toggle('foeside', team === 1);
     // The HUD takes on the age's accent, like the battlefield, the music and the citadel.
     for (let i = 0; i <= MAX_AGE; i++) this.root.classList.toggle(`age-${i}`, i === age);
     E.cards.innerHTML = '';
@@ -1296,8 +1302,8 @@ export class Hud {
       const save = h('div', { class: 'save' });
       const el = h(
         'button',
-        { class: `card cls-${def.cls}`, style: `--cls:${CLASS_COLOR[def.cls]}`, 'aria-label': `Summon ${def.name} (${CLASS_NAME[def.cls]}), ${def.cost} gold` },
-        h('div', { class: 'portrait' }, portrait(def.id, size, 0, 0.4, false, this.zoom)),
+        { class: `card cls-${def.cls}`, style: `--cls:${CLASS_COLOR[def.cls]}`, 'aria-label': `Summon ${def.name} (${CLASS_NAME[def.cls]}) ${team === 1 ? 'for the foe' : ''}, ${def.cost} gold` },
+        h('div', { class: 'portrait' }, portrait(def.id, size, team as Team, 0.4, team === 1, this.zoom)),
         h('div', { class: 'clsico', html: CLASS_ICON[def.cls] }),
         h('div', { class: 'name', text: def.name }),
         cost,

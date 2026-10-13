@@ -761,6 +761,32 @@ html.cbfoe .side.right .hpfill {
   gap: 10px;
 }
 
+/* Sandbox "For: Foe": the cards are the foe's (Lens #60). */
+.hud.mobile.foeside .cards::before {
+  display: none;
+}
+
+.hud.foeside .card {
+  border-color: var(--red);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(var(--red-rgb), 0.8), 0 0 18px rgba(var(--red-rgb), 0.45);
+}
+
+.hud.foeside .cards::before {
+  content: 'Summoning for the foe — X to switch';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translate(-14px, -50%);
+  padding: 3px 12px;
+  border-radius: 10px;
+  background: rgba(var(--red-rgb), 0.85);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 .card {
   position: relative;
   width: 104px;

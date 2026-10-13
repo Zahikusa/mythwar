@@ -178,6 +178,27 @@ async function serviceWorkerFlow(page: Page): Promise<void> {
   check('service worker keeps lazily loaded chunks', keys.some((k) => k.includes('lazy-ABCDEFGH')), JSON.stringify(keys));
 }
 
+/** Sandbox: X switches the cards to the foe's (a mode that shows), and summons go to the foe. */
+async function sandboxFlow(page: Page): Promise<void> {
+  console.log('== sandbox ==');
+  await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
+  await page.goto(`${base}/?sandbox&seed=3`, { waitUntil: 'load' });
+  await sleep(1200);
+  await page.keyboard.press('x');
+  await sleep(200);
+  const foe = await page.evaluate(() => !!document.querySelector('.hud.foeside'));
+  check('sandbox: X turns the cards into the foe’s (marked)', foe, String(foe));
+  const card = await center(page, '.card.cls-hunter');
+  await page.mouse.click(card.x, card.y);
+  await sleep(200);
+  const q = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.players.map((p: any) => p.queue.length));
+  check('sandbox: in foe mode a card summons for the foe', q[0] === 0 && q[1] === 1, JSON.stringify(q));
+  await page.keyboard.press('x');
+  await sleep(200);
+  const back = await page.evaluate(() => !document.querySelector('.hud.foeside'));
+  check('sandbox: X again switches back to your side', back, String(back));
+}
+
 /** A stubbed standard gamepad: menus by D-pad and A, then a battle by buttons. */
 async function gamepadFlow(page: Page): Promise<void> {
   console.log('== gamepad ==');
@@ -1008,6 +1029,10 @@ async function main(): Promise<void> {
     page4.on('pageerror', (e) => errors.push(pageError('tutorial', e)));
     await tutorialHandoffFlow(page4);
     await page4.close();
+    const page10 = await browser.newPage();
+    page10.on('pageerror', (e) => errors.push(pageError('sandbox', e)));
+    await sandboxFlow(page10);
+    await page10.close();
     const page9 = await browser.newPage();
     page9.on('pageerror', (e) => errors.push(pageError('gamepad', e)));
     await gamepadFlow(page9);

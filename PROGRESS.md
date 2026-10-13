@@ -134,7 +134,7 @@ complete; its log follows below the lens plan.
 - [x] #57 Feedback — countered blows glance off (grey puff, dull tock); "Effective!" / "Resisted" over your creatures now and then
 - [x] #58 Juiciness — a blessing is felt on the field: shockwaves and flashes through the blessed army (Bastion: the gates)
 - [x] #59 Channels and Dimensions — below 30% your citadel has a heartbeat (sound + phone pulse) that quickens as it falls
-- [ ] #60 Modes — mode clarity (targeting)
+- [x] #60 Modes — the sandbox's "For: Foe" mode now shows on the cards themselves (foe portraits, frames, label)
 - [ ] #61 The Interest Curve — battle pacing / music intensity
 - [ ] #62 Inherent Interest — spectacle moments
 - [ ] #63 Beauty — art polish
