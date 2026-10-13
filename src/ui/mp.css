@@ -1019,6 +1019,24 @@
   font-size: 13px;
 }
 
+/* Two or three across (co-op's ten calls): finger-sized, and the list still fits under the top
+   bar of a phone held sideways in a browser tab (~290 px). */
+.hud.mobile .emotes {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 4px;
+}
+
+.hud.mobile .emotes:has(> :nth-child(6)) {
+  grid-template-columns: repeat(3, auto);
+}
+
+@media (pointer: coarse) {
+  .emote {
+    min-height: 44px;
+  }
+}
+
 .hud.mobile .ebubble {
   /* Below the resource pill in the middle of the top. */
   top: 84px;

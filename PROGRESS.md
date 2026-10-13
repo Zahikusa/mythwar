@@ -271,6 +271,16 @@ Already in the code before Phase 3, and kept:
    topmost thing drawn — hit-tested with every element made hit-testable, faded-out ones
    skipped; the battle's floating notes (opening banner, coach tip, card details) are exempt.
    Confirmed: with the old title CSS it fails the iPad mini's footer over Settings.)
+27. [x] (run #13) The quick messages in an online battle (the speech-bubble button) were 33 px
+   tall on phones, ~35 on tablets, and co-op's six calls in a column ran down over Ascend.
+   (Done: two across — three for co-op — on phone HUDs, 44 px under a finger everywhere.
+   mobilecheck `online-chat` (a message from the friend showing), `coop-chat`, `online-pause`;
+   pop-up menus the player opened don't count as overlapping the HUD; a timed-out wait now says
+   what it waited for.)
+28. [ ] iPhone sound: whether the game's music stops the player's own music/podcast and whether
+   the ring/silent switch mutes it depends on WebKit's audio session (`navigator.audioSession
+   .type`, Safari 17+; field reports disagree on the default). Native games mix with other
+   audio and obey the switch ('ambient'). Needs a device: try both and set it explicitly.
 
 ## Decisions
 
