@@ -1211,3 +1211,18 @@ sag? Does the player anticipate what is coming?*
   0.3 to 0.7), and at one minute a horn sounds with a warning ("then the wards fall silent and
   the turrets falter") while the countdown starts to pulse.
 - Checked: smoke (countdown from 2:49 at 170 s left, the one-minute warning toast); full verify.
+
+## #62 The Lens of Inherent Interest
+*What aspects of the game are interesting in themselves — danger, the extraordinary, a spectacle
+of scale? Does the game let them be seen as such?*
+- Mythwar has its spectacles: the god powers fill a lane (Zeus's lightning, the Spirit Dragon,
+  Starfall), an ascension raises a pillar of light, Ragnarök turns the sky, a falling citadel
+  collapses. The most inherently interesting single thing in it, though — **the Elder Dragon**,
+  the only Legend, so rare the AIs had to be taught to save for it (#32) — arrived like any
+  redcap: a portal flash and (since #10) its roar.
+- Change: the dragon's arrival is an **occasion**: it bursts from its gate in a fiery
+  shockwave, a flash, embers and smoke, the screen shakes (more for yours), and a banner names
+  it — "The Elder Dragon — takes wing for you · middle lane" (or for the enemy; a toast instead
+  if another banner is up). When it falls, a toast says so ("The enemy's Elder Dragon has
+  fallen!"). Danger and spectacle, announced — the moment players will retell.
+- Checked: screenshot of the arrival (Celestial theme); full verify.

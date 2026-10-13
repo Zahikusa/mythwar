@@ -475,6 +475,15 @@ export class Renderer {
           const tc = TEAM_COLORS[e.team];
           this.fx.timedFx({ kind: 'flashAt', x: gx, y: g.y - 18 * this.bodyScale(g), dur: 0.45, layer: e.lane, size: 40 * this.bodyScale(g), rgb: tc.rgb });
           this.fx.burst(gx, g.y - 10 * this.bodyScale(g), { count: 10, color: tc.light, rgb: tc.rgb, speed: 60, life: 0.6, size: 2.2, shape: 'glow', layer: e.lane, gravity: -40 });
+          if (e.defId === 'dragon') {
+            // The Elder Dragon bursts out of its gate in fire (Lens #62).
+            const s = this.bodyScale(g);
+            this.fx.timedFx({ kind: 'shockwave', x: gx, y: g.y, dur: 1.1, layer: e.lane, size: 160 * s, color: '#ff8a3d', rgb: [255, 140, 60] });
+            this.fx.timedFx({ kind: 'flashAt', x: gx, y: g.y - 40 * s, dur: 0.8, layer: e.lane, size: 130 * s, rgb: [255, 170, 80] });
+            this.fx.burst(gx, g.y - 30 * s, { count: 40, color: '#ffb347', rgb: [255, 160, 70], speed: 220, life: 1.1, size: 3, shape: 'glow', layer: e.lane, gravity: -60, drag: 2 });
+            this.fx.burst(gx, g.y - 10 * s, { count: 16, color: 'rgba(70,50,40,0.6)', speed: 90, life: 1.4, size: 8 * s + 3, shape: 'smoke', layer: e.lane, gravity: -30 });
+            this.shake = Math.max(this.shake, e.team === view.playerTeam ? 5 : 3.5);
+          }
           break;
         }
         case 'hit': {

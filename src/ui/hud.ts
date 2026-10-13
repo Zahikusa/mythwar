@@ -1006,6 +1006,13 @@ export class Hud {
         }
       } else if (e.type === 'blessing' && e.team !== me) {
         this.toast(`Enemy gains ${BLESSINGS[e.blessing].name} ${ROMAN[e.rank - 1]}`, 'info');
+      } else if (e.type === 'spawn' && e.defId === 'dragon') {
+        // The rarest sight in a battle is an occasion (Lens #62).
+        const lane = ['top', 'middle', 'bottom'][e.lane];
+        if (!this.bannerShowing) this.banner('The Elder Dragon', e.team === me ? `takes wing for you · ${lane} lane` : `takes wing for the enemy · ${lane} lane`, e.team === me ? 'gold' : 'red');
+        else this.toast(e.team === me ? 'Your Elder Dragon takes wing!' : 'The enemy’s Elder Dragon takes wing!', e.team === me ? 'good' : 'bad');
+      } else if (e.type === 'death' && e.defId === 'dragon') {
+        this.toast(e.team === me ? 'Your Elder Dragon has fallen' : 'The enemy’s Elder Dragon has fallen!', e.team === me ? 'bad' : 'good');
       }
     }
   }

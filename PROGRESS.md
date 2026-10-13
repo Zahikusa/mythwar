@@ -136,7 +136,7 @@ complete; its log follows below the lens plan.
 - [x] #59 Channels and Dimensions — below 30% your citadel has a heartbeat (sound + phone pulse) that quickens as it falls
 - [x] #60 Modes — the sandbox's "For: Foe" mode now shows on the cards themselves (foe portraits, frames, label)
 - [x] #61 The Interest Curve — measured a lull at minutes 11–14 before the Ragnarök climax: foretold 3 min ahead, drums build, a horn at one minute
-- [ ] #62 Inherent Interest — spectacle moments
+- [x] #62 Inherent Interest — the Elder Dragon's arrival is an occasion: fiery burst, shake, a banner; its fall announced
 - [ ] #63 Beauty — art polish
 - [ ] #64 Projection — player identity (banner/colour)
 - [ ] #65 The Story Machine — battle chronicle on results

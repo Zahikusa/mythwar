@@ -166,6 +166,7 @@ const SCENARIOS: Scenario[] = [
   { name: 'blessing-bastion', query: 'demo&ff=420&seed=5', w: 1600, h: 900, wait: 1500, script: `(() => { const g = window.__mythwar.game; g.world.players[0].gold = 1e5; g.command({ type: 'bless', team: 0, blessing: 'bastion' }); })()`, after: 300 },
   { name: 'sandbox-foe', query: 'sandbox&seed=3', w: 1600, h: 900, wait: 1500, script: `window.__mythwar.hud.toggleSide()`, after: 300 },
   { name: 'mobile-sandbox-foe', query: 'sandbox&seed=3', w: 844, h: 390, mobile: true, dpr: 2, wait: 1500, script: `window.__mythwar.hud.toggleSide()`, after: 300 },
+  { name: 'dragon-arrival', query: 'play=adept&seed=4&theme=4', w: 1600, h: 900, wait: 5200, script: `(() => { const w = window.__mythwar.game.world; w.players[0].age = 4; w.spawnUnit(0, 1, window.__mythwarData.UNITS.dragon); })()`, after: 350 },
   { name: 'riddles', query: 'screen=difficulty', w: 1600, h: 900, wait: 1500, script: `window.__mythwar.menus.show('riddles')`, after: 500 },
   { name: 'mobile-riddles', query: 'screen=difficulty', w: 844, h: 390, mobile: true, dpr: 2, wait: 1500, script: `window.__mythwar.menus.show('riddles')`, after: 500 },
   { name: 'riddle-start', query: 'screen=difficulty', w: 1600, h: 900, wait: 1500, script: `window.__mythwar.playRiddle('pack')`, after: 1500 },
