@@ -30,6 +30,12 @@ describe('the generals address the player by name', () => {
     expect(tauntLine('mythic', 'power', 0, 'Zoë')).not.toContain('{name}');
     for (const d of ['novice', 'adept', 'master', 'mythic'] as const) for (const ev of ['start', 'won', 'lost'] as const) expect(tauntLine(d, ev, 0, 'Q')).toContain('Q');
   });
+
+  it('every general has words for every moment, the player’s deeds too (Lens #78)', async () => {
+    const { PERSONAS } = await import('../src/ui/personas.ts');
+    const events = ['start', 'ageUp', 'power', 'shrine', 'foeAge', 'foePower', 'foeShrine', 'losing', 'winning', 'won', 'lost'] as const;
+    for (const p of Object.values(PERSONAS)) for (const ev of events) expect(p.lines[ev].length, `${p.name} ${ev}`).toBeGreaterThan(0);
+  });
 });
 
 describe('a custom start (Lens #71)', () => {

@@ -1479,3 +1479,23 @@ moves, what it does?*
 - Checked: `tests/tempers.test.ts` (every creature has a temper, gestures stay in bounds and end
   where they begin, the killer is named); `shoot temper-gestures` (six creatures frozen
   mid-gesture, both sides) and the Bestiary; full verify.
+
+## #78 The Lens of the Interpersonal Circumplex
+*Where do my characters stand on the two axes of how people relate — friendly ↔ hostile,
+dominant ↔ submissive? Are they spread out, or all in one corner?*
+- Mapped: Puck is friendly and submissive (playful, a little scared), Hippolyta friendly and
+  dominant (a respectful rival who commands), Odin cold and dominant (aloof, all-seeing), Ares
+  hostile and dominant; Mímir the mentor sits friendly-dominant. A good spread — but it barely
+  showed, because the generals only ever spoke about *themselves* (their ascending, casting,
+  shrines) and about the citadels. How someone relates to you shows in how they answer what
+  *you* do, and they never answered the player at all.
+- Change: the generals now answer the player's deeds — the player **ascending**, **striking
+  them with a god power**, **taking back a shrine they held** — each from their place on the
+  circumplex. Puck: "Ow! Ow ow ow!", "Aww, I was playing with that!"; Hippolyta: "A fine blow.
+  Mine will be finer.", "Good. Now it is a fight."; Odin: "I foresaw that blow.", "Keep it a
+  while. It changes nothing."; Ares: "You dare strike ME?", "Thief! I will have it back in
+  blood." Same 25 s spacing as before, so they don't chatter. A neutral shrine the player claims
+  first draws no comment — only one taken from the general stings.
+- The circumplex is in DESIGN.md (AI generals), with the open corner noted: nobody is hostile
+  and submissive (a sulking villain) — left open on purpose.
+- Checked: unit test (every general has lines for every moment); full verify.

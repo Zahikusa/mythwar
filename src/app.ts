@@ -89,7 +89,7 @@ export class App {
   private starWarned = { half: false, par: false };
   /** The AI general's lines: how many so far (to rotate them), when the last one was, and the
    *  one-off moments already used (losing / winning). */
-  private taunts = { n: 0, at: -100, said: new Set<TauntEvent>() };
+  private taunts = { n: 0, at: -100, said: new Set<TauntEvent>(), heldShrine: [false, false, false] };
   /** Feats earned in the current battle (null until one starts). */
   private feats: FeatTracker | null = null;
   private slowSeconds = 0;
@@ -495,7 +495,7 @@ export class App {
     });
     this.feats.start(game.world, game.playerTeam);
     this.chronicle = new Chronicle(game.playerTeam, game instanceof NetGame ? game.foeName : PERSONAS[this.difficulty].name);
-    this.taunts = { n: 0, at: -100, said: new Set() };
+    this.taunts = { n: 0, at: -100, said: new Set(), heldShrine: [false, false, false] };
     this.starWarned = { half: false, par: game.world.time > parTime(this.difficulty, game.world.quick) };
     this.immersive();
     this.state = 'playing';
@@ -1112,15 +1112,31 @@ export class App {
       .catch(() => (this.wakePending = false));
   }
 
-  /** Against the AI: the general reacts to what happens (ascending, casting, taking a shrine). */
+  /**
+   * Against the AI: the general reacts to what happens — their own ascending, casting, taking a
+   * shrine, and the player's (each in their own manner, Lens #78).
+   */
   private tauntEvents(g: Game, events: SimEvent[]): void {
     if (g.options.online || g.practice) return;
     const foe = g.playerTeam === 0 ? 1 : 0;
     for (const e of events) {
       if (e.type === 'ageUp' && e.team === foe) this.taunt('ageUp');
       else if (e.type === 'power' && e.team === foe) this.taunt('power');
-      else if (e.type === 'shrine' && e.owner === foe) this.taunt('shrine');
+      else if (e.type === 'ageUp' && e.team === g.playerTeam) this.taunt('foeAge');
+      else if (e.type === 'power' && e.team === g.playerTeam) this.taunt('foePower');
       else if (e.type === 'gameOver') this.taunt(e.winner === foe ? 'won' : 'lost', true);
+      else if (e.type === 'shrine') {
+        // A shrine taken from the general (theirs → neutral → the player's) stings; a neutral
+        // one the player claims first does not.
+        const held = this.taunts.heldShrine;
+        if (e.owner === foe) {
+          held[e.lane] = true;
+          this.taunt('shrine');
+        } else if (e.owner === g.playerTeam) {
+          if (held[e.lane]) this.taunt('foeShrine');
+          held[e.lane] = false;
+        }
+      }
     }
     // Once per battle: when either citadel is close to falling.
     const hp = (t: number) => g.world.players[t].baseHp / g.world.players[t].baseMaxHp;

@@ -148,7 +148,14 @@ Each difficulty is a general out of myth with a voice: **Puck**, the Wandering S
 **Hippolyta**, Queen of the Amazons (Adept), **Odin**, the All-Father (Master), **Ares**, God of
 War (Mythic). They speak a line in a speech bubble at the start, when they ascend, cast, take a
 shrine, when either citadel is nearly down, and at the end (at most one every 25 s; the
-"Opponent's messages" setting silences them).
+"Opponent's messages" setting silences them). They also answer the player's deeds — the player
+ascending, striking them with a god power, taking a shrine back from them — and that is where
+their place on the interpersonal circumplex (Lens #78) shows:
+
+| | friendly | hostile |
+|---|---|---|
+| **dominant** | Hippolyta (respects, then commands); Mímir the mentor | Ares (threatens); Odin (cold, aloof — between the two) |
+| **submissive** | Puck (admires, whimpers) | — (left open: no sulking villain yet) |
 
 ## AI
 Same command API as the player. Four difficulties: Novice, Adept, Master, Mythic.

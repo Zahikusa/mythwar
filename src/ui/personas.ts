@@ -1,7 +1,10 @@
 import type { Difficulty } from '../ai/ai.ts';
 
-/** When a general speaks. */
-export type TauntEvent = 'start' | 'ageUp' | 'power' | 'shrine' | 'losing' | 'winning' | 'won' | 'lost';
+/**
+ * When a general speaks: at their own deeds, and at the player's (`foe…`: the player ascends,
+ * strikes them with a god power, takes a shrine back from them).
+ */
+export type TauntEvent = 'start' | 'ageUp' | 'power' | 'shrine' | 'foeAge' | 'foePower' | 'foeShrine' | 'losing' | 'winning' | 'won' | 'lost';
 
 export interface Persona {
   /** The general's name ("Puck"). */
@@ -17,6 +20,11 @@ export interface Persona {
  * Each AI difficulty is a general out of myth with a voice of its own: a playful fae trickster, a
  * proud Amazon queen, the far-seeing All-Father, the god of war himself. Their lines appear in a
  * speech bubble by their side of the field (the "Opponent's quick messages" setting silences them).
+ *
+ * Each stands somewhere else on the interpersonal circumplex (Lens #78: friendly ↔ hostile,
+ * dominant ↔ submissive), and it shows most in how they take the player's blows: Puck is
+ * friendly and yielding (admires, whimpers), Hippolyta friendly and dominant (respects, then
+ * commands), Odin cold and dominant (aloof, unimpressed), Ares hostile and dominant (threatens).
  */
 export const PERSONAS: Record<Difficulty, Persona> = {
   novice: {
@@ -27,6 +35,9 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       ageUp: ['Look, I can do it too!', 'Ooh, shiny new friends!'],
       power: ['Whee! Brambles for everyone!', 'Hee hee — surprise!'],
       shrine: ['Finders keepers!', 'Mine now, mine now!'],
+      foeAge: ['Ooh! Can I play with those?', 'Pretty! Are they friendly?'],
+      foePower: ['Ow! Ow ow ow!', 'Hey! That tickled… a lot.'],
+      foeShrine: ['Aww, I was playing with that!', 'Okay, okay — you can have it.'],
       losing: ['This isn’t fun any more…', 'Wait, wait — no fair!'],
       winning: ['Am I… winning?', 'Ha! Too easy!'],
       won: ['I won? I won!'],
@@ -42,6 +53,9 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       ageUp: ['My warband grows.', 'New blades for an old queen.'],
       power: ['Feel the favour of the gods!', 'Break, and run!'],
       shrine: ['This ground is mine.', 'Hold it, sisters!'],
+      foeAge: ['Good. Now it is a fight.', 'Stronger allies. I approve.'],
+      foePower: ['A fine blow. Mine will be finer.', 'Your gods answer you. Well struck.'],
+      foeShrine: ['Well taken. I will take it back.', 'Hold it, if you can.'],
       losing: ['You fight well. Too well.', 'I have bled before.'],
       winning: ['Kneel, and it ends.', 'Your walls are paper.'],
       won: ['A worthy hunt.'],
@@ -57,6 +71,9 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       ageUp: ['The ravens bring me new allies.', 'Another saga begins.'],
       power: ['Huginn saw this coming.', 'As the runes foretold.'],
       shrine: ['Every crossing is watched.', 'The ley lines answer me.'],
+      foeAge: ['You climb. I watch.', 'A new age. I have seen nine worlds.'],
+      foePower: ['I foresaw that blow.', 'Is that the best your gods can do?'],
+      foeShrine: ['Keep it a while. It changes nothing.', 'The ravens saw you take it.'],
       losing: ['The Norns did not tell me this.', 'Hm. A thread I did not see.'],
       winning: ['As foreseen.', 'Your end is already woven.'],
       won: ['It was always going to end so.'],
@@ -72,6 +89,9 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       ageUp: ['More. Bring me more.', 'Rise, my legions!'],
       power: ['Burn!', 'Feel war itself!'],
       shrine: ['Bleed for it.', 'Take it back — if you can.'],
+      foeAge: ['New toys. I will break them.', 'Bring them. All of them.'],
+      foePower: ['You will pay for that.', 'You dare strike ME?'],
+      foeShrine: ['Thief! I will have it back in blood.', 'Enjoy it. Briefly.'],
       losing: ['Impossible. I AM war.', 'You dare?'],
       winning: ['Crawl back to your wood.', 'Is that all?'],
       won: ['Victory is mine. As always.'],

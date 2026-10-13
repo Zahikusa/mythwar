@@ -168,7 +168,7 @@ complete; its log follows below the lens plan.
 - [x] #75 The Avatar — a personal sigil (sun, moon, star, crown, swords, lozenge) by your name and on the results
 - [x] #76 Character Function — tooltips lead with each class's job (front line, striker, backline, siege-breaker)
 - [x] #77 Character Traits — each creature has a temper (word in the Bestiary) and a gesture when it fells a foe (roar, hop, twirl, rear, loom)
-- [ ] #78 The Interpersonal Circumplex — rival personalities
+- [x] #78 The Interpersonal Circumplex — the generals answer the player's deeds (ascending, a god power on them, a shrine taken back) from their place on the circumplex
 - [ ] #79 The Character Web — relationships between characters
 - [ ] #80 Status — status among players
 - [ ] #81 Character Transformation — veteran creatures
