@@ -49,6 +49,12 @@ type AppState = 'title' | 'playing' | 'over';
 const SLOWMO = 0.6;
 /** The phone's Back in the battle room: a second press within this long (ms) leaves the room. */
 const ROOM_BACK_WINDOW = 4000;
+/**
+ * A phone behind a screen that covers the battlefield (room, lobby, results, settings…) draws a
+ * frame at most this often (ms): ~30 a second instead of 60–120 — the backdrop cost as much as a
+ * battle, all evening between battles (backlog 290).
+ */
+const CALM_FRAME = 30;
 
 /** " · 2 pauses left" for the online pause screen (Lens #87). */
 function pausesNote(left: number): string {
@@ -79,6 +85,8 @@ export class App {
   height = 0;
   private difficulty: Difficulty;
   private last = 0;
+  /** When the battlefield was last advanced and drawn (see CALM_FRAME). */
+  private lastDraw = 0;
   private fpsAcc = 0;
   private fpsFrames = 0;
   private overTimer = -1;
@@ -459,7 +467,7 @@ export class App {
     }
     const theme = p.get('theme');
     if (theme !== null) this.renderer.setTheme(Number(theme), true);
-    this.last = performance.now();
+    this.last = this.lastDraw = performance.now();
     requestAnimationFrame((t) => this.frame(t));
   }
 
@@ -984,7 +992,13 @@ export class App {
       if (!inert) this.hud.sayBannerAgain();
     }
     const g = this.game;
-    if (g) {
+    // (Not on the title itself — its backdrop is the show — nor in a battle, paused or not.)
+    const calm = this.mode === 'mobile' && this.state !== 'playing' && this.menus.current !== 'none' && this.menus.current !== 'title';
+    const skip = calm && now - this.lastDraw < CALM_FRAME;
+    if (g && !skip) {
+      // (The time since the last drawn frame: skipped ones aren't lost, the backdrop keeps its pace.)
+      const dt = Math.max(0, Math.min(0.1, (now - this.lastDraw) / 1000));
+      this.lastDraw = now;
       // The title backdrop restarts when its battle ends.
       if (this.state === 'title' && g.over) this.toTitleBackdrop();
       this.renderer.coinTarget = this.state === 'playing' ? this.coinTarget : null;

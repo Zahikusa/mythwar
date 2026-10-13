@@ -196,11 +196,15 @@ one room and 12 room visits, forced GC between readings, 2026-10-13: **no leaks*
 listeners, timers, sockets and BroadcastChannels flat; heap levels off at battle 21 (the
 journal's cap), localStorage at battle 30; frame rate the same from the first battle to the
 last; server heap flat.)
-290. [ ] The room and results screens cost as much CPU as a battle: the title's AI-vs-AI backdrop
+290. [x] The room and results screens cost as much CPU as a battle: the title's AI-vs-AI backdrop
    simulates and renders at full rate behind the (see-through) room, the finished battle behind
    the results — on phone B 194 ms of work per second in the room, 166 in battle. A phone never
    idles between battles all evening (heat, battery). Cap rendering (~30 fps) or freeze the
    backdrop while a menu covers the canvas, on touch devices at least.
+   (Done: on phones (`mode === 'mobile'`), behind any screen but the title and outside a battle,
+   the battlefield is advanced and drawn at most every 30 ms (`CALM_FRAME`), with the skipped
+   time carried over. Measured with the review's script (844×390 phone, headless Chrome): room
+   208 → 61 ms of work per second, results 197 → 52; a battle unchanged (~190).)
 291. [x] `server/net.ts` ~126: the lobby loop runs every 4 ms even with no rooms — 2.3% of a core
    for hours on the host's laptop (keeps it out of deep idle). Tick fast only while a match is
    counting down, running or resuming; otherwise ~100 ms does for grace, sweeps and lists.
