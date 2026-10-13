@@ -288,6 +288,11 @@ Already in the code before Phase 3, and kept:
    25-px pill under a finger, and mobilecheck never opened the sandbox or a riddle of war.
    (Done: its touch area reaches 44 px tall (a `::before`, the pill keeps its look);
    mobilecheck `sandbox`, `riddle`, `riddle-over`.)
+31. [x] (run #13) "Bo is away" (the friend's app went to the background mid-battle) ran from
+   edge to edge on a phone: over the cards and the god power, Claim victory on top of Briar
+   Snare. (Done: the HUD publishes its side columns' width on the stage (`--hud-side`) and the
+   online notices keep between them — upright, Claim victory goes under the text. mobilecheck
+   `online-away` (the check's server offers the claim after 2 s).)
 
 ## Decisions
 

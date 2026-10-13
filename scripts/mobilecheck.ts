@@ -136,6 +136,8 @@ interface Step {
   guestLeaves?: string;
   /** Then (in the battle): the friend sends this quick message, `script4` runs, `ready4` is waited for. */
   guestSays?: 'gl' | 'thx';
+  /** Then the friend's app goes to the background (the battle waits for them). */
+  guestAway?: boolean;
   script4?: string;
   ready4?: string;
   /**
@@ -169,6 +171,10 @@ const STEPS: Step[] = [
   { name: 'card', query: battle, ready: inBattle, script: `a.hud.showTooltip(window.__mythwarData.UNITS.treant, document.querySelector('.card'))`, ready2: `!document.querySelector('.tooltip').classList.contains('hidden')`, after: 500 },
   { name: 'pause', query: battle, ready: inBattle, script: `a.pause()`, ready2: `a.menus.current === 'pause'`, after: 700 },
   { name: 'results', query: battle, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, after: 1200 },
+  // The other battles: the sandbox (its "For: You / Foe" switch) and a riddle of war (and its result).
+  { name: 'sandbox', query: 'sandbox&seed=4', ready: inBattle, after: 1200 },
+  { name: 'riddle', query: 'screen=riddles', ready: `a.menus.current === 'riddles'`, script: `a.playRiddle('pack')`, ready2: inBattle, after: 1500 },
+  { name: 'riddle-over', query: 'screen=riddles', ready: `a.menus.current === 'riddles'`, script: `a.playRiddle('pack')`, ready2: inBattle, script3: `a.game.speed = 4; const w = a.game.world; w.players[0].baseHp = 1; w.damageBase(0, 10, 0, 0)`, ready3: `a.menus.current !== 'none' && a.state !== 'playing'`, after: 1500 },
   // The full offer to get the app, once after the first finished battle (over the results).
   { name: 'results-offer', query: battle, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, script3: `a.settings.installSheet = false; a.install.afterBattle(() => true)`, ready3: `!!document.querySelector('.isheetback.show')`, after: 900, only: 'tab' },
   { name: 'lobby', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, after: 900 },
@@ -195,6 +201,8 @@ const STEPS: Step[] = [
   // (Co-op: the ally's call shows on our own side.)
   { name: 'coop-chat', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.setCoop('novice'); a.mp.ready(true)`, ready3: inBattle, guestSays: 'thx', script4: `document.querySelector('.emotes').classList.remove('hidden')`, ready4: `!!document.querySelector('.ebubble.mine.show')`, after: 900 },
   { name: 'online-pause', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, script4: `a.pause()`, ready4: `a.menus.current === 'pause'`, after: 900 },
+  // The friend's app went to the background: the battle waits, then offers to claim the victory.
+  { name: 'online-away', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, guestAway: true, ready4: `!document.querySelector('.nclaim').classList.contains('hidden')`, after: 900 },
   { name: 'online-over', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, guestLeaves: `a.menus.current === 'over'`, after: 1200 },
 ];
 
@@ -518,6 +526,7 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
       if (s.script3) await page.evaluate(`(() => { const a = window.__mythwar; ${s.script3}; })()`);
       if (s.ready3) await wait(s.ready3);
       if (s.guestSays) guest?.emote(s.guestSays);
+      if (s.guestAway) guest?.away(true);
       if (s.script4) await page.evaluate(`(() => { const a = window.__mythwar; ${s.script4}; })()`);
       if (s.ready4) await wait(s.ready4);
       if (s.guestLeaves && guest) {
@@ -558,7 +567,7 @@ async function main(): Promise<void> {
   if (!existsSync(join(root, 'index.html'))) throw new Error('Run "npm run build" first');
   mkdirSync('screenshots/mobile', { recursive: true });
   const http = createServer(serveStatic(root));
-  const mp = attachMultiplayer(http, { countdown: 1 });
+  const mp = attachMultiplayer(http, { countdown: 1, claimAfter: 2 });
   await new Promise<void>((r) => http.listen(0, '127.0.0.1', () => r()));
   const base = `http://127.0.0.1:${(http.address() as { port: number }).port}`;
   const { chromium, webkit } = await import('playwright');

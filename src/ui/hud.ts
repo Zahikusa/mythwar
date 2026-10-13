@@ -437,6 +437,8 @@ export class Hud {
     this.root.classList.toggle('two-row', layout.row2 > 0);
     setStyle(this.root, '--row2', `${layout.row2 / layout.hud}px`);
     setStyle(this.root, '--side', `${layout.insets.left}px`);
+    // (The stage's other layers — the online notices — keep clear of the side columns too.)
+    if (this.root.parentElement) setStyle(this.root.parentElement, '--hud-side', `${Math.max(layout.insets.left, layout.insets.right)}px`);
     // Phones: queue chips start just past the near lane's gate (tapping the gate opens turrets).
     setStyle(this.root, '--qx', `${Math.round(layout.lanes[LANE_COUNT - 1].x0 + 6)}px`);
     setStyle(this.root, '--ui', String(Math.max(0.72, Math.min(1.25, layout.ui))));

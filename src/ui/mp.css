@@ -667,7 +667,8 @@
   gap: 14px;
   /* (Its own width: left at 50%, it would otherwise get only the half right of centre.) */
   width: max-content;
-  max-width: min(560px, 90cqw);
+  /* (Between the HUD's side columns on a phone: the cards and the god power stay in sight.) */
+  max-width: min(560px, 90cqw, calc(100cqw - 2 * var(--hud-side, 0px) - 16px));
   padding: 12px 18px;
   border-radius: 16px;
   background: rgba(16, 10, 30, 0.9);
