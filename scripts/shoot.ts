@@ -160,6 +160,16 @@ const SCENARIOS: Scenario[] = [
   { name: 'gallery', query: 'gallery&scale=2', w: 1440, h: 2000, wait: 1200 },
   { name: 'mobile-play-start', query: 'play=novice&seed=4', w: 844, h: 390, mobile: true, dpr: 2, wait: 2500 },
   { name: 'play-start', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 3000 },
+  // Each gate trains its own: three lanes' creatures training at once (progress on three chips).
+  {
+    name: 'queue-parallel',
+    query: 'play=adept&seed=4',
+    w: 1600,
+    h: 900,
+    wait: 3000,
+    script: `(() => { const g = window.__mythwar.game; g.world.players[0].gold = 1e4; for (const [u, l] of [['redcap', 0], ['redcap', 0], ['treant', 1], ['pixie', 2]]) g.command({ type: 'train', team: 0, unitId: u, lane: l }); })()`,
+    after: 700,
+  },
 ];
 
 /** Machado, Oliveira & Fernandes (2009) simulation matrices, severity 1 (linear RGB). */

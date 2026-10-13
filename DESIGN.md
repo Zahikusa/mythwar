@@ -42,7 +42,8 @@ green, marble gold, glacier blue, lacquer vermilion, starlight).
 
 ## Core loop
 - Gold trickles in (+ more from each shrine you hold) and is earned by kills.
-- Spend gold to summon creatures into a lane (training queue of 5).
+- Spend gold to summon creatures into a lane (a queue of 5 in all; each gate trains its own
+  creature, so the three lanes train in parallel — since Lens #50).
 - Kills give XP. With enough XP (+ a gold tithe) you **Ascend** to the next age:
   new creatures, a new god power, new turrets, more citadel HP.
 - Destroy the enemy citadel (shared HP across all lanes) to win.

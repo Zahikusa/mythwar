@@ -564,7 +564,7 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     const unmuted = await page.evaluate(() => !(window as unknown as { __mythwar: any }).__mythwar.settings.muted);
     check('M toggles mute', muted && unmuted);
     // (Training keeps running: restart it so nothing steps out during the check.)
-    await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].trainProgress = 0));
+    await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].trainProgress = [0, 0, 0]));
     const before = await state(page);
     await page.keyboard.press('Backspace');
     await sleep(50);
@@ -573,7 +573,7 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     // Keyboard users can Tab to a card and press Enter to summon it.
     let tabs = 0;
     while (tabs++ < 40 && !(await page.evaluate(() => document.activeElement?.classList.contains('card')))) await page.keyboard.press('Tab');
-    await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].trainProgress = 0));
+    await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].trainProgress = [0, 0, 0]));
     const q1 = (await state(page)).queue;
     // Held down: key repeats must not summon again.
     await page.keyboard.down('Enter');

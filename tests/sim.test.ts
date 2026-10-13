@@ -93,6 +93,40 @@ describe('training and movement', () => {
     expect(w.players[0].queue).toHaveLength(0);
   });
 
+  it('each gate trains its own: lanes train in parallel, one creature at a time per lane', () => {
+    const w = new World();
+    rich(w);
+    w.apply({ type: 'train', team: 0, unitId: 'redcap', lane: 0 });
+    w.apply({ type: 'train', team: 0, unitId: 'redcap', lane: 0 });
+    w.apply({ type: 'train', team: 0, unitId: 'treant', lane: 2 });
+    expect(w.trainingIndex(0, 0)).toBe(0);
+    expect(w.trainingIndex(0, 2)).toBe(2);
+    expect(w.trainingIndex(0, 1)).toBe(-1);
+    // The bottom-lane treant doesn't wait for the two top-lane redcaps.
+    run(w, UNITS.treant.trainTime + 0.05);
+    expect(w.lanes[2].filter((u) => u.team === 0)).toHaveLength(1);
+    expect(w.lanes[0].filter((u) => u.team === 0)).toHaveLength(1);
+    expect(w.players[0].queue).toHaveLength(1);
+    // Cancelling a lane's creature in training resets only that lane's progress.
+    w.apply({ type: 'train', team: 0, unitId: 'pixie', lane: 1 });
+    run(w, 0.5);
+    w.apply({ type: 'cancel', team: 0, index: 0 });
+    expect(w.players[0].trainProgress[0]).toBe(0);
+    expect(w.players[0].trainProgress[1]).toBeGreaterThan(0.4);
+  });
+
+  it('a save from before parallel training carries its progress to the right lane', () => {
+    const w = new World();
+    rich(w);
+    w.apply({ type: 'train', team: 0, unitId: 'redcap', lane: 2 });
+    const snap = w.serialize() as unknown as { players: { trainProgress: unknown }[] };
+    snap.players[0].trainProgress = 0.7;
+    snap.players[1].trainProgress = 0;
+    const back = World.deserialize(snap as never);
+    expect(back.players[0].trainProgress).toEqual([0, 0, 0.7]);
+    expect(back.players[1].trainProgress).toEqual([0, 0, 0]);
+  });
+
   it('cancel refunds', () => {
     const w = new World();
     const g0 = w.players[0].gold;

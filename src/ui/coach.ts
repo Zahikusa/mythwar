@@ -134,10 +134,11 @@ const TIPS: Tip[] = [
     when: (g, t) => {
       if (t < 50) return false;
       const foe = g.playerTeam === 0 ? 1 : 0;
-      const i = g.world.trainingIndex(foe);
-      if (i < 0) return false;
       const p = g.world.players[foe];
-      return UNITS[p.queue[i].unitId].trainTime - p.trainProgress < 0.8;
+      return p.trainProgress.some((t, lane) => {
+        const i = g.world.trainingIndex(foe, lane);
+        return i >= 0 && UNITS[p.queue[i].unitId].trainTime - t < 0.8;
+      });
     },
     done: (_g, t, s) => t - s > 9,
   },

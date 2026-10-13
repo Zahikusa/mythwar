@@ -105,7 +105,8 @@ export interface PlayerState {
   baseHp: number;
   baseMaxHp: number;
   queue: QueueItem[];
-  trainProgress: number; // seconds trained on the front queue item
+  /** Per lane: seconds trained on that lane's next creature (each gate trains its own). */
+  trainProgress: number[];
   powerCooldown: number;
   turrets: TurretSlot[]; // one per lane
   incomeMult: number;

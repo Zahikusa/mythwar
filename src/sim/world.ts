@@ -197,7 +197,7 @@ export class World {
       baseHp: AGES[0].baseHp,
       baseMaxHp: AGES[0].baseHp,
       queue: [],
-      trainProgress: 0,
+      trainProgress: [0, 0, 0],
       powerCooldown: START_POWER_COOLDOWN,
       turrets: Array.from({ length: LANE_COUNT }, () => ({ def: null, cooldown: 0, lastFire: -10, aimX: team === 0 ? 200 : LANE_LENGTH - 200 })),
       incomeMult,
@@ -269,6 +269,13 @@ export class World {
       p.stats.classDamage ??= [0, 0, 0];
       p.hold ??= [false, false, false];
       p.trials ??= [];
+      // Older saves trained one creature at a time: carry its progress to its lane.
+      if (typeof p.trainProgress === 'number') {
+        const first = p.queue.find((q) => !q.ready);
+        const old = p.trainProgress as number;
+        p.trainProgress = [0, 0, 0];
+        if (first) p.trainProgress[first.lane] = old;
+      }
       w.players[i] = {
         ...p,
         turrets: p.turrets.map((t) => {
@@ -494,7 +501,7 @@ export class World {
         p.gold -= def.cost;
         p.stats.goldSpent += def.cost;
         p.queue.push({ unitId: cmd.unitId, lane: cmd.lane });
-        if (p.queue.length === 1) this.emit({ type: 'trainStart', team: cmd.team });
+        if (this.trainingIndex(cmd.team, cmd.lane) === p.queue.length - 1) this.emit({ type: 'trainStart', team: cmd.team });
         return { ok: true };
       }
       case 'cancel': {
@@ -508,11 +515,11 @@ export class World {
         const item = p.queue[index];
         if (!item) return { ok: false, reason: 'Nothing to cancel' };
         const def = UNITS[item.unitId];
-        const wasTraining = index === this.trainingIndex(cmd.team);
+        const wasTraining = index === this.trainingIndex(cmd.team, item.lane);
         p.queue.splice(index, 1);
         p.gold += def.cost;
         p.stats.goldSpent -= def.cost;
-        if (wasTraining) p.trainProgress = 0;
+        if (wasTraining) p.trainProgress[item.lane] = 0;
         return { ok: true };
       }
       case 'ageUp': {
@@ -675,28 +682,34 @@ export class World {
         i--;
       }
     }
-    // Training works on the first creature that isn't ready yet.
-    const idx = p.queue.findIndex((q) => !q.ready);
-    if (idx >= 0) {
+    // Each gate trains its own: the first creature bound for a lane that isn't ready yet trains,
+    // in all three lanes at once (Lens #50 — one shared trainer made a defender ordered for a
+    // lane under attack wait behind summons for quiet lanes). The queue still holds QUEUE_MAX.
+    for (let lane = 0; lane < LANE_COUNT; lane++) {
+      const idx = this.trainingIndex(p.team, lane);
+      if (idx < 0) {
+        p.trainProgress[lane] = 0;
+        continue;
+      }
       const item = p.queue[idx];
       const def = UNITS[item.unitId];
-      p.trainProgress = Math.min(def.trainTime, p.trainProgress + dt);
-      if (p.trainProgress >= def.trainTime) {
-        p.trainProgress = 0;
+      p.trainProgress[lane] = Math.min(def.trainTime, p.trainProgress[lane] + dt);
+      if (p.trainProgress[lane] >= def.trainTime) {
+        p.trainProgress[lane] = 0;
         if (this.canSpawn(p.team, item.lane, def)) {
           this.spawnUnit(p.team, item.lane, def);
           p.queue.splice(idx, 1);
         } else {
-          item.ready = true; // don't hold up summons bound for other lanes
+          item.ready = true; // trained: steps out as soon as the gate clears
         }
-        if (p.queue.some((q) => !q.ready)) this.emit({ type: 'trainStart', team: p.team });
+        if (this.trainingIndex(p.team, lane) >= 0) this.emit({ type: 'trainStart', team: p.team });
       }
     }
   }
 
-  /** Index of the queue item currently in training (-1 when everything left is ready/empty). */
-  trainingIndex(team: Team): number {
-    return this.players[team].queue.findIndex((q) => !q.ready);
+  /** Index of the queue item training at a lane's gate (-1 when that lane has none waiting). */
+  trainingIndex(team: Team, lane: number): number {
+    return this.players[team].queue.findIndex((q) => !q.ready && q.lane === lane);
   }
 
   spawnX(team: Team, def: UnitDef): number {

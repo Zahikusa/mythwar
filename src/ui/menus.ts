@@ -408,7 +408,7 @@ export class Menus {
         body: [
           lanesArt(),
           p('<b>Pick a lane</b> by clicking or tapping it (or the ▶ marker at your gate), then <b>tap a creature card</b> to summon it there.'),
-          p('Press and hold a creature (or hover it) to see what it is. You can also <b>drag a card onto any lane</b>. Summons wait in a short queue at your gates. Keys: <b>1–4</b> summon, <b>W/S</b> or <b>↑/↓</b> change lane.'),
+          p('Press and hold a creature (or hover it) to see what it is. You can also <b>drag a card onto any lane</b>. Summons wait in a short queue (five in all); each gate trains its own, so the three lanes fill at once. Keys: <b>1–4</b> summon, <b>W/S</b> or <b>↑/↓</b> change lane.'),
         ],
       },
       {

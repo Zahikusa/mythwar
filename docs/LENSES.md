@@ -986,3 +986,24 @@ Where is the player's progress lost?*
   is now part of the screen, and every star earned fills a visible gap.
 - Checked: title on a 667×375 phone (two beaten, two not) and on desktop (fresh profile); new
   smoke check (a fresh profile sees all four generals, all dimmed with ☆☆☆); full verify.
+
+## #50 The Lens of Parallelism
+*What bottlenecks are in my design? Can parallelism remove them? Can players do several things
+at once — and can the game do several things at once for them?*
+- Mythwar is parallel by nature: three lanes, each its own front. One thing in it was not: a
+  single trainer worked through one queue for all three gates. Order two redcaps for the quiet
+  top lane, then see a rush in the bottom lane and order a guardian there — the guardian waited
+  for both redcaps. Head-of-line blocking, exactly when it hurts.
+- Measured (scripted player vs Master, 10 battles; order → creature steps out): summons ordered
+  while foes were in that lane's last third waited 4.9 s on average (p90 12.1 s), 3.1 s of it
+  beyond their own training time.
+- Change: **each gate trains its own creature** — the three lanes train in parallel; the queue
+  still holds five in all, and a lane still trains one creature at a time (so piling into one
+  lane is no faster). Emergency waits fell to 4.4 s (p90 10.3 s); what remains is that lane's
+  own line and jammed gates, which is the rule working. Even battles got a little shorter
+  (designcheck 19.7 → 18.6 min), the ladder held (100/57/20/0%). The queue chips show a progress
+  bar on every creature in training (one per lane), ley sight rings each lane's own trainee, the
+  portal flare follows each gate. Old saves carry their progress to the right lane.
+- Checked: unit tests (parallel lanes, one at a time per lane, cancel resets only its lane, old
+  save conversion), designcheck, a screenshot with three lanes training, full verify (smoke,
+  multiplayer smoke — the server and replicas share the rule).

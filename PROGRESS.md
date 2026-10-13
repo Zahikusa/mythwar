@@ -14,7 +14,8 @@ complete; its log follows below the lens plan.
   goals (#20, #25); **progress codes** PC ↔ phone (#19); Novice follows the player up the ages
   (#13); AIs bank for the Elder Dragon (#32); Zeus/Starfall targeting (#29, #34); brittle frost
   (#23); per-creature cries (#10); lore lines, age-tinted HUD, many smaller clarity fixes.
-- Protocol is now v8 (trials, co-op, stance): server and pages must be from the same build.
+- Protocol is now v8 (trials, co-op, stance): server and pages must be from the same build
+  (simFingerprint also changes with every balance/rule change, e.g. #46–#50).
 - New tools: `npm run designcheck` (difficulty ladder, pacing, variety, side fairness — all
   pass: ladder 100/53/13/0% for the scripted player, even AI battles 19.2 min), `npm run
   perfcheck` (per-frame JS budget). Verified throughout with `npm run verify` (unit tests,
@@ -102,7 +103,7 @@ complete; its log follows below the lens plan.
 - [x] #47 Balance — counter matrix (`classwar --matrix`): Asgard G>H (+0.09) and Jade H>M (+0.26) were limp; Fenrir lifesteal ⅕, Jötunn +8% hp, foxfire leaps 40%, Byakko +10% hp → +0.43–0.48 like other ages
 - [x] #48 Accessibility — `shoot --cvd` simulation: class cues safe (icons), but the foe turned grey for protanopes; Colour-blind friendly setting (foe in orange)
 - [x] #49 Visible Progress — the title shows the whole ladder of generals (unbeaten ones dimmed with ☆☆☆), not only the beaten ones
-- [ ] #50 Parallelism — parallel lanes: overview
+- [x] #50 Parallelism — one trainer for three gates blocked emergencies (4.9 s waits, p90 12 s): each gate now trains its own creature (queue of 5 in all)
 - [ ] #51 The Pyramid — a pinnacle goal
 - [ ] #52 The Puzzle — puzzle-like challenge scenarios
 - [ ] #53 Control — input responsiveness / cancel

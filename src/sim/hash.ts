@@ -20,7 +20,7 @@ export function hashWorld(w: World): number {
     h.num(p.age);
     h.num(p.baseHp);
     h.num(p.baseMaxHp);
-    h.num(p.trainProgress);
+    for (const t of p.trainProgress) h.num(t);
     h.num(p.powerCooldown);
     h.num(p.incomeMult);
     h.num(p.lastBaseHit);

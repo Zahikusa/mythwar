@@ -367,9 +367,9 @@ export class Renderer {
     if (world.winner !== null) return 0;
     const p = world.players[team];
     let e = 0;
-    const i = world.trainingIndex(team);
-    if (i >= 0 && p.queue[i].lane === lane) {
-      const left = UNITS[p.queue[i].unitId].trainTime - p.trainProgress;
+    const i = world.trainingIndex(team, lane);
+    if (i >= 0) {
+      const left = UNITS[p.queue[i].unitId].trainTime - p.trainProgress[lane];
       const k = Math.max(0, Math.min(1, 1 - left / EMERGE_WARN));
       e = k * k;
     }
@@ -1221,7 +1221,7 @@ export class Renderer {
     if (view.playerTeam < 0 || world.shrines[lane].owner !== me) return;
     const foe: Team = me === 0 ? 1 : 0;
     const p = world.players[foe];
-    const training = world.trainingIndex(foe);
+    const training = world.trainingIndex(foe, lane);
     const gate = this.gateScreen(foe, lane);
     const toField = foe === 0 ? 1 : -1;
     const r = Math.max(4, 15 * gate.s);
@@ -1242,7 +1242,7 @@ export class Renderer {
         ctx.strokeStyle = TEAM_COLORS[foe].main;
         ctx.lineWidth = Math.max(2, 3 * gate.s);
         ctx.beginPath();
-        ctx.arc(x, y, r + 2.5 * gate.s, -Math.PI / 2, -Math.PI / 2 + (p.trainProgress / def.trainTime) * TAU);
+        ctx.arc(x, y, r + 2.5 * gate.s, -Math.PI / 2, -Math.PI / 2 + (p.trainProgress[lane] / def.trainTime) * TAU);
         ctx.stroke();
       }
       // The creature itself (facing the player's side, whichever way the field is drawn).

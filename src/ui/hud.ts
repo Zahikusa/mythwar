@@ -1302,10 +1302,12 @@ export class Hud {
         this.el.queue.appendChild(p ? h('div', { class: 'qslot pending', title: `${UNITS[p.unitId].name}: on its way…` }, portrait(p.unitId, 30, 0, 0.4, false, this.zoom)) : h('div', { class: 'qslot' }));
       }
     }
-    const training = g.world.trainingIndex(g.playerTeam);
     for (let n = 0; n < chips.length; n++) {
       const ready = !!q[n]?.ready;
-      const prog = ready ? 1 : n === training ? Math.min(1, me.trainProgress / UNITS[q[n].unitId].trainTime) : 0;
+      // Each gate trains its own creature: one may be training per lane.
+      const lane = q[n]?.lane ?? -1;
+      const training = lane >= 0 && n === g.world.trainingIndex(g.playerTeam, lane);
+      const prog = ready ? 1 : training ? Math.min(1, me.trainProgress[lane] / UNITS[q[n].unitId].trainTime) : 0;
       setStyle(chips[n].prog, 'width', `${(prog * 100).toFixed(1)}%`);
       // Gold border = trained, waiting for room at a jammed gate.
       toggle(chips[n].el, 'waiting', ready);
