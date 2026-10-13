@@ -690,6 +690,23 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 **Start here: [docs/BRIEF.md](docs/BRIEF.md)** — one page: what TASK.md asked for, what was
 built, how to see each part working, and the decisions that need you.
 
+## Run #9 in short (for the morning)
+- Verification mode, backlog items 138–155. Open from run #8: #138 and #142 done; #128 (DOM tests)
+  and #129 (rival ids) decided against, with reasons; #137 (split app.ts) started with a pure,
+  tested `src/ui/roomnews.ts`.
+- A look at the online flows through screenshots (mpsmoke `--shots`, landscape and upright phone,
+  and shoot's new two-player room) found and fixed: the "is away" notice and the opening banner
+  showing through each other (#145); the start countdown's "3" on the banner's words (#148);
+  "Room" beside "Back to room" (#147); the chronicle ending "your citadel falls" after a forfeit
+  or a claimed win (#144, #152 co-op); room seats without the player's sigil and "press Ready
+  again" to a host who never pressed it (#142); the coach bubble swallowing taps on the lanes it
+  explains (#149); the "more below" backdrop missing when the lobby's list arrives late (#151).
+- mpsmoke: condition waits instead of sleeps (61 → 53 s), and under `--latency 60 --jitter 80` the
+  co-op start had been failing (its Readies raced a handicap change) — fixed in the test (#138).
+  An independent review of the run's diff found no regressions, tightened four checks (#153).
+- A cp1252 em dash briefly made mpsmoke.ts invalid UTF-8 (#143) — caught, fixed.
+- Tests 256 → 263; `npm run verify` green; `mpengines` (WebKit vs Chrome/Firefox) in sync.
+
 ## Run #8 in short (for the morning)
 - Verification mode, backlog items 38–142: done except the notes #23, #94 and the open
   #128, #129, #137, #138, #142 (for the next run — start there; add new ones from a fresh review). Ten independent reviews (netcode; app state;
