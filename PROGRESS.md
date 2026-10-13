@@ -142,10 +142,14 @@ Already in the code before Phase 3, and kept:
    (Done: `watchForUpdate` returns a check-now function, exposed as `__mythwarUpdateCheck`;
    smoke's service-worker flow fakes a page with another bundle and expects the title's
    "New version ready — restart", the page not reloaded.)
-4. [ ] smoke's "card tooltip sits above the card, on screen" (large desktop) failed once when
+4. [x] smoke's "card tooltip sits above the card, on screen" (large desktop) failed once when
    run with `--only desktop,large-desktop` (bottom 3 px past the card's top), passed alone
    twice and in the full verify: a timing-dependent measure — make it wait for the tooltip's
    final position.
+   (Done: when it failed, the tooltip's place was steady but 18 px low — measured too short when
+   placed. `Hud.placeTooltip` now places it once more on the next frame if its size changed, and
+   smoke waits for a steady position. Paired runs: failed 2 of 4 before, passed 3 of 3 after —
+   watch it.)
 5. [ ] The install sheet's arrow places are best guesses for some browsers (Firefox/Edge on
    iPhone, Samsung Internet, iOS 26 Safari sideways, in-app browsers): confirm on devices
    (PLAYTEST.md's checklist) and correct `guideFor`'s `spot`s.

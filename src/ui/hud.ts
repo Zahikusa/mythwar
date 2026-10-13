@@ -1034,7 +1034,7 @@ export class Hud {
     this.placeTooltip(anchor);
   }
 
-  private placeTooltip(anchor: HTMLElement): void {
+  private placeTooltip(anchor: HTMLElement, again = true): void {
     const tt = this.el.tooltip;
     tt.classList.remove('hidden');
     const br = anchor.getBoundingClientRect();
@@ -1062,6 +1062,14 @@ export class Hud {
     }
     tt.style.left = `${x / z}px`;
     tt.style.top = `${y / z}px`;
+    // Its size can still settle after this frame (it was just filled): placed once more then if it
+    // changed, so it never covers its own card (seen as an 18-px overlap on a 2560x1440 screen).
+    if (again)
+      requestAnimationFrame(() => {
+        if (tt.classList.contains('hidden')) return;
+        const now = z !== 1 ? tt.getBoundingClientRect() : null;
+        if (Math.abs((now ? now.height : tt.offsetHeight) - th) > 0.5 || Math.abs((now ? now.width : tt.offsetWidth) - tw) > 0.5) this.placeTooltip(anchor, false);
+      });
   }
 
   hideTooltip(): void {

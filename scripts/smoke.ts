@@ -940,7 +940,20 @@ async function largeDesktopFlow(page: Page): Promise<void> {
   check('top bar stays clear of the system buttons', info.topbar.r <= info.sys.l + 1, JSON.stringify({ topbar: info.topbar.r, sys: info.sys.l }));
   const card = await center(page, '.card');
   await page.mouse.move(card.x, card.y);
-  await sleep(250);
+  // (Measured where it comes to rest — the card lifts on hover and the tooltip follows it: under
+  // load, 250 ms caught it 16 px short of there. Steady for three polls in a row.)
+  await page
+    .waitForFunction(() => {
+      const w = window as unknown as { __tipAt?: string; __tipSame?: number };
+      const t = document.querySelector('.tooltip');
+      if (!t || t.classList.contains('hidden')) return false;
+      const r = t.getBoundingClientRect();
+      const at = `${r.left},${r.top}`;
+      w.__tipSame = at === w.__tipAt ? (w.__tipSame ?? 0) + 1 : 0;
+      w.__tipAt = at;
+      return w.__tipSame >= 3;
+    }, { timeout: 3000, polling: 50 })
+    .catch(() => {});
   const tip = await page.evaluate(() => {
     const r = document.querySelector('.tooltip')!.getBoundingClientRect();
     const c = document.querySelector('.card')!.getBoundingClientRect();
