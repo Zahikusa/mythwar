@@ -410,6 +410,19 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
 94. [ ] (note) Hall files written between 7ff005c and f1c5f9c (quick-hash keys, this branch only, a
    few hours on 2026-10-13, never released) keep orphaned networks whose keys are recoverable.
    Only dev machines can have them — delete `mythwar-data.json` there; no code change.
+(Items 95–98: follow-ups left open at the end of run #8.)
+95. [ ] `src/ui/settings.ts`: no live refresh between tabs (#92 stops saves undoing each other, but
+   a second tab's title/feats screens show its stale view until reloaded). Listen for `storage`
+   events on the two keys and merge (and refresh the open screen).
+96. [ ] Room: Ready that arrives just after the other player's handicap/mode change readies you on a
+   setting you never saw (#90's review, unconfirmed in practice). Send the room revision the
+   client saw with `ready`; the server ignores a stale one.
+97. [ ] `server/match.ts` `claim`: claiming while the other player is away *during the countdown*
+   counts as a full victory (Hall, tallies) though no battle was fought — consider "no contest"
+   (no result counted) before the first tick.
+98. [ ] `src/ui/hud.ts` update(): the card/lane-tab accessibility labels (#79) are recomputed every
+   frame (string building ×7 per frame) — cheap (perfcheck 1.0 ms/frame) but could be keyed on
+   a state signature like the rest of the HUD.
 
 
 
