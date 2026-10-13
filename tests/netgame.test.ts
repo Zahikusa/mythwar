@@ -43,6 +43,21 @@ class SimNet {
     this.queue.push({ at, n: this.n++, fn });
   }
 
+  /** The fake socket a client is talking over right now. */
+  socketOf(c: MpClient): FakeSocket {
+    return (c.conn as unknown as { ws: FakeSocket }).ws;
+  }
+
+  /** The server's battle in a room (its authoritative world). */
+  matchOf(code: string): { world: World } {
+    return (this.lobby as unknown as { rooms: Map<string, { match: { world: World } }> }).rooms.get(code)!.match;
+  }
+
+  /** The client heard nothing for `ms` though its link lived (iOS suspends a page in the background). */
+  suspended(c: MpClient, ms: number): void {
+    (c.conn as unknown as { lastHeard: number }).lastHeard -= ms;
+  }
+
   client(name: string): MpClient {
     const c = new MpClient({ name, url: 'ws://test/mp', storage: null, now: () => this.now, socket: () => new FakeSocket(this) });
     this.clients.push(c);
@@ -219,7 +234,7 @@ describe('NetGame over a simulated network', () => {
     ga.command({ type: 'train', team: 0, unitId: 'redcap', lane: 2 });
     net.run(500);
     // Kill b's socket silently.
-    const sock = (b.conn as unknown as { ws: FakeSocket }).ws;
+    const sock = net.socketOf(b);
     sock.kill();
     net.run(300);
     expect(ga.netPause).toMatchObject({ reason: 'away', seat: 1 });
@@ -258,7 +273,7 @@ describe('NetGame over a simulated network', () => {
   it('leaving while offline sticks: the reconnect does not pull you back into the battle', () => {
     const { a, b, ga, gb } = twoPlayers();
     net.run(3000);
-    (b.conn as unknown as { ws: FakeSocket }).ws.kill();
+    net.socketOf(b).kill();
     net.run(50);
     b.leave(); // the player quits from the menu while the Wi-Fi is down
     expect(b.room).toBeNull();
@@ -352,12 +367,12 @@ describe('NetGame over a simulated network', () => {
     b.join(a.room!.code);
     net.run(400);
     // Bo's phone locks: its link goes silent (no close seen); it wakes 3 s later.
-    const old = (b.conn as unknown as { ws: FakeSocket }).ws;
+    const old = net.socketOf(b);
     net.cut.add(old);
     net.run(3000);
     b.away(false); // (the page is visible again: a ping goes out, and no answer comes)
     net.run(2000);
-    expect((b.conn as unknown as { ws: FakeSocket }).ws).not.toBe(old);
+    expect(net.socketOf(b)).not.toBe(old);
     expect(b.state).toBe('online');
     expect(b.room?.code).toBe(a.room!.code);
   });
@@ -374,12 +389,11 @@ describe('NetGame over a simulated network', () => {
     b.ready(true);
     net.run(400);
     // iOS suspended the page for 4 s (no pings went out, nothing was read); the socket lived.
-    const conn = b.conn as unknown as { ws: FakeSocket; lastHeard: number };
-    const ws = conn.ws;
-    conn.lastHeard -= 4000;
+    const ws = net.socketOf(b);
+    net.suspended(b, 4000);
     b.away(false);
     net.run(2000);
-    expect(conn.ws).toBe(ws);
+    expect(net.socketOf(b)).toBe(ws);
     expect(a.room!.seats[1]).toMatchObject({ connected: true, ready: true });
   });
 
@@ -413,13 +427,13 @@ describe('NetGame over a simulated network', () => {
     const { a, b, ga, gb } = twoPlayers();
     net.run(2000);
     // The server was restarted with another build: it refuses this page's hello.
-    (b as unknown as { onMessage(m: unknown, at: number): void }).onMessage({ type: 'error', code: 'version', message: 'reload' }, net.now);
+    net.socketOf(b).onmessage?.({ data: JSON.stringify({ type: 'error', code: 'version', message: 'reload' }) });
     expect(b.versionMismatch).toBe(true);
     expect(gb.over).toBe(true);
     expect(b.room).toBeNull();
     expect(b.seat).toBeNull();
     // Another tab took over this session (close code 4001).
-    (a.conn as unknown as { onRefused(code: number): void }).onRefused(4001);
+    a.conn.onRefused(4001);
     expect(a.replaced).toBe(true);
     expect(ga.over).toBe(true);
     expect(a.room).toBeNull();
@@ -428,7 +442,7 @@ describe('NetGame over a simulated network', () => {
   it('a phone that missed the end of the battle sees the result when it reconnects', () => {
     const { a, b, ga, gb } = twoPlayers();
     net.run(3000);
-    (b.conn as unknown as { ws: FakeSocket }).ws.kill();
+    net.socketOf(b).kill();
     net.run(50);
     a.leave();
     net.run(5000);
@@ -457,7 +471,7 @@ describe('NetGame over a simulated network', () => {
     gb.onEvents((ev) => (ended += ev.filter((e) => e.type === 'gameOver').length));
     b.conn.close();
     net.run(1000);
-    const match = (net.lobby as unknown as { rooms: Map<string, { match: { world: World } }> }).rooms.get(a.room!.code)!.match;
+    const match = net.matchOf(a.room!.code);
     match.world.players[1].baseHp = 1;
     match.world.damageBase(1, 10, 0, 0);
     net.run(5000);
@@ -480,12 +494,12 @@ describe('NetGame over a simulated network', () => {
     // replicas: no desync); the next step topples it.
     a.pause();
     net.run(500);
-    const match = (net.lobby as unknown as { rooms: Map<string, { match: { world: World } }> }).rooms.get(a.room!.code)!.match;
+    const match = net.matchOf(a.room!.code);
     expect(ga.world.tick).toBe(match.world.tick);
     expect(gb.world.tick).toBe(match.world.tick);
     for (const w of [match.world, ga.world, gb.world]) w.players[1].baseHp = 0;
     // The server's 'over' is late for Ada (a lost packet resent); its last turn isn't.
-    const sockA = (a.conn as unknown as { ws: FakeSocket }).ws;
+    const sockA = net.socketOf(a);
     net.holdIf = (sock, data) => sock === sockA && data.includes('"type":"over"');
     b.resume();
     net.run(4000);

@@ -685,10 +685,13 @@ server changes found sound.)
    ~4.3 s, the silence rule held the battle at ~2.2 s); the mid-battle step waits for the room to
    show B back, not for the 3-s resume countdown (the next section waits for the battle). The
    rest of run #10's growth is the checks themselves. Plain, latency, portrait green.)
-270. [ ] Several run #10 tests in tests/netgame.test.ts reach into private fields (`conn.ws`,
+270. [x] Several run #10 tests in tests/netgame.test.ts reach into private fields (`conn.ws`,
    `conn.lastHeard`, `lobby.rooms`, a match's world): a few test-only accessors on SimNet
    (`socketOf(client)`, `matchOf(code)`, `suspend(client, ms)`) would make them read as the
    scenarios they are and survive refactors.
+   (Done: `SimNet.socketOf`, `matchOf`, `suspended`; run #10's tests use them; the version error
+   now arrives through the fake socket like a real message. Two older tests keep their own
+   casts (a fault injection, the #160 close/open).)
 271. [x] docs/MULTIPLAYER.md's "What happens when…" lacks run #10's room behaviours: a short app
    switch keeps the seat and Ready (#264), a longer one redials at once on return (#243), room
    news takes turns (#262), and a silent phone mid-battle (#222 — there) vs in the room.
