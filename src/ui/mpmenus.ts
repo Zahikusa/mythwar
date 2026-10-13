@@ -43,10 +43,6 @@ export interface FlashOptions {
 /** Where the ready-to-run game server (release package) is downloaded. */
 const SERVER_DOWNLOAD = 'https://github.com/Zahikusa/mythwar/releases/latest';
 
-/**
- * The multiplayer screens: the lobby (name, host, join by code, open battles on this network)
- * and the battle room (room code, invite QR code, both players' readiness).
- */
 /** What each standing means (the seat's tooltip). */
 const RANK_NOTE = [
   'Recruit: has not beaten a general yet',
@@ -57,6 +53,10 @@ const RANK_NOTE = [
   'Legend: three stars against every general',
 ];
 
+/**
+ * The multiplayer screens: the lobby (name, host, join by code, open battles on this network)
+ * and the battle room (room code, invite QR code, both players' readiness).
+ */
 export class MpScreens {
   /** Open rooms hosted by someone already battled, as last listed (a new one chimes). */
   private friendRooms = new Set<string>();
@@ -114,8 +114,10 @@ export class MpScreens {
     this.nameInput.value = name;
   }
 
-  /** A short message on the lobby and room screens (errors such as an unknown room code). */
-  /** `calm`: news or a tip — not the alarm colour of an error. */
+  /**
+   * A short message on the lobby and room screens (errors such as an unknown room code; `calm`:
+   * news or a tip — not the alarm colour of an error).
+   */
   flash(text: string, o: FlashOptions = {}): void {
     const now = performance.now();
     // Room news within NEWS_MIN of the last waits its turn: two quick events ("Bo left", "Cy

@@ -134,6 +134,11 @@ keyboard, gamepad), checked with puppeteer, 2026-10-13.)
 279. [x] Reduced motion misses the away notice's spinner (`.nspin`, runs for minutes), the quick
    message pop, the battle speech bubble, the code field's shake. (Done: those stop; the speech
    bubble — whose animation is how it shows — fades without the pop.)
+(Items 280–: run #11.)
+280. [x] Nine doc comments had drifted off what they describe when code was inserted between
+   (two `/** */` in a row — an editor shows only the second): `MpScreens`, `App`, `Hud`,
+   `hallKey`, `cry`, `battleTip`, smoke's `resultsShown`, and three halves of one comment.
+   (Done: each back on its declaration or merged; an awk check over all .ts files finds none.)
 271. [x] docs/MULTIPLAYER.md's "What happens when…" lacks run #10's room behaviours: a short app
    switch keeps the seat and Ready (#264), a longer one redials at once on return (#243), room
    news takes turns (#262), and a silent phone mid-battle (#222 — there) vs in the room.

@@ -1226,13 +1226,15 @@ export function scoreLine(o: OnlineResult, won: boolean): string {
   return `Score in this room: you ${a} – ${b} ${o.foe}`;
 }
 
-/** One concrete lesson from the battle just played (or, after a win, what to try next). */
 /** The foe to suggest: the easiest difficulty the player hasn't beaten yet (Mythic once all are). */
 export function recommendedDifficulty(records: Settings['records']): Difficulty {
   return DIFFICULTIES.find((d) => !records[d]?.wins) ?? 'mythic';
 }
 
-/** `touch`: the player plays by touch (no "click", no keys). */
+/**
+ * One concrete lesson from the battle just played (or, after a win, what to try next). `touch`:
+ * the player plays by touch (no "click", no keys).
+ */
 export function battleTip(world: World, me: Team, difficulty: Difficulty, ageUps: { t: number; team: Team; age: number }[], advice = true, touch = false): string {
   const foe: Team = me === 0 ? 1 : 0;
   const P = world.players[me];

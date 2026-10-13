@@ -67,10 +67,10 @@ interface CardEl {
   save: HTMLElement;
 }
 
-/** The in-game heads-up display and the player's action layer (shared by mouse, touch and keys). */
 /** Seconds before Ragnarök that its countdown appears (Lens #61: anticipation through the lull). */
 export const RAG_WARN = 180;
 
+/** The in-game heads-up display and the player's action layer (shared by mouse, touch and keys). */
 export class Hud {
   readonly root: HTMLDivElement;
   private game: Game | null = null;

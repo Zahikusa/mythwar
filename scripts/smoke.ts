@@ -42,11 +42,6 @@ async function state(page: Page): Promise<{ gold: number; queue: number; summone
   });
 }
 
-/**
- * After a citadel falls: waits for the results to be on screen (shown ~2.6 s later, then a short
- * fade) — instead of a fixed pause, so a slow machine (a CI runner) doesn't flake and a fast one
- * doesn't wait. A timeout lets the check that follows fail with its own message.
- */
 /** Lines printed by the flow that's running (flows run side by side; see main). */
 const flowLog = new AsyncLocalStorage<string[]>();
 const plainLog = console.log.bind(console);
@@ -58,6 +53,11 @@ console.log = (...args: unknown[]) => {
 /** Flows at a time: timing-based checks still hold with this many on one machine. */
 const PARALLEL = 3;
 
+/**
+ * After a citadel falls: waits for the results to be on screen (shown ~2.6 s later, then a short
+ * fade) — instead of a fixed pause, so a slow machine (a CI runner) doesn't flake and a fast one
+ * doesn't wait. A timeout lets the check that follows fail with its own message.
+ */
 async function resultsShown(page: Page): Promise<void> {
   await page
     .waitForFunction(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current === 'over', { timeout: 12_000, polling: 100 })

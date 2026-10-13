@@ -249,8 +249,8 @@ export class Lobby {
     return this.rooms.size;
   }
 
-  /** A new connection. Returns the handlers the transport calls for its messages and close. */
   /**
+   * A new connection. Returns the handlers the transport calls for its messages and close.
    * `network`: see networkOf; `quota`: the key per-address limits count against ('' = none, for
    * trusted local-network clients).
    */
@@ -872,10 +872,6 @@ export class Lobby {
   }
 
   /**
-   * The key a network's hall is kept under (Lens #98): on a public server a network is a home's
-   * public IP address, which must not end up in a file — so it is a salted hash ('lan' stays).
-   */
-  /**
    * Starts a network's slow hash in the background when it first connects (see hallKey), so the
    * server's loop never waits for it; the lists are sent again once it is ready.
    */
@@ -915,6 +911,10 @@ export class Lobby {
     }
   }
 
+  /**
+   * The key a network's hall is kept under (Lens #98): on a public server a network is a home's
+   * public IP address, which must not end up in a file — so it is a salted hash ('lan' stays).
+   */
   private hallKey(network: string): string {
     if (network === 'lan') return 'lan';
     // A slow, memory-hard hash (scrypt, ~20 ms and 16 MB each): the salt is kept with the file,

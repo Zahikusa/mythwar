@@ -45,10 +45,6 @@ import type { RoomTerms, RoomView } from './ui/roomnews.ts';
 
 type AppState = 'title' | 'playing' | 'over';
 
-/**
- * Top-level controller: owns the canvas, renderer, HUD, menus and the active game.
- * The title screen runs an AI-vs-AI battle in the background.
- */
 /** How long the player's god power slows time (seconds, real time). */
 const SLOWMO = 0.6;
 /** The phone's Back in the battle room: a second press within this long (ms) leaves the room. */
@@ -59,6 +55,10 @@ function pausesNote(left: number): string {
   return left <= 0 ? ' · you have no pauses left' : ` · you have ${left} ${left === 1 ? 'pause' : 'pauses'} left`;
 }
 
+/**
+ * Top-level controller: owns the canvas, renderer, HUD, menus and the active game.
+ * The title screen runs an AI-vs-AI battle in the background.
+ */
 export class App {
   readonly root: HTMLElement;
   readonly stage: HTMLDivElement;
@@ -782,8 +782,10 @@ export class App {
     }
   }
 
-  /** Escape / P: leave a sub-menu, otherwise toggle pause. */
-  /** `back`: the phone's Back button (online it opens the menu without pausing — see pause()). */
+  /**
+   * Escape / P: leave a sub-menu, otherwise toggle pause. `back`: the phone's Back button (online
+   * it opens the menu without pausing — see pause()).
+   */
   private escape(back = false): void {
     const m = this.menus.current;
     if (m === 'mp') this.closeMultiplayer();

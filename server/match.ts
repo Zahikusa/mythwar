@@ -76,8 +76,8 @@ export class Match {
   readonly pausesLeft: [number, number] = [PAUSES_PER_BATTLE, PAUSES_PER_BATTLE];
   /** Wall time each seat went away (null = present). */
   private awaySince: [number | null, number | null] = [null, null];
-  /** Each seat's last absence: how long it lasted and when it ended (ms). */
   /**
+   * Each seat's last absence: how long it lasted and when it ended (ms).
    * `endedAt`: when the battle ran again after it (null: not yet — still held, or counting down
    * to the resume). Time back only counts while the battle runs: returning for the 3-s countdown
    * and leaving again would otherwise restart the clocks without a tick being played.
