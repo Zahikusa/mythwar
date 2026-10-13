@@ -589,6 +589,9 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    syncRematch, the emote routing — could move to its own module (`src/onlineapp.ts`) with a
    narrow interface to App, so each half reads on its own. No behaviour change; verify must stay
    green.
+138. [ ] `scripts/mpsmoke.ts` still has many fixed `sleep()`s (e.g. 4.5 s before "rematch running",
+   1.6 s for the emote gap) — like #134, wait for the condition where one exists (and keep a
+   sleep only where time itself is what's tested), for the CI runner (#127).
 
 
 
@@ -599,7 +602,7 @@ built, how to see each part working, and the decisions that need you.
 
 ## Run #8 in short (for the morning)
 - Verification mode, backlog items 38–137: done except the notes #23, #94 and the open #101,
-  #128, #129, #137 (for the next run — start there). Ten independent reviews (netcode; app state;
+  #128, #129, #137, #138 (for the next run — start there). Ten independent reviews (netcode; app state;
   simulation/AI/HUD; rendering/persistence; accessibility; docs; two players' flows; data across
   versions; a visual review from screenshots; a review of this run's own diff — which caught
   three regressions, #116–118) found most of them; each was reproduced by a new test or smoke
