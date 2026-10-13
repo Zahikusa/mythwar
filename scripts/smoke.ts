@@ -4,6 +4,7 @@
  *   node scripts/smoke.ts --only journal,sandbox     (just those flows; names listed on a typo)
  * Exits non-zero on any failed check or console error.
  */
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { createServer } from 'node:http';
 import { readFile, readdir } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
@@ -46,6 +47,17 @@ async function state(page: Page): Promise<{ gold: number; queue: number; summone
  * fade) — instead of a fixed pause, so a slow machine (a CI runner) doesn't flake and a fast one
  * doesn't wait. A timeout lets the check that follows fail with its own message.
  */
+/** Lines printed by the flow that's running (flows run side by side; see main). */
+const flowLog = new AsyncLocalStorage<string[]>();
+const plainLog = console.log.bind(console);
+console.log = (...args: unknown[]) => {
+  const lines = flowLog.getStore();
+  if (lines) lines.push(args.map(String).join(' '));
+  else plainLog(...args);
+};
+/** Flows at a time: timing-based checks still hold with this many on one machine. */
+const PARALLEL = 3;
+
 async function resultsShown(page: Page): Promise<void> {
   await page
     .waitForFunction(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current === 'over', { timeout: 12_000, polling: 100 })
@@ -1307,21 +1319,34 @@ async function main(): Promise<void> {
     process.exit(2);
   }
   try {
-    for (const f of flows) {
-      if (only.length && !only.includes(f.name)) continue;
-      // (Each flow in its own fresh profile: no storage left by the ones before — so any `--only`
-      // combination behaves like the full run.)
-      const context = await browser.createBrowserContext();
-      const page = await context.newPage();
-      page.on('pageerror', (e) => errors.push(pageError(f.label, e)));
-      if (f.consoleErrors) {
-        page.on('console', (m) => {
-          if (m.type() === 'error') errors.push(`${f.label}: ${m.text()}`);
-        });
-      }
-      await f.go(page);
-      await context.close();
-    }
+    // Flows run PARALLEL at a time, each in its own fresh profile (no storage left by others —
+    // so any `--only` combination behaves like the full run); each flow's lines are printed
+    // together when it ends.
+    const queue = flows.filter((f) => !only.length || only.includes(f.name));
+    const runOne = async (f: (typeof flows)[number]) => {
+      const lines: string[] = [];
+      await flowLog.run(lines, async () => {
+        const context = await browser.createBrowserContext();
+        const page = await context.newPage();
+        page.on('pageerror', (e) => errors.push(pageError(f.label, e)));
+        if (f.consoleErrors) {
+          page.on('console', (m) => {
+            if (m.type() === 'error') errors.push(`${f.label}: ${m.text()}`);
+          });
+        }
+        try {
+          await f.go(page);
+        } finally {
+          await context.close();
+        }
+      });
+      plainLog(lines.join('\n'));
+    };
+    await Promise.all(
+      Array.from({ length: PARALLEL }, async () => {
+        for (let f = queue.shift(); f; f = queue.shift()) await runOne(f);
+      }),
+    );
   } finally {
     await browser.close();
     server.close();

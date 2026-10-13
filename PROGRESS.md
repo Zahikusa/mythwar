@@ -438,8 +438,10 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
 100. [x] `scripts/mpsmoke.ts` doesn't cover #88 (rematch note when the other player's tab closed):
    close B's page on the results and check A's note says "lost the connection". (Done: B's
    connection is closed on the results, A's note says so, and clears when B is back.)
-101. [ ] `scripts/smoke.ts` runs its 14 flows one after another (~6 min of `npm run verify`); the
+101. [x] `scripts/smoke.ts` runs its 14 flows one after another (~6 min of `npm run verify`); the
    independent ones could run on parallel pages (they share storage — group the ones that care).
+   (Done after #124 gave each flow its own profile: three flows at a time, each flow's lines
+   printed together when it ends (AsyncLocalStorage); 139 s → 49 s, three runs in a row green.)
 102. [x] `server/main.ts`: no last-resort `uncaughtException` handler — a fault outside the lobby's
    contained paths (#50/#51), e.g. in the static server or ws internals, ends the process without
    saving the Hall. Log, `flush(true)`, exit non-zero (a supervisor/the starter restarts it).
@@ -601,7 +603,7 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #8 in short (for the morning)
-- Verification mode, backlog items 38–137: done except the notes #23, #94 and the open #101,
+- Verification mode, backlog items 38–138: done except the notes #23, #94 and the open
   #128, #129, #137, #138 (for the next run — start there). Ten independent reviews (netcode; app state;
   simulation/AI/HUD; rendering/persistence; accessibility; docs; two players' flows; data across
   versions; a visual review from screenshots; a review of this run's own diff — which caught
