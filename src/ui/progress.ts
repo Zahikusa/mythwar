@@ -43,7 +43,9 @@ export function importProgress(s: Settings, code: string): boolean {
     if (!theirs || typeof theirs !== 'object') continue;
     const mine = s.records[d] ?? { wins: 0, losses: 0, best: 0, streak: 0 };
     const best = [mine.best, num(theirs.best)].filter((x) => x > 0);
-    s.records[d] = { wins: Math.max(mine.wins, num(theirs.wins)), losses: Math.max(mine.losses, num(theirs.losses)), best: best.length ? Math.min(...best) : 0, streak: mine.streak ?? 0 };
+    // (Best star ratings merge too — they were dropped here before, erasing this device's own.)
+    const stars = Math.max(mine.stars ?? 0, Math.min(3, num(theirs.stars)));
+    s.records[d] = { wins: Math.max(mine.wins, num(theirs.wins)), losses: Math.max(mine.losses, num(theirs.losses)), best: best.length ? Math.min(...best) : 0, streak: mine.streak ?? 0, stars };
   }
   if (Array.isArray(p.f)) for (const f of p.f) if (typeof f === 'string' && !s.feats.includes(f) && s.feats.length < 100) s.feats.push(f);
   s.ageSeen = Math.max(s.ageSeen, Math.min(4, num(p.a)));
