@@ -20,6 +20,22 @@ import type { Command } from '../src/sim/types.ts';
 import { World } from '../src/sim/world.ts';
 
 const args = process.argv.slice(2);
+// (Any other flag — --help, say — would start a bot that runs until stopped.)
+const valued = new Set(['--url', '--difficulty', '--minutes']);
+const unknownFlags = args.filter((a, i) => a.startsWith('-') && !valued.has(a) && a !== '--vs-bot' && a !== '--debug' && !valued.has(args[i - 1]));
+if (unknownFlags.length) {
+  const help = unknownFlags.every((a) => a === '--help' || a === '-h');
+  if (!help) console.error(`Unknown option ${unknownFlags.join(', ')}.`);
+  for (const line of [
+    'node scripts/mpbot.ts                      hosts a room on localhost:8787, prints its code',
+    'node scripts/mpbot.ts ABCD                 joins room ABCD',
+    'node scripts/mpbot.ts --url ws://192.168.1.20:8787/mp --difficulty master',
+    'node scripts/mpbot.ts --vs-bot --minutes 30   two bots fight each other (soak test)',
+    '--debug: keep the command log and, on a desync, diff the replica against a clean replay',
+  ])
+    console.log(line);
+  process.exit(help ? 0 : 1);
+}
 const opt = (name: string) => {
   const i = args.indexOf(`--${name}`);
   return i >= 0 ? args[i + 1] : undefined;
