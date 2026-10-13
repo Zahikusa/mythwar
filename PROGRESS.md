@@ -599,6 +599,9 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    pass a fast one; one test keeps the real scrypt). (Done: `LobbyOptions.hallHash`, still applied
    later like scrypt; the cache test uses it and waits for the eviction itself — 3.1 s → 62 ms;
    the salted-hash test keeps real scrypt.)
+140. [ ] Battle room: Ready is disabled until a second player joins (`mpmenus.ts` ~451) but says
+   nothing about why — a screen reader hears "Ready, dimmed"; a title / aria-description ("waits
+   for a second player" / "offline") would say it (the note below says it only visually nearby).
 
 
 
@@ -608,8 +611,8 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #8 in short (for the morning)
-- Verification mode, backlog items 38–139: done except the notes #23, #94 and the open
-  #128, #129, #137, #138 (for the next run — start there; add new ones from a fresh review). Ten independent reviews (netcode; app state;
+- Verification mode, backlog items 38–140: done except the notes #23, #94 and the open
+  #128, #129, #137, #138, #140 (for the next run — start there; add new ones from a fresh review). Ten independent reviews (netcode; app state;
   simulation/AI/HUD; rendering/persistence; accessibility; docs; two players' flows; data across
   versions; a visual review from screenshots; a review of this run's own diff — which caught
   three regressions, #116–118) found most of them; each was reproduced by a new test or smoke
