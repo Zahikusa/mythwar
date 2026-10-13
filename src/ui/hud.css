@@ -1859,6 +1859,12 @@ html.cbfoe .side.right .hpfill {
   visibility: hidden;
 }
 
+/* Online: "Ada is away" / "Connection lost" takes the banner's place over the field — the two
+   texts showed through each other when the opponent was away as the battle began. */
+#stage:has(.netoverlay .nbanner.show) .hud .banner {
+  visibility: hidden;
+}
+
 .banner.show {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);

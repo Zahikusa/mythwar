@@ -402,6 +402,11 @@ async function main(): Promise<void> {
     await waitFor(a, 'A waits for B (hidden as it started)', () => ((window as any).__mythwar.game.netPause?.reason ?? '') === 'away', 6000);
     const held = await info(a);
     check('a battle starting in a hidden tab waits for that player', held.netPause === 'away:1' && held.tick < 60, `${held.netPause} at tick ${held.tick}`);
+    // (Backlog 145) "Bo is away" takes the intro banner's place instead of showing through it.
+    await waitFor(a, 'the away notice shows', () => !!document.querySelector('.netoverlay .nbanner.show'), 4000);
+    const intro = await a.evaluate(() => [...document.querySelectorAll<HTMLElement>('.hud .banner.show')].map((e) => getComputedStyle(e).visibility));
+    check('the away notice hides the intro banner under it', intro.every((v) => v === 'hidden'), JSON.stringify(intro));
+    await shot(a, '12a-away-at-start');
     await b.evaluate(() => {
       Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
       document.dispatchEvent(new Event('visibilitychange'));

@@ -629,9 +629,11 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    and the verdict above said "You were away too long" (seen in mpsmoke's `11-results-phone`).
    (Done: the chronicle is told the server's end reason — "Ada leaves the battle.", "you were away
    too long."; unit test; mpsmoke checks both endings on both screens.)
-145. [ ] `12-claim-desktop` (mpsmoke --shots): when the opponent is away from the battle's start,
+145. [x] `12-claim-desktop` (mpsmoke --shots): when the opponent is away from the battle's start,
    the "Ada is away · Claim victory" overlay sits on top of the intro banner (place, kicker, lore)
    and both texts show through each other.
+   (Done: while the net notice shows, the HUD's banner is hidden (`#stage:has(...)`, like an open
+   panel does); mpsmoke checks it at the hidden-tab rematch start and shoots `12a-away-at-start`.)
 146. [x] (decided) #129 rival ids: not done. A per-pair id (hash of both devices) breaks the progress
    code, which carries online tallies to a new device on purpose (new device → new pair ids); a
    per-opponent id only lasts as long as the server's salt (`--no-save` makes a new one every
