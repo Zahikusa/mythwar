@@ -20,7 +20,8 @@ dialog, app-browser escape, QR, LAN line, installed welcome), D (Back model, swi
 sheets, 44-px targets, Vibration switch), E (contact-sheet review on 8 devices), F decided
 against. Then verification mode: backlog 1, 3, 4, 6–15, 17, 18 done (the notch strips now
 continue the scene; upright typing echo; "Paste my progress"; the LAN page shot; …).
-Open: 2 (launch images' size), 5 (arrow places on real devices), 16 (iPhone haptics trick).
+Open: 5 (arrow places on real devices), 16 (iPhone haptics trick) — both need a real phone;
+2 (launch images' size) decided against.
 Bugs worth knowing that were found on the way: WebKit ignores `position: sticky` under the
 turned stage (Settings' Done was off screen on an upright iPhone); Chrome refuses every swipe
 on a turned scroller with `overflow-x: hidden`; headless WebKit froze CSS animations of pages
@@ -150,8 +151,11 @@ Already in the code before Phase 3, and kept:
    the scene, stretched to the whole screen 4× a second, blurred and dimmed, behind the stage —
    the strips continue the scene. Shown wherever the stage leaves strips: installed or Safari
    sideways on a notched iPhone. smoke's cursor check now reads `#stage > canvas`.)
-2. [ ] `public/splash/`: 40 PNGs, 3.8 MB in the repo and in the LAN server's release zip. Flat
+2. [x] `public/splash/`: 40 PNGs, 3.8 MB in the repo and in the LAN server's release zip. Flat
    colour + one icon: palette PNGs (or one image per aspect ratio) would be a tenth of that.
+   (Decided: not done. iOS fetches only the one image matching the screen when the icon is
+   added; a player notices nothing, and TASK's time rules ask every commit to change something
+   a phone player would notice. Revisit if the release zip's size matters.)
 3. [x] `src/update.ts` has a unit test for the bundle name only: nothing exercises the "New
    version ready — restart" offer end to end (smoke could serve a page whose bundle name differs
    and fire visibilitychange).
