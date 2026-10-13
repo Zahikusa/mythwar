@@ -29,6 +29,13 @@ function check(name: string, ok: boolean, extra = ''): void {
   if (!ok) failures++;
 }
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** "== section ==" with how long the previous one took (to see where the run's time goes). */
+let sectionAt = Date.now();
+function section(name: string): void {
+  const now = Date.now();
+  console.log(`== ${name} ==   (previous section ${((now - sectionAt) / 1000).toFixed(1)} s)`);
+  sectionAt = now;
+}
 
 async function waitFor(page: Page, what: string, fn: () => boolean, timeout = 8000): Promise<boolean> {
   try {
@@ -137,7 +144,7 @@ async function main(): Promise<void> {
   const root = resolve('dist');
   if (!existsSync(join(root, 'index.html'))) throw new Error('Run "npm run build" first');
   const http = createServer(serveStatic(root));
-  let mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 6 });
+  let mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 3 });
   await new Promise<void>((r) => http.listen(0, '127.0.0.1', () => r()));
   const base = `http://127.0.0.1:${(http.address() as { port: number }).port}`;
   const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ['--autoplay-policy=no-user-gesture-required'] });
@@ -158,7 +165,7 @@ async function main(): Promise<void> {
     watch(a, 'A');
     watch(b, 'B');
 
-    console.log('== lobby ==');
+    section('lobby');
     await a.goto(`${base}/?mp`, { waitUntil: 'load' });
     await waitFor(a, 'A connected', () => document.querySelector('.mpstatus.ok') !== null);
     check('lobby shows', (await info(a)).menu === 'mp');
@@ -232,7 +239,7 @@ async function main(): Promise<void> {
     await waitFor(b, 'B back in the room from the how-to', () => (window as any).__mythwar.menus.current === 'room', 4000);
     check('room: How to play and back, still seated', await b.evaluate(() => (window as any).__mythwar.mp.seat === 1 && !!(window as any).__mythwar.mp.room));
     // (Backlog 160) B's phone locks in the room (no wake lock over http): its link is gone for longer
-    // than the server keeps a seat (6 s here, a minute for real). Back, it joins the room again.
+    // than the server keeps a seat (3 s here, a minute for real). Back, it joins the room again.
     await b.evaluate(() => (window as any).__mythwar.mp.conn.close());
     await waitFor(a, "B's seat given up", () => (window as any).__mythwar.mp.room?.seats[1] === null, 15_000);
     await b.evaluate(() => (window as any).__mythwar.mp.conn.open());
@@ -282,7 +289,7 @@ async function main(): Promise<void> {
       await b.keyboard.press('Escape');
     }
 
-    console.log('== battle ==');
+    section('battle');
     await press(a, '.screen.room', 'Ready');
     await waitFor(a, 'A ready, waiting for B', () => (document.querySelector('.rnote')?.textContent ?? '').includes('Waiting'), 4000);
     await press(b, '.screen.room', 'Ready');
@@ -393,7 +400,7 @@ async function main(): Promise<void> {
       await waitFor(b, "B's menu closed by Back again", () => (window as any).__mythwar.menus.current === 'none', 3000);
     }
 
-    console.log('== pause / resume ==');
+    section('pause / resume');
     await a.keyboard.press('Escape');
     await waitFor(b, 'B sees the pause screen', () => (window as any).__mythwar.menus.current === 'pause');
     const ptitle = await b.evaluate(() => document.querySelector('.screen.pause h2')?.textContent ?? '');
@@ -407,7 +414,7 @@ async function main(): Promise<void> {
     await until('B ticking again', async () => (await info(b)).tick > t0, 4000);
     check('ticking again', (await info(b)).tick > t0);
 
-    console.log('== app in the background ==');
+    section('app in the background');
     await b.evaluate(() => (window as any).__mythwar.mp.away(true));
     await waitFor(a, 'A told B is away', () => (document.querySelector('.nbanner.show')?.textContent ?? '').includes('is away'));
     await shot(a, '8-opponent-away');
@@ -420,14 +427,14 @@ async function main(): Promise<void> {
     await b.evaluate(() => (window as any).__mythwar.mp.away(false));
     await waitFor(a, 'resumed after away', () => !(window as any).__mythwar.game.paused, 6000);
 
-    console.log('== dropped connection ==');
+    section('dropped connection');
     await b.evaluate(() => (window as any).__mythwar.mp.conn.ws.close());
     await waitFor(a, 'A paused for B', () => ((window as any).__mythwar.game.netPause?.reason ?? '') === 'away');
     await waitFor(b, 'B back online', () => (window as any).__mythwar.game.resyncs >= 1 && (window as any).__mythwar.mp.state === 'online' && !(window as any).__mythwar.game.paused, 8000);
     const b3 = await info(b);
     check('B resynced from a snapshot', b3.resyncs >= 1, `resyncs ${b3.resyncs}`);
 
-    console.log('== reload mid-battle ==');
+    section('reload mid-battle');
     await b.reload({ waitUntil: 'load' });
     await waitFor(b, 'B back in the battle after reload', () => (window as any).__mythwar.state === 'playing' && (window as any).__mythwar.game.options.online, 8000);
     await waitFor(b, 'B running', () => !(window as any).__mythwar.game.paused, 8000);
@@ -440,7 +447,7 @@ async function main(): Promise<void> {
     const b5 = await info(b);
     check('no desyncs', a5.desyncs === 0 && b5.desyncs === 0, `${a5.desyncs} / ${b5.desyncs}`);
 
-    console.log('== tab closed mid-battle, QR scanned again ==');
+    section('tab closed mid-battle, QR scanned again');
     // (Backlog 159) Android's Back closes a tab opened from a QR code — its session token goes
     // with it. Scanning the code again (a new tab, same phone) picks the battle up.
     {
@@ -458,7 +465,7 @@ async function main(): Promise<void> {
       check('a closed tab rejoins its running battle by the QR code', back.seat === 1 && back.mirror && back.summoned[0] >= before && back.tick > 200, JSON.stringify({ seat: back.seat, mirror: back.mirror, summoned: back.summoned, tick: back.tick }));
     }
 
-    console.log('== leaving forfeits ==');
+    section('leaving forfeits');
     await b.keyboard.press('Escape'); // (a phone keyboard isn't a thing, but the key works)
     await waitFor(b, 'B pause menu', () => (window as any).__mythwar.menus.current === 'pause');
     // (Backlog 125) A's quick message reaches B on the menu (bubbles hide under menus).
@@ -507,7 +514,7 @@ async function main(): Promise<void> {
     await shot(b, '10-lobby-phone');
     await shot(a, '9-results-desktop');
 
-    console.log('== rematch ==');
+    section('rematch');
     // B joins again from the open-battles list.
     await waitFor(b, 'room listed', () => document.querySelectorAll('.mproom').length === 1);
     await press(b, '.mplist', 'Join');
@@ -544,7 +551,7 @@ async function main(): Promise<void> {
     const a6 = await info(a);
     check('rematch running', a6.tick > 30 && !a6.paused, `tick ${a6.tick}`);
 
-    console.log('== claiming the win from an absent player ==');
+    section('claiming the win from an absent player');
     await b.evaluate(() => (window as any).__mythwar.mp.away(true));
     await waitFor(a, 'A can claim after a while', () => {
       const btn = document.querySelector('.nclaim') as HTMLElement | null;
@@ -629,7 +636,7 @@ async function main(): Promise<void> {
       return { all: all.map(label), unreachable: all.filter((b) => !seen.has(b)).map(label) };
     });
     check('gamepad: every control on the online results is reachable with the D-pad', reach.unreachable.length === 0 && reach.all.includes('Room') && reach.all.includes('Well played!'), JSON.stringify(reach));
-    // (Backlog 211) B's phone locks on the results for longer than the seat is kept (6 s here): when
+    // (Backlog 211) B's phone locks on the results for longer than the seat is kept (3 s here): when
     // it wakes, its results stay up and it is quietly seated in the room again.
     await b.evaluate(() => (window as any).__mythwar.mp.conn.close());
     await waitFor(a, "B's seat given up on the results", () => (window as any).__mythwar.mp.room?.seats[1] === null, 15_000);
@@ -643,7 +650,7 @@ async function main(): Promise<void> {
     // (Backlog 213) …and A can talk to B again: the same player is back, not a stranger.
     await waitFor(a, "A's quick-message chips back for B", () => !document.querySelector('.screen.over .vemotes')!.classList.contains('hidden'), 4000);
 
-    console.log('== leaving the room ==');
+    section('leaving the room');
     // (Backlog 87) A goes back to the room from the results — still seated — and leaves from there.
     await press(a, '.screen.over', 'Room');
     await waitFor(a, 'A back in the room from the results', () => (window as any).__mythwar.menus.current === 'room' && (window as any).__mythwar.state === 'title', 6000);
@@ -658,7 +665,7 @@ async function main(): Promise<void> {
     await press(a, '.screen.mp', 'Back');
     await waitFor(a, 'A at title', () => (window as any).__mythwar.menus.current === 'title');
 
-    console.log('== co-op against the AI ==');
+    section('co-op against the AI');
     // B (still in the room, at the results; A has left) goes back to the room and makes it a
     // co-op room; A comes back and joins.
     await waitFor(b, 'B told A left (Back to room)', () => [...document.querySelectorAll('.screen.over button')].some((x) => x.textContent?.trim() === 'Back to room' && (x as HTMLElement).offsetParent !== null), 6000);
@@ -745,10 +752,10 @@ async function main(): Promise<void> {
     const rival = await a.evaluate(() => ({ friend: !!document.querySelector('.mproom.friend'), text: document.querySelector('.mproom .mphost span')?.textContent ?? '' }));
     check('lobby: a returning opponent is recognised with your record', rival.friend && rival.text.includes('you 2 – 0'), JSON.stringify(rival));
 
-    console.log('== server restart ==');
+    section('server restart');
     // B sits on the results in its room; the game server restarts and forgets everyone.
     mp.close();
-    mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 6 });
+    mp = attachMultiplayer(http, { latency, jitter, countdown: 3, claimAfter: 4, seatGrace: 3 });
     await waitFor(b, 'B back in the lobby after the restart', () => (window as any).__mythwar.menus.current === 'mp' && (window as any).__mythwar.mp?.state === 'online', 10000);
     const note = await b.evaluate(() => document.querySelector('.screen.mp .mpflash')?.textContent ?? '');
     check('B told the server restarted', note.includes('restarted'), note);
@@ -759,6 +766,7 @@ async function main(): Promise<void> {
     mp.close();
     http.close();
   }
+  console.log(`(last section ${((Date.now() - sectionAt) / 1000).toFixed(1)} s)`);
   console.log(failures ? `\n${failures} check(s) FAILED` : '\nAll multiplayer checks passed');
   process.exit(failures ? 1 : 0);
 }

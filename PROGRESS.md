@@ -367,10 +367,13 @@ it prints, inviting, stopping — 2026-10-13.)
    (Seen in mpsmoke: the gamepad walk had to run before B's sleep.) (Done: `updateRematch(…, same)` — the seat holds
    the player the battle was fought with (by name) → the chips come back; a stranger still gets
    none; mpsmoke checks A's chips return once B is back.)
-214. [ ] mpsmoke grew from 53 s (#138) to ~80 s with run #9's checks — two waits for a seat to expire
+214. [x] mpsmoke grew from 53 s (#138) to ~80 s with run #9's checks — two waits for a seat to expire
    (`seatGrace: 6`), the tab-closed rejoin, the co-op away/both-away steps. Time each section
    (print it), then trim: seatGrace 3 where the quick reconnect checks still hold, run the
-   co-op section's two away waits together.
+   co-op section's two away waits together. (Done: each section prints its time — lobby 8.7 s, claim/results 13.9 s, co-op
+   19.4 s were the big ones; `seatGrace: 3` (the quick results-drop reconnect still holds, also
+   with `--latency 60 --jitter 80` and `--portrait`) → 72 s. The co-op section's rest is its 3-s
+   countdown, the AI's first summons and #203's 2-s away hold — needed.)
 
 
 
@@ -417,7 +420,7 @@ built, how to see each part working, and the decisions that need you.
 - Late in the run: the WebKit (iPhone engine) pass in `mpengines` checks the http copy fallback and
   Back (#201); Back is guarded on touch devices only (#209); PROGRESS.md split — history in
   docs/PROGRESS-archive.md (#202); README's two multiplayer pictures re-shot (#187, #206); a flaky
-  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #197, #204, #214 (#211 and #213 done at the very end).
+  smoke heartbeat check fixed (#212). Open for the next run: #137, #172, #197, #204 (#211, #213, #214 done at the very end).
 - **Open question added:** the downloadable release (v1.0.0) is ~280 commits old.
 - Tests 256 → 285; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
   frame); `mpengines` (WebKit vs Chrome/Firefox) in sync.
