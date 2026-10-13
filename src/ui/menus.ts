@@ -4,7 +4,7 @@ import { AGES, AGE_UNITS, POWERS, TRIALS, TRIAL_ORDER } from '../sim/data.ts';
 import type { UnitDef } from '../sim/data.ts';
 import type { World } from '../sim/world.ts';
 import type { Team } from '../sim/types.ts';
-import { h, fmt, fmtTime, onTap } from './dom.ts';
+import { copyText, h, fmt, fmtTime, onTap } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 import type { Settings } from './settings.ts';
@@ -786,8 +786,7 @@ export class Menus {
         progInput.select();
         progStatus.textContent = 'Copy the code above, then paste it on the other device.';
       };
-      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(code).then(() => (progStatus.textContent = 'Copied — paste it into Settings on the other device.'), fallback);
-      else fallback();
+      void copyText(code).then((ok) => (ok ? (progStatus.textContent = 'Copied — paste it into Settings on the other device.') : fallback()));
     });
     const loadProg = this.button('Load', 'ghost small', () => {
       if (!progInput.value.trim() || progInput.value.trim() === exportProgress(s)) {
@@ -836,8 +835,7 @@ export class Menus {
       }
       const text = journalText(s, typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : '');
       const shown = () => (journalStatus.textContent = `${s.journal.length} battle(s) copied — paste them into a message or a document.`);
-      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(shown, () => (journalStatus.textContent = 'Copying is blocked here — try another browser.'));
-      else journalStatus.textContent = 'Copying is not available in this browser.';
+      void copyText(text).then((ok) => (ok ? shown() : (journalStatus.textContent = 'Copying is blocked here — try another browser.')));
     });
     const journalRow = h('div', { class: 'sprogrow sjournal' }, copyJournal, h('span', { class: 'sproglabel', text: 'For playtests: your last battles (this device only).' }));
     progress.append(journalRow, journalStatus);
@@ -971,12 +969,7 @@ export class Menus {
     const story = this.chronicle;
     const shareText = `Mythwar: ${won ? 'Victory' : 'Defeat'} at ${place} vs ${foeName} in ${fmtTime(world.time)} — reached ${AGES[P.age].name}, ${P.stats.kills} foes slain.${story.length ? `\n${story.join('\n')}` : ''}`;
     const share = this.button('Copy result', 'ghost', () => {
-      const done = (ok: boolean) => (share.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed');
-      try {
-        navigator.clipboard.writeText(shareText).then(() => done(true), () => done(false));
-      } catch {
-        done(false);
-      }
+      void copyText(shareText).then((ok) => (share.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed'));
     });
     el.append(
       h(

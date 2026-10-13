@@ -1,7 +1,7 @@
 import type { MpClient } from '../net/client.ts';
 import { CODE_LENGTH, NAME_MAX, RANKS, SIGILS, cleanCode } from '../net/protocol.ts';
 import type { SeatInfo } from '../net/protocol.ts';
-import { h, onTap, setText, toggle } from './dom.ts';
+import { copyText, h, onTap, setText, toggle } from './dom.ts';
 import { ICONS } from './icons.ts';
 import { TRIALS, TRIAL_ORDER } from '../sim/data.ts';
 import type { TrialId } from '../sim/data.ts';
@@ -234,12 +234,7 @@ export class MpScreens {
     this.link = h('div', { class: 'rlink' });
     // On a desktop the invite is easier to paste into a chat than to read off the screen.
     const copy = this.button('Copy link', 'ghost small rcopy', () => {
-      const done = (ok: boolean) => (copy.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed');
-      try {
-        navigator.clipboard.writeText(this.qrFor).then(() => done(true), () => done(false));
-      } catch {
-        done(false);
-      }
+      void copyText(this.qrFor).then((ok) => (copy.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed'));
     });
     this.invite = h(
       'div',

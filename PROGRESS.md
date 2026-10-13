@@ -705,10 +705,14 @@ battle, results — 2026-10-13.)
    room on phones?).
 161. [ ] The battle room has no way to the how-to: a QR guest never saw it (it shows before a first
    *local* battle) and Leave room → Back disconnects. A "How to play" in the room, Back to the room.
-162. [ ] "Copy result" (results) and "Copy link" (room) always fail on LAN phones — `navigator.
+162. [x] "Copy result" (results) and "Copy link" (room) always fail on LAN phones — `navigator.
    clipboard` needs a secure context (http://192.168… isn't); Settings' progress code has the
    select-the-text fallback, these don't (menus.ts ~973, mpmenus.ts ~236). A shared copy helper
-   with an `execCommand('copy')` fallback.
+   with an `execCommand('copy')` fallback. (Done: `copyText()` in src/ui/dom.ts — the Clipboard API where there is one, else a
+   selected hidden text area and `execCommand('copy')`; used by all four copy buttons (result,
+   invite link, progress code — its select-the-code fallback kept for a failed copy — and the
+   playtest journal). mpsmoke removes the Clipboard API on the phone and checks "Copy result"
+   copies the result's text.)
 163. [x] The results tip (`battleTip`, menus.ts ~1240) says "click a gate or press T" on phones (the
    coach swaps Tap/Click by device; this doesn't). (Done: `battleTip(…, touch)` — "(tap a gate)" on a
    phone stage; test.)

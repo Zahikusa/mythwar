@@ -488,6 +488,16 @@ async function main(): Promise<void> {
     const said = await a.evaluate(() => document.querySelector('.screen.over .vemoteline')?.textContent ?? '');
     const own = await b.evaluate(() => document.querySelector('.screen.over .vemoteline')?.textContent ?? '');
     check('results: a quick message after the battle reaches the other player', said.endsWith(': Well played!') && own === 'You: Well played!', `${said} | ${own}`);
+    // (Backlog 162) A phone on the LAN address has no Clipboard API (http isn't a secure context):
+    // "Copy result" still copies, the old way.
+    await b.evaluate(() => {
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined });
+      document.addEventListener('copy', (e) => ((window as any).__copied = ((e.target as HTMLTextAreaElement).value ?? '') || String(document.getSelection())));
+    });
+    await press(b, '.screen.over', 'Copy result');
+    await waitFor(b, 'Copy result answers', () => [...document.querySelectorAll('.screen.over button')].some((x) => /Copied!|Copy failed/.test(x.textContent ?? '')), 3000);
+    const copied = await b.evaluate(() => ({ label: [...document.querySelectorAll('.screen.over button')].map((x) => x.textContent?.trim()).find((t) => /Cop/.test(t ?? '')), text: (window as any).__copied as string | undefined }));
+    check('results: "Copy result" works without the Clipboard API (a LAN phone)', copied.label === 'Copied!' && /^Mythwar: Defeat/.test(copied.text ?? ''), JSON.stringify(copied).slice(0, 160));
     await shot(b, '11-results-phone');
     // (Backlog 105) The online results' buttons (Leave room · Share · Room · Rematch) all fit a
     // small phone, without overlapping.

@@ -69,3 +69,40 @@ export function onTap(el: HTMLElement, fn: (e: Event) => void): void {
     if ((e as MouseEvent).detail === 0) fn(e);
   });
 }
+
+/**
+ * Copies `text` to the clipboard; resolves whether it worked. The Clipboard API exists only in
+ * secure contexts (https, localhost) — a game opened at its LAN address (http://192.168…) has
+ * none, so there the old way: a hidden text area, selected, `execCommand('copy')`. Call it from
+ * the tap's own handler (browsers allow copying only in answer to the player).
+ */
+export function copyText(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text).then(() => true, () => legacyCopy(text));
+  } catch {
+    // (fall through to the old way)
+  }
+  return Promise.resolve(legacyCopy(text));
+}
+
+function legacyCopy(text: string): boolean {
+  const before = document.activeElement as HTMLElement | null;
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.setAttribute('aria-hidden', 'true');
+  // (Off to the side, not display:none — hidden text can't be selected; 16 px: iOS doesn't zoom.)
+  ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;font-size:16px;';
+  document.body.appendChild(ta);
+  let ok = false;
+  try {
+    ta.select();
+    ta.setSelectionRange(0, text.length); // (iOS selects nothing with select() alone)
+    ok = document.execCommand('copy');
+  } catch {
+    ok = false;
+  }
+  ta.remove();
+  before?.focus?.({ preventScroll: true });
+  return ok;
+}
