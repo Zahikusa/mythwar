@@ -1,7 +1,7 @@
 {
   "name": "mythwar",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "Mythwar: Ages of Legend - a three-lane, mythological take on Age of War",
   "homepage": "https://zahikusa.github.io/mythwar/",

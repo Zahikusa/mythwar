@@ -448,11 +448,8 @@ Status: complete (verification mode since run #4, 2026-10-07; backlog below stil
   the menu just locally, so the waiting player can always leave.
 
 ## Open questions for the human
-- (Run #9) **The downloadable release is stale**: the only GitHub release (v1.0.0, 2026-10-08) is
-  ~280 commits behind; the GitHub Pages "Download the game server" button (`releases/latest`)
-  hands out a server without the saved Hall of champions, the protocol fixes of runs #8–#9, etc.
-  Publishing needs a push and a tag — not done from these runs. Bump `version` in package.json
-  (still 1.0.0) and tag when you publish.
+- (Run #9, resolved 2026-10-13) The stale v1.0.0 release: master was pushed and v1.1.0 tagged, so
+  GitHub Pages and the "Download the game server" release match this build again.
 - (Run #8) `.github/workflows/browser-tests.yml` (smoke + mpsmoke on GitHub) is written but has
   never run — nothing is pushed from these runs. On its first run, check that Chrome starts on the
   runner and that the timing-based checks hold on a shared machine; if some flake, they are the
