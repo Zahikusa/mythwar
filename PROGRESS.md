@@ -682,6 +682,9 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    handicap (#96) now reads "Bo now fights under Glass Citadel." without "press Ready again" (the
    Ready never registered, so `meReady` was false); the Ready visibly bounces back. Narrow timing,
    low impact — leave unless seen.
+156. [x] (#137, second slice) The online results' rematch wording (`Menus.updateRematch`: Rematch /
+   Accept / Cancel / Back to room and the note) was untested DOM code. (Done: `rematchView()` in
+   src/ui/menus.ts, pure; tests/rematch.test.ts; the duplicated doc comment merged.)
 
 
 

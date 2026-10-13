@@ -1112,10 +1112,9 @@ export class Menus {
   }
 
   /**
-   * Online results: whether a rematch is wanted by us / the other player, or they left.
-   * `mine` / `theirs`: readiness; `theirs` null = they left the room.
+   * Online results: whether a rematch is wanted by us / the other player, or they left (the
+   * wording: `rematchView`).
    */
-  /** `there`: the other player is connected (a closed tab keeps its seat for a minute). */
   updateRematch(foe: string, mine: boolean, theirs: boolean | null, there = true): void {
     const btn = this.rematchBtn;
     const note = this.rematchNote;
@@ -1128,18 +1127,29 @@ export class Menus {
     // (Focus on it would fall to the page: the main button, now "Back to room", takes it.)
     if (theirs === null && this.roomBtn && document.activeElement === this.roomBtn) btn.focus();
     this.roomBtn?.classList.toggle('hidden', theirs === null);
-    if (theirs === null) {
-      span.textContent = 'Back to room';
-      note.textContent = `${foe} left the room.`;
-      btn.dataset.room = '1';
-    } else {
-      btn.dataset.room = '';
-      span.textContent = mine ? 'Cancel rematch' : theirs ? 'Accept rematch' : 'Rematch';
-      note.textContent = !there ? `${foe} lost the connection — waiting for them to come back.` : mine ? `Waiting for ${foe}…` : theirs ? `${foe} wants a rematch!` : '';
-    }
+    const v = rematchView(foe, mine, theirs, there);
+    span.textContent = v.label;
+    note.textContent = v.note;
+    btn.dataset.room = v.back ? '1' : '';
     btn.classList.toggle('primary', !mine);
-    note.classList.toggle('hot', theirs === true && !mine);
+    note.classList.toggle('hot', v.hot);
   }
+}
+
+/**
+ * The online results' main button and the note above it. `mine` / `theirs`: each side's
+ * readiness for a rematch, `theirs` null once the other player left the room (the button then
+ * leads back to the room: `back`); `there`: the other player is connected (a closed tab keeps its
+ * seat for a minute). `hot`: they are waiting for us.
+ */
+export function rematchView(foe: string, mine: boolean, theirs: boolean | null, there = true): { label: string; note: string; back: boolean; hot: boolean } {
+  if (theirs === null) return { label: 'Back to room', note: `${foe} left the room.`, back: true, hot: false };
+  return {
+    label: mine ? 'Cancel rematch' : theirs ? 'Accept rematch' : 'Rematch',
+    note: !there ? `${foe} lost the connection — waiting for them to come back.` : mine ? `Waiting for ${foe}…` : theirs ? `${foe} wants a rematch!` : '',
+    back: false,
+    hot: theirs && !mine,
+  };
 }
 
 /**
