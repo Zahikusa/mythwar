@@ -416,7 +416,7 @@
   padding: 12px 14px;
   border-radius: 16px;
   background: rgba(36, 25, 64, 0.85);
-  border: 1.5px solid rgba(255, 79, 109, 0.45);
+  border: 1.5px solid rgba(var(--red-rgb), 0.45);
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 

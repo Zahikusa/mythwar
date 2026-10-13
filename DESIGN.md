@@ -159,3 +159,15 @@ readily, but never into an age the player hasn't reached — beginners see the w
 them without being out-tiered for not ascending yet. Mythic also plans ahead: it holds summons back to mount
 a turret as soon as foes push past midfield, and keeps buying blessings instead of hoarding
 gold for them (calibrated against the scripted bots in `scripts/bots.ts`).
+
+## Accessibility (Lens #48)
+- **Colour:** class is never colour alone (every class colour comes with its shield/fang/orb icon
+  or name); team is blue vs red, and Settings → *Colour-blind friendly* turns the foe orange
+  (blue vs orange stays apart for protan-, deutan- and tritanopes; red turns grey for
+  protanopes). Check with `node scripts/shoot.ts <scenario> --cvd protanopia|deuteranopia|
+  tritanopia [--settings '{"colorblind":true}']`.
+- **Motion:** screen shake, vibration and the title's camera drift share one switch, off by
+  default when the OS asks for reduced motion; CSS animations stop under the same preference.
+- **Input:** everything has a key (1–5 summon, Q/E or the wheel for lanes, Space power, G hold,
+  T turrets, B blessings, U ascend, Esc pause); every action also works by tap; buttons carry
+  aria-labels and a visible keyboard focus ring.

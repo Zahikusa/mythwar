@@ -12,9 +12,16 @@
   --muted: #b8acd6;
   --blue: #3fb8ff;
   --red: #ff4f6d;
+  --red-rgb: 255, 79, 109;
   --good: #7ee08a;
   --bad: #ff7a8a;
   --title-font: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, 'Times New Roman', serif;
+}
+
+/* Colour-blind friendly setting: the foe (and its warnings) in orange instead of red. */
+html.cbfoe {
+  --red: #ff9520;
+  --red-rgb: 255, 149, 32;
 }
 
 button {
@@ -219,6 +226,10 @@ svg {
   background: linear-gradient(180deg, #ffa0b0, #ff4f6d 55%, #b82443);
 }
 
+html.cbfoe .side.right .hpfill {
+  background: linear-gradient(180deg, #ffd08a, #ff9520 55%, #a35400);
+}
+
 .hpbar.low .hpfill {
   animation: lowpulse 0.8s ease-in-out infinite alternate;
 }
@@ -310,7 +321,7 @@ svg {
 
 .foepow.ready {
   opacity: 1;
-  filter: drop-shadow(0 0 5px rgba(255, 79, 109, 0.9));
+  filter: drop-shadow(0 0 5px rgba(var(--red-rgb), 0.9));
   animation: twinkle 1.4s ease-in-out infinite;
 }
 
@@ -1279,12 +1290,12 @@ svg {
 }
 
 .lanetab.danger.sel {
-  box-shadow: 0 0 16px rgba(63, 184, 255, 0.8), 0 0 0 3px rgba(255, 79, 109, 0.8);
+  box-shadow: 0 0 16px rgba(63, 184, 255, 0.8), 0 0 0 3px rgba(var(--red-rgb), 0.8);
 }
 
 @keyframes dangerpulse {
   to {
-    box-shadow: 0 0 14px rgba(255, 79, 109, 0.9);
+    box-shadow: 0 0 14px rgba(var(--red-rgb), 0.9);
     transform: scale(1.12);
   }
 }
@@ -1683,7 +1694,7 @@ svg {
 
 .toast.bad {
   color: #ffc0c8;
-  border-color: rgba(255, 79, 109, 0.5);
+  border-color: rgba(var(--red-rgb), 0.5);
 }
 
 .toast.feat {

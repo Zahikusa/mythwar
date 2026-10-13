@@ -312,6 +312,8 @@ export class App {
     saveSettings(s);
     this.audio.setVolumes(s.muted ? 0 : s.master, s.music, s.sfx);
     this.renderer.shakeEnabled = s.shake;
+    this.renderer.setColorblind(s.colorblind);
+    document.documentElement.classList.toggle('cbfoe', s.colorblind);
     this.hud.advice = s.advice;
     const q = s.lowQuality ? 'low' : 'high';
     if (this.renderer.quality !== q && this.width > 0) this.resize();

@@ -13,7 +13,7 @@ import type { FloatText } from './fx.ts';
 import { artScaleOf, computeLayout, laneX } from './layout.ts';
 import type { LaneGeom, Layout, LayoutMode } from './layout.ts';
 import { drawProjectile, projectileImpact } from './projectiles.ts';
-import { TEAM_COLORS, THEMES, setColorPerspective } from './theme.ts';
+import { TEAM_COLORS, THEMES, setColorPerspective, setFoePalette } from './theme.ts';
 
 export interface ViewState {
   playerTeam: Team;
@@ -201,11 +201,18 @@ export class Renderer {
    */
   setPerspective(team: Team): void {
     this.mirror = team === 1;
-    if (setColorPerspective(team)) {
-      this.keepCache.clear();
-      this.gateCache.clear();
-      this.gradCache.clear();
-    }
+    if (setColorPerspective(team)) this.clearTeamCaches();
+  }
+
+  /** The foe in red, or in the colour-blind friendly orange. */
+  setColorblind(on: boolean): void {
+    if (setFoePalette(on)) this.clearTeamCaches();
+  }
+
+  private clearTeamCaches(): void {
+    this.keepCache.clear();
+    this.gateCache.clear();
+    this.gradCache.clear();
   }
 
   /** Mirrors a stage x across the battlefield's centre line (identity when not mirrored). */

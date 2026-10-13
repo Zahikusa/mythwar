@@ -100,7 +100,7 @@ complete; its log follows below the lens plan.
 - [x] #45 Imagination — every battle is fought at a named place from its seed ("The Battle of Weeping Ford"): banner, pause, results, shared result
 - [x] #46 Economy — `npm run economy`; blessings were 4× underpriced (free Might = 80% wins): priced by worth, Mythic banks for them; "fallen creatures feed the foe" told (how-to, results tip)
 - [x] #47 Balance — counter matrix (`classwar --matrix`): Asgard G>H (+0.09) and Jade H>M (+0.26) were limp; Fenrir lifesteal ⅕, Jötunn +8% hp, foxfire leaps 40%, Byakko +10% hp → +0.43–0.48 like other ages
-- [ ] #48 Accessibility — colour-blind friendly team/class cues, text size
+- [x] #48 Accessibility — `shoot --cvd` simulation: class cues safe (icons), but the foe turned grey for protanopes; Colour-blind friendly setting (foe in orange)
 - [ ] #49 Visible Progress — progress across battles
 - [ ] #50 Parallelism — parallel lanes: overview
 - [ ] #51 The Pyramid — a pinnacle goal

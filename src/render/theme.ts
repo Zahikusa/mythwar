@@ -120,11 +120,23 @@ export interface TeamColors {
   rgb: [number, number, number];
 }
 
-/** Blue is always the local player's colour, red the opponent's (DOM portraits use this directly). */
+const FOE_RED: TeamColors = { main: '#ff4f6d', light: '#ffb0bd', dark: '#9e1a33', glow: 'rgba(255, 79, 109, 0.55)', rgb: [255, 79, 109] };
+/** The colour-blind friendly foe: blue vs orange stays apart for protan-, deutan- and tritanopes. */
+const FOE_ORANGE: TeamColors = { main: '#ff9520', light: '#ffd08a', dark: '#a35400', glow: 'rgba(255, 149, 32, 0.55)', rgb: [255, 149, 32] };
+
+/** Blue is always the local player's colour, red (or orange) the opponent's (DOM portraits use this directly). */
 export const TEAM_PALETTE: readonly [TeamColors, TeamColors] = [
   { main: '#3fb8ff', light: '#a8e4ff', dark: '#1a5f9e', glow: 'rgba(63, 184, 255, 0.55)', rgb: [63, 184, 255] },
-  { main: '#ff4f6d', light: '#ffb0bd', dark: '#9e1a33', glow: 'rgba(255, 79, 109, 0.55)', rgb: [255, 79, 109] },
+  { ...FOE_RED },
 ];
+
+/** Switches the foe between red and the colour-blind friendly orange. True if it changed. */
+export function setFoePalette(colorblind: boolean): boolean {
+  const next = colorblind ? FOE_ORANGE : FOE_RED;
+  if (TEAM_PALETTE[1].main === next.main) return false;
+  Object.assign(TEAM_PALETTE[1], next);
+  return true;
+}
 
 /** Colours by team as drawn on the battlefield (swapped when the local player is team 1). */
 export const TEAM_COLORS: Record<Team, TeamColors> = { 0: TEAM_PALETTE[0], 1: TEAM_PALETTE[1] };

@@ -3,6 +3,9 @@
  *   npm run build && node scripts/shoot.ts [filter] [--query "a=1&b=2"] [--wait ms] [--size 667x375]
  *   (--size overrides the viewport of the selected scenarios; the file name gets a -WxH suffix)
  *   node scripts/shoot.ts --list      (scenario names; the filter matches substrings)
+ *   --cvd protanopia|deuteranopia|tritanopia   simulate colour-vision deficiency (Machado 2009,
+ *   full severity) over the whole page; the file name gets a -<type> suffix
+ *   --settings '{"colorblind":true}'  stored settings to start with (merged over the defaults)
  * Output: screenshots/<name>.png
  */
 import { createServer } from 'node:http';
@@ -159,6 +162,13 @@ const SCENARIOS: Scenario[] = [
   { name: 'play-start', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 3000 },
 ];
 
+/** Machado, Oliveira & Fernandes (2009) simulation matrices, severity 1 (linear RGB). */
+const CVD: Record<string, string> = {
+  protanopia: '0.152286 1.052583 -0.204868 0 0  0.114503 0.786281 0.099216 0 0  -0.003882 -0.048116 1.051998 0 0  0 0 0 1 0',
+  deuteranopia: '0.367322 0.860646 -0.227968 0 0  0.280085 0.672501 0.047413 0 0  -0.011820 0.042940 0.968881 0 0  0 0 0 1 0',
+  tritanopia: '1.255528 -0.076749 -0.178779 0 0  -0.078411 0.930809 0.147602 0 0  0.004733 0.691367 0.303900 0 0  0 0 0 1 0',
+};
+
 const CHROME = [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
@@ -188,6 +198,11 @@ async function main(): Promise<void> {
   const sIdx = args.indexOf('--size');
   const size = sIdx >= 0 ? /^(\d+)x(\d+)$/.exec(args[sIdx + 1] ?? '') : null;
   if (sIdx >= 0 && !size) throw new Error('--size expects WIDTHxHEIGHT, e.g. 667x375');
+  const cIdx = args.indexOf('--cvd');
+  const cvd = cIdx >= 0 ? args[cIdx + 1] : '';
+  if (cvd && !CVD[cvd]) throw new Error(`--cvd expects one of ${Object.keys(CVD).join(', ')}`);
+  const stIdx = args.indexOf('--settings');
+  const stored = stIdx >= 0 ? JSON.stringify(JSON.parse(args[stIdx + 1])) : '';
   const root = resolve('dist');
   const server = createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://x');
@@ -217,8 +232,9 @@ async function main(): Promise<void> {
       page.on('pageerror', (e) => errors.push(`pageerror: ${String(e)}`));
       const w = size ? Number(size[1]) : sc.w;
       const hgt = size ? Number(size[2]) : sc.h;
-      const name = size ? `${sc.name}-${w}x${hgt}` : sc.name;
+      const name = (size ? `${sc.name}-${w}x${hgt}` : sc.name) + (cvd ? `-${cvd}` : '');
       await page.setViewport({ width: w, height: hgt, deviceScaleFactor: sc.dpr ?? 1, isMobile: !!sc.mobile, hasTouch: !!sc.mobile });
+      if (stored) await page.evaluateOnNewDocument((s: string) => localStorage.setItem('mythwar.settings.v1', s), stored);
       const q = [sc.query, extraQuery].filter(Boolean).join('&');
       const t0 = Date.now();
       await page.goto(`http://127.0.0.1:${port}/?${q}`, { waitUntil: 'load' });
@@ -235,6 +251,16 @@ async function main(): Promise<void> {
         return !!g && g.world.winner !== null;
       });
       if (decided && sc.query.includes('demo')) errors.push('warning: the demo battle is already over — pick another seed/ff');
+      if (cvd) {
+        await page.evaluate((matrix: string) => {
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('style', 'position:absolute;width:0;height:0');
+          svg.innerHTML = `<filter id="__cvd" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="${matrix}"/></filter>`;
+          document.body.appendChild(svg);
+          document.documentElement.style.filter = 'url(#__cvd)';
+        }, CVD[cvd]);
+        await new Promise((r) => setTimeout(r, 150));
+      }
       await page.screenshot({ path: `screenshots/${name}.png` });
       console.log(`${name}: ${Date.now() - t0}ms fps=${fps}${errors.length ? '\n  ' + errors.join('\n  ') : ''}`);
       await page.close();

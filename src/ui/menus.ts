@@ -526,7 +526,7 @@ export class Menus {
       if (key !== 'music') input.addEventListener('change', () => this.cb.sound('summon'));
       return h('label', { class: 'srow' }, h('span', { text: label }), input, val);
     };
-    const toggleRow = (label: string, key: 'shake' | 'hints' | 'advice' | 'lowQuality' | 'fullscreen' | 'emotes') => {
+    const toggleRow = (label: string, key: 'shake' | 'hints' | 'advice' | 'lowQuality' | 'fullscreen' | 'emotes' | 'colorblind') => {
       const input = h('input', { type: 'checkbox' }) as HTMLInputElement;
       input.checked = !!s[key];
       this.syncers.push(() => (input.checked = !!s[key]));
@@ -607,6 +607,7 @@ export class Menus {
         toggleRow('Screen shake & vibration', 'shake'),
         toggleRow('Gameplay hints', 'hints'),
         toggleRow('“Counter!” advice on cards', 'advice'),
+        toggleRow('Colour-blind friendly (foe in orange)', 'colorblind'),
         toggleRow('Battery saver (lower quality)', 'lowQuality'),
         toggleRow('Fullscreen on phones', 'fullscreen'),
         toggleRow('Opponent’s messages (AI taunts too)', 'emotes'),

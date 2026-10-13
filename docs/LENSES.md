@@ -947,3 +947,26 @@ against each other?)
   mystics for only 23–25% of summons — but it is worth watching if players start to mass them.
 - Checked: new unit test (every age's three counters win by > 0.3 at equal gold), Fenrir trait
   tests updated (a fifth), designcheck (ladder 100/60/7/3%, fairness 48%), full verify.
+
+## #48 The Lens of Accessibility
+*When players look at the game, can they see how to begin? What can I do to make it more
+approachable?* — read here for the players most easily shut out: those who see colour
+differently (about 1 in 12 men).
+- New tool: `scripts/shoot.ts --cvd protanopia|deuteranopia|tritanopia` renders any scenario
+  through the Machado (2009) colour-vision simulation (an SVG colour matrix over the page, so the
+  canvas and the HUD are both covered); `--settings '{…}'` starts with stored settings.
+- What it showed: **class** cues are safe — Guardian amber and Hunter green collapse into the same
+  gold for deuteranopes, but every class colour in the game comes with its icon or its name.
+  **Team** cues were not: for protanopes the foe's red turns grey — its health bar, its rings
+  under each creature, its gate flags, and above all a shrine it holds, whose diamond became a
+  dim grey hard to tell from a neutral one. "Blue vs not blue" still works for creatures (they
+  also face each other), but who holds a shrine — income, ley sight, the surge prize — did not.
+- Change: Settings → **Colour-blind friendly (foe in orange)**: the foe's palette swaps to orange
+  in place (canvas art, portraits, cached keeps/gates redrawn) and the HUD's foe/warning red
+  follows through a CSS variable (`html.cbfoe`). Blue vs orange stays apart for all three
+  deficiencies: under protanopia the foe's bar, rings and shrine read bright yellow. Works online
+  from either seat (the mirrored perspective swaps the same palette objects).
+- Already in place, now written down in DESIGN.md: reduced-motion respected (shake/vibration
+  default off, CSS animations stop), every action has a key and a tap, aria-labels and focus rings.
+- Checked: CVD renders before/after (protanopia, deuteranopia, tritanopia), unit test (swap,
+  idempotent, mirrored seat, back to red), settings on desktop and a 667×375 phone; full verify.

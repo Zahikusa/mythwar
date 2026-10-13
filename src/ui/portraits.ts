@@ -18,7 +18,7 @@ function screenZoom(): number {
  */
 export function portrait(defId: string, size: number, team: Team = 0, t = 0.4, faceLeft = false, zoom = screenZoom()): HTMLCanvasElement {
   const dpr = Math.min(3, (window.devicePixelRatio || 1) * zoom);
-  const key = `${defId}:${size}:${team}:${dpr}:${t}:${faceLeft}`;
+  const key = `${defId}:${size}:${TEAM_PALETTE[team].main}:${dpr}:${t}:${faceLeft}`;
   const hit = cache.get(key);
   if (hit) {
     const c = document.createElement('canvas');

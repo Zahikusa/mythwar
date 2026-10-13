@@ -45,6 +45,9 @@ export interface Settings {
   trials: TrialId[];
   /** Quick battles (chosen on the foe screen). */
   quick: boolean;
+  /** Colour-blind friendly: the foe is orange instead of red (blue vs orange reads for every
+   *  common colour-vision deficiency; red turns grey for protanopes). */
+  colorblind: boolean;
 }
 
 const KEY = 'mythwar.settings.v1';
@@ -71,6 +74,7 @@ const DEFAULTS: Settings = {
   feats: [],
   trials: [],
   quick: false,
+  colorblind: false,
 };
 
 export function loadSettings(): Settings {
@@ -118,6 +122,7 @@ function sanitize(s: Settings): Settings {
     advice: bool(s.advice, true),
     ageSeen: Math.max(0, Math.min(4, Math.floor(Number(s.ageSeen) || 0))),
     quick: bool(s.quick, false),
+    colorblind: bool(s.colorblind, false),
     trials: Array.isArray(s.trials) ? TRIAL_ORDER.filter((t) => s.trials.includes(t)) : [],
     feats: Array.isArray(s.feats) ? [...new Set(s.feats.filter((x): x is string => typeof x === 'string'))].slice(0, 100) : [],
   };
