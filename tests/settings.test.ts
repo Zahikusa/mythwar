@@ -42,6 +42,17 @@ describe('settings saved by several tabs and builds (backlog 92)', () => {
     expect(back.records.adept?.stars).toBe(2);
   });
 
+  it('two tabs playing in turn keep both their journal entries (backlog 104)', async () => {
+    const { addJournal } = await import('../src/ui/settings.ts');
+    const entry = (at: number) => ({ at, mode: 'ai' as const, foe: 'novice', won: true, secs: 60, stars: 1, age: 0, summons: [1, 0, 0, 0] as [number, number, number, number], kills: 1, losses: 0, powers: 0, quick: false, startAge: 0, trials: 0 });
+    const tabA = loadSettings();
+    const tabB = loadSettings();
+    addJournal(tabA, entry(1000));
+    addJournal(tabB, entry(2000));
+    addJournal(tabA, entry(3000));
+    expect(loadSettings().journal.map((e) => e.at)).toEqual([1000, 2000, 3000]);
+  });
+
   it('a storage event from another tab brings its progress into this tab (backlog 95)', () => {
     const tabA = loadSettings();
     const tabB = loadSettings();

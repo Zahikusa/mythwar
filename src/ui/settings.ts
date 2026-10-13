@@ -289,6 +289,12 @@ function mergeStored(s: Settings, key: string): void {
     const v = raw ? JSON.parse(raw) : null;
     if (!v || typeof v !== 'object') return;
     mergeProgress(s, key === KEY ? { r: v.records, f: v.feats, a: v.ageSeen, o: v.online, q: v.riddles, z: v.resetAt } : v, true);
+    // The playtest journal too (settings only; not from before a reset): battles by when they ended.
+    if (key === KEY && (Number(v.resetAt) || 0) >= s.resetAt) {
+      const seen = new Set(s.journal.map((e) => e.at));
+      const theirs = sanitizeJournal(v.journal).filter((e) => !seen.has(e.at));
+      if (theirs.length) s.journal = [...s.journal, ...theirs].sort((a, b) => a.at - b.at).slice(-JOURNAL_MAX);
+    }
   } catch {
     // unreadable: nothing to merge
   }
