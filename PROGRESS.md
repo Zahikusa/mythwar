@@ -172,7 +172,7 @@ complete; its log follows below the lens plan.
 - [x] #79 The Character Web — the myths' own ties (Hippolyta is Ares' daughter, Odin drank from Mímir's well, Puck is Oberon's) in first-meeting lines and the chapters
 - [x] #80 Status — a standing earned on the journey (Recruit → Warden → Champion → Warlord → Conqueror → Legend) by each seat and in the open-battle list (protocol v9)
 - [x] #81 Character Transformation — veterans: three kills and a creature rises (gold chevron, +20% damage, a quarter healed), promoted at the end of the tick for fairness
-- [ ] #82 Inner Contradiction — character depth
+- [x] #82 Inner Contradiction — at Ragnarök each general shows their contradiction (Odin who knows his doom, Hippolyta who wanted peace…); Odin falters when you field Fenrir
 - [ ] #83 The Nameless Quality — feel polish
 - [ ] #84 Friendship — multiplayer friendship tools (copy invite link)
 - [ ] #85 Expression — player expression

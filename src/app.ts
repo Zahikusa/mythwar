@@ -1128,6 +1128,11 @@ export class App {
       else if (e.type === 'ageUp' && e.team === g.playerTeam) this.taunt('foeAge');
       else if (e.type === 'power' && e.team === g.playerTeam) this.taunt('foePower');
       else if (e.type === 'gameOver') this.taunt(e.winner === foe ? 'won' : 'lost', true);
+      else if (e.type === 'ragnarok') this.taunt('ragnarok', true);
+      else if (e.type === 'spawn' && e.team === g.playerTeam && e.defId === PERSONAS[this.difficulty].nemesis && !this.taunts.said.has('nemesis')) {
+        this.taunts.said.add('nemesis');
+        this.taunt('nemesis', true);
+      }
       else if (e.type === 'shrine') {
         // A shrine taken from the general (theirs → neutral → the player's) stings; a neutral
         // one the player claims first does not.
@@ -1159,8 +1164,10 @@ export class App {
     if (!g || g.options.online || g.practice || g.options.demo || !this.settings.emotes || this.state === 'title') return;
     const now = g.world.time;
     if (!urgent && now - this.taunts.at < 25) return;
+    const line = tauntLine(this.difficulty, event, this.taunts.n++, this.settings.playerName);
+    if (!line) return;
     this.taunts.at = now;
-    this.hud.showEmote('theirs', tauntLine(this.difficulty, event, this.taunts.n++, this.settings.playerName));
+    this.hud.showEmote('theirs', line);
   }
 
   /**

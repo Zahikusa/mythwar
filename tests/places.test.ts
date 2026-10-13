@@ -33,8 +33,12 @@ describe('the generals address the player by name', () => {
 
   it('every general has words for every moment, the player’s deeds too (Lens #78)', async () => {
     const { PERSONAS } = await import('../src/ui/personas.ts');
-    const events = ['start', 'meet', 'ageUp', 'power', 'shrine', 'foeAge', 'foePower', 'foeShrine', 'losing', 'winning', 'won', 'lost'] as const;
+    const events = ['start', 'meet', 'ageUp', 'power', 'shrine', 'foeAge', 'foePower', 'foeShrine', 'ragnarok', 'losing', 'winning', 'won', 'lost'] as const;
     for (const p of Object.values(PERSONAS)) for (const ev of events) expect(p.lines[ev].length, `${p.name} ${ev}`).toBeGreaterThan(0);
+    // A dreaded creature comes with words for it (Lens #82); without one, nothing is said.
+    for (const p of Object.values(PERSONAS)) expect(p.lines.nemesis.length > 0, p.name).toBe(!!p.nemesis);
+    const { tauntLine } = await import('../src/ui/personas.ts');
+    expect(tauntLine('novice', 'nemesis', 0)).toBe('');
   });
 });
 

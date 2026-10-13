@@ -200,6 +200,9 @@ const SCENARIOS: Scenario[] = [
     script: `(() => { const a = window.__mythwar; const w = a.game.world; const U = window.__mythwarData.UNITS; const us = [['jotunn', 0, 330], ['fenrir', 0, 400], ['valkyrie', 0, 250], ['fenrir', 1, 640]].map(([id, team, x]) => { const u = w.spawnUnit(team, 1, U[id], x); u.def = { ...u.def, speed: 0, damage: 0 }; return u; }); us[0].veteran = us[3].veteran = true; us[0].hp *= 0.6; setTimeout(() => { us[1].veteran = true; w.emit({ type: 'veteran', unitId: us[1].id, team: 0, lane: 1, x: us[1].x, defId: 'fenrir' }); }, 1500); })()`,
     after: 1900,
   },
+  // Lens #82: the longest general's line (Hippolyta at Ragnarök) in its bubble, desktop and phone.
+  { name: 'taunt-ragnarok', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 5000, script: `window.__mythwar.taunt('ragnarok', true)`, after: 400 },
+  { name: 'mobile-taunt-ragnarok', query: 'play=adept&seed=4', w: 844, h: 390, mobile: true, dpr: 2, wait: 5000, script: `window.__mythwar.taunt('ragnarok', true)`, after: 400 },
   // Lens #77: creatures frozen mid-gesture after a kill (roar, hop, twirl, rear, loom; both sides).
   {
     name: 'temper-gestures',

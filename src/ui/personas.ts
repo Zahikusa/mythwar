@@ -4,8 +4,11 @@ import type { Difficulty } from '../ai/ai.ts';
  * When a general speaks: at their own deeds, and at the player's (`foe…`: the player ascends,
  * strikes them with a god power, takes a shrine back from them). `meet` opens a battle against a
  * general not beaten yet: who they are to the others (Lens #79, the character web).
+ * `ragnarok` (once, as the end of the world begins) shows what each one is at odds with inside
+ * (Lens #82, inner contradiction); `nemesis` is said when the player first fields the creature a
+ * general dreads (only Odin has one: Fenrir, fated to swallow him at Ragnarök).
  */
-export type TauntEvent = 'start' | 'meet' | 'ageUp' | 'power' | 'shrine' | 'foeAge' | 'foePower' | 'foeShrine' | 'losing' | 'winning' | 'won' | 'lost';
+export type TauntEvent = 'start' | 'meet' | 'ageUp' | 'power' | 'shrine' | 'foeAge' | 'foePower' | 'foeShrine' | 'ragnarok' | 'nemesis' | 'losing' | 'winning' | 'won' | 'lost';
 
 export interface Persona {
   /** The general's name ("Puck"). */
@@ -15,6 +18,8 @@ export interface Persona {
   lines: Record<TauntEvent, string[]>;
   /** Lines that address the player by name ({name}), used alternately when a name is set. */
   named: Partial<Record<TauntEvent, string[]>>;
+  /** The creature this general dreads (its `nemesis` lines are said when the player fields it). */
+  nemesis?: string;
 }
 
 /**
@@ -40,6 +45,9 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       foeAge: ['Ooh! Can I play with those?', 'Pretty! Are they friendly?'],
       foePower: ['Ow! Ow ow ow!', 'Hey! That tickled… a lot.'],
       foeShrine: ['Aww, I was playing with that!', 'Okay, okay — you can have it.'],
+      // The trickster who loves games — until the game is real.
+      ragnarok: ['I don’t like this game any more. Can we stop now?'],
+      nemesis: [],
       losing: ['This isn’t fun any more…', 'Wait, wait — no fair!'],
       winning: ['Am I… winning?', 'Ha! Too easy!'],
       won: ['I won? I won!'],
@@ -59,6 +67,9 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       foeAge: ['Good. Now it is a fight.', 'Stronger allies. I approve.'],
       foePower: ['A fine blow. Mine will be finer.', 'Your gods answer you. Well struck.'],
       foeShrine: ['Well taken. I will take it back.', 'Hold it, if you can.'],
+      // The warrior queen who would have made peace: she meant to give Heracles her girdle.
+      ragnarok: ['I would have given Heracles my girdle freely. Someone always makes it a war.'],
+      nemesis: [],
       losing: ['You fight well. Too well.', 'I have bled before.'],
       winning: ['Kneel, and it ends.', 'Your walls are paper.'],
       won: ['A worthy hunt.'],
@@ -78,11 +89,15 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       foeAge: ['You climb. I watch.', 'A new age. I have seen nine worlds.'],
       foePower: ['I foresaw that blow.', 'Is that the best your gods can do?'],
       foeShrine: ['Keep it a while. It changes nothing.', 'The ravens saw you take it.'],
+      // The all-knowing god who gave an eye to know his own doom — and cannot unknow it.
+      ragnarok: ['I gave an eye to learn how this ends. Some days I wish I had kept it.'],
+      nemesis: ['The wolf. It was always going to be the wolf.', 'Fenrir… not yet. Not today.'],
       losing: ['The Norns did not tell me this.', 'Hm. A thread I did not see.'],
       winning: ['As foreseen.', 'Your end is already woven.'],
       won: ['It was always going to end so.'],
       lost: ['Well played. The skalds will sing of you.'],
     },
+    nemesis: 'fenrir',
     named: { start: ['I have seen you in the well, {name}.'], won: ['Your thread is long yet, {name}. Come back.'], lost: ['The skalds will sing of {name}.'] },
   },
   mythic: {
@@ -97,6 +112,9 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       foeAge: ['New toys. I will break them.', 'Bring them. All of them.'],
       foePower: ['You will pay for that.', 'You dare strike ME?'],
       foeShrine: ['Thief! I will have it back in blood.', 'Enjoy it. Briefly.'],
+      // War itself, hated by the father whose love he fights for.
+      ragnarok: ['My own father calls me the most hateful of the gods. Then let him watch.'],
+      nemesis: [],
       losing: ['Impossible. I AM war.', 'You dare?'],
       winning: ['Crawl back to your wood.', 'Is that all?'],
       won: ['Victory is mine. As always.'],
@@ -112,7 +130,7 @@ export function tauntLine(d: Difficulty, event: TauntEvent, n: number, name = ''
   const named = PERSONAS[d].named[event];
   if (name && named && n % 2 === 0) return named[(n >> 1) % named.length].replace(/\{name\}/g, name);
   const lines = PERSONAS[d].lines[event];
-  return lines[n % lines.length];
+  return lines.length ? lines[n % lines.length] : '';
 }
 
 /**

@@ -1563,3 +1563,24 @@ matter?*
   inside every criterion); `sim 120 master master` 60–60, so no side bias.
 - Checked: `tests/tempers.test.ts` (promotion at three kills, the heal, +20% on the next blow,
   survives a save); mirrored fairness tests; `shoot veterans`; designcheck; full verify.
+
+## #82 The Lens of Inner Contradiction
+*What does each character want that is at odds with something else they want — and does the
+player ever see it?*
+- The generals had a stance each (#78) and ties to each other (#79), but each was all of a
+  piece: Puck always playful, Ares always furious. The myths behind them are full of
+  contradiction: Odin gave an eye to learn the future and so knows that Fenrir will swallow him
+  at Ragnarök; Hippolyta, the warrior queen, meant to give Heracles her girdle freely — it was
+  Hera who turned the meeting into a battle; Ares is war itself, yet Zeus calls him the most
+  hateful of all the gods; Puck loves games, and war is not one.
+- Change: the contradiction shows once, at the right moment — **when Ragnarök begins** (the
+  battle's climax, #61), each general says the one thing they would never say earlier: Puck "I
+  don't like this game any more. Can we stop now?"; Hippolyta "I would have given Heracles my
+  girdle freely. Someone always makes it a war."; Odin "I gave an eye to learn how this ends.
+  Some days I wish I had kept it."; Ares "My own father calls me the most hateful of the gods.
+  Then let him watch." And Odin has a **nemesis**: the first time the player fields Fenrir
+  against him, the all-seeing god falters — "The wolf. It was always going to be the wolf." /
+  "Fenrir… not yet. Not today."
+- Checked: unit test (every general has a Ragnarök line; only a general with a nemesis has
+  nemesis lines, others say nothing); screenshots of the longest line on desktop and phone;
+  full verify.
