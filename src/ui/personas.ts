@@ -9,6 +9,8 @@ export interface Persona {
   /** "Puck, the Wandering Spirit". */
   title: string;
   lines: Record<TauntEvent, string[]>;
+  /** Lines that address the player by name ({name}), used alternately when a name is set. */
+  named: Partial<Record<TauntEvent, string[]>>;
 }
 
 /**
@@ -30,6 +32,7 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       won: ['I won? I won!'],
       lost: ['Fine. Best of three?'],
     },
+    named: { start: ['Oh, {name}! A game! I love games.'], won: ['I beat {name}! I beat {name}!'], lost: ['Fine, {name}. Best of three?'] },
   },
   adept: {
     name: 'Hippolyta',
@@ -44,6 +47,7 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       won: ['A worthy hunt.'],
       lost: ['I yield. This once.'],
     },
+    named: { start: ['So you are {name}. Draw your line.'], won: ['Rise, {name}. Train harder.'], lost: ['Well fought, {name}. My sisters will know your name.'] },
   },
   master: {
     name: 'Odin',
@@ -58,6 +62,7 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       won: ['It was always going to end so.'],
       lost: ['Well played. The skalds will sing of you.'],
     },
+    named: { start: ['I have seen you in the well, {name}.'], won: ['Your thread is long yet, {name}. Come back.'], lost: ['The skalds will sing of {name}.'] },
   },
   mythic: {
     name: 'Ares',
@@ -72,11 +77,15 @@ export const PERSONAS: Record<Difficulty, Persona> = {
       won: ['Victory is mine. As always.'],
       lost: ['…This is not over.'],
     },
+    named: { start: ['{name}. Another mortal for the pyre.'], won: ['Kneel, {name}.'], lost: ['Who ARE you, {name}?'] },
   },
 };
 
 /** A line for this moment (rotating through the general's lines, so repeats are spaced). */
-export function tauntLine(d: Difficulty, event: TauntEvent, n: number): string {
+export function tauntLine(d: Difficulty, event: TauntEvent, n: number, name = ''): string {
+  // With a name, the general speaks to the player in person every other time (Lens #64).
+  const named = PERSONAS[d].named[event];
+  if (name && named && n % 2 === 0) return named[(n >> 1) % named.length].replace(/\{name\}/g, name);
   const lines = PERSONAS[d].lines[event];
   return lines[n % lines.length];
 }

@@ -20,6 +20,7 @@ import { exportProgress, importProgress } from './progress.ts';
 import type { Feat } from './feats.ts';
 import type { MpMenuCallbacks } from './mpmenus.ts';
 import type { EndReason } from '../net/protocol.ts';
+import { cleanName } from '../net/protocol.ts';
 
 /** Results of a battle against another player (instead of an AI difficulty). */
 export interface OnlineResult {
@@ -698,6 +699,17 @@ export class Menus {
       progInput.value = '';
       progStatus.textContent = `Progress merged: ${s.feats.length} feats, ${Object.values(s.records).reduce((n, r) => n + (r?.wins ?? 0), 0)} wins.`;
     });
+    // Your name: by your citadel, in multiplayer rooms, and on the generals' lips (Lens #64).
+    const nameInput = h('input', { class: 'sproginput sname', type: 'text', maxlength: '16', placeholder: 'Your name', spellcheck: 'false', autocomplete: 'off', 'aria-label': 'Your name' }) as HTMLInputElement;
+    nameInput.value = s.playerName;
+    this.syncers.push(() => (nameInput.value = s.playerName));
+    nameInput.addEventListener('keydown', (e) => e.stopPropagation());
+    nameInput.addEventListener('change', () => {
+      s.playerName = nameInput.value.trim() ? cleanName(nameInput.value) : '';
+      nameInput.value = s.playerName;
+      this.cb.settingsChanged(s);
+    });
+    const nameRow = h('label', { class: 'srow sname-row' }, h('span', { text: 'Your name' }), nameInput);
     const progress = h('div', { class: 'sprog' }, h('span', { class: 'sproglabel', text: 'Play on another device too? Carry your records and feats over:' }), h('div', { class: 'sprogrow' }, copyProg, progInput, loadProg), progStatus);
     // Each visit starts fresh: no half-armed "erase records" left over from last time.
     this.settingsOpened = () => {
@@ -724,6 +736,7 @@ export class Menus {
         toggleRow('Battery saver (lower quality)', 'lowQuality'),
         toggleRow('Fullscreen on phones', 'fullscreen'),
         toggleRow('Opponent’s messages (AI taunts too)', 'emotes'),
+        nameRow,
         progress,
         h(
           'div',

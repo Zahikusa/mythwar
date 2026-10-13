@@ -19,3 +19,15 @@ describe('battlefield names', () => {
     expect(World.deserialize(w.serialize()).seed).toBe(987654);
   });
 });
+
+describe('the generals address the player by name', () => {
+  it('every other line, when a name is set', async () => {
+    const { tauntLine, PERSONAS } = await import('../src/ui/personas.ts');
+    expect(tauntLine('master', 'start', 0, 'Zoë')).toBe('I have seen you in the well, Zoë.');
+    expect(tauntLine('master', 'start', 1, 'Zoë')).not.toContain('Zoë');
+    expect(tauntLine('master', 'start', 0)).toBe(PERSONAS.master.lines.start[0]);
+    // Events without named lines never show a placeholder.
+    expect(tauntLine('mythic', 'power', 0, 'Zoë')).not.toContain('{name}');
+    for (const d of ['novice', 'adept', 'master', 'mythic'] as const) for (const ev of ['start', 'won', 'lost'] as const) expect(tauntLine(d, ev, 0, 'Q')).toContain('Q');
+  });
+});

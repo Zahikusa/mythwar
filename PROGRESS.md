@@ -138,7 +138,7 @@ complete; its log follows below the lens plan.
 - [x] #61 The Interest Curve — measured a lull at minutes 11–14 before the Ragnarök climax: foretold 3 min ahead, drums build, a horn at one minute
 - [x] #62 Inherent Interest — the Elder Dragon's arrival is an occasion: fiery burst, shake, a banner; its fall announced
 - [x] #63 Beauty — no banner showing through the results (the same words twice); the riddle result gets a portrait composition
-- [ ] #64 Projection — player identity (banner/colour)
+- [x] #64 Projection — "Your name" in Settings: by your citadel in every battle, and the generals address you by it
 - [ ] #65 The Story Machine — battle chronicle on results
 - [ ] #66 The Obstacle — obstacles worth overcoming
 - [ ] #67 Simplicity and Transcendence — a transcendent power moment

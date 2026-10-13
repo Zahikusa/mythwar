@@ -494,6 +494,7 @@ export class App {
     this.hud.holdKnown = !this.settings.hints || this.settings.hintsSeen.includes('hold');
     // (A riddle is solved by reading the lane yourself: no "Counter!" badge there.)
     this.hud.advice = this.settings.advice && !game.riddle;
+    this.hud.myName = this.settings.playerName;
     this.hud.attach(game);
     this.input.attach(game);
     // (The sandbox is a toy: battle tips would only be used up there.)
@@ -1118,7 +1119,7 @@ export class App {
     const now = g.world.time;
     if (!urgent && now - this.taunts.at < 25) return;
     this.taunts.at = now;
-    this.hud.showEmote('theirs', tauntLine(this.difficulty, event, this.taunts.n++));
+    this.hud.showEmote('theirs', tauntLine(this.difficulty, event, this.taunts.n++, this.settings.playerName));
   }
 
   /**

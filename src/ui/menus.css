@@ -1017,6 +1017,15 @@
   cursor: pointer;
 }
 
+.srow.sname-row {
+  grid-template-columns: 1fr minmax(120px, 216px);
+}
+
+.srow .sname {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .srow input[type='range'] {
   accent-color: var(--gold);
   width: 100%;

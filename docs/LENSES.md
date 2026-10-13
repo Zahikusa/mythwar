@@ -1241,3 +1241,21 @@ together into something more beautiful than each alone?*
   results: verdict and riddle name, the riddle's foe as a portrait (as a battle shows your
   champion) with its age and purse, the line, the buttons.
 - Checked: screenshot of a solved riddle before and after; full verify.
+
+## #64 The Lens of Projection
+*What in the game can players relate to — where can they put themselves into it? Does the world
+acknowledge them?*
+- Players project into Mythwar through their side: blue, their citadel, their army, their
+  champion on the results. But the side had no *person*: in single player the player was "You"
+  everywhere and the four generals (#44) talked *at* whoever was there. Online they had a name;
+  alone they were nobody.
+- Change: **your name** (Settings → "Your name"; the same one multiplayer uses, empty = none)
+  stands by your citadel in every battle ("Zoë · Fae Wilds", facing "Hippolyta · Fae Wilds"),
+  and the generals **speak to you by it**, every other time they open or end a battle: "Oh, Zoë!
+  A game! I love games." — "So you are Zoë. Draw your line." — "I have seen you in the well,
+  Zoë." — "Zoë. Another mortal for the pyre." … and at the end "Who ARE you, Zoë?" or "Rise,
+  Zoë. Train harder." A rival who knows your name makes the rivalry yours. (Co-op keeps "You &
+  ally": on a shared side "you" reads clearest.)
+- Checked: unit test (named lines alternate, every general has start/won/lost lines, no
+  placeholder leaks), screenshots (settings on desktop and phone, the name in battle); full
+  verify (the multiplayer smoke caught a co-op label change — kept as before).

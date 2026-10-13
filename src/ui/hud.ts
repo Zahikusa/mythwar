@@ -661,6 +661,8 @@ export class Hud {
   }
   /** Co-op: the ally sharing our side (shown by our age name). */
   private allyName = '';
+  /** The player's own name by their citadel (Lens #64; '' = none chosen). */
+  myName = '';
 
   /** Online status line: the opponent's name, round-trip time and link quality. */
   setNet(foe: string, rtt: number, online: boolean, bufferMs = 0, ally = ''): void {
@@ -1059,7 +1061,7 @@ export class Hud {
         ? `Enemy age: ${AGES[foe.age].name} — ${Math.round(xpFrac(foe) * 100)}% of the XP for ${AGES[foe.age + 1].name}`
         : `Enemy age: ${AGES[foe.age].name}`;
     if (E.ageR.title !== foeTitle) E.ageR.title = foeTitle;
-    setText(E.ageLn, this.allyName ? `You & ${this.allyName} · ${AGES[me.age].name}` : AGES[me.age].name);
+    setText(E.ageLn, this.allyName ? `You & ${this.allyName} · ${AGES[me.age].name}` : this.myName ? `${this.myName} · ${AGES[me.age].name}` : AGES[me.age].name);
     // Online, the right-hand side says who it is.
     setText(E.ageRn, this.foeName ? `${this.foeName} · ${AGES[foe.age].name}` : AGES[foe.age].name);
     toggle(E.hpL.parentElement!, 'low', fracs[0] < 0.3);
