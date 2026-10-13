@@ -110,9 +110,11 @@ the improvement backlog below (verified, committed) and add what the review find
    disagree; show the host's (or both) the same way on both. (Done: the host's, on both screens.)
 31. [x] Lobby (#85): the open-battle list shows the host's standing but not their sigil — the
    emblem a player chose isn't seen until the battle. (Done: "☾ Ada" in the list; protocol v14.)
-32. [ ] `server/main.ts` flags (`--data`, `--no-save`, `--names`) are only tested through the
+32. [x] `server/main.ts` flags (`--data`, `--no-save`, `--names`) are only tested through the
    Lobby class; nothing starts the real server process with them (a typo in main.ts would pass
    every test). A small end-to-end check: start, battle via two clients, restart, Hall is back.
+   (Done: tests/server-process.test.ts — the real process with --data/--names over real sockets;
+   found on the way: Vitest computes a different rules fingerprint than Node, so it asks Node.)
 
 
 
