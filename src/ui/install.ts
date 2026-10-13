@@ -298,8 +298,9 @@ export class InstallGuide {
     this.chip = null;
     const s = this.hooks.settings;
     if (this.elsewhere && !this.situation.installed) {
-      // A tab while the app is installed: say where the better copy is (no sheet to open).
-      if (s.installHint === -1) return;
+      // A tab while the app is installed: say where the better copy is (no sheet to open) —
+      // until it's put away once (it has nothing more to offer).
+      if (s.installHint !== 0) return;
       this.chip = this.makeChip(pic('home'), 'You have the app — open Mythwar from your home screen', () => {});
       this.notes.appendChild(this.chip);
       return;

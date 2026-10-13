@@ -894,6 +894,31 @@ async function appWelcomeFlow(page: Page): Promise<void> {
   check('"Paste my progress" brings the records over (and saves them)', !!code && /brought over/.test(after.text) && after.feats.includes('novice') && (after.stored ?? []).includes('novice'), JSON.stringify({ codeLen: code.length, ...after }));
 }
 
+/** (Phase 3) A tab on an Android phone that has the app installed: the title says so, once. */
+async function appElsewhereFlow(page: Page): Promise<void> {
+  console.log('== app installed elsewhere ==');
+  await page.setViewport({ width: 844, height: 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await page.evaluateOnNewDocument(() => {
+    (navigator as any).getInstalledRelatedApps = () => Promise.resolve([{ platform: 'webapp', url: 'https://zahikusa.github.io/mythwar/manifest.webmanifest' }]);
+  });
+  await page.goto(`${base}/`, { waitUntil: 'load' });
+  await page.waitForFunction(() => /You have the app/.test(document.querySelector('.screen.title .tinstall')?.textContent ?? ''), { timeout: 5000 }).catch(() => {});
+  const x = await page.evaluate(() => {
+    const c = document.querySelector('.screen.title .tinstall .tclose')?.getBoundingClientRect();
+    return c ? { x: c.left + c.width / 2, y: c.top + c.height / 2 } : null;
+  });
+  check('a tab with the app installed says "You have the app"', !!x, String(!!x));
+  if (!x) return;
+  await page.touchscreen.tap(x.x, x.y);
+  await sleep(200);
+  const gone = await page.evaluate(() => !document.querySelector('.screen.title .tinstall'));
+  await page.reload({ waitUntil: 'load' });
+  await page.waitForFunction(() => (window as any).__mythwar?.menus?.current === 'title', { timeout: 8000 });
+  await sleep(300);
+  const still = await page.evaluate(() => !document.querySelector('.screen.title .tinstall'));
+  check('one × puts the "You have the app" note away for good', gone && still, JSON.stringify({ gone, still }));
+}
+
 async function rotatedMenusFlow(page: Page): Promise<void> {
   console.log('== rotated portrait menus ==');
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
@@ -1614,6 +1639,7 @@ async function main(): Promise<void> {
     { name: 'rotated', label: 'rotated menus', go: rotatedMenusFlow },
     { name: 'phone-back', label: 'phone back', go: phoneBackFlow },
     { name: 'app-welcome', label: 'installed app welcome', go: appWelcomeFlow },
+    { name: 'app-elsewhere', label: 'app installed elsewhere', go: appElsewhereFlow },
     { name: 'phone-menus', label: 'phone menus', go: phoneMenusFit },
     { name: 'service-worker', label: 'service worker', go: serviceWorkerFlow },
     { name: 'tutorial', label: 'tutorial', go: tutorialHandoffFlow },

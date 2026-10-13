@@ -195,6 +195,13 @@ Already in the code before Phase 3, and kept:
    beside a logo that's wider relative to the screen than on the iPad mini — add that size to
    mobilecheck and look.
    (Done: an `ipad-10` profile (810×1080) — the offer sits clear of the logo, all screens pass.)
+14. [x] (review) The "You have the app — open it from your home screen" note: its × did nothing
+   visible the first time (the note hid only at `installHint === -1`, the first × sets a
+   date). (Done: one × puts it away for good — it offers nothing else; smoke `app-elsewhere`
+   stubs getInstalledRelatedApps, taps ×, reloads.)
+15. [ ] (review) The title offer's × (`.tclose`) is a `role="button"` span inside the offer's
+   own button: nested controls, unreachable by Tab or a gamepad (the D-pad lands on the chip
+   only). Make × a sibling button of the chip (a small group), each ≥ 44 px.
 
 ## Decisions
 
