@@ -618,7 +618,7 @@ export class Lobby {
       if (r.phase !== 'waiting') continue;
       const seated = r.seats.filter((x) => x !== null);
       if (seated.length !== 1 || !seated[0]!.session.conn || seated[0]!.session.network !== network) continue;
-      out.push({ code: r.code, host: seated[0]!.session.name, rank: seated[0]!.session.rank, age: Math.round((now - r.createdAt) / 1000) });
+      out.push({ code: r.code, host: seated[0]!.session.name, rank: seated[0]!.session.rank, sigil: seated[0]!.session.sigil, age: Math.round((now - r.createdAt) / 1000) });
     }
     return out.sort((a, b) => a.age - b.age);
   }

@@ -106,10 +106,10 @@ the improvement backlog below (verified, committed) and add what the review find
 29. [x] `src/app.ts` break note (#98): "a sitting" never ends while the tab stays open — an hour
    today and a minute tomorrow add up. Start a new sitting after 30 minutes without a battle.
    (Done: `Sitting` in src/ui/wellbeing.ts, tested.)
-30. [ ] Co-op (#85): each ally sees *their own* sigil on the shared keep, so the two screens
-   disagree; show the host's (or both) the same way on both.
-31. [ ] Lobby (#85): the open-battle list shows the host's standing but not their sigil — the
-   emblem a player chose isn't seen until the battle.
+30. [x] Co-op (#85): each ally sees *their own* sigil on the shared keep, so the two screens
+   disagree; show the host's (or both) the same way on both. (Done: the host's, on both screens.)
+31. [x] Lobby (#85): the open-battle list shows the host's standing but not their sigil — the
+   emblem a player chose isn't seen until the battle. (Done: "☾ Ada" in the list; protocol v14.)
 32. [ ] `server/main.ts` flags (`--data`, `--no-save`, `--names`) are only tested through the
    Lobby class; nothing starts the real server process with them (a typo in main.ts would pass
    every test). A small end-to-end check: start, battle via two clients, restart, Hall is back.
@@ -137,7 +137,7 @@ built, how to see each part working, and the decisions that need you.
   player per online battle** (#87, v12); veterans earn myth names and the chronicle names the
   hero of the battle (#88); **CONTRIBUTING.md** (#89); DESIGN.md refreshed (#90); a local
   **playtest journal** (Settings → Copy playtest journal) and **docs/PLAYTEST.md** (#91).
-- Protocol is now **v13** (v13: device ids for the Hall): server and pages must come from the same build.
+- Protocol is now **v14** (v13: device ids for the Hall; v14: the host's sigil in the open-battle list): server and pages must come from the same build.
 - Lenses #93–#100 finished Phase 2 (ROADMAP, BRIEF, PITCH + link-preview card, PROFIT +
   `npm run servercost`, PRIVACY + a break note after each hour, the Raven's mpsmoke check of a
   battle starting in a hidden tab, "Now bring a friend →" when the war is won).

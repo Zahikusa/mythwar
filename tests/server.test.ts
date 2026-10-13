@@ -66,7 +66,7 @@ class FakeClient {
     this.handlers.message(JSON.stringify(m));
   }
 
-  hello(name: string, token?: string, extra: { battle?: boolean; away?: boolean; rank?: number; device?: string } = {}): void {
+  hello(name: string, token?: string, extra: { battle?: boolean; away?: boolean; rank?: number; device?: string; sigil?: number } = {}): void {
     this.send({ type: 'hello', v: PROTOCOL_VERSION, sim: simFingerprint(), name, token, ...extra });
   }
 
@@ -266,13 +266,13 @@ describe('lobby', () => {
     const a = new FakeClient(lobby);
     const b = new FakeClient(lobby);
     const watcher = new FakeClient(lobby);
-    a.hello('Ada', undefined, { rank: 3 });
+    a.hello('Ada', undefined, { rank: 3, sigil: 2 });
     b.hello('Bo', undefined, { rank: 99 });
     watcher.hello('Cy');
     watcher.send({ type: 'watchRooms', on: true });
     a.send({ type: 'host' });
     lobby.update();
-    expect(watcher.last('rooms')!.rooms.map((r) => r.rank)).toEqual([3]);
+    expect(watcher.last('rooms')!.rooms.map((r) => [r.rank, r.sigil])).toEqual([[3, 2]]);
     b.send({ type: 'join', code: a.last('room')!.room.code });
     expect(a.last('room')!.room.seats.map((s) => s!.rank)).toEqual([3, 0]);
     b.send({ type: 'name', name: 'Bo', rank: 2 });
@@ -281,7 +281,7 @@ describe('lobby', () => {
     b.send({ type: 'name', name: 'Bob' });
     expect(a.last('room')!.room.seats.map((s) => s!.rank)).toEqual([3, 2]);
     // Sigils too (Lens #85): none by default, sanitized, shown to both.
-    expect(a.last('room')!.room.seats.map((s) => s!.sigil)).toEqual([-1, -1]);
+    expect(a.last('room')!.room.seats.map((s) => s!.sigil)).toEqual([2, -1]);
     b.send({ type: 'name', name: 'Bob', sigil: 4 });
     a.send({ type: 'name', name: 'Ada', sigil: 77 });
     expect(b.last('room')!.room.seats.map((s) => s!.sigil)).toEqual([-1, 4]);

@@ -17,7 +17,7 @@ import { World } from '../sim/world.ts';
 import type { WorldSnapshot } from '../sim/world.ts';
 
 /** Bump whenever messages or simulation rules change incompatibly. */
-export const PROTOCOL_VERSION = 13;
+export const PROTOCOL_VERSION = 14;
 
 /** WebSocket endpoint path on the game's own host. */
 export const MP_PATH = '/mp';
@@ -115,8 +115,9 @@ export interface RoomInfo {
 export interface OpenRoom {
   code: string;
   host: string;
-  /** The host's standing (index into RANKS). */
+  /** The host's standing (index into RANKS) and sigil (index into SIGILS, -1 = none). */
   rank: number;
+  sigil: number;
   /** Seconds since the room was opened. */
   age: number;
 }

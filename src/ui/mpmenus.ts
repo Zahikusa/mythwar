@@ -370,7 +370,7 @@ export class MpScreens {
         return { ...r, rec: rec && rec.w + rec.l > 0 ? rec : null };
       })
       .sort((a, b) => Number(!!b.rec) - Number(!!a.rec));
-    const sig = rooms.map((r) => `${r.code}${r.host}${r.rank}${r.rec ? `${r.rec.w}-${r.rec.l}` : ''}`).join('|');
+    const sig = rooms.map((r) => `${r.code}${r.host}${r.rank}${r.sigil}${r.rec ? `${r.rec.w}-${r.rec.l}` : ''}`).join('|');
     if (this.list.dataset.sig !== sig || !this.list.childElementCount) {
       this.list.dataset.sig = sig;
       this.list.innerHTML = '';
@@ -380,7 +380,7 @@ export class MpScreens {
       for (const r of rooms) {
         const join = this.button('Join', 'primary', () => this.cb.join(r.code), ICONS.play);
         const meta = `${RANKS[r.rank] ?? RANKS[0]} · Room ${r.code}`;
-        const host = h('div', { class: 'mphost' }, h('b', { text: r.host }), h('span', { text: r.rec ? `${meta} · you ${r.rec.w} – ${r.rec.l}` : meta }));
+        const host = h('div', { class: 'mphost' }, h('b', { text: r.sigil >= 0 && SIGILS[r.sigil] ? `${SIGILS[r.sigil]} ${r.host}` : r.host }), h('span', { text: r.rec ? `${meta} · you ${r.rec.w} – ${r.rec.l}` : meta }));
         this.list.appendChild(h('div', { class: `mproom${r.rec ? ' friend' : ''}`, role: 'listitem', title: r.rec ? `You have battled ${r.host} before` : '' }, h('i', { html: ICONS.swords }), host, join));
       }
       const friends = rooms.filter((r) => r.rec).map((r) => r.code);
