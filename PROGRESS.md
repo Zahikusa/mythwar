@@ -151,7 +151,7 @@ the save file re-cleaned on load.)
    dropped, bounded) whatever the server sends. smoke hovers the chart and checks the tooltip —
    there was no check of it at all.)
 282. [x] `cleanName` kept invisible format characters (zero-width space, right-to-left override,
-   bidi isolates) and towers of combining marks: "Ada200b" passed the room's "(2)" rule and
+   bidi isolates) and towers of combining marks: "Ada\u200b" passed the room's "(2)" rule and
    showed as "Ada" beside "Ada". (Done: `\p{Cf}` dropped but the joiner inside an emoji, marks two
    deep at most, NFC; written without a lookbehind — Safari < 16.4 (the minimum is 16.2) can't
    parse one, and a regex literal it can't parse stops the whole bundle. Test.)
