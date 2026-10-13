@@ -45,7 +45,7 @@ fights — now perfectly even), and the **protocol is v15**: server and pages fr
 
 A walk-through of a first-time guest — scans the QR code on a phone, waits in the room, plays,
 sees the results — and screenshots of every online screen found the rough edges a friend would
-hit first (PROGRESS.md, items 138–205). Now: **the phone's Back button no longer closes the
+hit first (docs/PROGRESS-archive.md, items 138–205). Now: **the phone's Back button no longer closes the
 game** (in a battle it opens the menu), and a tab that did close rejoins its running battle by
 scanning the code again; a phone that **locked while waiting in the room** takes its seat back
 when it wakes; **Copy result / Copy link work on LAN phones** (plain http has no clipboard API);
@@ -60,7 +60,7 @@ questions).
 ## And then — when the Wi-Fi misbehaves (run #10)
 
 Three independent reviews (the client's netcode, the server's rooms and battles, and the run's
-own changes) went looking for what goes wrong on a real network. Fixed (PROGRESS.md, items
+own changes) went looking for what goes wrong on a real network. Fixed (docs/PROGRESS-archive.md and PROGRESS.md, items
 215–272): **a phone that reconnected after a citadel fell froze in the battle** with no results
 and no menu — now it sees how the battle ended; a phone that **walks out of the Wi-Fi mid-battle**
 holds the battle after 4 s of silence instead of the battle running on for 12 s without it; a
