@@ -153,20 +153,26 @@ export class Input {
   }
 
   private onKey(e: KeyboardEvent): void {
-    const g = this.game;
-    if (!g) return;
     // Leave browser shortcuts alone (Ctrl+F find, Ctrl+P print, Alt+Tab...).
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.repeat && !['ArrowUp', 'ArrowDown'].includes(e.key)) return;
-    const k = e.key.toLowerCase();
+    if (this.press(e.key.toLowerCase())) e.preventDefault();
+  }
+
+  /**
+   * A battle shortcut by key name (lower case) — from the keyboard or a gamepad button.
+   * Returns true when the key's browser default should be suppressed.
+   */
+  press(k: string): boolean {
+    const g = this.game;
+    if (!g) return false;
     if (k === 'escape' || k === 'p') {
       if (g.view.targeting !== 'none') this.hud.cancelTargeting();
       else if (this.hud.panelOpen) this.hud.togglePanel('none');
       else this.onPause();
-      e.preventDefault();
-      return;
+      return true;
     }
-    if (g.paused || g.over) return;
+    if (g.paused || g.over) return false;
     // A HUD button clicked earlier keeps focus; don't let Space/Enter also activate it.
     // (Buttons reached with Tab keep focus, so keyboard users can press them with Enter.)
     const active = document.activeElement;
@@ -175,19 +181,19 @@ export class Input {
     if (k >= '1' && k <= '4') {
       const def = AGE_UNITS[me.age][Number(k) - 1];
       if (def) this.hud.tryTrain(def.id);
-      e.preventDefault();
+      return true;
     } else if (k === 'w' || k === 'arrowup') {
       this.hud.selectLane(Math.max(0, g.view.selectedLane - 1));
-      e.preventDefault();
+      return true;
     } else if (k === 's' || k === 'arrowdown') {
       this.hud.selectLane(Math.min(LANE_COUNT - 1, g.view.selectedLane + 1));
-      e.preventDefault();
+      return true;
     } else if (k === 'q' || k === 'a' || k === 'z') {
       this.hud.selectLane(k === 'q' ? 0 : k === 'a' ? 1 : 2);
     } else if (k === ' ') {
       if (g.view.targeting === 'power' && g.view.hoverLane >= 0) this.hud.tryPower(g.view.hoverLane);
       else this.hud.tryPower(g.view.selectedLane);
-      e.preventDefault();
+      return true;
     } else if (k === 'u' || k === 'e') {
       this.hud.tryAscend();
     } else if (k === 't') {
@@ -206,10 +212,11 @@ export class Input {
       // Undo the most recent summon (full refund).
       const last = me.queue.length - 1;
       if (last >= 0 && g.command({ type: 'cancel', team: g.playerTeam, index: last, unitId: me.queue[last].unitId }).ok) this.hud.onCancelled();
-      e.preventDefault();
+      return true;
     } else if (k === '?' || k === 'h' || k === 'f1') {
       this.hud.togglePanel('keys');
-      e.preventDefault();
+      return true;
     }
+    return false;
   }
 }

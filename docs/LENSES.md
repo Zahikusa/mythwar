@@ -1069,3 +1069,24 @@ even powerful? Where does intent get lost between the player's head and the game
   how-to's summoning page says so in one sentence. Client-side only: no rule changed.
 - Checked: smoke flow (tap with 5 gold → armed, nothing summoned; gold arrives → summoned
   itself; tap twice → disarmed); screenshot; how-to page on a 667×375 phone; full verify.
+
+## #54 The Lens of the Physical Interface
+*What does the player pick up and touch? Can it map more closely to the game world? What does
+it feel like in their hands?*
+- Mythwar is touched three ways: a mouse (click, drag, wheel #35), a touchscreen (tap, drag, press
+  and hold to inspect, upright phones rotate), a keyboard (every action has a key). The one
+  physical interface players reach for on a sofa — a game controller, on a PC or paired to a
+  phone — did nothing.
+- Change: **gamepads** (`src/gamepad.ts`, the browser's standard mapping: Xbox, PlayStation,
+  Switch Pro, most Bluetooth pads). The face buttons summon the cards *as they sit on the pad*,
+  left to right — X, A, B (and Y for the Elder Dragon) — so the hand finds the creature by
+  position, not by memory; D-pad/left stick ↑↓ pick the lane (repeating while held), ← turrets,
+  → blessings; RB the god power, LB hold the line, RT ascend, LT undo the last summon, Start
+  pause, Back 2× speed. In menus and open panels the D-pad moves a gold highlight to the nearest
+  button in that direction, A presses it (or the screen's main button), B / Start go back. The
+  keyboard handler became `Input.press(key)`, shared by keys and buttons, so both always agree.
+  The controls panel (H) has a gamepad line; a toast greets a newly connected pad.
+- Checked: smoke flow with a stubbed standard gamepad (A presses Play, the D-pad highlights,
+  B goes back, X/A summon the first two cards, ↑ changes lane, Start pauses and resumes);
+  full verify. Not tried with a physical controller (none here) — the mapping follows the W3C
+  standard layout every browser reports for known pads.

@@ -5,6 +5,8 @@ import { DIFFICULTIES } from './ai/ai.ts';
 import type { SimEvent } from './sim/types.ts';
 import type { Difficulty } from './ai/ai.ts';
 import { Input } from './input.ts';
+import { Pads } from './gamepad.ts';
+import type { MenuMove } from './gamepad.ts';
 import { detectMode } from './render/layout.ts';
 import type { LayoutMode } from './render/layout.ts';
 import { Renderer } from './render/renderer.ts';
@@ -66,6 +68,9 @@ export class App {
   private fpsAcc = 0;
   private fpsFrames = 0;
   private overTimer = -1;
+  /** Gamepads (Lens #54) and the menu button they have highlighted. */
+  private pads: Pads;
+  private padFocus: HTMLElement | null = null;
   private coinTarget: [number, number] | null = null;
   private coinsSeen = 0;
   private lastSave = 0;
@@ -139,6 +144,12 @@ export class App {
     // Coach tips live in the HUD layer: above lane tabs, below card tooltips.
     this.coach = new Coach(this.stage, this.settings, this.hud.root);
     this.input.onPause = () => this.escape();
+    this.pads = new Pads({
+      inBattle: () => this.state === 'playing' && this.menus.current === 'none' && !this.hud.panelOpen,
+      battleKey: (k) => this.input.press(k),
+      menu: (m) => this.padMenu(m),
+      connected: () => this.hud.toast('Controller ready: X · A · B summon, D-pad picks the lane, RB god power, Start pauses (H lists all)', 'info'),
+    });
     this.menus = new Menus(this.stage, this.settings, {
       play: (d) => this.play(d),
       sandbox: () => this.play(this.settings.difficulty, undefined, true),
@@ -586,6 +597,66 @@ export class App {
     recordResult(this.settings, this.difficulty, false, g.world.time);
   }
 
+  /**
+   * Gamepad in a menu or an open battle panel: the D-pad moves a highlight to the nearest button
+   * that way, A presses it (or the screen's main button), B / Start go back or close the panel.
+   */
+  private padMenu(move: MenuMove): void {
+    const panel = this.menus.current === 'none' && this.state === 'playing' ? this.hud.openPanelEl : null;
+    if (move === 'back' || move === 'start') {
+      if (panel) this.hud.togglePanel('none');
+      else this.escape();
+      return;
+    }
+    const scope = panel ?? (document.querySelector('.screen.active') as HTMLElement | null);
+    if (!scope) return;
+    const visible = (el: HTMLElement) => el.offsetParent !== null && !(el as HTMLButtonElement).disabled && el.getClientRects().length > 0;
+    if (this.padFocus && (!scope.contains(this.padFocus) || !visible(this.padFocus))) this.setPadFocus(null);
+    if (move === 'confirm') {
+      if (this.padFocus) this.padFocus.click();
+      else if (!panel) this.menus.pressPrimary();
+      return;
+    }
+    const buttons = [...scope.querySelectorAll<HTMLElement>('button, input[type=checkbox], input[type=range]')].filter(visible);
+    if (!buttons.length) return;
+    const from = this.padFocus ?? scope.querySelector<HTMLElement>('.mbtn.primary:not(.hidden)') ?? null;
+    if (!from || !this.padFocus) {
+      this.setPadFocus(from && visible(from) ? from : buttons[0]);
+      return;
+    }
+    // The nearest button in that direction (distance along it, off-axis distance counting double).
+    const r0 = from.getBoundingClientRect();
+    const cx = r0.left + r0.width / 2;
+    const cy = r0.top + r0.height / 2;
+    const [dx, dy] = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[move];
+    let best: HTMLElement | null = null;
+    let bestScore = Infinity;
+    for (const b of buttons) {
+      if (b === from) continue;
+      const r = b.getBoundingClientRect();
+      const ox = r.left + r.width / 2 - cx;
+      const oy = r.top + r.height / 2 - cy;
+      const along = ox * dx + oy * dy;
+      if (along <= 4) continue;
+      const score = along + 2 * Math.abs(dx ? oy : ox);
+      if (score < bestScore) {
+        bestScore = score;
+        best = b;
+      }
+    }
+    if (best) this.setPadFocus(best);
+    this.audio.ui('select');
+  }
+
+  private setPadFocus(el: HTMLElement | null): void {
+    this.padFocus?.classList.remove('padfocus');
+    this.padFocus = el;
+    if (el) {
+      el.classList.add('padfocus');
+      el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+  }
+
   /** Escape / P: leave a sub-menu, otherwise toggle pause. */
   private escape(): void {
     const m = this.menus.current;
@@ -696,6 +767,7 @@ export class App {
     requestAnimationFrame((t) => this.frame(t));
     const dt = Math.min(0.1, (now - this.last) / 1000);
     this.last = now;
+    this.pads.update(dt);
     this.fpsAcc += dt;
     this.fpsFrames++;
     if (this.fpsAcc >= 1) {

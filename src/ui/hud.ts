@@ -27,6 +27,7 @@ import { h, fmt, fmtTime, onTap, setStyle, setText, toggle } from './dom.ts';
 import { CLASS_COLOR, CLASS_ICON, CLASS_NAME, ICONS, POWER_ICONS } from './icons.ts';
 import { portrait } from './portraits.ts';
 import { battleName } from './places.ts';
+import { PAD_HELP } from '../gamepad.ts';
 import { COOP_EMOTES, EMOTES, VERSUS_EMOTES } from '../net/protocol.ts';
 import type { EmoteId } from '../net/protocol.ts';
 
@@ -305,6 +306,7 @@ export class Hud {
       ['? · H', 'This panel'],
       ['Esc / P', 'Pause'],
       ['Right-click', 'Cancel power targeting'],
+      ['Gamepad', PAD_HELP],
     ];
     const list = h('div', { class: 'keys' });
     for (const [k, d] of rows) list.append(h('kbd', { text: k }), h('span', { text: d }));
@@ -712,6 +714,11 @@ export class Hud {
 
   get panelOpen(): boolean {
     return this.panel !== 'none';
+  }
+
+  /** The open panel's element (gamepad navigation moves between its buttons). */
+  get openPanelEl(): HTMLElement | null {
+    return this.panel === 'turret' ? this.el.turretPanel : this.panel === 'bless' ? this.el.blessPanel : this.panel === 'keys' ? this.el.keysPanel : null;
   }
 
   /** True while a centre-screen banner (ascension, Ragnarök, verdict) is showing. */

@@ -178,6 +178,58 @@ async function serviceWorkerFlow(page: Page): Promise<void> {
   check('service worker keeps lazily loaded chunks', keys.some((k) => k.includes('lazy-ABCDEFGH')), JSON.stringify(keys));
 }
 
+/** A stubbed standard gamepad: menus by D-pad and A, then a battle by buttons. */
+async function gamepadFlow(page: Page): Promise<void> {
+  console.log('== gamepad ==');
+  await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
+  await page.evaluateOnNewDocument(() => {
+    localStorage.setItem('mythwar.settings.v1', JSON.stringify({ tutorialSeen: true, hints: false }));
+    // (No autosave left by earlier flows: A would rightly press "Continue battle".)
+    localStorage.removeItem('mythwar.battle.v1');
+    const pad = { id: 'Test Pad (STANDARD GAMEPAD)', connected: true, mapping: 'standard', axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) };
+    (window as unknown as { __pad: typeof pad }).__pad = pad;
+    navigator.getGamepads = () => [pad as unknown as Gamepad];
+  });
+  await page.goto(`${base}/`, { waitUntil: 'load' });
+  await sleep(1000);
+  // Press and release a button across a few frames.
+  const tap = async (i: number) => {
+    await page.evaluate((b) => ((window as unknown as { __pad: any }).__pad.buttons[b].pressed = true), i);
+    await sleep(120);
+    await page.evaluate((b) => ((window as unknown as { __pad: any }).__pad.buttons[b].pressed = false), i);
+    await sleep(120);
+  };
+  const menu = () => page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current);
+  // Title: A presses the main button (Play → the foe screen).
+  await tap(0);
+  await sleep(300);
+  check('gamepad: A on the title presses Play', (await menu()) === 'difficulty', await menu());
+  // D-pad picks a button; B goes back.
+  await tap(15);
+  const focused = await page.evaluate(() => document.querySelector('.padfocus')?.textContent ?? '');
+  check('gamepad: the D-pad highlights a button', focused.length > 0, focused);
+  await tap(1);
+  await sleep(300);
+  check('gamepad: B goes back', (await menu()) === 'title', await menu());
+  await page.goto(`${base}/?play=adept&seed=4`, { waitUntil: 'load' });
+  await sleep(1500);
+  await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].gold = 500));
+  await tap(2); // X: the first card
+  await tap(12); // up: the top lane
+  await tap(0); // A: the second card
+  const st = await page.evaluate(() => {
+    const g = (window as unknown as { __mythwar: any }).__mythwar.game;
+    return { queue: g.world.players[0].queue.map((q: any) => `${q.unitId}@${q.lane}`), lane: g.view.selectedLane };
+  });
+  check('gamepad: X and A summon the first two cards, the D-pad changes lane', st.queue.join() === 'treant@1,redcap@0' && st.lane === 0, JSON.stringify(st));
+  await tap(9); // Start: pause
+  await sleep(200);
+  check('gamepad: Start pauses', (await menu()) === 'pause', await menu());
+  await tap(9);
+  await sleep(200);
+  check('gamepad: Start again resumes', (await menu()) === 'none', await menu());
+}
+
 /** A card tapped before it can be paid for is armed, and summons itself once the gold is there. */
 async function armedFlow(page: Page): Promise<void> {
   console.log('== armed summons ==');
@@ -930,6 +982,10 @@ async function main(): Promise<void> {
     page4.on('pageerror', (e) => errors.push(pageError('tutorial', e)));
     await tutorialHandoffFlow(page4);
     await page4.close();
+    const page9 = await browser.newPage();
+    page9.on('pageerror', (e) => errors.push(pageError('gamepad', e)));
+    await gamepadFlow(page9);
+    await page9.close();
     const page8 = await browser.newPage();
     page8.on('pageerror', (e) => errors.push(pageError('armed', e)));
     await armedFlow(page8);

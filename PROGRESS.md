@@ -107,7 +107,7 @@ complete; its log follows below the lens plan.
 - [x] #51 The Pyramid — capstone feat "Legend of the Ages" (★★★ vs every general) heads the feats with per-general progress; fixed progress codes dropping stars
 - [x] #52 The Puzzle — Riddles of war: 4 hand-made one-question battles (fixed purse, foe on the field), brute-forced so only a few answers win
 - [x] #53 Control — tapping a card you cannot afford yet arms it: it summons itself once the gold is there (tap again to cancel)
-- [ ] #54 Physical Interface — gamepad support
+- [x] #54 Physical Interface — gamepads: face buttons summon the cards as they sit on the pad (X A B, Y), D-pad lanes, shoulders power/hold/ascend/undo; menus by D-pad + A/B
 - [ ] #55 Virtual Interface — HUD information
 - [ ] #56 Transparency — declutter the interface
 - [ ] #57 Feedback — feedback for counters/hits

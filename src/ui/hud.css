@@ -46,6 +46,14 @@ input[type='range']:focus-visible {
   outline-offset: 2px;
 }
 
+/* The button a gamepad's D-pad has picked (A presses it). */
+.padfocus,
+input.padfocus + .sw {
+  outline: 3px solid var(--gold-l) !important;
+  outline-offset: 3px;
+  box-shadow: 0 0 18px rgba(255, 215, 106, 0.55);
+}
+
 svg {
   display: block;
   width: 100%;
