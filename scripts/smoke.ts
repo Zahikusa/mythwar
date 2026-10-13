@@ -178,6 +178,37 @@ async function serviceWorkerFlow(page: Page): Promise<void> {
   check('service worker keeps lazily loaded chunks', keys.some((k) => k.includes('lazy-ABCDEFGH')), JSON.stringify(keys));
 }
 
+/** A card tapped before it can be paid for is armed, and summons itself once the gold is there. */
+async function armedFlow(page: Page): Promise<void> {
+  console.log('== armed summons ==');
+  await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1 });
+  await page.evaluateOnNewDocument(() => localStorage.setItem('mythwar.settings.v1', JSON.stringify({ tutorialSeen: true, hints: false })));
+  await page.goto(`${base}/?play=adept&seed=4`, { waitUntil: 'load' });
+  await sleep(1200);
+  // (Income is a few gold a second: 5 gold stays short of a 30-gold Guardian for a while.)
+  await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].gold = 5));
+  const card = await center(page, '.card.cls-guardian');
+  await page.mouse.click(card.x, card.y);
+  await sleep(200);
+  const armed = await page.evaluate(() => ({ armed: !!document.querySelector('.card.cls-guardian.armed'), queue: (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.length }));
+  check('tapping a card you cannot afford arms it (nothing summoned yet)', armed.armed && armed.queue === 0, JSON.stringify(armed));
+  await page.evaluate(() => {
+    const g = (window as unknown as { __mythwar: any }).__mythwar.game;
+    g.world.players[0].gold = 200;
+  });
+  await sleep(300);
+  const after = await page.evaluate(() => ({ armed: !!document.querySelector('.card.armed'), queue: (window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].queue.map((q: any) => q.unitId) }));
+  check('the armed card summons itself once the gold is there', !after.armed && after.queue.length === 1, JSON.stringify(after));
+  // Tapping an armed card again disarms it.
+  await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.game.world.players[0].gold = 5));
+  await page.mouse.click(card.x, card.y);
+  await sleep(100);
+  await page.mouse.click(card.x, card.y);
+  await sleep(150);
+  const off = await page.evaluate(() => !!document.querySelector('.card.armed'));
+  check('tapping the armed card again disarms it', !off, String(off));
+}
+
 /** Riddles of war: foe screen → Riddles → the first riddle, solved by tapping cards → its result. */
 async function riddleFlow(page: Page): Promise<void> {
   console.log('== riddles ==');
@@ -899,6 +930,10 @@ async function main(): Promise<void> {
     page4.on('pageerror', (e) => errors.push(pageError('tutorial', e)));
     await tutorialHandoffFlow(page4);
     await page4.close();
+    const page8 = await browser.newPage();
+    page8.on('pageerror', (e) => errors.push(pageError('armed', e)));
+    await armedFlow(page8);
+    await page8.close();
     const page7 = await browser.newPage();
     page7.on('pageerror', (e) => errors.push(pageError('riddles', e)));
     await riddleFlow(page7);

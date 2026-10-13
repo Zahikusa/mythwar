@@ -1050,3 +1050,22 @@ problem easy to understand, is progress visible, can the player tell they're clo
 - Checked: unit tests (setup, each intended answer wins, < 25% of answers win, doing nothing
   loses, the power riddle needs the power), a smoke flow (foe screen → Riddles → solve the first
   by tapping cards → "Solved", remembered), screenshots (list on desktop and phone, opening).
+
+## #53 The Lens of Control
+*When players use the interface, does the game do what they expect — and do they feel in control,
+even powerful? Where does intent get lost between the player's head and the game?*
+- Control in Mythwar is good where the player *acts*: tap/drag/keys summon at once (#35's wheel,
+  drag onto any lane), Backspace or a tap on a queue chip undoes a summon, a god power cast into
+  an empty lane is refused instead of wasted (#41), every panel closes with Esc.
+- Intent got lost in one common moment: deciding *before* the gold is there. "Next, a Pixie for
+  the middle" — but 9 gold of 35. Tapping the card only said "Not enough gold"; the player then
+  had to watch the counter and tap again at the right second (on a phone, mid-battle, while
+  watching three lanes). The decision was made; the interface refused to take it.
+- Change: **an unaffordable tap arms the card**: it summons itself into that lane the moment the
+  gold is there (online: as soon as the gold minus orders in flight covers it). The armed card
+  wears a dashed, pulsing gold outline and its savings counter reads "auto · 9s"; tap it again
+  to disarm; one armed card at a time (a new tap re-arms); a full queue waits, anything else
+  (an ascension changing the cards, the battle ending) disarms. A toast says what happened. The
+  how-to's summoning page says so in one sentence. Client-side only: no rule changed.
+- Checked: smoke flow (tap with 5 gold → armed, nothing summoned; gold arrives → summoned
+  itself; tap twice → disarmed); screenshot; how-to page on a 667×375 phone; full verify.

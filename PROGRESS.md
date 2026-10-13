@@ -106,7 +106,7 @@ complete; its log follows below the lens plan.
 - [x] #50 Parallelism — one trainer for three gates blocked emergencies (4.9 s waits, p90 12 s): each gate now trains its own creature (queue of 5 in all)
 - [x] #51 The Pyramid — capstone feat "Legend of the Ages" (★★★ vs every general) heads the feats with per-general progress; fixed progress codes dropping stars
 - [x] #52 The Puzzle — Riddles of war: 4 hand-made one-question battles (fixed purse, foe on the field), brute-forced so only a few answers win
-- [ ] #53 Control — input responsiveness / cancel
+- [x] #53 Control — tapping a card you cannot afford yet arms it: it summons itself once the gold is there (tap again to cancel)
 - [ ] #54 Physical Interface — gamepad support
 - [ ] #55 Virtual Interface — HUD information
 - [ ] #56 Transparency — declutter the interface

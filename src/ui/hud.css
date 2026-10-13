@@ -903,6 +903,34 @@ html.cbfoe .side.right .hpfill {
   filter: grayscale(1) brightness(0.6);
 }
 
+/* Armed (tapped before it could be paid for): summons itself once the gold is there. */
+.card.armed {
+  outline: 2px dashed var(--gold-l);
+  outline-offset: 3px;
+  animation: armedpulse 1.1s ease-in-out infinite alternate;
+}
+
+.card.armed.poor {
+  filter: saturate(0.75) brightness(0.95);
+}
+
+.card.armed.poor .cost[data-eta]:not([data-eta=''])::after {
+  content: 'auto · ' attr(data-eta);
+  color: var(--gold-l);
+}
+
+@keyframes armedpulse {
+  to {
+    outline-color: rgba(255, 231, 166, 0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card.armed {
+    animation: none;
+  }
+}
+
 .card.blocked[data-why]:not([data-why=''])::after {
   content: attr(data-why);
   position: absolute;

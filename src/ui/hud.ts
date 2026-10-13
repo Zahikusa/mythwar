@@ -78,6 +78,8 @@ export class Hud {
   private cb: HudCallbacks;
   private layoutInfo: Layout | null = null;
   private cards: CardEl[] = [];
+  /** A creature ordered before it could be paid for: summoned once the gold is there. */
+  private armed: { unitId: string; lane: number } | null = null;
   private cardAge = -1;
   private el: Record<string, HTMLElement> = {};
   private laneTabs: HTMLButtonElement[] = [];
@@ -341,6 +343,7 @@ export class Hud {
   attach(game: Game): void {
     this.cancelDrag();
     this.game = game;
+    this.armed = null;
     toggle(this.el.speed, 'hidden', !!game.options.online);
     toggle(this.el.net, 'hidden', !game.options.online);
     toggle(this.el.emoteBtn, 'hidden', !game.options.online);
@@ -456,19 +459,54 @@ export class Hud {
     const g = this.game;
     if (!g) return false;
     const l = lane ?? g.view.selectedLane;
+    // Tapping the armed card again (for the same lane) disarms it.
+    if (this.armed && this.armed.unitId === unitId && this.armed.lane === l) {
+      this.armed = null;
+      this.toast('Auto-summon cancelled', 'info', true);
+      this.cb.sound('click');
+      return false;
+    }
     const r = g.command({ type: 'train', team: g.playerTeam, unitId, lane: l });
     const card = this.cards.find((c) => c.def.id === unitId);
     if (r.ok) {
-      this.cb.sound('summon');
-      if (card) {
-        card.el.classList.remove('bump');
-        void card.el.offsetWidth;
-        card.el.classList.add('bump');
-      }
+      this.summoned(card?.el);
+    } else if (r.reason === 'Not enough gold') {
+      // Control (Lens #53): the intent counts even before the gold does. The card is armed and
+      // summons itself the moment it can be paid for — tap it again to cancel.
+      this.armed = { unitId, lane: l };
+      this.toast(`${UNITS[unitId].name} summons as soon as you have the gold (${['top', 'middle', 'bottom'][l]} lane) — tap again to cancel`, 'info', true);
+      this.cb.sound('select');
     } else {
       this.fail(r.reason, card?.el);
     }
     return r.ok;
+  }
+
+  private summoned(el?: HTMLElement): void {
+    this.cb.sound('summon');
+    if (el) {
+      el.classList.remove('bump');
+      void el.offsetWidth;
+      el.classList.add('bump');
+    }
+  }
+
+  /** An armed card: summon once the gold is there (a full queue waits too; anything else disarms). */
+  private serviceArmed(): void {
+    const g = this.game;
+    const a = this.armed;
+    if (!g || !a) return;
+    const me = g.world.players[g.playerTeam];
+    if (g.over || UNITS[a.unitId]?.age !== me.age) {
+      this.armed = null;
+      return;
+    }
+    if (g.paused || g.displayGold() < UNITS[a.unitId].cost) return;
+    const r = g.command({ type: 'train', team: g.playerTeam, unitId: a.unitId, lane: a.lane });
+    if (r.ok) {
+      this.armed = null;
+      this.summoned(this.cards.find((c) => c.def.id === a.unitId)?.el);
+    } else if (r.reason !== 'Not enough gold' && r.reason !== 'Summoning queue is full') this.armed = null;
   }
 
   tryPower(lane: number): boolean {
@@ -966,6 +1004,7 @@ export class Hud {
     const E = this.el;
 
     if (this.cardAge !== me.age) this.rebuildCards(me.age);
+    this.serviceArmed();
 
     // Top bar
     const fracs: [number, number] = [me.baseHp / me.baseMaxHp, foe.baseHp / foe.baseMaxHp];
@@ -1046,6 +1085,7 @@ export class Hud {
       const label = blocked ? (why!.startsWith('Only') ? 'One at a time' : why === 'Summoning queue is full' ? 'Queue full' : '') : '';
       if (c.el.dataset.why !== label) c.el.dataset.why = label;
       toggle(c.el, 'advised', advice === c.def.cls);
+      toggle(c.el, 'armed', this.armed?.unitId === c.def.id);
     }
 
     // Queue
