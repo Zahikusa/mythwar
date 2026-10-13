@@ -58,6 +58,8 @@ interface UnitVis {
   /** Its temper's gesture after felling a foe: 1 → 0 while playing; not again before `gestNext`. */
   gest: number;
   gestNext: number;
+  /** How long a pending gesture has waited for the current swing to end. */
+  gestWait: number;
   /** Footfalls taken (half walk cycles), for the dust they kick up. */
   step: number;
 }
@@ -571,6 +573,7 @@ export class Renderer {
           const kv = this.vis.get(e.killer);
           if (kv && this.time >= kv.gestNext) {
             kv.gest = 1;
+            kv.gestWait = 0;
             kv.gestNext = this.time + 4 + kv.seed * 3;
           }
           if (e.team !== view.playerTeam) {
@@ -1561,7 +1564,7 @@ export class Renderer {
         // Creatures already out on the field (a continued battle, which starts paused, or a
         // fast-forwarded one) are fully there; only fresh summons fade and grow in.
         const spawn = Math.min(1, Math.max(0, (simTime - u.bornAt) / SPAWN_TIME));
-        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1, reborn: 0, frozen: null, hx: NaN, hy: NaN, radius: u.def.radius, gest: 0, gestNext: 0, step: Math.floor((seed * TAU) / Math.PI) };
+        v = { walk: seed * TAU, lastX: u.x, flash: 0, spawn, yJit: (seed - 0.5) * 0.36, seed, hpShown: u.hp, hpAlpha: 0, frozenFx: 0, lastHp: u.hp, healAcc: 0, lastSlash: -1, reborn: 0, frozen: null, hx: NaN, hy: NaN, radius: u.def.radius, gest: 0, gestNext: 0, gestWait: 0, step: Math.floor((seed * TAU) / Math.PI) };
         this.vis.set(u.id, v);
       }
     }
@@ -1653,7 +1656,12 @@ export class Renderer {
     ctx.translate(p.x + recoil, y);
     ctx.scale(u.team === 0 ? sc : -sc, sc);
     // Its temper's gesture after felling a foe (Lens #77), around its feet.
-    if (v.gest > 0) {
+    // It waits for a swing in progress to end (a hop mid-blow looked like a glitch); a creature
+    // that goes straight on to its next blow lets the moment pass.
+    if (v.gest >= 1 && attack >= 0) {
+      v.gestWait += dt;
+      if (v.gestWait > 0.8) v.gest = 0;
+    } else if (v.gest > 0) {
       v.gest = u.freezeTimer > 0 || this.winner !== null ? 0 : Math.max(0, v.gest - dt / GESTURE_TIME);
       const temper = TEMPERS[u.def.id];
       if (temper && v.gest > 0) {
