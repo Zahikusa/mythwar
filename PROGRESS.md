@@ -284,6 +284,10 @@ Already in the code before Phase 3, and kept:
 29. [x] (run #13) mobilecheck never showed the after-battle offer to get the app (the full sheet
    over the results, the one place the sheet appears uninvited). (Done: `results-offer`, in a
    tab; fits on the SE, Galaxy, Pro Max and iPad mini.)
+30. [x] (run #13) The sandbox's "For: You / Foe" switch (which side a card summons for) was a
+   25-px pill under a finger, and mobilecheck never opened the sandbox or a riddle of war.
+   (Done: its touch area reaches 44 px tall (a `::before`, the pill keeps its look);
+   mobilecheck `sandbox`, `riddle`, `riddle-over`.)
 
 ## Decisions
 
