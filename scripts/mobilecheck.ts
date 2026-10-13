@@ -84,6 +84,15 @@ const DEVICES: Device[] = [
     app: [{ w: 744, h: 1133, safe: { t: 24, r: 0, b: 20, l: 0 } }, { w: 1133, h: 744, safe: { t: 24, r: 0, b: 20, l: 0 } }],
   },
   {
+    // A bigger-logo-for-its-size tablet: the 10.2" iPad (810×1080).
+    name: 'ipad-10',
+    engine: 'webkit',
+    ua: 'Mozilla/5.0 (iPad; CPU OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1',
+    dpr: 2,
+    tab: [{ w: 810, h: 1010, safe: NO }, { w: 1080, h: 740, safe: NO }],
+    app: [{ w: 810, h: 1080, safe: { t: 20, r: 0, b: 0, l: 0 } }, { w: 1080, h: 810, safe: { t: 20, r: 0, b: 0, l: 0 } }],
+  },
+  {
     name: 'pixel-7',
     engine: 'chromium',
     ua: android('Pixel 7'),
