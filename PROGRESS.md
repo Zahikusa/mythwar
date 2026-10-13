@@ -376,18 +376,29 @@ it prints, inviting, stopping — 2026-10-13.)
    19.4 s were the big ones; `seatGrace: 3` (the quick results-drop reconnect still holds, also
    with `--latency 60 --jitter 80` and `--portrait`) → 72 s. The co-op section's rest is its 3-s
    countdown, the AI's first summons and #203's 2-s away hold — needed.)
-215. [ ] Back in the battle room (phones, #166/#209) does nothing — like Esc, so a stray swipe can't
+215. [x] Back in the battle room (phones, #166/#209) does nothing — like Esc, so a stray swipe can't
    drop a friend's seat. But an Android player pressing Back there expects to go back: offer a
    small "Leave the room?" confirm (Leave / Stay) on Back instead of nothing; Esc unchanged.
+   (Done with Android's own idiom instead of a dialog: a first Back flashes "Press Back again to
+   leave the room.", a second within 4 s leaves (to the lobby, still on the page); Esc unchanged.
+   A left room's flash no longer follows into the lobby. mpsmoke checks both Backs; PLAYTEST asks
+   whether one Back should be enough.)
 216. [x] `shoot`'s multiplayer scenarios show this machine's real LAN address and port in the invite
    (README's `docs/mp-room.jpg`: 192.168.1.105:62535). Give shoot's server a fixed example
    (`lanUrls: () => ['http://192.168.1.20:8787/']` — an `attachMultiplayer` option already) so
    pictures are stable between shots and say nothing about the machine they were made on. (Done:
    shoot's server announces http://192.168.1.20:8787/; docs/mp-room.jpg re-made with it.)
-217. [ ] mpsmoke's seat-expiry steps (#160, #211) drop the link with a clean `conn.close()`; a phone
+217. [x] mpsmoke's seat-expiry steps (#160, #211) drop the link with a clean `conn.close()`; a phone
    that sleeps usually leaves a dead link the server only notices by its heartbeat (server/net.ts,
    ~12 s). Cover that path once: block the page's traffic (CDP `Network.emulateNetworkConditions`
    offline) instead of closing, and check the seat still comes back.
+   (Done — but not with CDP: its offline mode passed once and failed the next run, because
+   Chrome's network service still answers the server's WebSocket pings. The phone now reaches the
+   server through a TCP relay in mpsmoke that can freeze its links (nothing through, no close)
+   and drop them on thaw; `AttachOptions.deadAfter` (3 s in mpsmoke). The room's #160 step uses
+   it: the server finds the link dead after ~3.6 s (not at once), gives up the seat, the phone
+   rejoins. Plain, latency and portrait green.)
+(Items 218–: run #10.)
 
 
 
