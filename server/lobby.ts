@@ -163,14 +163,19 @@ export class Lobby {
     }
   }
 
-  /** Saves the Hall of champions now if it changed (also called on shutdown). */
-  flush(): void {
+  /**
+   * Saves the Hall of champions if it changed — in the background, or (`final`, on shutdown)
+   * before returning.
+   */
+  flush(final = false): void {
     if (!this.hallDirty || !this.opts.store) return;
     this.hallDirty = false;
     this.lastHallSave = this.now();
     const halls: Record<string, HallEntry[]> = {};
     for (const [network, hall] of this.halls) halls[network] = [...hall.values()];
-    this.opts.store.save({ v: 1, salt: this.hallSalt, halls });
+    const state = { v: 1 as const, salt: this.hallSalt, halls };
+    if (final && this.opts.store.saveNow) this.opts.store.saveNow(state);
+    else this.opts.store.save(state);
   }
 
   get roomCount(): number {

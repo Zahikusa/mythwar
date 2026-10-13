@@ -4,6 +4,7 @@
  * itself; an internet server would put a database behind the same two calls.
  */
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { mkdir, rename, unlink, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import type { HallEntry } from '../src/net/protocol.ts';
 
@@ -18,11 +19,41 @@ export interface StoredState {
 export interface ServerStore {
   /** The state saved last time, or null (none yet, or unreadable). */
   load(): StoredState | null;
+  /** Saves in the background (the server's loop must not wait for the disk). */
   save(state: StoredState): void;
+  /** Saves before returning (shutdown). */
+  saveNow?(state: StoredState): void;
 }
 
-/** A store in one JSON file, written atomically (a crash mid-write keeps the previous file). */
-export function fileStore(path: string, log?: (line: string) => void): ServerStore {
+/**
+ * A store in one JSON file, written atomically (a temp file renamed over it: a crash mid-write
+ * keeps the previous file). Background saves run one at a time; a newer state waiting behind a
+ * write replaces any older one, and nothing written in the background lands after a saveNow().
+ */
+export function fileStore(path: string, log?: (line: string) => void): ServerStore & { idle(): Promise<void> } {
+  let writing: Promise<void> | null = null;
+  let pending: StoredState | null = null;
+  let closed = false;
+  let seq = 0;
+  const fail = (e: unknown) => log?.(`could not save ${path}: ${(e as Error).message}`);
+  const write = (state: StoredState) => {
+    const tmp = `${path}.${++seq}.tmp`;
+    writing = (async () => {
+      try {
+        await mkdir(dirname(path), { recursive: true });
+        await writeFile(tmp, JSON.stringify(state));
+        if (closed) await unlink(tmp).catch(() => {});
+        else await rename(tmp, path);
+      } catch (e) {
+        fail(e);
+      }
+    })().then(() => {
+      writing = null;
+      const next = pending;
+      pending = null;
+      if (next && !closed) write(next);
+    });
+  };
   return {
     load() {
       try {
@@ -35,14 +66,25 @@ export function fileStore(path: string, log?: (line: string) => void): ServerSto
       }
     },
     save(state) {
+      if (closed) return;
+      if (writing) pending = state;
+      else write(state);
+    },
+    saveNow(state) {
+      closed = true;
+      pending = null;
       try {
         mkdirSync(dirname(path), { recursive: true });
-        const tmp = `${path}.tmp`;
+        const tmp = `${path}.final.tmp`;
         writeFileSync(tmp, JSON.stringify(state));
         renameSync(tmp, path);
       } catch (e) {
-        log?.(`could not save ${path}: ${(e as Error).message}`);
+        fail(e);
       }
+    },
+    /** Resolves once no background save is running or waiting (tests). */
+    async idle() {
+      while (writing) await writing;
     },
   };
 }

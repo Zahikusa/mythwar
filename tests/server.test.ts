@@ -677,16 +677,27 @@ describe('battle', () => {
   });
 
   it('the file store writes atomically and reads back; a broken file means an empty hall', async () => {
-    const { mkdtempSync, writeFileSync, existsSync } = await import('node:fs');
+    const { mkdtempSync, writeFileSync } = await import('node:fs');
     const { join } = await import('node:path');
     const { tmpdir } = await import('node:os');
     const dir = mkdtempSync(join(tmpdir(), 'mythwar-'));
     const path = join(dir, 'sub', 'data.json');
     const store = fileStore(path);
     expect(store.load()).toBeNull();
+    // In the background, one write at a time; the newest state waiting wins.
     store.save({ v: 1, halls: { lan: [{ name: 'Ada', sigil: 1, w: 2, l: 0, coop: 0 }] } });
-    expect(existsSync(`${path}.tmp`)).toBe(false);
-    expect(store.load()!.halls.lan[0].name).toBe('Ada');
+    store.save({ v: 1, halls: { lan: [{ name: 'Ada', sigil: 1, w: 3, l: 0, coop: 0 }] } });
+    store.save({ v: 1, halls: { lan: [{ name: 'Ada', sigil: 1, w: 4, l: 0, coop: 0 }] } });
+    await store.idle();
+    expect(store.load()!.halls.lan[0].w).toBe(4);
+    // On shutdown: written before returning, and nothing from the background lands after it.
+    store.save({ v: 1, halls: { lan: [{ name: 'Ada', sigil: 1, w: 5, l: 0, coop: 0 }] } });
+    store.saveNow!({ v: 1, halls: { lan: [{ name: 'Ada', sigil: 1, w: 6, l: 0, coop: 0 }] } });
+    expect(store.load()!.halls.lan[0].w).toBe(6);
+    await store.idle();
+    expect(store.load()!.halls.lan[0].w).toBe(6);
+    const { readdirSync } = await import('node:fs');
+    expect(readdirSync(join(dir, 'sub')).filter((f) => f.endsWith('.tmp'))).toEqual([]);
     writeFileSync(path, '{ not json');
     const lines: string[] = [];
     expect(fileStore(path, (l) => lines.push(l)).load()).toBeNull();

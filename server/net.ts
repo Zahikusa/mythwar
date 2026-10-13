@@ -114,7 +114,7 @@ export function attachMultiplayer(http: Server, opts: AttachOptions = {}): Multi
   return {
     lobby,
     close() {
-      lobby.flush();
+      lobby.flush(true);
       clearInterval(loop);
       clearInterval(heartbeat);
       http.off('upgrade', onUpgrade);
