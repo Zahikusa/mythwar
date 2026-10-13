@@ -164,18 +164,26 @@ async function serviceWorkerFlow(page: Page): Promise<void> {
   await page.evaluate(() => navigator.serviceWorker.ready);
   // A bundle left over from an earlier build…
   await page.evaluate(async () => {
-    const c = await caches.open('mythwar-v3');
+    const c = await caches.open('mythwar-v4');
     await c.put(new Request('./assets/index-OLDBUILD.js'), new Response('// old'));
     // …and a lazily loaded chunk the page doesn't name (must survive).
     await c.put(new Request('./assets/lazy-ABCDEFGH.js'), new Response('// lazy'));
   });
   await page.reload({ waitUntil: 'load' });
   await sleep(800);
-  const keys = await page.evaluate(async () => (await (await caches.open('mythwar-v3')).keys()).map((r) => new URL(r.url).pathname));
+  const keys = await page.evaluate(async () => (await (await caches.open('mythwar-v4')).keys()).map((r) => new URL(r.url).pathname));
   const current = await page.evaluate(() => [...document.querySelectorAll('script[src], link[rel=stylesheet]')].map((e) => new URL((e as HTMLScriptElement).src || (e as HTMLLinkElement).href).pathname));
   check('service worker drops bundles of older builds', !keys.some((k) => k.includes('OLDBUILD')), JSON.stringify(keys));
   check('service worker caches the current bundles', current.every((c) => keys.includes(c)), JSON.stringify({ current, keys }));
   check('service worker keeps lazily loaded chunks', keys.some((k) => k.includes('lazy-ABCDEFGH')), JSON.stringify(keys));
+  // (Backlog 67) Files without a content hash (manifest, icons) come from the network when it's
+  // there — an old copy in the cache isn't served forever.
+  const manifest = await page.evaluate(async () => {
+    const c = await caches.open('mythwar-v4');
+    await c.put(new Request('./manifest.webmanifest'), new Response('{"name":"stale"}'));
+    return (await (await fetch('./manifest.webmanifest')).text()).includes('"stale"');
+  });
+  check('service worker fetches the manifest fresh (not a stale cached copy)', !manifest, String(manifest));
 }
 
 /** Sandbox: X switches the cards to the foe's (a mode that shows), and summons go to the foe. */

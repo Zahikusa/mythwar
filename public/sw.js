@@ -1,5 +1,6 @@
-// Offline support: network-first for the page, cache-first for hashed assets.
-const CACHE = 'mythwar-v3';
+// Offline support: cache-first for hashed build assets (they never change), network-first for
+// everything else — the page, the manifest, icons — so an update reaches installed copies too.
+const CACHE = 'mythwar-v4';
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', './manifest.webmanifest', './icon.svg', './icon-192.png'])).then(() => self.skipWaiting()));
 });
@@ -45,17 +46,21 @@ self.addEventListener('fetch', (e) => {
     );
     return;
   }
+  const store = (res) => {
+    if (res.ok) {
+      const copy = res.clone();
+      e.waitUntil(caches.open(CACHE).then((c) => c.put(req, copy)));
+    }
+    return res;
+  };
+  // ("index-C8zgltL0.js": a content hash in the name — that exact file never changes.)
+  if (/\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.[a-z0-9]+$/.test(new URL(req.url).pathname)) {
+    e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then(store)));
+    return;
+  }
   e.respondWith(
-    caches.match(req).then(
-      (hit) =>
-        hit ||
-        fetch(req).then((res) => {
-          if (res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(req, copy));
-          }
-          return res;
-        }),
-    ),
+    fetch(req)
+      .then(store)
+      .catch(() => caches.match(req).then((hit) => hit || Response.error())),
   );
 });
