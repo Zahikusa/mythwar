@@ -874,7 +874,9 @@ export class App {
       this.hud.banner(won ? 'Solved!' : 'Not yet', won ? 'The field is clear' : g.world.players[g.playerTeam].baseHp < g.world.players[g.playerTeam].baseMaxHp ? 'A foe reached your citadel' : 'The riddle stands', won ? 'gold' : 'red');
       return;
     }
-    if (!(g instanceof NetGame) || g.result) this.feats?.onEnd(g.world, g instanceof NetGame ? null : this.difficulty, g instanceof NetGame && !!g.coop);
+    // (Online, victory feats need a victory: a walkover — the other left, or stayed away — earns
+    // none; else two tabs of one browser would hand them out.)
+    if (!(g instanceof NetGame) || g.result?.reason === 'citadel') this.feats?.onEnd(g.world, g instanceof NetGame ? null : this.difficulty, g instanceof NetGame && !!g.coop);
     this.menus.featsEarned = this.feats?.earned ?? [];
     this.menus.chronicle = this.chronicle?.lines() ?? [];
     this.menus.breakNote = this.breakNote();

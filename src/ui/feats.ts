@@ -17,7 +17,7 @@ export const FEATS: Feat[] = [
   { id: 'adept', name: 'Warlord Humbled', desc: 'Defeat the Adept.' },
   { id: 'master', name: 'General Outwitted', desc: 'Defeat the Master.' },
   { id: 'mythic', name: 'Godslayer', desc: 'Defeat the Mythic god of war.' },
-  { id: 'online', name: 'Worthy Rival', desc: 'Win a battle against another player.' },
+  { id: 'online', name: 'Worthy Rival', desc: 'Topple another player’s citadel.' },
   { id: 'coop', name: 'Shoulder to Shoulder', desc: 'Win a co-op battle together with a friend.' },
   { id: 'celestial', name: 'Among the Gods', desc: 'Ascend to the Celestial age.' },
   { id: 'dragon', name: 'Wyrmcaller', desc: 'Summon the Elder Dragon.' },

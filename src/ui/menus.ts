@@ -1010,7 +1010,7 @@ export class Menus {
       h(
         'div',
         { class: 'vtip' },
-        h('span', { class: this.breakNote ? 'vbreak' : undefined, text: this.breakNote ?? (online && (won || online.reason !== 'citadel') ? scoreLine(online) : warWon ? 'The war is won — and a war is better shared.' : battleTip(world, me, difficulty, ageUps, this.settings.advice, !!this.root.closest('.mobile'))) }),
+        h('span', { class: this.breakNote ? 'vbreak' : undefined, text: this.breakNote ?? (online && (won || online.reason !== 'citadel') ? scoreLine(online, won) : warWon ? 'The war is won — and a war is better shared.' : battleTip(world, me, difficulty, ageUps, this.settings.advice, !!this.root.closest('.mobile'))) }),
         online || this.breakNote ? null : this.flowButton(won, difficulty),
       ),
       h('div', { class: 'vstats' }, table, this.storyPanel(history.length >= 3 ? armyChart(history, me, foeName, ageUps) : null, story, best > 0 ? champion : null)),
@@ -1204,9 +1204,10 @@ function verdictLine(won: boolean, online?: OnlineResult, place = ''): string {
   return won ? `The enemy citadel has fallen${at}.` : `Your citadel lies in ruins${at}.`;
 }
 
-function scoreLine(o: OnlineResult): string {
+function scoreLine(o: OnlineResult, won: boolean): string {
   if (o.ally) return o.alone ? 'Well fought — alone at the end!' : o.score && o.score[0] ? `Victories together in this room: ${o.score[0]}` : 'Well fought, together!';
-  if (!o.score) return 'Well fought!';
+  // (No praise for a battle nobody finished: the other left, or one side stayed away.)
+  if (!o.score) return o.reason === 'citadel' ? 'Well fought!' : won ? 'A win by walkover.' : '';
   const [a, b] = o.score;
   return `Score in this room: you ${a} – ${b} ${o.foe}`;
 }

@@ -321,7 +321,14 @@ async function main(): Promise<void> {
     const roomUrl = b.url();
     await b.goBack({ timeout: 3000 }).catch(() => null);
     await sleep(300); // (nothing more should happen: give it the chance to)
-    const stay = await b.evaluate(() => ({ menu: (window as any).__mythwar.menus.current, seat: (window as any).__mythwar.mp.seat, said: document.querySelector('.screen.room .mpflash.show')?.textContent ?? '' }));
+    // (Seen, too: on a phone the room is taller than the screen — backlog 230.)
+    await sleep(300); // (the line opens over 0.25 s)
+    const stay = await b.evaluate(() => {
+      const f = document.querySelector('.screen.room .mpflash.show');
+      const r = f?.getBoundingClientRect();
+      const seen = !!r && r.height > 10 && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth;
+      return { menu: (window as any).__mythwar.menus.current, seat: (window as any).__mythwar.mp.seat, said: seen ? (f?.textContent ?? '') : `(not on screen: ${JSON.stringify(r)})` };
+    });
     check('room: Back keeps the guest in the room and on the page', stay.menu === 'room' && stay.seat === 1 && b.url() === roomUrl, JSON.stringify(stay));
     // (Backlog 215) …it asks to be pressed again, and a second Back leaves the room (still on the page).
     check('room: a first Back says a second one leaves', /Press Back again to leave the room/.test(stay.said), stay.said);

@@ -303,12 +303,26 @@ const MIME: Record<string, string> = {
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+  const valued = new Set(['--query', '--wait', '--size', '--cvd', '--settings']);
+  // (An unknown flag — --help, say — would otherwise run every scenario, overwriting the shots.)
+  const unknownFlags = args.filter((a, i) => a.startsWith('-') && !valued.has(a) && a !== '--list' && !valued.has(args[i - 1]));
+  if (unknownFlags.length) {
+    const help = unknownFlags.every((a) => a === '--help' || a === '-h');
+    if (!help) console.error(`Unknown option ${unknownFlags.join(', ')}.`);
+    for (const line of [
+      `node scripts/shoot.ts [name…] [--query "a=1&b=2"] [--wait ms] [--size 667x375] [--cvd protanopia|deuteranopia|tritanopia] [--settings '{"colorblind":true}']`,
+      'node scripts/shoot.ts --list   (scenario names; a name matches exactly, else as a substring; none: all)',
+      'Output: screenshots/<name>.png',
+    ])
+      console.log(line);
+    process.exitCode = help ? 0 : 1;
+    return;
+  }
   if (args.includes('--list')) {
     for (const sc of SCENARIOS) console.log(`${sc.name.padEnd(22)} ${sc.w}x${sc.h}${sc.mobile ? ' mobile' : ''}  ?${sc.query}`);
     return;
   }
   // Scenario names (several allowed): an exact name, else every scenario whose name contains it.
-  const valued = new Set(['--query', '--wait', '--size', '--cvd', '--settings']);
   const names = args.filter((a, i) => !a.startsWith('--') && !valued.has(args[i - 1]));
   const pick = (n: string) => {
     const exact = SCENARIOS.filter((sc) => sc.name === n);

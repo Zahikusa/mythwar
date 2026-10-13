@@ -60,7 +60,8 @@ export class NetOverlay {
       this.fightUntil = now + 900;
       this.countEnd = 0;
     }
-    if (!text && now < this.fightUntil && !game.over) text = game.world.time < 1 ? 'Fight!' : 'Go!';
+    // (Held again meanwhile — someone left right after the resume: no "Go!" under "The battle waits".)
+    if (!text && now < this.fightUntil && !game.over && !game.netPause) text = game.world.time < 1 ? 'Fight!' : 'Go!';
     if (text !== this.lastCount) {
       this.lastCount = text;
       setText(this.count, text);

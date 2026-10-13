@@ -497,6 +497,34 @@ server/lobby.ts and match.ts, 2026-10-13.)
    phone link (200–300 ms) a quick chip-then-Ready bounced. (Done: `MpClient.termsChanged()` —
    our own change bumps the local `rev` as the server will (TCP delivers the change first); test
    with 60 ms latency — failed before. An *other* player's change racing a Ready stays #155.)
+(Items 230–236: an independent visual review of the online screens — mpsmoke `--shots` in both
+orientations, shoot's two-player scenarios and its own phone shots — 2026-10-13.)
+230. [x] **On a phone the room's message line was invisible while the room waits**: the room is
+   taller than an 844×390 stage (the invite), and `.mpflash` (`min-height: 0`, overflow hidden)
+   was squashed to 0 px — "Press Back again to leave the room." (#215), "Bo left the room.",
+   server errors and the "turn sideways" tip never showed; the room's note ("Waiting for a second
+   player…") sat below the fold too. (Done: `.mpflash` doesn't shrink; on a short stage the note
+   and the message line come right under the room's header (`order`). Measured on 844×390,
+   390×844 and 667×375: the line at y≈84–103 (was 409, off screen). mpsmoke's Back check now
+   needs the line on screen, not just its text.)
+231. [x] The room's "Bo is ready — press Ready to begin!" (`.mnote.hot`) pulsed down to 35%
+   opacity — caught nearly unreadable in both two-player shots. (Done: its own gentler pulse,
+   down to 75%.)
+232. [x] The "is away" notice's top edge ran through the purse and ley bar on short screens
+   (`.nbanner { top: 18% }` = 70 px; the bar ends ~76 px). (Done: `top: max(18%, 84px)`.)
+233. [x] Room seat "Golden Dragon (you)" wrapped its "✎" alone onto the next line. (Done: a
+   no-break space before the pencil.)
+234. [x] Online results after a walkover said "Well fought!" (a 13-s battle, nothing fought) and
+   the walkover earned Worthy Rival and every other victory feat — farmable with two tabs.
+   (Done: "A win by walkover." for a forfeit/timeout win without a room score, nothing after a
+   loss by leaving; online victory feats need the citadel toppled — Worthy Rival now reads
+   "Topple another player's citadel.")
+235. [x] "Go!" of a resume countdown stayed under a fresh "… is away — The battle waits" (someone
+   left right after a resume). (Done: no "Go!"/"Fight!" while the battle is held.)
+236. [x] (decided) The results chart's end label says "Foe" while the legend names the opponent:
+   left — the label is "Foe" in every mode and has ~50 px; the legend names them. Also fixed on
+   the way: `node scripts/shoot.ts --help` (or any unknown flag) ran every scenario and overwrote
+   the shots — it prints usage now (exit 1 for an unknown flag).
 
 
 

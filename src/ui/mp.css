@@ -176,6 +176,8 @@
 }
 
 .mpflash {
+  /* (Never squashed by a screen too tall for the stage: it would show nothing at all.) */
+  flex-shrink: 0;
   min-height: 0;
   max-height: 0;
   overflow: hidden;
@@ -545,7 +547,14 @@
 .mnote.hot {
   color: var(--gold-l);
   font-weight: 700;
-  animation: mppulse 0.8s ease-in-out infinite alternate;
+  /* (A gentle pulse: it's the line to read — "Bo is ready — press Ready to begin!".) */
+  animation: mphot 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes mphot {
+  to {
+    opacity: 0.75;
+  }
 }
 
 .vbuttons {
@@ -786,6 +795,13 @@
     padding-top: 12px;
   }
 
+  /* A phone's room is taller than the stage while it waits (the invite): what it says — the
+     note ("Waiting for a second player…") and news ("Bo left the room", "Press Back again…") —
+     comes right under the header, where the room opens, not below the fold. */
+  .screen.room > :not(.rhead, .mpflash, .rnote) {
+    order: 1;
+  }
+
   /* Online results: the buttons (and the quick-message chips) stay in reach while the results
      scroll under them, like every other screen's button row on a short stage. */
   .screen > .vbuttons {
@@ -862,7 +878,8 @@
   }
 
   .nbanner {
-    top: 18%;
+    /* (Clear of the purse and ley bar, which end ~76 px down on a phone.) */
+    top: max(18%, 84px);
     padding: 8px 14px;
   }
 }

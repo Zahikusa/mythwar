@@ -484,7 +484,8 @@ export class MpScreens {
     toggle(v.el, 'ready', !!s?.ready);
     // (The sigil a player chose, as in the lobby list and on their keep.)
     const sigil = s && s.sigil >= 0 && SIGILS[s.sigil] ? `${SIGILS[s.sigil]} ` : '';
-    setText(v.name, s ? sigil + s.name + (mine ? ' (you) ✎' : '') : 'Open seat');
+    // (A no-break space before the pencil: a long name wraps without leaving it alone on a line.)
+    setText(v.name, s ? sigil + s.name + (mine ? ' (you) ✎' : '') : 'Open seat');
     v.name.title = mine ? 'Tap to change your name' : '';
     if (mine) {
       v.name.setAttribute('role', 'button');
