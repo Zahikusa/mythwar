@@ -535,9 +535,10 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 125. [ ] Online with no pauses left, the local menu covers a running battle — and since #115 the
    opponent's quick messages (speech bubbles) are hidden under it. Show them on the menu (a line
    like the results' "Ada: Well played!") while it's open.
-126. [ ] `.mbtn.small` has no CSS rule (found in #122): "Copy my code", "Load", "Copy playtest
+126. [x] `.mbtn.small` has no CSS rule (found in #122): "Copy my code", "Load", "Copy playtest
    journal" are full-size menu buttons despite the class. Define it (as #122's sigil size) or drop
-   the class.
+   the class. (Done: those three were compact through `.sprogrow .mbtn` already; `.mbtn.small`
+   now means the same size wherever it's used.)
 
 
 

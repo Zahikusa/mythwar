@@ -971,11 +971,16 @@
   align-items: center;
 }
 
+/* A compact button (in rows of settings): the `small` class means it everywhere. */
+.mbtn.small,
 .sprogrow .mbtn {
-  flex: none;
   padding: 6px 12px;
   min-height: 0;
   font-size: 13px;
+}
+
+.sprogrow .mbtn {
+  flex: none;
 }
 
 .sproginput {
