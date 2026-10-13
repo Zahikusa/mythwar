@@ -157,9 +157,12 @@ Already in the code before Phase 3, and kept:
    still go to the real field, so Enter/change/blur behave as before. The two "turn your phone
    sideways" tips are gone; mpsmoke `--portrait` types a name in the room and expects the echo;
    mobilecheck shoots a `typing` screen.)
-7. [ ] mobilecheck can't simulate the LAN origin (127.0.0.1 is a dev machine to platform.ts):
+7. [x] mobilecheck can't simulate the LAN origin (127.0.0.1 is a dev machine to platform.ts):
    a `?lanpreview` (or hostname override in the check) would let it shoot the LAN line in
    Settings and the "Play full screen" offer.
+   (Done: `?lanpreview` makes platform.ts see a LAN server's page; mobilecheck shoots
+   `lan-title` and `lan-settings` in the tab — iPhone: no offer, the line in Settings;
+   Android: "Play full screen" on the title and in Settings.)
 
 ## Decisions
 

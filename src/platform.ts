@@ -143,5 +143,7 @@ export function advise(s: Situation, canPrompt: boolean): Advice {
 export function currentSituation(): Situation {
   const mm = (q: string) => typeof matchMedia !== 'undefined' && matchMedia(q).matches;
   const standalone = mm('(display-mode: standalone)') || mm('(display-mode: fullscreen)') || mm('(display-mode: minimal-ui)') || (navigator as Navigator & { standalone?: boolean }).standalone === true;
-  return detect({ ua: navigator.userAgent, touchPoints: navigator.maxTouchPoints, standalone, secure: window.isSecureContext, hostname: location.hostname });
+  // (?lanpreview: as on a LAN game server's page — scripts/mobilecheck.ts shoots it.)
+  const lan = new URLSearchParams(location.search).has('lanpreview');
+  return detect({ ua: navigator.userAgent, touchPoints: navigator.maxTouchPoints, standalone, secure: lan ? false : window.isSecureContext, hostname: lan ? '192.168.1.20' : location.hostname });
 }
