@@ -24,6 +24,9 @@ class SimNet {
   readonly frozen = new Set<MpClient>();
   /** Sockets currently "unplugged" (messages dropped, as on a dead Wi-Fi link). */
   readonly cut = new Set<FakeSocket>();
+  /** Server messages this returns true for are held back (in `held`) instead of delivered. */
+  holdIf: ((sock: FakeSocket, data: string) => boolean) | null = null;
+  readonly held: (() => void)[] = [];
 
   constructor() {
     this.lobby = new Lobby({ now: () => this.now, countdown: 1, awayGrace: 60 });
@@ -82,7 +85,9 @@ class FakeSocket implements SocketLike {
     this.handlers = net.lobby.connect({
       send: (data) => {
         if (this.net.cut.has(this)) return;
-        net.later(() => this.readyState === 1 && this.onmessage?.({ data }), this.down);
+        const deliver = () => net.later(() => this.readyState === 1 && this.onmessage?.({ data }), this.down);
+        if (net.holdIf?.(this, data)) net.held.push(deliver);
+        else deliver();
       },
       close: (code) => this.close(code),
     });
@@ -426,21 +431,32 @@ describe('NetGame over a simulated network', () => {
   });
 
   it('a replica that reaches the last tick before the verdict waits for it (backlog 219)', () => {
-    const { ga } = twoPlayers();
+    const { a, b, ga, gb } = twoPlayers();
     net.run(3000);
     const ends: (string | null)[] = [];
     ga.onEvents((ev) => ev.some((e) => e.type === 'gameOver') && ends.push(ga.result?.reason ?? null));
-    // The citadel falls on this replica's last tick, but the server's 'over' is late (a lost
-    // packet resent): no results yet — they'd say nothing of who won or why.
-    ga.world.players[1].baseHp = 1;
-    ga.world.damageBase(1, 10, 0, 0);
-    ga.world.step();
-    (ga as unknown as { publish(): void }).publish();
-    expect(ends).toEqual([]);
+    // Held at one tick everywhere, Bo's citadel is set at 0 HP (the same on the server and both
+    // replicas: no desync); the next step topples it.
+    a.pause();
+    net.run(500);
+    const match = (net.lobby as unknown as { rooms: Map<string, { match: { world: World } }> }).rooms.get(a.room!.code)!.match;
+    expect(ga.world.tick).toBe(match.world.tick);
+    expect(gb.world.tick).toBe(match.world.tick);
+    for (const w of [match.world, ga.world, gb.world]) w.players[1].baseHp = 0;
+    // The server's 'over' is late for Ada (a lost packet resent); its last turn isn't.
+    const sockA = (a.conn as unknown as { ws: FakeSocket }).ws;
+    net.holdIf = (sock, data) => sock === sockA && data.includes('"type":"over"');
+    b.resume();
+    net.run(4000);
+    expect(ga.world.winner).toBe(0); // the replica saw the citadel fall…
+    expect(ends).toEqual([]); // …but the results wait for the verdict
     expect(ga.over).toBe(false);
-    (ga as unknown as { onOver(m: unknown): void }).onOver({ type: 'over', winner: 0, reason: 'citadel' });
+    net.holdIf = null;
+    for (const d of net.held.splice(0)) d();
+    net.run(200);
     expect(ends).toEqual(['citadel']);
     expect(ga.over).toBe(true);
+    expect(ga.desyncs + gb.desyncs).toBe(0);
   });
 
   it('repairs a diverged replica from a snapshot', () => {

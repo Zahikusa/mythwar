@@ -544,9 +544,13 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
    (Decided: left. The notice can only show once the page hears the server again — and by then
    its pings reach the server too, so the hold ends within about a second; "Rejoining the
    battle…" reads right for that moment and for a real reconnect alike.)
-240. [ ] `tests/netgame.test.ts` #219's test calls NetGame's private `publish()` / `onOver()`
+240. [x] `tests/netgame.test.ts` #219's test calls NetGame's private `publish()` / `onOver()`
    directly — brittle. Drive it through SimNet instead: hold back the server's 'over' message for
    one page (a hook in FakeSocket's send) while its turns flow, then release it.
+   (Done: `SimNet.holdIf` / `held`. The test pauses the battle, sets the AI-side citadel to 0 HP
+   on the server and both replicas at one tick (no desync), resumes with Ada's 'over' held: her
+   replica sees the fall, no results; released → results with the verdict. Fails against the
+   pre-#219 NetGame.)
 241. [ ] `scripts/smoke.ts` still has ~74 fixed sleeps, most 100–600 ms after in-battle taps or
    keys (sandbox X, cards, chips, the gate panel). #204 took the menu changes; the next are the
    ones whose check reads state the tap sets (queue length, a panel open): a small
