@@ -645,10 +645,13 @@ on screen.)
    walkover.", no Worthy Rival / first-victory feat) and the phone room's chips (≥ 37 px on the
    scaled stage, none overlapping), landscape and upright.
 (Items 259–: open for the next run.)
-259. [ ] README's and docs' pictures (`docs/*.jpg`, `npm run docshot`) predate run #10's visible
+259. [x] README's and docs' pictures (`docs/*.jpg`, `npm run docshot`) predate run #10's visible
    changes: "How to play" / "Begin battle", the room's note under its header on phones, the
    results' subtitle line. Re-shoot the ones that show them (title, room, results) and check
    each still says what its caption says.
+   (Done: only `docs/title.jpg` showed a change ("How to Play") — re-shot (`shoot menu-title`,
+   docshot 1200). The room picture is a desktop room (its layout only changed on short
+   stages); the phone picture is a battle; the others are single-player battles.)
 260. [x] The server logs "went quiet" / "heard from again" for every Wi-Fi blip of 4 s+ (#222) —
    a flaky phone could fill the host's console in a long session. Keep the first of each in a
    battle and sum the rest at the battle's end ("Bo went quiet 5 times, 23 s in all").
