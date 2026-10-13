@@ -157,7 +157,9 @@ export class Menus {
       el!.setAttribute('role', k === 'title' ? 'region' : 'dialog');
       el!.setAttribute('aria-label', labels[k as Screen] ?? k);
       this.root.appendChild(el!);
+      el!.addEventListener('scroll', () => moreBelow(el!), { passive: true });
     }
+    window.addEventListener('resize', () => this.screens[this.screen] && moreBelow(this.screens[this.screen]!));
     this.show('none');
   }
 
@@ -273,6 +275,9 @@ export class Menus {
     if (screen === 'riddles') this.refreshRiddles();
     if (screen === 'settings') for (const f of this.syncers) f();
     if (screen !== 'none') this.focusScreen(screen);
+    // (After the screen has laid out: whether content waits below its pinned buttons.)
+    const el = this.screens[screen];
+    if (el) requestAnimationFrame(() => moreBelow(el));
   }
 
   /**
@@ -1364,4 +1369,12 @@ function niceCeil(v: number): number {
   const p = Math.pow(10, Math.floor(Math.log10(v)));
   for (const m of [1, 2, 2.5, 5, 10]) if (v <= m * p) return m * p;
   return 10 * p;
+}
+
+/**
+ * Marks a screen whose content continues below what's shown (`more`): its pinned buttons then get
+ * a backdrop, so what scrolls under them reads as "more below", not as cut off.
+ */
+function moreBelow(el: HTMLElement): void {
+  el.classList.toggle('more', el.scrollHeight - el.scrollTop - el.clientHeight > 2);
 }

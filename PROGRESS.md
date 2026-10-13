@@ -471,6 +471,24 @@ builds back all load and play; no parseable settings value crashed; odd Hall fil
 109. [x] Gamepad: smoke's D-pad walk (#28) covers the single-player results; the online results
    (emote chips, Leave room · Share · Room · Rematch) have no reachability check. (Done: the same
    walk in mpsmoke on the online results — all seven reachable.)
+(Items 110–115: an independent visual review from screenshots, 2026-10-13 — title, foe screen,
+how-to, bestiary, feats and desktop battles showed nothing worth reporting.)
+110. [x] Phone screens that scroll under their pinned buttons (results, settings) looked cut off: the
+   last stats row and the sigil button half under the buttons, no backdrop (dropped on purpose
+   earlier: a fade looked odd where nothing scrolls). (Done: a `more` class while content waits
+   below — kept on scroll and resize — gives the pinned row a full-width fade; checked in shots.)
+111. [ ] `mobile-blesspanel` (844×390): the blessing panel is taller than the screen — its top
+   covers the HP bars, its bottom edge is off-screen (`.hud.mobile .panel { max-height }`,
+   hud.css ~2426, isn't holding); the HUD's numbers show through its header as ghost text.
+112. [ ] `mobile-land`: the hold shield of the selected lane covers its lane-strength bar (`.lbar`
+   at `top: calc(100% + 5px)`, the tab scaled 1.18 when selected; shield at `g.y + 10·s`).
+113. [ ] Battle intro banner ("VS HIPPOLYTA, QUEEN OF THE AMAZONS" + the chapter line): no backing
+   plate — over the top lane's path and shrine the italic line is hard to read (`.banner`,
+   `.banner .bsub`, hud.css ~1850–1910).
+114. [ ] Unselected lane tabs are nearly invisible on the dark wall (35%-opacity ring, 60% text —
+   `.lanetab`, hud.css ~1375); only a queue badge makes them noticeable.
+115. [ ] Results over a battle: the HUD shows faintly through the overlay (a "Counter!" badge behind
+   Copy result) and the general's faded taunt bubble is unreadable behind it.
 
 
 

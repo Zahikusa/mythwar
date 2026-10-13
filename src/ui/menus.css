@@ -1713,6 +1713,16 @@
     background: rgb(17, 10, 30);
   }
 
+  /* …but while content waits below them (Menus' `more`), a backdrop: what passes under the
+     buttons reads as "scroll for more", not as cut off. */
+  .screen.more > .mrow {
+    background: linear-gradient(to bottom, rgba(17, 10, 30, 0), rgba(17, 10, 30, 0.94) 16px);
+    /* (Across the whole screen, its padding included — not just behind the buttons.) */
+    align-self: stretch;
+    margin: -16px -20px 0;
+    padding: 16px 20px 0;
+  }
+
   /* Settings in two columns: sliders beside toggles. */
   .sbox {
     width: 100%;
