@@ -37,6 +37,20 @@ describe('serveStatic', () => {
     expect(js.headers.get('content-type')).toContain('text/javascript');
   });
 
+  it('takes its folder in any spelling — forward slashes, a trailing one (backlog 295)', async () => {
+    for (const dir of [root.replace(/\\/g, '/'), `${root}/`]) {
+      const other = createServer(serveStatic(dir));
+      await new Promise<void>((r) => other.listen(0, '127.0.0.1', () => r()));
+      try {
+        const res = await fetch(`http://127.0.0.1:${(other.address() as { port: number }).port}/`);
+        expect(res.status).toBe(200);
+        await res.text();
+      } finally {
+        await new Promise<void>((r) => other.close(() => r()));
+      }
+    }
+  });
+
   it('keeps no more than COMPRESSED_MAX compressed copies, however many builds it served', async () => {
     // (fetch would decompress on its own; a raw request shows the gzip body as sent.)
     const raw = (path: string) =>

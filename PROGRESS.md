@@ -191,6 +191,31 @@ the save file re-cleaned on load.)
 289. [ ] A griefer in a waiting room can make the server broadcast room updates up to 120×/s to the
    other player (alternating reported ping, renames, trial toggles that un-ready both). Coalesce
    room broadcasts (~4/s, as room lists are).
+(Items 290–295: an independent review of long sessions — two puppeteer browsers, 36 rematches in
+one room and 12 room visits, forced GC between readings, 2026-10-13: **no leaks** — DOM nodes,
+listeners, timers, sockets and BroadcastChannels flat; heap levels off at battle 21 (the
+journal's cap), localStorage at battle 30; frame rate the same from the first battle to the
+last; server heap flat.)
+290. [ ] The room and results screens cost as much CPU as a battle: the title's AI-vs-AI backdrop
+   simulates and renders at full rate behind the (see-through) room, the finished battle behind
+   the results — on phone B 194 ms of work per second in the room, 166 in battle. A phone never
+   idles between battles all evening (heat, battery). Cap rendering (~30 fps) or freeze the
+   backdrop while a menu covers the canvas, on touch devices at least.
+291. [ ] `server/net.ts` ~126: the lobby loop runs every 4 ms even with no rooms — 2.3% of a core
+   for hours on the host's laptop (keeps it out of deep idle). Tick fast only while a match is
+   counting down, running or resuming; otherwise ~100 ms does for grace, sweeps and lists.
+292. [ ] A page that goes back to the title forgets its session, but the server keeps it (and its
+   last battle's snapshot, 2–16 kB) for SESSION_TTL (10 min): 12 exits left 13 sessions.
+   Harmless on a LAN; on a public server drop the snapshot on 'leave' or add a "forget me".
+293. [ ] Every return to the title (Room from the results, leaving a room) re-runs the backdrop
+   battle's 40–420 s fast-forward on the main thread: 5–87 ms on desktop, 110–124 ms at 2× CPU
+   throttle — a hitch on a phone's "Room" press. Keep a running backdrop, or forward in slices.
+294. [ ] The server console logs "hello …" and "… disconnected" for every reconnect — a phone that
+   sleeps and wakes in a room adds a pair each time (#260 summed only "went quiet"). Log a
+   returning session once per room / battle and sum the rest.
+295. [x] `server/static.ts` ~82 compares the resolved file path with the root as given: a root in
+   forward slashes on Windows ("C:/…/dist") 404s every file (main.ts passes a resolved path, so
+   the release is fine). `resolve(root)` inside `serveStatic`. (Done; test — failed before.)
 271. [x] docs/MULTIPLAYER.md's "What happens when…" lacks run #10's room behaviours: a short app
    switch keeps the seat and Ready (#264), a longer one redials at once on return (#243), room
    news takes turns (#262), and a silent phone mid-battle (#222 — there) vs in the room.

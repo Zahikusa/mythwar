@@ -2,7 +2,7 @@ import { createReadStream, statSync } from 'node:fs';
 import type { Stats } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { extname, join, normalize, sep } from 'node:path';
+import { extname, join, normalize, resolve, sep } from 'node:path';
 import { promisify } from 'node:util';
 import { brotliCompress, constants, gzip } from 'node:zlib';
 
@@ -61,7 +61,10 @@ const TYPES: Record<string, string> = {
 };
 
 /** Serves the built game from `root` (GET/HEAD only, no directory escapes). */
-export function serveStatic(root: string): (req: IncomingMessage, res: ServerResponse) => void {
+export function serveStatic(dir: string): (req: IncomingMessage, res: ServerResponse) => void {
+  // (Resolved as the files' paths are below: "C:/game/dist" or "dist/" would otherwise never
+  // prefix "C:\game\dist\index.html" and every file would be "Not found".)
+  const root = resolve(dir);
   return (req, res) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       res.writeHead(405).end();
