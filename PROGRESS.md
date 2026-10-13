@@ -1,8 +1,26 @@
 # PROGRESS
 
-Status: **Phase 2 in progress** — 100 design iterations, one per lens of Jesse Schell's
-*The Art of Game Design* (started run #5, 2026-10-12). Phase 1 (local Wi-Fi multiplayer) is
-complete; its log follows below the lens plan.
+Status: complete, in verification mode — both phases of TASK.md are done: Phase 1 (local Wi-Fi
+multiplayer, run #4) and Phase 2 (100 iterations, one per lens of Jesse Schell's *The Art of
+Game Design*, runs #5–#7, finished 2026-10-13). Each run now: review, then complete ≥ 2 items of
+the improvement backlog below (verified, committed) and add what the review finds.
+
+## Improvement backlog (verification mode, phase 2)
+1. [ ] `src/ui/heroes.ts`: a veteran's name comes from its unit id alone, so two veterans of one
+   kind can share a name in the same battle ("Your Minotaur, Asterion, rises…" twice, for two
+   different minotaurs). Assign names per battle in the order veterans rise.
+2. [ ] `server/lobby.ts` `hallEntry`: "days played" uses UTC days, so a European evening that
+   runs past 01:00/02:00 local time counts as two days and inflates "came back on another day".
+   Use the server's local calendar day.
+3. [ ] Online results: no way to say "Well played!" after the battle (quick messages only exist
+   in battle) — phase-1 backlog #25, still open.
+4. [ ] `scripts/smoke.ts`: nothing checks that the results screen fits a 1600×900 / 1366×768
+   window in its fullest form (new feats + new best + chapter close + break note + chronicle);
+   several lenses added lines to it and two of them overflowed until spotted in screenshots.
+5. [ ] `src/render/renderer.ts`: a temper gesture (#77) can start in the middle of an attack
+   swing and overlay it (a hop mid-swing); start it when the swing ends instead.
+6. [ ] `package.json`: the new tools `scripts/servercost.ts` and `scripts/ogcard.mjs` have no npm
+   aliases (economy, designcheck, puzzlecheck do).
 
 **Start here: [docs/BRIEF.md](docs/BRIEF.md)** — one page: what TASK.md asked for, what was
 built, how to see each part working, and the decisions that need you.
