@@ -67,6 +67,8 @@ export class NetGame extends Game {
   resyncs = 0;
   /** Our command failed when the server applied it (raced with something else). */
   onReject: (reason: string) => void = () => {};
+  /** One of this player's own orders took effect (co-op feats tell the allies' deeds apart). */
+  onOwnOrder: (cmd: Command) => void = () => {};
   /** The world was replaced by a server snapshot (renderer state should be reset). */
   onResync: () => void = () => {};
   /** Our replica disagreed with the server (count so far). Should never happen; see the log. */
@@ -215,7 +217,10 @@ export class NetGame extends Game {
       for (const c of list) {
         const r = w.apply({ ...c.cmd, team: c.team } as Command);
         // (Our own orders carry our seat; the co-op AI's carry none.)
-        if (c.seat === this.seat && this.mine.delete(c.seq) && !r.ok) this.onReject(r.reason);
+        if (c.seat === this.seat && this.mine.delete(c.seq)) {
+          if (!r.ok) this.onReject(r.reason);
+          else this.onOwnOrder({ ...c.cmd, team: c.team } as Command);
+        }
       }
     }
     w.step();

@@ -27,6 +27,39 @@ describe('feats', () => {
     expect(got).toEqual(['annihilation']);
   });
 
+  it("co-op: a dragon, the last ascension, a full blessing count only for the ally who ordered it (backlog 198)", async () => {
+    const { BLESSING_MAX_RANK, MAX_AGE } = await import('../src/sim/data.ts');
+    const w = new World();
+    const dragon: SimEvent = { type: 'spawn', unitId: 9, team: 0, lane: 1, defId: 'dragon' };
+    const ascend: SimEvent = { type: 'ageUp', team: 0, age: MAX_AGE, t: 600 };
+    const bless: SimEvent = { type: 'blessing', team: 0, blessing: 'might', rank: BLESSING_MAX_RANK };
+    // The other ally's deeds: nothing for us.
+    const a = tracker();
+    a.t.start(w, 0, true);
+    a.t.onEvents([dragon, ascend, bless], w);
+    expect(a.got).toEqual([]);
+    // Our own orders: ours.
+    const b = tracker();
+    b.t.start(w, 0, true);
+    b.t.ordered({ type: 'train', team: 0, unitId: 'dragon', lane: 1 }, w);
+    b.t.ordered({ type: 'bless', team: 0, blessing: 'might' }, w);
+    w.players[0].age = MAX_AGE;
+    b.t.ordered({ type: 'ageUp', team: 0 }, w);
+    b.t.onEvents([dragon, ascend, bless], w);
+    expect(b.got.sort()).toEqual(['blessed', 'celestial', 'dragon']);
+    // One dragon ordered, two step out (the ally's too): one feat moment, no double count.
+    const c = tracker();
+    c.t.start(w, 0, true);
+    c.t.ordered({ type: 'train', team: 0, unitId: 'dragon', lane: 1 }, w);
+    c.t.onEvents([dragon], w);
+    expect(c.got).toEqual(['dragon']);
+    // Outside co-op, the side is the player's: as before.
+    const d = tracker();
+    d.t.start(w, 0);
+    d.t.onEvents([dragon, bless], w);
+    expect(d.got.sort()).toEqual(['blessed', 'dragon']);
+  });
+
   it('victory feats depend on the foe, the time and the citadel', () => {
     const w = new World();
     w.winner = 0;

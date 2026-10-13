@@ -568,7 +568,8 @@ export class App {
       this.hud.toast(`Feat: ${f.name} — ${f.desc}`, 'feat');
       this.audio.ui('bless');
     });
-    this.feats.start(game.world, game.playerTeam);
+    this.feats.start(game.world, game.playerTeam, game instanceof NetGame && !!game.coop);
+    if (game instanceof NetGame) game.onOwnOrder = (cmd) => this.feats?.ordered(cmd, game.world);
     this.chronicle = new Chronicle(game.playerTeam, game instanceof NetGame ? game.foeName : PERSONAS[this.difficulty].name, game instanceof NetGame && !!game.coop);
     // (Continued or rejoined midway: the story and the battlefield pick up from where it stands.)
     if (game.world.time > 0) {

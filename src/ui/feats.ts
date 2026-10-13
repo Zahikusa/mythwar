@@ -1,7 +1,7 @@
 import { DIFFICULTIES } from '../ai/ai.ts';
 import type { Difficulty } from '../ai/ai.ts';
 import { BLESSING_MAX_RANK, MAX_AGE } from '../sim/data.ts';
-import type { SimEvent, Team } from '../sim/types.ts';
+import type { Command, SimEvent, Team } from '../sim/types.ts';
 import type { World } from '../sim/world.ts';
 
 /** A feat: a deed worth being proud of, earned once and kept (Settings.feats). */
@@ -68,6 +68,12 @@ export class FeatTracker {
   private kills: number[][] = [[], [], []];
   private surgesDrawn = 0;
   private lowest = 1;
+  /**
+   * Co-op: the side is shared, so deeds that come from one order — the Elder Dragon, the last
+   * ascension, a blessing's top rank — count only for the ally who gave it (see `ordered`).
+   * Null outside co-op.
+   */
+  private own: { dragons: number; ascend: boolean; blessings: Set<string> } | null = null;
   /** Feats earned in the current battle (for the results screen). */
   earned: Feat[] = [];
 
@@ -76,12 +82,22 @@ export class FeatTracker {
     this.unlock = unlock;
   }
 
-  start(world: World, me: Team): void {
+  start(world: World, me: Team, coop = false): void {
     this.me = me;
+    this.own = coop ? { dragons: 0, ascend: false, blessings: new Set() } : null;
     this.kills = [[], [], []];
     this.surgesDrawn = 0;
     this.lowest = world.players[me].baseHp / world.players[me].baseMaxHp;
     this.earned = [];
+  }
+
+  /** Co-op: one of this player's own orders took effect. */
+  ordered(cmd: Command, world: World): void {
+    const own = this.own;
+    if (!own) return;
+    if (cmd.type === 'train' && cmd.unitId === 'dragon') own.dragons++;
+    else if (cmd.type === 'ageUp' && world.players[this.me].age === MAX_AGE) own.ascend = true;
+    else if (cmd.type === 'bless') own.blessings.add(cmd.blessing);
   }
 
   /** Grants a feat earned outside the battle's events (the pinnacle, after the records update). */
@@ -102,8 +118,17 @@ export class FeatTracker {
     const me = this.me;
     const p = world.players[me];
     for (const e of events) {
-      if (e.type === 'ageUp' && e.team === me && e.age === MAX_AGE) this.give('celestial');
-      else if (e.type === 'spawn' && e.team === me && e.defId === 'dragon') this.give('dragon');
+      const own = this.own;
+      if (e.type === 'ageUp' && e.team === me && e.age === MAX_AGE) {
+        if (!own || own.ascend) this.give('celestial');
+      } else if (e.type === 'spawn' && e.team === me && e.defId === 'dragon') {
+        // (Dragons step out in the order they were trained: ours, if we ordered one not yet out.)
+        if (!own) this.give('dragon');
+        else if (own.dragons > 0) {
+          own.dragons--;
+          this.give('dragon');
+        }
+      }
       else if (e.type === 'death' && e.team !== me) {
         const list = this.kills[e.lane];
         list.push(world.time);
@@ -111,7 +136,7 @@ export class FeatTracker {
         if (list.length >= 9) this.give('annihilation');
       } else if (e.type === 'shrine' && e.owner === me && world.shrines.every((s) => s.owner === me)) this.give('shrines');
       else if (e.type === 'surge' && e.phase === 'end' && e.gained[me] >= 1 && ++this.surgesDrawn >= 3) this.give('surges');
-      else if (e.type === 'blessing' && e.team === me && e.rank >= BLESSING_MAX_RANK) this.give('blessed');
+      else if (e.type === 'blessing' && e.team === me && e.rank >= BLESSING_MAX_RANK && (!own || own.blessings.has(e.blessing))) this.give('blessed');
     }
     this.lowest = Math.min(this.lowest, p.baseHp / p.baseMaxHp);
   }

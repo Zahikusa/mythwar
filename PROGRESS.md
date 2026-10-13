@@ -869,11 +869,14 @@ it prints, inviting, stopping — 2026-10-13.)
    "Leaving hands the battle to your ally, who fights on"; a stayer who won alone reads "You
    toppled the Novice — after Bo had left." / "Well fought — alone at the end!". Side-wide feats
    for one ally's deed stay — split into #198.)
-198. [ ] Co-op feats: Wyrmcaller, Favoured, Among the Gods (src/ui/feats.ts ~100–113) are judged on the
+198. [x] Co-op feats: Wyrmcaller, Favoured, Among the Gods (src/ui/feats.ts ~100–113) are judged on the
    shared side, so one ally's dragon / rank-5 blessing / Celestial ascent earns them for both.
    Judge them by the player's own orders (the turn's `seat`), or mark them "together". (Note for whoever takes
    it: sim events don't say which seat ordered; NetGame sees each applied command's `seat` in the
-   turns — count own dragon / ascend / bless orders there and credit the matching events.)
+   turns — count own dragon / ascend / bless orders there and credit the matching events.) (Done
+   that way: `NetGame.onOwnOrder` (our own orders as they take effect in a turn) →
+   `FeatTracker.ordered`; in co-op Wyrmcaller, Among the Gods and Favoured need the player's own
+   dragon / last ascension / blessing; test.)
 199. [x] Co-op HUD: after the ally left (#191 now says so in a toast), the name line still reads
    "You & Bo · Fae Wilds" (hud.ts ~1095) — "You (Bo left)" or just "You" once their seat is empty. (Done:
    no ally named once their seat is empty — the player's own name line shows; mpsmoke checks.)
@@ -921,7 +924,7 @@ built, how to see each part working, and the decisions that need you.
   longer gets the win; a room its ally left opens again; the stayer is told the ally left / is
   away; co-op wording in the away notice, the room's score, the rematch note, the pause note and
   the verdict; the results say when an offered rematch is a different battle (#193, both modes).
-  Open: #198 (side-wide feats for one ally's deed), #197 (minor wording).
+  Then #198: side-wide feats only for the ally who ordered the deed. Open: #197 (minor wording).
 - **Open question added:** the downloadable release (v1.0.0) is ~280 commits old.
 - Tests 256 → 284; `npm run verify` and `verify:all` green (engines identical, 0.67 ms script per
   frame); `mpengines` (WebKit vs Chrome/Firefox) in sync.
