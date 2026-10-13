@@ -571,6 +571,12 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    script): a `npm run docshots` that renders `docs/*.jpg` from named shoot scenarios would keep
    them current with one command. (Done as a tool rather than a fixed list: `npm run docshot --
    <scenario> <docs/name.jpg> [width]` turns a `shoot` PNG into a README JPEG; README says so.)
+133. [x] PRIVACY.md didn't mention the reset time stored with the progress copy (#99). (Done.)
+134. [ ] `scripts/smoke.ts`: many waits are fixed `sleep(3600)` after a citadel falls (results take
+   2.6 s + fade) — wait for `menus.current === 'over'` instead: faster, and less likely to flake
+   on a shared CI runner (#127).
+135. [ ] perfcheck hasn't run since the late run-#8 HUD changes (#79/#98 labels, #110's `more`
+   listeners, #113's banner pool): re-measure (it was 1.02 ms of script per frame after #63).
 
 
 
