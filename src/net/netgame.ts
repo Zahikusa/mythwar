@@ -391,7 +391,7 @@ export class NetGame extends Game {
     return { spend, trains, ascending, casting, blessRanks };
   }
 
-  private blocker(cmd: Command): string | null {
+  override blocker(cmd: Command): string | null {
     const w = this.world;
     const team = this.team;
     if (cmd.team !== team) return 'Not your side';

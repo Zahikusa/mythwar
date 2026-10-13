@@ -251,14 +251,19 @@ the improvement backlog below (verified, committed) and add what the review find
    riddles: puzzlecheck answers unchanged; designcheck passes — 100/53/17/3%, even battles
    18.0 min, left side 53%. Battle outcomes can differ from earlier builds — online, server
    and pages come from one build anyway.)
-61. [ ] Sandbox "For: Foe" (`src/game.ts` ~144 remaps commands to team 1): the HUD's queue chips,
+61. [x] Sandbox "For: Foe" (`src/game.ts` ~144 remaps commands to team 1): the HUD's queue chips,
    turret panel (Sell!), blessing panel and card blockers still read `g.playerTeam` — a queue
-   chip cancels a foe creature of the same kind; the foe's queue can't be seen.
-62. [ ] `src/ui/hud.ts` ~1547: Bastion promises "+375 citadel health" under the Glass Citadel trial
-   where the citadel gains 187.5 — use `baseMaxHpFor` before/after.
-63. [ ] Online: card 'poor', Ascend 'ready' (+ chime), bless 'avail', turret 'poor' use the raw gold;
+   chip cancels a foe creature of the same kind; the foe's queue can't be seen. (Done:
+   `Game.commandTeam` for the queue, turret and blessing panels, the armed card and the power
+   check; the cards' "foeside" look stays a sandbox thing (online seat 1 keeps its own); smoke.)
+62. [x] `src/ui/hud.ts` ~1547: Bastion promises "+375 citadel health" under the Glass Citadel trial
+   where the citadel gains 187.5 — use `baseMaxHpFor` before/after. (Done: × GLASS_CITADEL.)
+63. [x] Online: card 'poor', Ascend 'ready' (+ chime), bless 'avail', turret 'poor' use the raw gold;
    `NetGame.blocker` and the gold counter subtract orders in flight — with 160 gold, a 30-gold
    summon in flight and a 150 tithe, Ascend glows "ready", a tap says "Not enough gold".
+   (Done: `Game.blocker(cmd)` — the world's in single player, NetGame's in-flight-aware one
+   online — lights cards, Ascend (+ chime), blessings and turrets; the Ascend fill and "need Ng"
+   use the shown gold; unit test.)
 64. [ ] `src/ai/ai.ts` ~295/327: the gold the AI keeps for the Elder Dragon also blocks buying the
    Dragon (needs ~4,700–5,100 gold while calm). Low impact; leave the reserve out for the Dragon.
 

@@ -134,9 +134,39 @@ export class Game {
     return [];
   }
 
+  /** The side the player's orders go to: their own — or, in the sandbox's "For: Foe" mode, the foe's. */
+  get commandTeam(): Team {
+    return this.options.sandbox && this.sandboxFoe ? 1 : this.playerTeam;
+  }
+
   /** The player's gold as the HUD shows it. */
   displayGold(): number {
     return this.world.players[this.playerTeam].gold;
+  }
+
+  /**
+   * Why `cmd` would be refused now (null: it would be taken). The HUD lights its buttons by this,
+   * so a button never looks usable when a tap would fail — online it counts orders still on
+   * their way to the server.
+   */
+  blocker(cmd: Command): string | null {
+    const w = this.world;
+    // (Orders go to the commanded side — see command().)
+    const team = this.options.sandbox ? this.commandTeam : cmd.team;
+    switch (cmd.type) {
+      case 'train':
+        return w.trainBlocker(team, cmd.unitId);
+      case 'ageUp':
+        return w.ageUpBlocker(team);
+      case 'bless':
+        return w.blessingBlocker(team, cmd.blessing);
+      case 'buildTurret':
+        return w.turretBlocker(team, cmd.lane, cmd.turretId);
+      case 'power':
+        return w.powerBlocker(team, cmd.lane);
+      default:
+        return null;
+    }
   }
 
   command(cmd: Command): CommandResult {

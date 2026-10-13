@@ -401,6 +401,22 @@ describe('NetGame over a simulated network', () => {
 });
 
 describe('NetGame on its own', () => {
+  it('the HUD’s blocker counts orders still on their way (no "ready" button that a tap refuses — backlog 63)', async () => {
+    const { NetGame } = await import('../src/net/netgame.ts');
+    const { AGES, AGE_UNITS } = await import('../src/sim/data.ts');
+    const g = new NetGame({ seat: 0, names: ['A', 'B'], seed: 5, countdown: 0, send: () => true, now: () => 0 });
+    const me = g.world.players[0];
+    const tithe = AGES[1].ascendCost;
+    const guardian = AGE_UNITS[0][0];
+    me.xp = AGES[1].xpRequired;
+    me.gold = tithe + guardian.cost - 1;
+    expect(g.blocker({ type: 'ageUp', team: 0 })).toBeNull();
+    expect(g.command({ type: 'train', team: 0, unitId: guardian.id, lane: 1 }).ok).toBe(true);
+    // The summon is on its way: the gold left is short of the tithe, as the counter shows.
+    expect(g.displayGold()).toBe(tithe - 1);
+    expect(g.blocker({ type: 'ageUp', team: 0 })).toBe('Not enough gold');
+  });
+
   it('asks for a snapshot at once when orders arrive for ticks already played', async () => {
     const { NetGame } = await import('../src/net/netgame.ts');
     const sent: string[] = [];

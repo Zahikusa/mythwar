@@ -6,6 +6,7 @@ import {
   BLESSING_MAX_RANK,
   BLESSING_ORDER,
   COUNTERS,
+  GLASS_CITADEL,
   LANE_COUNT,
   MAX_AGE,
   POWERS,
@@ -460,8 +461,7 @@ export class Hud {
   toggleHold(lane: number = this.game?.view.selectedLane ?? -1): void {
     const g = this.game;
     if (!g || lane < 0 || lane >= LANE_COUNT) return;
-    const team = g.options.sandbox && g.sandboxFoe ? 1 : g.playerTeam;
-    const hold = !g.world.players[team].hold[lane];
+    const hold = !g.world.players[g.commandTeam].hold[lane];
     if (!g.command({ type: 'stance', team: g.playerTeam, lane, hold }).ok) return;
     this.cb.sound(hold ? 'build' : 'select');
     this.toast(hold ? `${LANE_NAMES[lane]} lane: holding at the shrine` : `${LANE_NAMES[lane]} lane: advance!`, 'info', true);
@@ -508,7 +508,7 @@ export class Hud {
     const g = this.game;
     const a = this.armed;
     if (!g || !a) return;
-    const me = g.world.players[g.playerTeam];
+    const me = g.world.players[g.commandTeam];
     if (g.over || UNITS[a.unitId]?.age !== me.age) {
       this.armed = null;
       return;
@@ -535,7 +535,7 @@ export class Hud {
   beginPowerTargeting(): void {
     const g = this.game;
     if (!g) return;
-    const why = g.world.powerBlocker(g.playerTeam);
+    const why = g.world.powerBlocker(g.commandTeam);
     if (why) {
       this.fail(why, this.el.power);
       return;
@@ -1031,7 +1031,8 @@ export class Hud {
     const E = this.el;
 
     // (Sandbox "For: Foe": the cards become the foe's — a mode you can't miss, Lens #60.)
-    const cardTeam = g.options.sandbox && g.sandboxFoe ? 1 : 0;
+    // (0/1 here is the look — "foeside" — not a seat: online seat 1 plays with its own cards.)
+    const cardTeam = g.commandTeam !== g.playerTeam ? 1 : 0;
     if (this.cardAge !== me.age || this.cardTeam !== cardTeam) this.rebuildCards(me.age, cardTeam);
     this.serviceArmed();
 
@@ -1108,7 +1109,7 @@ export class Hud {
       setStyle(E.xpfill, 'transform', `scaleX(${Math.max(0, k).toFixed(3)})`);
       // XP alone isn't enough: ascending also takes the gold tithe.
       const xpReady = me.xp >= next.xpRequired;
-      setText(E.xptext, xpReady ? (me.gold >= next.ascendCost ? 'Ready to ascend' : 'XP ready') : `${fmt(me.xp)} / ${fmt(next.xpRequired)}`);
+      setText(E.xptext, xpReady ? (g.displayGold() >= next.ascendCost ? 'Ready to ascend' : 'XP ready') : `${fmt(me.xp)} / ${fmt(next.xpRequired)}`);
       toggle(E.xpfill, 'full', me.xp >= next.xpRequired);
     } else {
       setStyle(E.xpfill, 'transform', 'scaleX(1)');
@@ -1120,7 +1121,7 @@ export class Hud {
     const gold = g.displayGold();
     const rate = w.incomeOf(g.playerTeam) + surging;
     for (const c of this.cards) {
-      const why = w.trainBlocker(g.playerTeam, c.def.id);
+      const why = g.blocker({ type: 'train', team: g.playerTeam, unitId: c.def.id, lane: g.view.selectedLane });
       const poor = why === 'Not enough gold';
       toggle(c.el, 'poor', poor);
       // What the gold is worth in time: a short savings bar and "in Ns" on a card you can't pay yet.
@@ -1228,11 +1229,11 @@ export class Hud {
       // The fill tracks XP; once the XP is there it tracks the gold for the tithe (gold tint), so
       // saving up visibly fills the button.
       const xpK = Math.min(1, me.xp / next.xpRequired);
-      const fillK = xpK >= 1 ? Math.min(1, Math.max(0, me.gold) / next.ascendCost) : xpK;
+      const fillK = xpK >= 1 ? Math.min(1, gold / next.ascendCost) : xpK;
       setStyle(E.ascFill, 'transform', `scaleY(${fillK.toFixed(3)})`);
-      const why = w.ageUpBlocker(g.playerTeam);
+      const why = g.blocker({ type: 'ageUp', team: g.playerTeam });
       // With the XP in hand, say exactly how much gold is still missing.
-      const short = Math.ceil(next.ascendCost - me.gold);
+      const short = Math.ceil(next.ascendCost - gold);
       const compact = this.layoutInfo?.mode === 'mobile';
       const needLine = compact ? `need ${fmt(short)}g` : `${next.name} · need ${fmt(short)}g`;
       const costLine = compact ? `${fmt(next.ascendCost)}g` : `${next.name} · ${fmt(next.ascendCost)}g`;
@@ -1272,7 +1273,7 @@ export class Hud {
     }
     if (this.panel === 'turret') this.updateTurretPanel();
     if (this.panel === 'bless') this.updateBlessPanel();
-    const canBless = BLESSING_ORDER.some((id) => w.blessingBlocker(g.playerTeam, id) === null);
+    const canBless = BLESSING_ORDER.some((id) => g.blocker({ type: 'bless', team: g.playerTeam, blessing: id }) === null);
     toggle(E.blessBtn, 'avail', canBless);
     // Nudge: a turret from an earlier age can be upgraded.
     const outdated = me.turrets.some((t) => t.def && t.def.age < me.age);
@@ -1381,7 +1382,8 @@ export class Hud {
 
   private updateQueue(): void {
     const g = this.game!;
-    const me = g.world.players[g.playerTeam];
+    // (The commanded side's queue: in the sandbox's "For: Foe" mode, the foe's.)
+    const me = g.world.players[g.commandTeam];
     const q = me.queue;
     const chips = this.queueChips;
     // Online, orders still on their way show as faded chips in the next free slots.
@@ -1411,7 +1413,7 @@ export class Hud {
       const ready = !!q[n]?.ready;
       // Each gate trains its own creature: one may be training per lane.
       const lane = q[n]?.lane ?? -1;
-      const training = lane >= 0 && n === g.world.trainingIndex(g.playerTeam, lane);
+      const training = lane >= 0 && n === g.world.trainingIndex(g.commandTeam, lane);
       const prog = ready ? 1 : training ? Math.min(1, me.trainProgress[lane] / UNITS[q[n].unitId].trainTime) : 0;
       setStyle(chips[n].prog, 'width', `${(prog * 100).toFixed(1)}%`);
       // Gold border = trained, waiting for room at a jammed gate.
@@ -1449,12 +1451,12 @@ export class Hud {
   private updateTurretPanel(): void {
     const g = this.game!;
     const w = g.world;
-    const me = w.players[g.playerTeam];
+    const me = w.players[g.commandTeam];
     const [bolt, blast] = AGE_TURRETS[me.age];
     for (let lane = 0; lane < LANE_COUNT; lane++) {
       const row = this.turretRows[lane];
       const cur = me.turrets[lane].def;
-      const bastion = w.defenseMult(g.playerTeam);
+      const bastion = w.defenseMult(g.commandTeam);
       const sig = `${me.age}:${cur?.id ?? '-'}:${bastion}`;
       if (row.dataset.sig !== sig) {
         row.dataset.sig = sig;
@@ -1492,7 +1494,7 @@ export class Hud {
         row.append(h('div', { class: 'tlane', text: LANE_NAMES[lane] }), status, buttons);
       }
       for (const b of this.turretBuys[lane]) {
-        toggle(b, 'poor', w.turretBlocker(g.playerTeam, lane, b.dataset.id!) === 'Not enough gold');
+        toggle(b, 'poor', g.blocker({ type: 'buildTurret', team: g.playerTeam, lane, turretId: b.dataset.id! }) === 'Not enough gold');
       }
     }
   }
@@ -1500,8 +1502,8 @@ export class Hud {
   private updateBlessPanel(): void {
     const g = this.game!;
     const w = g.world;
-    const me = w.players[g.playerTeam];
-    const foe = w.players[g.playerTeam === 0 ? 1 : 0];
+    const me = w.players[g.commandTeam];
+    const foe = w.players[g.commandTeam === 0 ? 1 : 0];
     const foeList = BLESSING_ORDER.filter((id) => foe.blessings[id] > 0).map((id) => `${BLESSINGS[id].name} ${ROMAN[foe.blessings[id] - 1]}`);
     setText(this.el.foeBless, foeList.length ? `Enemy blessings: ${foeList.join(', ')}` : 'The enemy has no blessings yet.');
     for (const id of BLESSING_ORDER) {
@@ -1516,7 +1518,7 @@ export class Hud {
         else ref.buy.innerHTML = `${ICONS.gold}<span>${fmt(cost)}</span>`;
         ref.buy.setAttribute('aria-label', cost < 0 ? `${BLESSINGS[id].name}: highest rank` : `Buy ${BLESSINGS[id].name} rank ${ROMAN[rank]} for ${fmt(cost)} gold`);
       }
-      toggle(ref.buy, 'poor', cost >= 0 && me.gold < cost);
+      toggle(ref.buy, 'poor', cost >= 0 && g.blocker({ type: 'bless', team: g.playerTeam, blessing: id }) === 'Not enough gold');
       setText(ref.gain, cost < 0 ? 'Highest rank reached.' : this.blessingGain(id));
     }
   }
@@ -1525,7 +1527,7 @@ export class Hud {
   private blessingGain(id: BlessingId): string {
     const g = this.game!;
     const w = g.world;
-    const team = g.playerTeam;
+    const team = g.commandTeam;
     const p = w.players[team];
     const per = BLESSINGS[id].perRank;
     if (id === 'might') {
@@ -1544,7 +1546,9 @@ export class Hud {
       const guardian = AGE_UNITS[p.age][0];
       return `Next rank: +${fmt(guardian.hp * per)} health for each new ${guardian.name}, and as much in proportion for every other new creature.`;
     }
-    return `Next rank: +${fmt(AGES[p.age].baseHp * per)} citadel health at once (and after every ascension), +7.5% ward and turret damage.`;
+    // (Under the Glass Citadel trial the citadel — and so each rank's share — is smaller.)
+    const glass = p.trials.includes('glass') ? GLASS_CITADEL : 1;
+    return `Next rank: +${fmt(AGES[p.age].baseHp * per * glass)} citadel health at once (and after every ascension), +7.5% ward and turret damage.`;
   }
 
   get teamOf(): Team {

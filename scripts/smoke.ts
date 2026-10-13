@@ -193,6 +193,14 @@ async function sandboxFlow(page: Page): Promise<void> {
   await sleep(200);
   const q = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.players.map((p: any) => p.queue.length));
   check('sandbox: in foe mode a card summons for the foe', q[0] === 0 && q[1] === 1, JSON.stringify(q));
+  // (Backlog 61) The queue shown is the foe's — and its chip cancels the foe's order.
+  await sleep(200);
+  const chips = await page.evaluate(() => document.querySelectorAll('.hud .qchip').length);
+  const chip = await center(page, '.hud .qchip');
+  await page.mouse.click(chip.x, chip.y);
+  await sleep(200);
+  const q2 = await page.evaluate(() => (window as unknown as { __mythwar: any }).__mythwar.game.world.players.map((p: any) => p.queue.length));
+  check('sandbox: in foe mode the queue shows the foe’s orders, and a chip cancels one', chips === 1 && q2[0] === 0 && q2[1] === 0, JSON.stringify({ chips, q2 }));
   await page.keyboard.press('x');
   await sleep(200);
   const back = await page.evaluate(() => !document.querySelector('.hud.foeside'));
