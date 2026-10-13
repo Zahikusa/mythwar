@@ -277,8 +277,15 @@ the improvement backlog below (verified, committed) and add what the review find
 built, how to see each part working, and the decisions that need you.
 
 ## Run #8 in short (for the morning)
-- Verification mode, backlog items 38–57 (all but the note #23 done): two independent reviews
-  (netcode; app state flow) found 12 real defects, each reproduced by a new test before fixing.
+- Verification mode, backlog items 38–64 (all but the note #23 done): three independent reviews
+  (netcode; app state flow; simulation/AI/HUD) found 18 real defects, most reproduced by a new
+  test before fixing.
+- **Rules changed** (battle outcomes can differ from run-#7 builds): mixed mirrored armies were
+  uneven — team 1 had a one-tick edge in shot timing and in followers freed by a kill (#59–60);
+  the AI's Dragon bank no longer blocks the Dragon (#64). designcheck passes; riddles unchanged.
+- HUD: buttons light by one in-flight-aware blocker online (#63); the sandbox's foe mode shows
+  the foe's queue and panels (#61); Bastion's preview under Glass (#62); iOS audio after an
+  interruption (#58). enginecheck: V8, JavaScriptCore and SpiderMonkey still simulate identically.
 - The weightiest: **one client could crash the LAN server** (a malformed frame on a socket refused
   for the per-address limit — #44); a fault while handling a message, or in one battle, no
   longer ends the server and every battle in it (#50, #51); toggling "away" could stall a battle
