@@ -685,6 +685,9 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 156. [x] (#137, second slice) The online results' rematch wording (`Menus.updateRematch`: Rematch /
    Accept / Cancel / Back to room and the note) was untested DOM code. (Done: `rematchView()` in
    src/ui/menus.ts, pure; tests/rematch.test.ts; the duplicated doc comment merged.)
+157. [x] `shoot` had no online battle: `mp-battle` / `mobile-mp-battle` (a guest readies, then the
+   host — `afterGuest` — and the shot is a few seconds into the battle: ping, the opponent's sigil
+   on their keep and by their name). Looked at: nothing to fix.
 
 
 

@@ -33,6 +33,8 @@ interface Scenario {
    * runs `script` there; the shot is still of the first page, `after` ms later.
    */
   guest?: { settings: Record<string, unknown>; script?: string };
+  /** JS evaluated in the first page once the guest's script ran (e.g. its own Ready). */
+  afterGuest?: string;
 }
 
 /** Opens Multiplayer and hosts a battle room (the shoot server hosts rooms too). */
@@ -40,6 +42,10 @@ const hostRoom = `(async () => { const a = window.__mythwar; a.openMultiplayer()
 
 /** The second player of a full room: takes Glass Citadel as a handicap and is Ready. */
 const guestReady = { settings: { playerName: 'Bo the Bold', sigil: 3 }, script: `(() => { const m = window.__mythwar.mp; m.setTrials(['glass']); setTimeout(() => m.ready(true), 400); })()` };
+
+/** The guest just readies; the host readies after it (`afterGuest`): an online battle starts. */
+const guestBattle = { settings: { playerName: 'Bo the Bold', sigil: 3 }, script: `window.__mythwar.mp.ready(true)` };
+const hostReady = `setTimeout(() => window.__mythwar.mp.ready(true), 500)`;
 
 const cast = (age: number, lane: number) =>
   `(() => { const a = window.__mythwar; const w = a.game.world; const p = w.players[0]; p.age = ${age}; p.powerCooldown = 0; a.game.command({ type: 'power', team: 0, lane: ${lane} }); })()`;
@@ -180,6 +186,9 @@ const SCENARIOS: Scenario[] = [
   // Backlog 142: both seats filled — the guest's sigil, handicap chip and Ready, the host not yet.
   { name: 'mp-room-full', query: '', w: 1600, h: 900, wait: 1200, script: hostRoom, after: 1200, guest: guestReady },
   { name: 'mobile-mp-room-full', query: '', w: 844, h: 390, mobile: true, dpr: 2, wait: 1200, script: hostRoom, after: 1200, guest: guestReady },
+  // An online battle a few seconds in (both seats, the ping, the opponent's sigil, quick messages).
+  { name: 'mp-battle', query: '', w: 1600, h: 900, wait: 1200, script: hostRoom, after: 9000, guest: guestBattle, afterGuest: hostReady },
+  { name: 'mobile-mp-battle', query: '', w: 844, h: 390, mobile: true, dpr: 2, wait: 1200, script: hostRoom, after: 9000, guest: guestBattle, afterGuest: hostReady },
   {
     name: 'mobile-results',
     query: 'play=adept&seed=4',
@@ -371,6 +380,7 @@ async function main(): Promise<void> {
         await guest.goto(`http://127.0.0.1:${port}/?join=${code}`, { waitUntil: 'load' });
         await guest.waitForFunction(() => (window as unknown as { __mythwar: { menus: { current: string } } }).__mythwar.menus.current === 'room', { timeout: 8000 });
         if (sc.guest.script) await guest.evaluate(sc.guest.script);
+        if (sc.afterGuest) await page.evaluate(sc.afterGuest);
         await new Promise((r) => setTimeout(r, sc.after ?? 0));
         guests.push(ctx);
       }
