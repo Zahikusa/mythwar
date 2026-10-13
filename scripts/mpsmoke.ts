@@ -400,10 +400,16 @@ async function main(): Promise<void> {
     });
     check('gamepad: every control in the battle room is reachable with the D-pad', roomReach.unreachable.length === 0 && roomReach.n >= 10, JSON.stringify(roomReach));
     if (portrait) {
-      // (Backlog 164) An upright phone renaming in the room is told to turn sideways first.
+      // (Backlog 164, phase 3) An upright phone renaming in the room: the field is on the turned
+      // stage, the keyboard upright — what's typed shows upright at the top (ui/upright.ts).
       await b.tap('.rseat.mine .sname');
-      await waitFor(b, 'the turn-sideways tip in the room', () => /sideways/.test(document.querySelector('.screen.room .mpflash.show')?.textContent ?? ''), 3000);
+      await b.keyboard.type('Zed');
+      await waitFor(b, 'the upright echo of the name field', () => {
+        const e = document.querySelector('.upecho');
+        return !!e && !e.classList.contains('hidden') && /Zed/.test(e.querySelector('.uptext')?.textContent ?? '') && e.querySelector('.uplabel')?.textContent === 'Your name';
+      }, 3000);
       await b.keyboard.press('Escape');
+      await waitFor(b, 'the echo gone with the field', () => !!document.querySelector('.upecho.hidden'), 3000);
     }
 
     section('battle');

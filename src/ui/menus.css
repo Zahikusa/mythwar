@@ -2330,3 +2330,80 @@
     display: none;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Typing on an upright phone (ui/upright.ts)                          */
+/* ------------------------------------------------------------------ */
+/* On the page, upright, at the top: the keyboard comes up from the bottom. */
+.upecho {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 95;
+  padding: calc(var(--safe-t, 0px) + 8px) calc(var(--safe-r, 0px) + 10px) 8px calc(var(--safe-l, 0px) + 10px);
+  pointer-events: none;
+}
+
+.upbox {
+  pointer-events: auto;
+  max-width: 520px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'label label' 'field done';
+  align-items: center;
+  gap: 6px 10px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgb(24, 16, 42);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+  color: var(--text);
+}
+
+.uplabel {
+  grid-area: label;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.upfield {
+  grid-area: field;
+  min-height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.35);
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.uptext.empty {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.upcaret {
+  flex: none;
+  width: 2px;
+  height: 24px;
+  margin-left: 2px;
+  background: var(--gold-l);
+  animation: upblink 1s steps(2, start) infinite;
+}
+
+@keyframes upblink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.upbox .mbtn {
+  grid-area: done;
+}

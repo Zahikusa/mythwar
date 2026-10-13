@@ -149,9 +149,14 @@ Already in the code before Phase 3, and kept:
 5. [ ] The install sheet's arrow places are best guesses for some browsers (Firefox/Edge on
    iPhone, Samsung Internet, iOS 26 Safari sideways, in-app browsers): confirm on devices
    (PLAYTEST.md's checklist) and correct `guideFor`'s `spot`s.
-6. [ ] Upright phone + text field (lobby name, room code): the stage is turned but the keyboard
+6. [x] Upright phone + text field (lobby name, room code): the stage is turned but the keyboard
    comes up upright. The lobby says "turn your phone sideways before typing"; an upright input
    overlay (like the install sheet: drawn on the page, not the stage) would remove the need.
+   (Done: `src/ui/upright.ts` — while a field on the turned stage has the keyboard, an upright
+   echo at the top of the screen shows its label, what's typed and a caret, with Done; the keys
+   still go to the real field, so Enter/change/blur behave as before. The two "turn your phone
+   sideways" tips are gone; mpsmoke `--portrait` types a name in the room and expects the echo;
+   mobilecheck shoots a `typing` screen.)
 7. [ ] mobilecheck can't simulate the LAN origin (127.0.0.1 is a dev machine to platform.ts):
    a `?lanpreview` (or hostname override in the check) would let it shoot the LAN line in
    Settings and the "Play full screen" offer.

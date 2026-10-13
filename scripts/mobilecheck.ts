@@ -133,6 +133,8 @@ const STEPS: Step[] = [
   // Getting the app (ui/install.ts): the sheet in a tab, the first launch's welcome installed.
   { name: 'install', query: '', ready: `a.menus.current === 'title'`, script: `a.install.open()`, ready2: `!!document.querySelector('.isheetback.show')`, after: 700, only: 'tab' },
   { name: 'welcome', query: '', ready: `a.menus.current === 'title'`, script: `a.settings.appWelcome = false; a.install.welcome()`, ready2: `!!document.querySelector('.isheetback.show')`, after: 700, only: 'app' },
+  // Typing a name in the lobby (upright phones: the upright echo of the turned field).
+  { name: 'typing', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `const f = document.querySelector('.screen.mp .mpname'); f.focus(); f.value = 'Ada Lovelace'; f.dispatchEvent(new Event('input', { bubbles: true }))`, after: 600 },
   { name: 'room', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, after: 1000 },
 ];
 

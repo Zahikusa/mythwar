@@ -130,16 +130,6 @@
   color: var(--gold-l);
 }
 
-.mprotate {
-  display: none;
-  font-size: 12px;
-  color: var(--gold-l);
-}
-
-#stage.rotated .mprotate {
-  display: block;
-}
-
 /* Static hosting (GitHub Pages build): no game server here — explain how to start one. */
 .mpnoserver {
   display: none;
@@ -171,7 +161,7 @@
   display: block;
 }
 
-#stage .screen.mp.noserver :is(.mpnamerow, .mpstatus, .mpflash, .mprotate, .mphelp, .mpactions, .mplisthead, .mplist, .mphall) {
+#stage .screen.mp.noserver :is(.mpnamerow, .mpstatus, .mpflash, .mphelp, .mpactions, .mplisthead, .mplist, .mphall) {
   display: none;
 }
 

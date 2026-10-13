@@ -41,6 +41,7 @@ import { Sitting } from './ui/wellbeing.ts';
 import type { TauntEvent } from './ui/personas.ts';
 import { NetOverlay } from './ui/netoverlay.ts';
 import { InstallGuide } from './ui/install.ts';
+import { uprightTyping } from './ui/upright.ts';
 import { allyNews, emoteRoute, lostSessionPlan, roomNews, roomTerms, roomView, termsChange } from './ui/roomnews.ts';
 import type { RoomTerms, RoomView } from './ui/roomnews.ts';
 
@@ -293,6 +294,8 @@ export class App {
       opened: () => this.armBack(true),
     });
     this.install.attachTitle(this.menus.titleNotes);
+    // An upright phone types into the turned stage's fields through an upright echo of them.
+    uprightTyping(this.stage, () => this.rotated);
     const entry = () => this.menus.setInstallEntry(this.install.offered ? this.install.label : null, this.install.lanNote ?? undefined);
     this.install.onChange(entry);
     entry();
