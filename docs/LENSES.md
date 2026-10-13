@@ -1781,3 +1781,18 @@ and what can I do now to find out the answer myself?*
   what to stop doing (more battle systems).
 - Checked: server test (two battles one evening → 0 returning; another day → 2; days stay off
   the wire); full verify.
+
+## #94 The Lens of the Client
+*What does the client say they want, what do they think they want, and what do they really
+want, deep down?*
+- The client (whoever wrote TASK.md) said: a stable, polished match against another person on
+  the same Wi-Fi, PC ↔ phone, iOS ↔ Android, upgradable to the internet; then 100 design
+  iterations. What they want deep down: to *play with a friend tonight* and to trust that it
+  works — and to see quickly what a night of autonomous work produced. What they would get in
+  the morning: a 400-line PROGRESS log and 1,800 lines of lens notes. The work was documented
+  for the next developer, not for the client.
+- Change: **docs/BRIEF.md**, one page, linked at the top of PROGRESS.md: each requirement →
+  what exists → the exact command or steps to see it working; what could *not* be verified
+  (physical phones) and the one-hour plan to close it; the results of phase 2 in one paragraph;
+  the three decisions only the client can make (real-phone test, LAN https, a public server).
+- Checked: every command it names exists in package.json/scripts and was run this session.

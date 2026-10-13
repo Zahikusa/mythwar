@@ -4,6 +4,9 @@ Status: **Phase 2 in progress** — 100 design iterations, one per lens of Jesse
 *The Art of Game Design* (started run #5, 2026-10-12). Phase 1 (local Wi-Fi multiplayer) is
 complete; its log follows below the lens plan.
 
+**Start here: [docs/BRIEF.md](docs/BRIEF.md)** — one page: what TASK.md asked for, what was
+built, how to see each part working, and the decisions that need you.
+
 ## Run #7 in short (for the morning)
 - Lenses #77–#84: Creatures have a **temper** and a kill gesture (#77); the generals
   answer the player's deeds from their place on the circumplex (#78), tell their mythic ties at
@@ -203,7 +206,7 @@ complete; its log follows below the lens plan.
 - [x] #91 Playtesting — a local playtest journal (last 30 battles, Settings → Copy playtest journal) and docs/PLAYTEST.md, a one-hour playtest kit
 - [x] #92 Technology — the server remembers: a store seam (file for the LAN server, memory in tests; a database later) keeps the Hall of champions across restarts; perf re-measured (1.3–1.6 ms, the 1.97 was noise)
 - [x] #93 The Crystal Ball — "do friends come back for a second evening?": the hall counts days per player and the server reports returners at start; docs/ROADMAP.md
-- [ ] #94 The Client — what the client (owner) needs
+- [x] #94 The Client — docs/BRIEF.md: each TASK.md requirement → what was built → how to see it yourself; what's unverified; the decisions that need the client (linked atop PROGRESS)
 - [ ] #95 The Pitch — pitch / store text
 - [ ] #96 Profit — sustainability notes
 - [ ] #97 Transformation — what players take away
