@@ -71,6 +71,10 @@ by a server running another version goes to the lobby that says "reload" instead
 "Reconnecting…" forever. On Android, Back in the battle room says "Press Back again to leave the
 room" and a second Back leaves. The end-to-end test now cuts the phone's network silently (a
 relay that freezes its links), so the server's own detection of a dead link is exercised.
+A look at screenshots of every online screen found that **on a phone the battle room's messages
+and its "Waiting for a second player…" line were off screen** — now right under the header; a
+phone that wakes up in the room reconnects at once instead of after ~6 s; a win because the
+other player left or stayed away is called a walkover and earns no feats.
 No rules change; the protocol is unchanged.
 
 ## Things that need your decision

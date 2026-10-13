@@ -591,8 +591,18 @@ built, how to see each part working, and the decisions that need you.
 - Own find: a phone out of the Wi-Fi mid-battle left the battle running for the heartbeat's
   12 s — a seat silent for 4 s now counts as away (#222; three holes in it found by the diff
   review and fixed, #223).
-- Tests 285 → 293; mpsmoke plain / latency / portrait green (a co-op Ready race in the test
-  fixed, #228); verify:all green early in the run.
+- A visual review of the online screens (#230–236): **on a phone the room's messages and its
+  "Waiting for a second player…" note were off screen or squashed to nothing** (so #215's
+  "Press Back again" couldn't be seen) — now right under the header; a readable "press Ready"
+  pulse; the away notice clear of the gold bar; walkovers earn no praise and no victory feats.
+- Later: a Ready right after one's own handicap change no longer bounces (#229); a phone back on
+  the page redials at once in the room and lobby too, and after Safari's back-forward cache
+  (#243); smoke waits for effects instead of ~30 sleeps (#204, #241) and surfaced a touchend
+  warning on fast double taps (#242); mpengines checks Back in the room on WebKit (#238); a
+  3-minute lagged bot soak shows no false silence holds (#237); `shoot`/`mpbot --help` print
+  usage.
+- Tests 285 → 295; mpsmoke plain / latency / portrait green (a co-op Ready race in the test
+  fixed, #228); mpengines, package:check green.
 
 ## Run #9 in short (for the morning)
 - Verification mode, backlog items 138–214. Open from run #8: #138 and #142 done; #128 (DOM tests)
