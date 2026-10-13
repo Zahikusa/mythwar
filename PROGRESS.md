@@ -5,7 +5,7 @@ Status: **Phase 2 in progress** — 100 design iterations, one per lens of Jesse
 complete; its log follows below the lens plan.
 
 ## Run #6 in short (for the morning)
-- Lenses #45–#75 done (one commit each, reasoning in `docs/LENSES.md`). Highlights: battles are
+- Lenses #45–#76 done (one commit each, reasoning in `docs/LENSES.md`). Highlights: battles are
   fought at named places (#45); **economy** probe `npm run economy` found blessings 4×
   underpriced — priced by worth, Mythic banks for them (#46); counter-triangle matrix
   (`classwar --matrix`) fixed Asgard's and Jade's limp counters (#47); **colour-blind setting**
@@ -24,7 +24,7 @@ complete; its log follows below the lens plan.
   inert controls (#69); **start in any age already reached** (#71); the crowded lane calls for
   your power (#72); tips from **Mímir** (#73); travellers in the far sky (#74); a personal
   **sigil** by your name (#75).
-- Next run: continue at Lens #76 (Character Function). New tools this run: `npm run economy`,
+- Next run: continue at Lens #77 (Character Traits). New tools this run: `npm run economy`,
   `npm run puzzlecheck`, `node scripts/classwar.ts --matrix`, `shoot --cvd <type>` and
   `shoot --settings '{…}'`. New settings fields: colorblind, riddles, startAge, sigil.
 - Bugs fixed: loading a progress code erased best star ratings; the intermittent "arc radius is
@@ -164,7 +164,7 @@ complete; its log follows below the lens plan.
 - [x] #73 Collusion — the coach's tips come from Mímir, keeper of the well (the player's mentor)
 - [x] #74 The World — travellers cross the far sky now and then (wisp, eagle, Odin's ravens, sky dragon, comet)
 - [x] #75 The Avatar — a personal sigil (sun, moon, star, crown, swords, lozenge) by your name and on the results
-- [ ] #76 Character Function — creature roles
+- [x] #76 Character Function — tooltips lead with each class's job (front line, striker, backline, siege-breaker)
 - [ ] #77 Character Traits — creature personality
 - [ ] #78 The Interpersonal Circumplex — rival personalities
 - [ ] #79 The Character Web — relationships between characters

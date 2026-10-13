@@ -173,6 +173,7 @@ const SCENARIOS: Scenario[] = [
   { name: 'focus-still', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 3000, script: `(() => { const a = window.__mythwar; a.game.paused = true; a.renderer.focusLane = 1; a.renderer.focusT = 1; })()`, after: 300 },
   { name: 'power-prime', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 4500, script: `(() => { const a = window.__mythwar; const w = a.game.world; const D = window.__mythwarData.UNITS; w.players[0].powerCooldown = 0; for (let i = 0; i < 5; i++) w.spawnUnit(1, 2, D.redcap, 560 + i * 20); })()`, after: 400 },
   ...[2, 3, 4].map((age) => ({ name: `traveller-age${age}`, query: `play=adept&seed=4&theme=${age}`, w: 1600, h: 900, wait: 2500, script: `(() => { const r = window.__mythwar.renderer; r.traveller.next = r.time - 6; r.traveller.y = 0.6; })()`, after: 200 })),
+  { name: 'card-tooltip', query: 'play=adept&seed=4', w: 1600, h: 900, wait: 3000, script: `(() => { const a = window.__mythwar; const c = document.querySelector('.card.cls-guardian'); a.hud.showTooltip(window.__mythwarData.UNITS.treant, c); })()`, after: 300 },
   { name: 'riddles', query: 'screen=difficulty', w: 1600, h: 900, wait: 1500, script: `window.__mythwar.menus.show('riddles')`, after: 500 },
   { name: 'mobile-riddles', query: 'screen=difficulty', w: 844, h: 390, mobile: true, dpr: 2, wait: 1500, script: `window.__mythwar.menus.show('riddles')`, after: 500 },
   { name: 'riddle-start', query: 'screen=difficulty', w: 1600, h: 900, wait: 1500, script: `window.__mythwar.playRiddle('pack')`, after: 1500 },

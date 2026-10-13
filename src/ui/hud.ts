@@ -1552,11 +1552,12 @@ export class Hud {
   }
 }
 
+/** Each class's job in an army first (Lens #76), then how it does it. */
 const CLASS_NOTE: Record<string, string> = {
-  guardian: 'Sweeping blows also strike foes packed around the target.',
-  hunter: 'Hunts in packs: Hunters crowd in to strike together.',
-  mystic: 'Ranged: stands back and lets melee allies through.',
-  legend: 'Flies over the fray.',
+  guardian: '<b>The front line:</b> holds the foe back and breaks Hunter packs — its sweeping blows strike every foe packed around the target.',
+  hunter: '<b>The striker:</b> runs down the Mystics behind a line — Hunters crowd in as a pack to strike together.',
+  mystic: '<b>The backline:</b> breaks Guardian walls from range — stands back and lets melee allies through.',
+  legend: '<b>The siege-breaker:</b> flies over the fray and burns through massed armies — summon it to end a deadlock.',
 };
 
 function chip(cls: string): string {

@@ -1439,3 +1439,20 @@ simple enough for the player to fill with themselves?*
   ("☾ Zoë · Fae Wilds") and heads your column on the results ("☾ You"). Abstract on purpose:
   a sign the player chooses and fills with meaning, not a portrait that tells them who they are.
 - Checked: screenshots (settings, the HUD name with the moon sigil); full verify.
+
+## #76 The Lens of Character Function
+*What functions do my characters need to fulfil? Does each have a clear one — and can the player
+tell what it is?*
+- The creatures' functions are designed (#47's counter matrix keeps them distinct per age): a
+  Guardian holds and breaks packs, a Hunter dives the backline, a Mystic breaks walls from
+  range, the Elder Dragon ends deadlocks. The card tooltip told the player a lot — strong/weak
+  vs, health, damage, range, speed, trait, myth — and a "class note", but that note described
+  *how* the class fights ("Sweeping blows also strike foes packed around the target"), never
+  *what it is for*. Function had to be inferred from the triangle.
+- Change: each class note now leads with its **job in the army**: "**The front line:** holds the
+  foe back and breaks Hunter packs — …", "**The striker:** runs down the Mystics behind a line —
+  …", "**The backline:** breaks Guardian walls from range — …", and for the Elder Dragon "**The
+  siege-breaker:** flies over the fray and burns through massed armies — summon it to end a
+  deadlock." Role first, mechanics second: the player knows why to pick a card before how it
+  fights.
+- Checked: screenshot of a card tooltip; full verify.
