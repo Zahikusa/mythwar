@@ -5,7 +5,7 @@ Status: **Phase 2 in progress** — 100 design iterations, one per lens of Jesse
 complete; its log follows below the lens plan.
 
 ## Run #6 in short (for the morning)
-- Lenses #45–#74 done (one commit each, reasoning in `docs/LENSES.md`). Highlights: battles are
+- Lenses #45–#75 done (one commit each, reasoning in `docs/LENSES.md`). Highlights: battles are
   fought at named places (#45); **economy** probe `npm run economy` found blessings 4×
   underpriced — priced by worth, Mythic banks for them (#46); counter-triangle matrix
   (`classwar --matrix`) fixed Asgard's and Jade's limp counters (#47); **colour-blind setting**
@@ -22,7 +22,11 @@ complete; its log follows below the lens plan.
   Celestial (#66); a **god's moment** on your power: slow-motion + the field darkens around the
   lane (#67); the generals as **journey chapters** that open (#68) and close (#70); riddles drop
   inert controls (#69); **start in any age already reached** (#71); the crowded lane calls for
-  your power (#72); tips from **Mímir** (#73); travellers in the far sky (#74).
+  your power (#72); tips from **Mímir** (#73); travellers in the far sky (#74); a personal
+  **sigil** by your name (#75).
+- Next run: continue at Lens #76 (Character Function). New tools this run: `npm run economy`,
+  `npm run puzzlecheck`, `node scripts/classwar.ts --matrix`, `shoot --cvd <type>` and
+  `shoot --settings '{…}'`. New settings fields: colorblind, riddles, startAge, sigil.
 - Bugs fixed: loading a progress code erased best star ratings; the intermittent "arc radius is
   negative" (a negative frame time step ran a summon animation backwards).
 - Rules changed (simFingerprint differs from run #5 builds): blessing prices, Fenrir/Jötunn/
