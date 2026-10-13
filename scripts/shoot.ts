@@ -212,6 +212,8 @@ const SCENARIOS: Scenario[] = [
   // Lens #83: footfalls — guardians and runners kick up the lane (Olympus sand, Asgard snow).
   { name: 'footfalls-age1', query: 'sandbox&seed=3&theme=1', w: 1600, h: 900, wait: 1500, script: `(() => { const w = window.__mythwar.game.world; const U = window.__mythwarData.UNITS; for (let i = 0; i < 3; i++) ['minotaur', 'centaur'].forEach((id, k) => w.spawnUnit(0, i, U[id], 120 + k * 50)); })()`, after: 3000 },
   { name: 'footfalls-age2', query: 'sandbox&seed=3&theme=2', w: 1600, h: 900, wait: 1500, script: `(() => { const w = window.__mythwar.game.world; const U = window.__mythwarData.UNITS; for (let i = 0; i < 3; i++) ['jotunn', 'fenrir'].forEach((id, k) => w.spawnUnit(0, i, U[id], 120 + k * 50)); })()`, after: 3000 },
+  // Backlog 24: Mímir explains veterans when the first one rises (the phone bubble must fit).
+  { name: 'mobile-tip-veteran', query: 'play=novice&seed=4', w: 844, h: 390, mobile: true, dpr: 2, wait: 2500, script: `(() => { const a = window.__mythwar; const w = a.game.world; const U = window.__mythwarData.UNITS; const u = w.spawnUnit(0, 1, U.treant, 380); u.veteran = true; })()`, after: 2500 },
   // Lens #77: creatures frozen mid-gesture after a kill (roar, hop, twirl, rear, loom; both sides).
   {
     name: 'temper-gestures',

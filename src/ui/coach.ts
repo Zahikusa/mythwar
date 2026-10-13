@@ -51,6 +51,13 @@ const TIPS: Tip[] = [
     done: (_g, t, s) => t - s > 10,
   },
   {
+    // Veterans (Lens #81) — a rule met in most battles, told when it first happens.
+    id: 'veteran',
+    text: 'A veteran! It felled three foes (the gold chevron) and strikes harder now. Keep it alive: hold the line and let the next wave join it.',
+    when: (g) => g.world.lanes.some((lane) => lane.some((u) => u.alive && u.veteran && u.team === g.playerTeam)),
+    done: (_g, t, s) => t - s > 11,
+  },
+  {
     id: 'jammed',
     text: 'A gate is jammed by your own creatures. The waiting summon (gold border) steps out as soon as there is room — others keep coming meanwhile.',
     anchor: '.queue',
