@@ -111,6 +111,8 @@ export class App {
   readonly netOverlay: NetOverlay;
   /** Room code to join once connected (invite link). */
   private pendingJoin: string | null = null;
+  /** A history entry is pushed for the phone's Back button (see the constructor). */
+  private backArmed = false;
   /** Reconnecting after a reload: only show multiplayer if we turn out to be in a room. */
   private quietResume = false;
   private wakeLock: { release(): Promise<void> } | null = null;
@@ -266,6 +268,23 @@ export class App {
       );
     };
     watchDpr();
+    // The phone's Back (Android's button, iOS's swipe) is the game's Esc: one step back, or the
+    // menu in a battle — not off the page (a tab opened from a QR code would close, its online
+    // session with it). One history entry is kept for it once the player has touched the page
+    // (browsers skip entries added before that); on the bare title it isn't, so Back can leave.
+    const arm = () => {
+      if (this.backArmed || (this.state === 'title' && this.menus.current === 'title')) return;
+      this.backArmed = true;
+      history.pushState({ mythwarBack: true }, '');
+    };
+    window.addEventListener('pointerdown', arm, { capture: true, passive: true });
+    window.addEventListener('keydown', arm, { capture: true, passive: true });
+    window.addEventListener('popstate', () => {
+      if (!this.backArmed) return;
+      this.backArmed = false;
+      this.escape();
+      arm();
+    });
     // Escape on the title screens (no battle input attached) steps back through the menus.
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.state === 'title') this.escape();

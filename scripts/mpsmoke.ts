@@ -242,6 +242,12 @@ async function main(): Promise<void> {
     }, 8000);
     await waitFor(a, 'A sees B back', () => (window as any).__mythwar.mp.room?.seats[1]?.connected === true, 8000);
     check('room: a phone that lost its seat while locked takes it again', true);
+    // (Backlog 166) The phone's Back in the room (like Esc) neither leaves the room nor the page.
+    const roomUrl = b.url();
+    await b.goBack({ timeout: 3000 }).catch(() => null);
+    await sleep(300); // (nothing should happen: give it the chance to)
+    const stay = await b.evaluate(() => ({ menu: (window as any).__mythwar.menus.current, seat: (window as any).__mythwar.mp.seat }));
+    check('room: Back keeps the guest in the room and on the page', stay.menu === 'room' && stay.seat === 1 && b.url() === roomUrl, JSON.stringify(stay));
     if (portrait) {
       // (Backlog 164) An upright phone renaming in the room is told to turn sideways first.
       await b.tap('.rseat.mine .sname');

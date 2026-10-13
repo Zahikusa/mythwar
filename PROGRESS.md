@@ -728,6 +728,12 @@ battle, results — 2026-10-13.)
    (upright) phone flashes "turn your phone sideways to type"; mpsmoke `--portrait` checks.)
 165. [ ] (note) iPhone's silent switch mutes Web Audio (no `navigator.audioSession.type = 'playback'`)
    — left on purpose: the switch means "quiet"; the room's chimes have visual twins.
+166. [x] (#159's other half) The phone's Back (Android's button, iOS's swipe) left the page — a tab
+   opened from a QR code closed, its online session with it. (Done: once the player has touched
+   the page, one history entry is kept; Back pops it and does what Esc does — the menu in a battle,
+   one step back in menus, nothing in the room — and re-arms. On the bare title it isn't kept, so
+   a second Back still leaves. smoke: Back opens and closes the battle menu, the page stays
+   (desktop, phone, rotated); mpsmoke: Back in the room keeps the guest seated.)
 
 
 
