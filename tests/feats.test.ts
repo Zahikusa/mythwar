@@ -41,6 +41,18 @@ describe('feats', () => {
     expect(t.earned.map((f) => f.id)).toEqual(got);
   });
 
+  it('Swift Conquest is for a full battle: not a quick one, nor one begun in a later age (backlog 68)', () => {
+    for (const opts of [{ quick: true }, { startAge: 2 }]) {
+      const w = new World(opts);
+      w.winner = 0;
+      w.time = 6 * 60;
+      const { t, got } = tracker(['first', 'master']);
+      t.start(w, 0);
+      t.onEnd(w, 'master');
+      expect(got, JSON.stringify(opts)).not.toContain('swift');
+    }
+  });
+
   it('all three trials against the Adept or harder: Trial by Fire', () => {
     const w = new World({ trials: [['glass', 'godless', 'nowalls'], []] });
     w.winner = 0;

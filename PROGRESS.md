@@ -279,8 +279,9 @@ chronicle, 2026-10-13 — renderer/fx/layout/lobby held up.)
 67. [ ] `public/sw.js`: everything but the page is cache-first — the manifest and icons cached at
    install are served stale forever (sw.js itself never changes between builds, so it never
    reinstalls; `mythwar-v3` was bumped by hand). Network-first for all but hashed `/assets/`.
-68. [ ] `src/ui/feats.ts` ~128: "Swift Conquest" (Adept+ in under 8 minutes) counts quick battles
+68. [x] `src/ui/feats.ts` ~128: "Swift Conquest" (Adept+ in under 8 minutes) counts quick battles
    (faster XP, +300 gold, par time cut to ⅔) and later-age starts, which skip best times and stars.
+   (Done — decided: a full battle only, as for best times; the description says so; test.)
 69. [x] `server/store.ts`: a background save whose rename fails (Windows: a scanner holding the file)
    left its numbered `.tmp` behind — one per failed save. (Done: removed in the catch.)
 

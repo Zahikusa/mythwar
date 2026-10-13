@@ -25,7 +25,7 @@ export const FEATS: Feat[] = [
   { id: 'shrines', name: 'Ley Lord', desc: 'Hold all three Ley Shrines at once.' },
   { id: 'surges', name: 'Surge Rider', desc: 'Draw gold from three Ley Surges in one battle.' },
   { id: 'blessed', name: 'Favoured', desc: 'Raise a blessing to its fifth rank.' },
-  { id: 'swift', name: 'Swift Conquest', desc: 'Defeat the Adept or harder in under 8 minutes.' },
+  { id: 'swift', name: 'Swift Conquest', desc: 'Defeat the Adept or harder in under 8 minutes (a full battle, not a quick one).' },
   { id: 'unbreached', name: 'Unbreached', desc: 'Defeat the Adept or harder with your citadel above 75% health.' },
   { id: 'comeback', name: 'Back from the Brink', desc: 'Win after your citadel fell below 15% health.' },
   { id: 'trials', name: 'Trial by Fire', desc: 'Defeat the Adept or harder under all three trials.' },
@@ -125,7 +125,9 @@ export class FeatTracker {
     if (difficulty) this.give(difficulty);
     else this.give(coop ? 'coop' : 'online');
     const hard = difficulty !== null && difficulty !== 'novice';
-    if (hard && world.time < 8 * 60) this.give('swift');
+    // (A full race only: a quick battle's faster XP and extra gold, or a start in a later age,
+    // make eight minutes easy — best times and stars leave them out too.)
+    if (hard && world.time < 8 * 60 && !world.quick && world.startAge === 0) this.give('swift');
     if (hard && p.baseHp / p.baseMaxHp > 0.75) this.give('unbreached');
     if (this.lowest < 0.15) this.give('comeback');
     if (hard && p.trials.length >= 3) this.give('trials');
