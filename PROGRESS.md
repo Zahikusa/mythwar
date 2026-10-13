@@ -654,20 +654,25 @@ on screen.)
    stages); the phone picture is a battle; the others are single-player battles.)
 (Items 264–267: an independent review of run #10's later diff (225–263), 2026-10-13 — the
 server changes found sound.)
-264. [ ] #243 made a return to the page *outside* a battle redial whenever the link was quiet
+264. [x] #243 made a return to the page *outside* a battle redial whenever the link was quiet
    2.5 s — but iOS suspends JS in the background, so a guest who switches apps for 3–5 s after
    pressing Ready comes back to a dropped working socket: the server un-readies them
    (`disconnected()`), the other sees "Connecting…". Outside a battle, ping and redial only if
    nothing answers within ~1.5 s.
-265. [ ] The news queue (#262) shows queued news over a newer error or the Back prompt, and news
+   (Done: `Connection.probe()` — outside a battle a return pings, and redials only if nothing
+   comes back in 1.5 s; in a battle it still redials at once (the server holds the battle and
+   resyncs). netgame test: a 4-s-stale working link keeps its socket and Ready — fails with the
+   old redial; #243's test now waits out the probe.)
+265. [x] The news queue (#262) shows queued news over a newer error or the Back prompt, and news
    outlives a room that vanished without `leaveRoom` (session expired, server restarted) — on
    the lobby's line (role=alert). Non-news messages clear the queue; leaving the room screen any
-   way clears the line.
-266. [ ] Reduced motion: on short stages the results' "Victory" and its line animate again — the
+   way clears the line. (Done both.)
+266. [x] Reduced motion: on short stages the results' "Victory" and its line animate again — the
    reduced-motion rule names `.verdict`, now `display: contents` (#257) with the animation on
-   its children.
-267. [ ] Ascend's long-press flag (#246) sticks when the release is > 14 px from the press (no tap
-   callback), eating the next Enter/Space on the focused button once.
+   its children. (Done: `.vhead .vt, .vhead .vs` join the rule.)
+267. [x] Ascend's long-press flag (#246) sticks when the release is > 14 px from the press (no tap
+   callback), eating the next Enter/Space on the focused button once. (Done: reset just after
+   any release.) vitest 300, smoke, mpsmoke plain / portrait / latency green.
 260. [x] The server logs "went quiet" / "heard from again" for every Wi-Fi blip of 4 s+ (#222) —
    a flaky phone could fill the host's console in a long session. Keep the first of each in a
    battle and sum the rest at the battle's end ("Bo went quiet 5 times, 23 s in all").

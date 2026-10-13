@@ -241,7 +241,13 @@ export class Hud {
       }
       this.tryAscend();
     });
-    for (const type of ['pointerup', 'pointercancel', 'pointerleave']) E.ascend.addEventListener(type, () => clearTimeout(ascHold));
+    for (const type of ['pointerup', 'pointercancel', 'pointerleave'])
+      E.ascend.addEventListener(type, () => {
+        clearTimeout(ascHold);
+        // (After the tap handler had its say: a release too far off for a tap mustn't leave the
+        // flag to swallow the next Enter on the focused button.)
+        setTimeout(() => (ascHeld = false), 0);
+      });
     // What waits in the next age: hover, keyboard focus or a long press (right click).
     E.ascend.addEventListener('pointerenter', (e) => {
       if ((e as PointerEvent).pointerType === 'mouse') this.showAgePreview(E.ascend);

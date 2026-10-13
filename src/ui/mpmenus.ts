@@ -126,6 +126,12 @@ export class MpScreens {
       return;
     }
     if (o.news) this.newsAt = now;
+    else {
+      // (An error or a prompt now: news still waiting would cover it — and is old by then.)
+      clearTimeout(this.newsTimer);
+      this.newsTimer = 0;
+      this.newsQueue = [];
+    }
     this.showFlash(text, o);
   }
 

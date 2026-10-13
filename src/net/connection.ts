@@ -24,6 +24,8 @@ export interface ConnectionOptions {
 }
 
 const PING_EVERY = 1000;
+/** A probe (see probe()) unanswered for this long (ms) means the link is gone. */
+const PROBE_WAIT = 1500;
 /** No message at all for this long ⇒ the link is dead (Wi-Fi gone, phone asleep): reconnect. */
 const SILENT_LIMIT = 6000;
 const BACKOFF = [250, 500, 1000, 2000, 3000];
@@ -80,6 +82,7 @@ export class Connection {
   private dialedAt = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
   private retry: ReturnType<typeof setTimeout> | null = null;
+  private probeTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly url: string;
   private readonly opts: ConnectionOptions;
   private readonly now: () => number;
@@ -117,8 +120,29 @@ export class Connection {
     this.dial();
   }
 
+  /**
+   * Back on the page, the link may have died meanwhile — or only gone quiet (iOS suspends a page in
+   * the background, its pings with it). Ask with a ping; reconnect only if no answer comes within
+   * PROBE_WAIT: a socket that lived through a short spell away is kept (dropping it would take a
+   * room's Ready with it).
+   */
+  probe(): void {
+    if (!this.wanted) return;
+    if (this.state !== 'online') return this.nudge();
+    if (this.now() - this.lastHeard < 2500) return;
+    const asked = this.now();
+    this.ping();
+    if (this.probeTimer) clearTimeout(this.probeTimer);
+    this.probeTimer = setTimeout(() => {
+      this.probeTimer = null;
+      if (this.lastHeard < asked) this.nudge();
+    }, PROBE_WAIT);
+  }
+
   close(): void {
     this.wanted = false;
+    if (this.probeTimer) clearTimeout(this.probeTimer);
+    this.probeTimer = null;
     if (this.timer) {
       clearInterval(this.timer);
       if (typeof window !== 'undefined') window.removeEventListener('online', this.netUp);

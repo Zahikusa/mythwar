@@ -1204,8 +1204,9 @@ export class App {
       const cur = this.menus.current;
       if (cur === 'mp' && mp.room) this.menus.show('room');
       else if (cur === 'room' && !mp.room) {
-        // (The room went from under a "press Back again": that was about the room.)
-        if (performance.now() - this.roomBackAt < ROOM_BACK_WINDOW) this.menus.mp.unflash();
+        // (The room went from under its messages — a "press Back again", news still waiting:
+        // they were about the room. A note on why follows below.)
+        this.menus.mp.unflash();
         this.roomBackAt = -Infinity;
         this.menus.show('mp');
       }

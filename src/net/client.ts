@@ -257,9 +257,14 @@ export class MpClient {
   /** The app went to the background (or came back). */
   away(away: boolean): void {
     // Back on the page — in a battle, the room or the lobby: a link that went quiet while the
-    // phone slept is redialled now, not after the silence limit.
-    if (!away) this.conn.nudge();
-    if (!this.game || this.game.over) return;
+    // phone slept is redialled now, not after the silence limit. (Outside a battle only once a
+    // ping has gone unanswered: a short app switch mustn't drop the room's Ready — backlog 264.)
+    const inBattle = !!this.game && !this.game.over;
+    if (!away) {
+      if (inBattle) this.conn.nudge();
+      else this.conn.probe();
+    }
+    if (!inBattle) return;
     this.conn.send({ type: 'away', away });
   }
 

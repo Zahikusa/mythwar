@@ -355,11 +355,32 @@ describe('NetGame over a simulated network', () => {
     const old = (b.conn as unknown as { ws: FakeSocket }).ws;
     net.cut.add(old);
     net.run(3000);
-    b.away(false); // (the page is visible again)
-    net.run(300);
+    b.away(false); // (the page is visible again: a ping goes out, and no answer comes)
+    net.run(2000);
     expect((b.conn as unknown as { ws: FakeSocket }).ws).not.toBe(old);
     expect(b.state).toBe('online');
     expect(b.room?.code).toBe(a.room!.code);
+  });
+
+  it('a short app switch keeps a working link — and the room’s Ready (backlog 264)', () => {
+    net = new SimNet();
+    const a = net.client('Ada');
+    const b = net.client('Bo');
+    net.run(400);
+    a.host();
+    net.run(400);
+    b.join(a.room!.code);
+    net.run(400);
+    b.ready(true);
+    net.run(400);
+    // iOS suspended the page for 4 s (no pings went out, nothing was read); the socket lived.
+    const conn = b.conn as unknown as { ws: FakeSocket; lastHeard: number };
+    const ws = conn.ws;
+    conn.lastHeard -= 4000;
+    b.away(false);
+    net.run(2000);
+    expect(conn.ws).toBe(ws);
+    expect(a.room!.seats[1]).toMatchObject({ connected: true, ready: true });
   });
 
   it('a phone that lost its seat while away knows which room it was (backlog 160)', () => {
