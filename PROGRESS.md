@@ -525,6 +525,11 @@ orientations, shoot's two-player scenarios and its own phone shots — 2026-10-1
    left — the label is "Foe" in every mode and has ~50 px; the legend names them. Also fixed on
    the way: `node scripts/shoot.ts --help` (or any unknown flag) ran every scenario and overwrote
    the shots — it prints usage now (exit 1 for an unknown flag).
+237. [x] (Run #10 checks of the silence rule, #222) A 3-minute bot soak over a lagged link
+   (`server/main.ts --latency 30 --jitter 40`, `mpbot --vs-bot`): 0 desyncs, 0 "went quiet" —
+   no false holds from 1-s pings under jitter. `package:check` (the bundled server.mjs) and
+   `mpengines` (WebKit vs Chrome/Firefox) green. Found on the way: `mpbot --help` started a bot
+   that ran until killed — it prints usage now (exit 1 for an unknown flag), like `shoot`.
 
 
 
