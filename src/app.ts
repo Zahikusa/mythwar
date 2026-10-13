@@ -277,8 +277,10 @@ export class App {
     // menu in a battle — not off the page (a tab opened from a QR code would close, its online
     // session with it). One history entry is kept for it once the player has touched the page
     // (browsers skip entries added before that); on the bare title it isn't, so Back can leave.
+    // (Touch devices only: a computer has Esc, and its browser's Back should still leave the page.)
+    const touch = matchMedia('(pointer: coarse)').matches;
     const arm = () => {
-      if (this.backArmed || (this.state === 'title' && this.menus.current === 'title')) return;
+      if (!touch || this.backArmed || (this.state === 'title' && this.menus.current === 'title')) return;
       this.backArmed = true;
       history.pushState({ mythwarBack: true }, '');
     };

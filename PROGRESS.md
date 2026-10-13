@@ -342,6 +342,10 @@ it prints, inviting, stopping — 2026-10-13.)
 208. [x] The lobby's "can't reach the game server" help (mpmenus.ts ~142) also said only "private
    networks" (#175's trap). (Done: "…allows Node.js — on Windows also that the Wi-Fi is a
    Private network, not Public.")
+209. [x] #166 kept a history entry for Back on every device: on a computer the browser's Back then
+   never left the page from a room or a battle (it re-arms each time). (Done: touch devices only
+   (`pointer: coarse`) — phones' Back and swipe are the reason; a computer has Esc. smoke's Back
+   check runs on the phone viewports; mpsmoke and the WebKit pass unchanged.)
 
 
 

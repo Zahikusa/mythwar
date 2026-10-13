@@ -934,9 +934,10 @@ async function run(page: Page, label: string, viewport: { width: number; height:
     return { shown, bodyThrough: !!body && !coach.contains(body), button: !!btn && btn.classList.contains('cclose'), under: body?.tagName };
   });
   check('a coach tip lets taps through to the field (only "Got it" takes one)', through.shown && through.bodyThrough && through.button, JSON.stringify(through));
-  // (Backlog 166) The phone's / browser's Back is the game's Esc: in a battle it opens the menu
-  // (and again closes it) instead of leaving the page.
-  {
+  // (Backlog 166) The phone's Back is the game's Esc: in a battle it opens the menu (and again
+  // closes it) instead of leaving the page. (Touch devices only — backlog 209: a computer's Back
+  // still leaves.)
+  if (viewport.mobile) {
     const url = page.url();
     await page.goBack({ timeout: 3000 }).catch(() => null);
     await page.waitForFunction(() => (window as unknown as { __mythwar: any }).__mythwar.menus.current === 'pause', { timeout: 3000, polling: 50 }).catch(() => {});
