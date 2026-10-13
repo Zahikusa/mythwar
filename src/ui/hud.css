@@ -585,8 +585,12 @@ html.cbfoe .side.right .hpfill {
   visibility: hidden;
 }
 
-/* A banner never shows through a menu: the results would say "Victory" twice. */
-.hud.under-menu .banner {
+/* A banner never shows through a menu: the results would say "Victory" twice. Nor do speech
+   bubbles or the cards' "Counter!" badges — dimmed behind the results they were only clutter
+   (the badge peeked out between the result buttons). */
+.hud.under-menu .banner,
+.hud.under-menu .ebubble,
+.hud.under-menu .card .advice {
   visibility: hidden;
 }
 

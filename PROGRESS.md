@@ -494,8 +494,10 @@ how-to, bestiary, feats and desktop battles showed nothing worth reporting.)
 114. [x] Unselected lane tabs are nearly invisible on the dark wall (35%-opacity ring, 60% text —
    `.lanetab`, hud.css ~1375); only a queue badge makes them noticeable. (Done: ring 60%, text
    85%, a slightly darker disc — clearly visible, still plainly not the selected one.)
-115. [ ] Results over a battle: the HUD shows faintly through the overlay (a "Counter!" badge behind
-   Copy result) and the general's faded taunt bubble is unreadable behind it.
+115. [x] Results over a battle: the HUD shows faintly through the overlay (a "Counter!" badge behind
+   Copy result) and the general's faded taunt bubble is unreadable behind it. (Done: under a menu
+   the speech bubbles and the cards' "Counter!" badges hide, like the banners; the dimmed HUD
+   itself stays on desktop by design; checked in the `results-war-won` shot.)
 (Items 116–118: an independent review of this run's own diff, 2026-10-13 — three regressions in
 run #8's changes, each reproduced by a test that failed before the fix.)
 116. [x] `server/lobby.ts`: an away/back change held back by the coalescing (#71) survived the link
