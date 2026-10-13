@@ -540,6 +540,14 @@ run #8's changes, each reproduced by a test that failed before the fix.)
    journal" are full-size menu buttons despite the class. Define it (as #122's sigil size) or drop
    the class. (Done: those three were compact through `.sprogrow .mbtn` already; `.mbtn.small`
    now means the same size wherever it's used.)
+(Items 127–128: open for the next run.)
+127. [ ] CI (`.github/workflows/pages.yml`, `release.yml`) runs typecheck + unit tests only — the
+   smoke and multiplayer smoke (which caught several of run #8's regressions: the gate tap, the
+   Enter-on-laurels focus bug) never run on GitHub. A job with Chrome (ubuntu has it) running
+   `npm run smoke` and `npm run mpsmoke` on pull requests.
+128. [ ] The menus' focus handling (#76) and the HUD's accessibility labels (#79) are covered only by
+   smoke checks; unit tests can't reach DOM code (no DOM environment in vitest). Decide whether a
+   DOM environment (happy-dom) is worth a dev dependency, or keep them in smoke.
 
 
 
@@ -549,10 +557,12 @@ run #8's changes, each reproduced by a test that failed before the fix.)
 built, how to see each part working, and the decisions that need you.
 
 ## Run #8 in short (for the morning)
-- Verification mode, backlog items 38–109 (all done but the notes #23, #94 and #101): eight
-  independent reviews (netcode; app state; simulation/AI/HUD; rendering/persistence;
-  accessibility; docs; two players' flows; data across versions) found most of them, each
-  reproduced by a new test or smoke check where possible before fixing.
+- Verification mode, backlog items 38–128: done except the notes #23, #94 and the open #101,
+  #120, #123, #127, #128 (for the next run). Ten independent reviews (netcode; app state;
+  simulation/AI/HUD; rendering/persistence; accessibility; docs; two players' flows; data across
+  versions; a visual review from screenshots; a review of this run's own diff — which caught
+  three regressions, #116–118) found most of them; each was reproduced by a new test or smoke
+  check where possible before fixing. Tests: 218 → 256; smoke and mpsmoke gained ~30 checks.
 - Items 87–109: "Room" on the online results; a dropped phone re-scanning the QR gets its seat
   back; the room says what the other player changed; a stale Ready is ignored (protocol v15);
   autosaves are v2 and survive other builds; a save never undoes another tab's progress (a second
