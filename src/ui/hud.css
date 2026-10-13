@@ -2459,8 +2459,25 @@ html.cbfoe .side.right .hpfill {
      24 px past a 390-px-high phone.) */
   box-sizing: border-box;
   max-height: calc(100cqh - 20px);
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   padding: 10px 12px 12px;
+}
+
+.hud.mobile .panel > .ptitle {
+  flex: none;
+}
+
+/* What a sheet holds below its title: scrolls inside the sheet when the phone is too short. */
+.hud.mobile .pbody {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  margin: 0 -12px;
+  padding: 0 12px;
 }
 
 .hud.mobile .pdesc {

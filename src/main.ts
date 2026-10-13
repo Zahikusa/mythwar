@@ -3,23 +3,10 @@ import './ui/hud.css';
 import './ui/menus.css';
 import './ui/mp.css';
 import { App } from './app.ts';
+import { holdPageStill } from './stillpage.ts';
 import { TURRETS, UNITS } from './sim/data.ts';
 
-// iOS Safari ignores user-scalable=no; block its pinch/rotate gestures and double-tap zoom.
-for (const type of ['gesturestart', 'gesturechange', 'gestureend']) {
-  document.addEventListener(type, (e) => e.preventDefault(), { passive: false });
-}
-let lastTouchEnd = 0;
-document.addEventListener(
-  'touchend',
-  (e) => {
-    const now = performance.now();
-    // (Not while the page is scrolling: that touchend can't be cancelled — the browser says so.)
-    if (now - lastTouchEnd < 300 && e.cancelable && !(e.target instanceof HTMLInputElement)) e.preventDefault();
-    lastTouchEnd = now;
-  },
-  { passive: false },
-);
+holdPageStill();
 
 const root = document.getElementById('app')!;
 if ((window as unknown as { __mythwarTooOld?: boolean }).__mythwarTooOld) {

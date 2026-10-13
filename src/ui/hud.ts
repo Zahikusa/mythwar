@@ -321,7 +321,7 @@ export class Hud {
       this.turretRows.push(row);
       panel.appendChild(row);
     }
-    return panel;
+    return withBody(panel);
   }
 
   private buildKeysPanel(): HTMLElement {
@@ -349,7 +349,7 @@ export class Hud {
     const list = h('div', { class: 'keys' });
     for (const [k, d] of rows) list.append(h('kbd', { text: k }), h('span', { text: d }));
     panel.appendChild(list);
-    return panel;
+    return withBody(panel);
   }
 
   private buildBlessPanel(): HTMLElement {
@@ -373,7 +373,7 @@ export class Hud {
       this.blessRefs[id] = { pips: [...pips.children], buy, cost: -2, gain };
       panel.appendChild(row);
     }
-    return panel;
+    return withBody(panel);
   }
 
   // -------------------------------------------------------------------------
@@ -1647,4 +1647,15 @@ const CLASS_NOTE: Record<string, string> = {
 
 function chip(cls: string): string {
   return `<span class="clschip" style="color:${CLASS_COLOR[cls]}">${CLASS_ICON[cls]}${CLASS_NAME[cls]}</span>`;
+}
+
+/**
+ * A sheet's title row, with its close button, stays put; on a phone too short for the rest, the
+ * rest scrolls beneath it (`.pbody`) — never the title away with it.
+ */
+function withBody(panel: HTMLElement): HTMLElement {
+  const body = h('div', { class: 'pbody' });
+  body.append(...[...panel.children].filter((k) => !k.classList.contains('ptitle')));
+  panel.appendChild(body);
+  return panel;
 }

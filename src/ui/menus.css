@@ -1453,6 +1453,7 @@
 .chron {
   max-height: 172px;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* The legend behind the battle's champion (Lens #97). */

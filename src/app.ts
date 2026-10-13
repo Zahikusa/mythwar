@@ -274,6 +274,13 @@ export class App {
       if (final) this.buzz(30);
     };
     window.addEventListener('resize', () => this.resize());
+    // Safari's bars and the on-screen keyboard change the visual viewport only; a turn of the
+    // phone can report its new size late (iOS), so it is measured again a moment later.
+    window.visualViewport?.addEventListener('resize', () => this.resize());
+    window.visualViewport?.addEventListener('scroll', () => this.follow());
+    window.addEventListener('orientationchange', () => {
+      for (const ms of [120, 500]) setTimeout(() => this.resize(), ms);
+    });
     // Another tab of the game saved: its records, feats and riddles show here too (the title's
     // laurels at once; other screens the next time they open).
     window.addEventListener('storage', (e) => {
@@ -345,8 +352,13 @@ export class App {
   }
 
   resize(): void {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    // The part of the page the player can see: inside the browser's bars, above the on-screen
+    // keyboard (the visual viewport — the layout viewport can reach under both).
+    const vv = window.visualViewport;
+    const zoomed = !vv || Math.abs(vv.scale - 1) > 0.01;
+    const vw = zoomed ? window.innerWidth : Math.floor(Math.min(vv.width, window.innerWidth));
+    const vh = zoomed ? window.innerHeight : Math.floor(Math.min(vv.height, window.innerHeight));
+    this.follow();
     const forced = this.params.get('mode');
     const coarse = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
     // Phones held upright: rotate the whole game into landscape (side-view lanes need width).
@@ -366,7 +378,12 @@ export class App {
     this.stage.style.transformOrigin = '0 0';
     // Rotated: stage (0,0) sits at the screen's top-right corner inside the insets.
     this.stage.style.transform = this.rotated ? `translate(${vw - phys.r}px, ${phys.t}px) rotate(90deg)` : `translate(${safe.l}px, ${safe.t}px)`;
-    const toStage = (cx: number, cy: number): [number, number] => (this.rotated ? [cy - phys.t, vw - phys.r - cx] : [cx - safe.l, cy - safe.t]);
+    const toStage = (px: number, py: number): [number, number] => {
+      // (Page coordinates → the game's: less the visible part's offset — see follow().)
+      const cx = px - this.shift[0];
+      const cy = py - this.shift[1];
+      return this.rotated ? [cy - phys.t, vw - phys.r - cx] : [cx - safe.l, cy - safe.t];
+    };
     this.input.toStage = toStage;
     this.hud.toStage = toStage;
     this.coach.toStage = toStage;
@@ -379,12 +396,34 @@ export class App {
     this.stage.classList.toggle('mobile', this.mode === 'mobile');
     this.stage.classList.toggle('rotated', this.rotated);
     this.coinTarget = this.hud.goldTarget();
+    // The keyboard came up (the stage just got shorter): the field being typed in stays in view.
+    const field = document.activeElement;
+    if (field instanceof HTMLInputElement && field.type === 'text') requestAnimationFrame(() => field.scrollIntoView({ block: 'nearest' }));
   }
+
+  /**
+   * Keeps the game over the visible part of the page: iOS slides that part down the page to
+   * bring a text field above the keyboard (the page itself has nowhere to scroll — see
+   * stillpage.ts — but the visual viewport moves within it).
+   */
+  private follow(): void {
+    const vv = window.visualViewport;
+    const x = vv ? Math.round(vv.offsetLeft) : 0;
+    const y = vv ? Math.round(vv.offsetTop) : 0;
+    this.shift = [x, y];
+    this.root.style.transform = x || y ? `translate(${x}px, ${y}px)` : '';
+  }
+
+  /** How far follow() moved the game down/right the page (0, 0 but while typing on iOS). */
+  private shift: [number, number] = [0, 0];
 
   private safeProbe: HTMLDivElement | null = null;
 
   /** Safe-area insets (notches) in CSS pixels. */
   private safeArea(): { l: number; r: number; t: number; b: number } {
+    // ?safe=t,r,b,l stands in for a notch where the browser has none (scripts/mobilecheck.ts).
+    const sim = this.params.get('safe')?.split(',').map(Number);
+    if (sim?.length === 4 && sim.every((n) => n >= 0)) return { t: sim[0], r: sim[1], b: sim[2], l: sim[3] };
     if (!this.safeProbe) {
       const d = document.createElement('div');
       d.style.cssText =
