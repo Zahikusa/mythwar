@@ -27,7 +27,7 @@ of 1,480 views green) and more states a phone shows that were never checked: the
 the public page's lobby without a server (its one button downloaded a desktop app to a phone:
 now "Send to my computer" through the share sheet; side by side on short phones), and online
 battles with 16-letter names (the foe's bar ran under the chat and pause buttons — fixed).
-Backlog 44–59 done; 60–62 open, with 5, 16, 28 (need a real phone).
+Backlog 44–62 done or decided; open: 61, 63, 64, and 5, 16, 28 (need a real phone).
 
 ## Run #13 in short (for the morning)
 
@@ -489,16 +489,31 @@ Already in the code before Phase 3, and kept:
    installed — mobilecheck's overlap check caught it). Seen once: `ipad-10-app-p tip` timed
    out while a second mobilecheck ran beside it, passed alone — the slow upright-tablet WebKit
    of 20; watch it.)
-60. [ ] mobilecheck's steps share one browser context's storage per view: besides the settings
+60. [x] mobilecheck's steps share one browser context's storage per view: besides the settings
    (46), a results step's records, feats and a saved battle carry into later steps (a later
    title has Continue only because a battle step left one). Audit which steps depend on what
    came before, and seed what each needs instead.
+   (Audited, no change needed: the steps that need a fresh player — the titles, the foe cards,
+   How to play, Settings, the Bestiary, the feats — all run before the first battle step; the
+   title steps after the battles (the LAN title, the install sheet, the welcome) see the saved
+   battle a battle step left, a state real players have; the veteran states are seeded
+   (`journey-veteran`, `feats-earned`, `bestiary-all`) and taken out again (46).)
 61. [ ] Foe cards on narrow cards (upright SE): a veteran's record line ("12W · 3L · best 4:32 ·
    ★★★") wraps to two lines, and the trials row and start age sit below the fold of the
    scrolling body — a player who picks a start age must scroll to see it.
-62. [ ] The Bestiary on the shortest stage (Galaxy sideways in Chrome, 292 px): the title, the
+62. [x] The Bestiary on the shortest stage (Galaxy sideways in Chrome, 292 px): the title, the
    tabs and Back leave the creatures a window of ~100 px (the tabs scroll away with the body,
    so it works, but a first look shows little): tabs beside the title under 330 px.
+   (Decided against: the title is pinned and the tabs are the body's first row, so "beside"
+   means hiding the screen's title there — 45 px for losing where the player is, on one
+   screen of many. The tabs scroll away with a swipe.)
+63. [ ] The age badges (59) are `role="button"` but not focusable: Tab and a gamepad's D-pad
+   skip them, unlike the title offer's buttons (15). Either a `tabindex` in the HUD's focus
+   order (check smoke's keyboard and gamepad flows) or no button role on a keyboard device.
+64. [ ] mobilecheck's `tip` step on the big upright tablets (ipad-10 installed, upright) timed out
+   once while another mobilecheck ran beside it (headless WebKit draws those on the CPU — 20):
+   give that step the time the device needs (a faster game speed there, or a longer wait)
+   so a busy machine doesn't fail a screen that's fine.
 
 ## Decisions
 
