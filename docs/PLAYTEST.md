@@ -118,6 +118,8 @@ down the model, the iOS/Android version and anything that looks wrong (a photo h
 - [ ] "Get the app" → "Install app" opens Chrome's real install dialog (if Chrome offers it;
       otherwise the sheet shows the ⋮ menu steps and "Play full screen").
 - [ ] Settings → Vibration off: no buzz on a summon; on again: buzz.
+- [ ] In a battle, tap the foe's round age badge (top right): a note names the foe and how
+      close they are to the next age; tap yours (top left) for your own.
 
 **Android, installed (2 min)**
 - [ ] Opens full screen, sideways, no status bar; Back on the title leaves only on the second press.

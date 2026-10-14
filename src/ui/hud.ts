@@ -154,6 +154,16 @@ export class Hud {
     E.ageR = h('div', { class: 'agebadge', title: 'Enemy age' });
     E.ageRn = h('div', { class: 'agename' });
     E.foePow = h('i', { class: 'foepow', title: 'Enemy god power' });
+    // A touch screen shows no titles: a tap on a badge says it, with the side's whole name (a
+    // phone's bar may have cut it to "Wolfgang A…").
+    for (const left of [true, false]) {
+      const badge = left ? E.ageL : E.ageR;
+      badge.setAttribute('role', 'button');
+      onTap(badge, () => {
+        const who = left ? (this.allyName ? `You & ${this.allyName}` : this.myName) : this.foeName;
+        this.toast(who ? `${who} — ${badge.title}` : badge.title);
+      });
+    }
     E.blessL = h('div', { class: 'blesschips' });
     E.blessR = h('div', { class: 'blesschips' });
     E.clock = h('div', { class: 'clock' });
@@ -1173,6 +1183,12 @@ export class Hud {
         ? `Enemy age: ${AGES[foe.age].name} — ${Math.round(xpFrac(foe) * 100)}% of the XP for ${AGES[foe.age + 1].name}`
         : `Enemy age: ${AGES[foe.age].name}`;
     if (E.ageR.title !== foeTitle) E.ageR.title = foeTitle;
+    const myTitle = canAscend(me)
+      ? `You have the XP to ascend to ${AGES[me.age + 1].name}!`
+      : me.age < MAX_AGE
+        ? `Your age: ${AGES[me.age].name} — ${Math.round(xpFrac(me) * 100)}% of the XP for ${AGES[me.age + 1].name}`
+        : `Your age: ${AGES[me.age].name}`;
+    if (E.ageL.title !== myTitle) E.ageL.title = myTitle;
     if (this.allyName) nameLine(E.ageLn, `You & ${this.allyName}`, ` · ${AGES[me.age].name}`);
     else if (this.myName) nameLine(E.ageLn, this.myName, `${/[\p{L}\p{N}]/u.test(this.myName) ? ' ·' : ''} ${AGES[me.age].name}`);
     else setText(E.ageLn, AGES[me.age].name);

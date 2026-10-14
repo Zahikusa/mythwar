@@ -27,7 +27,7 @@ of 1,480 views green) and more states a phone shows that were never checked: the
 the public page's lobby without a server (its one button downloaded a desktop app to a phone:
 now "Send to my computer" through the share sheet; side by side on short phones), and online
 battles with 16-letter names (the foe's bar ran under the chat and pause buttons — fixed).
-Backlog 44–58 done; 59–62 open, with 5, 16, 28 (need a real phone).
+Backlog 44–59 done; 60–62 open, with 5, 16, 28 (need a real phone).
 
 ## Run #13 in short (for the morning)
 
@@ -477,11 +477,18 @@ Already in the code before Phase 3, and kept:
    (Done: online, the line is two parts — the name, then " · Fae Wilds" — and on phones the
    age gives way first: "Maximilian Weber · …" instead of "Maximilian We…"; the text read
    aloud and by mpsmoke is unchanged.)
-59. [ ] A battle's names are cut to "Wolfgang A…" on phones with no way to read them in full
+59. [x] A battle's names are cut to "Wolfgang A…" on phones with no way to read them in full
    in the battle (the room showed them): a long press on the name line could show it whole,
    as the cards' details do. (Note: the age badges' titles — "Enemy age: Olympus — 40% of the
    XP for Asgard" — never show on a touch screen either. A tap on a badge could toast both;
    make it a real button with a 44-px ring then, it's 26 px.)
+   (Done: the age badges are buttons; a tap toasts the side's whole name and its age —
+   "Wolfgang Amadeus — Enemy age: Olympus — 40% of the XP for Asgard"; ours got a title of its
+   own ("Your age: … — n% of the XP for …", it only said "Your age"). Under a finger a 44-px
+   ring; not while a sheet is open (the foe's badge peeks out by the turret sheet's × on an SE
+   installed — mobilecheck's overlap check caught it). Seen once: `ipad-10-app-p tip` timed
+   out while a second mobilecheck ran beside it, passed alone — the slow upright-tablet WebKit
+   of 20; watch it.)
 60. [ ] mobilecheck's steps share one browser context's storage per view: besides the settings
    (46), a results step's records, feats and a saved battle carry into later steps (a later
    title has Continue only because a battle step left one). Audit which steps depend on what
