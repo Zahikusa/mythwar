@@ -1144,6 +1144,8 @@ async function run(page: Page, label: string, viewport: { width: number; height:
   await page.setViewport({ width: viewport.width, height: viewport.height, isMobile: viewport.mobile, hasTouch: viewport.mobile, deviceScaleFactor: 1 });
   await page.goto(`${base}/?play=adept&seed=11`, { waitUntil: 'load' });
   await appUp(page);
+  // (The install sheet comes 1.6 s after the first results, once — over Rematch on a slow run.)
+  await page.evaluate(() => ((window as unknown as { __mythwar: any }).__mythwar.settings.installSheet = true));
   let s = await state(page);
   check('game starts in the middle lane', s.lane === 1 && s.menu === 'none');
 
