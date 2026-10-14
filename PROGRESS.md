@@ -427,6 +427,11 @@ Already in the code before Phase 3, and kept:
    one failure of the full matrix after 45: a room listed in the lobby, typing upright on the
    Galaxy, scrolled under Back — as designed, the buttons get a backdrop then). Full matrix:
    7 devices × tab/installed × both ways, 1,395 views green before 48–51.
+52. [x] mobilecheck had no check for 50's kind of defect: touch areas were measured for size, but
+   never for what they reach over. (Done: "text taps a control" — real hit-testing at the middle
+   of each visible line of text that takes taps and isn't part of a control: a control's
+   invisible ring there (outside its own box) fails. Fails without 50's fix. Exempt: a screen's
+   body under its own pinned buttons, as in 51.)
 
 ## Decisions
 

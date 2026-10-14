@@ -4,7 +4,8 @@
  * notch and home bar as safe-area insets). Every screen must keep the page itself still (no
  * scrolling document, no zoom), keep every control on screen and clear of the notch, give every
  * control a 44-px target, and let panels that overflow scroll inside themselves; no control or
- * text on top of a control, no text under 10 px, no text field under 16 px (iOS zooms into it).
+ * text on top of a control, no text hidden, cut short or under another control's touch area, no
+ * text under 10 px, no text field under 16 px (iOS zooms into it).
  * Some screens are turned while open; online ones get a friend (a client run here).
  *
  *   npm run build && node scripts/mobilecheck.ts [--device iphone-se] [--screen title]
@@ -514,6 +515,36 @@ function inspect(safe: Insets): Problem[] {
   }
   for (const x of cutShort) out.push({ kind: 'clipped', what: `text ${x}` });
   allHit.remove();
+  // Text a tap would give to a control it isn't part of: a small pill's finger-sized ring (a
+  // positioned ::before) reaching over the line above it — "Face the Adept →" under the results'
+  // tip took taps on "…citadel above half…". (Real hit-testing now. Text that lets taps through
+  // — a toast, the opening banner — is over the game on purpose.)
+  const steals = new Set<string>();
+  for (const el of document.querySelectorAll<HTMLElement>('body *')) {
+    const texts = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent!.trim());
+    if (!texts.length || el.closest('.sronly') || el.closest(sel)) continue;
+    const cs = getComputedStyle(el);
+    if (cs.visibility !== 'visible' || cs.pointerEvents === 'none' || (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true }))) continue;
+    for (const n of texts) {
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      for (const line of range.getClientRects()) {
+        if (line.width < 6 || line.height < 6) continue;
+        const px = (line.left + line.right) / 2;
+        const py = (line.top + line.bottom) / 2;
+        if (px < 0 || py < 0 || px > vw || py > vh) continue;
+        const hit = document.elementFromPoint(px, py);
+        const ctl = hit?.closest<HTMLElement>(sel);
+        if (!hit || !ctl || ctl.contains(el) || !touchable.some((t) => t.el === ctl) || pinnedOver(ctl, el)) continue;
+        // (Outside the control's own box — its invisible ring: inside it, the control is drawn
+        // over the text, which the checks above see.)
+        const cb = ctl.getBoundingClientRect();
+        if (px >= cb.left && px <= cb.right && py >= cb.top && py <= cb.bottom) continue;
+        steals.add(`${name(el)} taps ${name(ctl)}`);
+      }
+    }
+  }
+  for (const x of steals) out.push({ kind: 'overlap', what: `text ${x}` });
   for (const o of over) out.push({ kind: 'overlap', what: `text ${o}` });
   // Readable text: nothing on screen below 10 px (the HUD's small numbers are 10).
   const tiny = new Set<string>();
