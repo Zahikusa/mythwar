@@ -23,6 +23,8 @@ import type { MpMenuCallbacks } from './mpmenus.ts';
 import type { EmoteId, EndReason } from '../net/protocol.ts';
 import { EMOTES, cleanName } from '../net/protocol.ts';
 import { forgetDevice } from '../net/client.ts';
+import { currentSituation } from '../platform.ts';
+import { PUBLIC_URL } from './install.ts';
 
 /** Results of a battle against another player (instead of an AI difficulty). */
 export interface OnlineResult {
@@ -1050,8 +1052,12 @@ export class Menus {
     const story = this.chronicle;
     this.overBack = online ? () => this.cb.toRoom() : () => this.cb.quit();
     const shareText = `Mythwar: ${won ? 'Victory' : 'Defeat'} at ${place} vs ${foeName} in ${fmtTime(world.time)} — reached ${AGES[P.age].name}, ${P.stats.kills} foes slain.${story.length ? `\n${story.join('\n')}` : ''}`;
-    const share = this.button('Copy result', 'ghost', () => {
-      void copyText(shareText).then((ok) => (share.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed'));
+    // (A phone sends things through its share sheet — Messages, WhatsApp; elsewhere: copied.)
+    const sheet = currentSituation().os !== 'desktop' && !!navigator.share;
+    const copy = () => void copyText(shareText).then((ok) => (share.querySelector('span')!.textContent = ok ? 'Copied!' : 'Copy failed'));
+    const share = this.button(sheet ? 'Share result' : 'Copy result', 'ghost', () => {
+      if (sheet) navigator.share({ text: shareText, url: PUBLIC_URL }).catch((e: Error) => e.name !== 'AbortError' && copy());
+      else copy();
     });
     el.append(
       h(

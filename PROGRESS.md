@@ -27,7 +27,10 @@ of 1,480 views green) and more states a phone shows that were never checked: the
 the public page's lobby without a server (its one button downloaded a desktop app to a phone:
 now "Send to my computer" through the share sheet; side by side on short phones), and online
 battles with 16-letter names (the foe's bar ran under the chat and pause buttons — fixed).
-Backlog 44–62 done or decided; open: 61, 65, and 5, 16, 28 (need a real phone).
+In a battle a tap on an age badge now says the side's whole name and its XP (titles never
+showed on touch), long toasts stay long enough to read, and the results' "Share result" uses
+the phone's share sheet.
+Backlog 44–68 done or decided except 61 and 67; open: 61, 67, 69, and 5, 16, 28 (need a real phone).
 
 ## Run #13 in short (for the morning)
 
@@ -517,10 +520,30 @@ Already in the code before Phase 3, and kept:
    the name line.)
    (And the badge's toast is the answer to a tap: it shows at once, not queued behind the
    battle's news, for 3.2 s — its 60-character line didn't fit the usual 1.8 s.)
-65. [ ] Battle toasts last 1.8 s (1.4 when others wait) whatever their length: "Shrine lost —
+65. [x] Battle toasts last 1.8 s (1.4 when others wait) whatever their length: "Shrine lost —
    the enemy took the bottom Ley Shrine"-length news is hard to read in that on a phone, mid-
    battle. Scale an info toast's time by its length (feats already get 3.2 s); keep short ones
    short.
+   (Done: a toast that nothing waits behind stays 0.6 s + 1 s per 25 characters, 4 s at most,
+   never less than before — "Ley Surge! Hold the middle for gold" 2 s, the citadel's
+   second-star warning 3.9 s; when news queues up, the one showing is cut back to the old
+   1.8 s (feats keep 3.2), so a burst flows as fast as ever — the first version, without
+   that, made mpsmoke's "B told the ally left" wait past its 4 s. smoke's Ragnarök check
+   waits 8 s for its toast behind the par-time one.)
+67. [ ] With longer toasts (65) a busy moment (a surge, an enemy blessing and a god power at
+   once: three queued) can show "Enemy casts Starfall!" several seconds after the cast. Drop a
+   queued toast that has waited too long for its news to still be news (say 4 s), or let a
+   newer one of the same kind replace it.
+68. [x] The results' "Copy result" copies the battle's text on a phone too: the share sheet
+   (`navigator.share`, Messages, WhatsApp) is how a phone sends things — "Share result" on
+   phones, copying where there's no share sheet (as 55 does for the server's link).
+   (Done: on a phone or tablet with a share sheet the button is "Share result" — the battle's
+   lines and the public game's address; elsewhere "Copy result" as before (mpsmoke's LAN
+   copy check is a desktop browser and still copies). Tried with an iPhone's user agent and a
+   stubbed share sheet.)
+69. [ ] The battle room's invite: "Copy link" on a phone — the share sheet would send the invite
+   straight to the friend (the QR is for a phone beside you; a link for one elsewhere in the
+   house goes through Messages). Same pattern as 68.
 66. [x] The no-server lobby on a Galaxy sideways (56): the closing note "Battles against the AI
    work right here — even offline." is still under the fade — the one line that tells a phone
    player they can play right away. It could sit in the steps' column, beside the buttons.

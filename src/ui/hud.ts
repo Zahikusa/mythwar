@@ -867,7 +867,11 @@ export class Hud {
   toast(text: string, kind: 'bad' | 'good' | 'info' | 'feat' = 'info', immediate = false): void {
     if (!immediate && this.toastTimer > 0) {
       const t = this.el.toast.textContent;
-      if (t !== text && !this.toastQueue.some((q) => q.text === text) && this.toastQueue.length < 3) this.toastQueue.push({ text, kind });
+      if (t !== text && !this.toastQueue.some((q) => q.text === text) && this.toastQueue.length < 3) {
+        this.toastQueue.push({ text, kind });
+        // (News is waiting: the one showing gives up its extra reading time — see showToast.)
+        if (!this.el.toast.classList.contains('feat')) this.toastTimer = Math.min(this.toastTimer, 1.8);
+      }
       return;
     }
     this.showToast(text, kind);
@@ -877,7 +881,11 @@ export class Hud {
     const t = this.el.toast;
     setText(t, text);
     t.className = `toast show ${kind}`;
-    this.toastTimer = kind === 'feat' ? 3.2 : this.toastQueue.length ? 1.4 : 1.8;
+    // (Long enough to read while nothing else waits: "Citadel below half — win back its health
+    // (ascend, Bastion) to keep the second star" went by in 1.8 s. Short news stays short, and a
+    // burst of news flows as quickly as ever.)
+    const base = kind === 'feat' ? 3.2 : this.toastQueue.length ? 1.4 : 1.8;
+    this.toastTimer = this.toastQueue.length ? base : Math.max(base, Math.min(4, 0.6 + text.length / 25));
   }
 
   /**

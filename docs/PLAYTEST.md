@@ -98,6 +98,8 @@ down the model, the iOS/Android version and anything that looks wrong (a photo h
       the right button. Swipe the sheet down: it goes.
 - [ ] Multiplayer (the public page has no game server): "Send to my computer" opens the iPhone's
       share sheet with the download link (AirDrop, Messages, Mail).
+- [ ] After a battle, "Share result" opens the share sheet with the battle's lines and the
+      game's address.
 
 **iPhone, installed (2 min)** — follow the sheet's steps, then open Mythwar from the Home Screen.
 - [ ] Launch: dark from the first frame (no white flash), no browser bars, the welcome card.

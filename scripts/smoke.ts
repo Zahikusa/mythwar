@@ -620,7 +620,7 @@ async function armedFlow(page: Page): Promise<void> {
     const late = text();
     // (Toasts queue: the jump in time also trips the par-time star toast first.)
     let toast = '';
-    for (let i = 0; i < 25 && !toast.includes('one minute'); i++) {
+    for (let i = 0; i < 40 && !toast.includes('one minute'); i++) {
       toast = document.querySelector('.toast')?.textContent ?? '';
       await new Promise((r) => setTimeout(r, 200));
     }
