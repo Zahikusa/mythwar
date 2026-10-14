@@ -96,6 +96,8 @@ down the model, the iOS/Android version and anything that looks wrong (a photo h
 - [ ] The "Get the app" offer on the title opens the sheet; the steps match what Safari
       shows (iOS 26: ⋯ → Share → Add to Home Screen → Open as Web App); the arrow points at
       the right button. Swipe the sheet down: it goes.
+- [ ] Multiplayer (the public page has no game server): "Send to my computer" opens the iPhone's
+      share sheet with the download link (AirDrop, Messages, Mail).
 
 **iPhone, installed (2 min)** — follow the sheet's steps, then open Mythwar from the Home Screen.
 - [ ] Launch: dark from the first frame (no white flash), no browser bars, the welcome card.

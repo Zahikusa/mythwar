@@ -445,6 +445,13 @@ Already in the code before Phase 3, and kept:
    (396 px in 375). (Done: the parade gives way to it too; it only informs, so with Continue or
    the update it steps aside on these small stages and says it again on the plain title.
    mobilecheck `title-elsewhere` (fails before), `title-elsewhere-continue`.)
+55. [x] Multiplayer on the public page (no game server there — what most phone players see):
+   the lobby's one button was "Download Mythwar Server", a desktop download offered to a phone.
+   (Done: on a phone or tablet "Send to my computer" opens the share sheet with the link
+   (AirDrop, Messages, Mail; no share sheet → copied), and "Open the page"; computers keep
+   Download. `?noserver` shows that lobby in any build; mobilecheck `lobby-noserver` — fits
+   everywhere; on the Galaxy sideways the buttons are just under the fade, a swipe away.
+   PLAYTEST line for the iPhone's share sheet.)
 
 ## Decisions
 

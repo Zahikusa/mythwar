@@ -3,6 +3,7 @@ import { CODE_LENGTH, NAME_MAX, RANKS, SIGILS, cleanCode } from '../net/protocol
 import type { SeatInfo } from '../net/protocol.ts';
 import { copyText, h, onTap, setText, toggle } from './dom.ts';
 import { ICONS } from './icons.ts';
+import { currentSituation } from '../platform.ts';
 import { TRIALS, TRIAL_ORDER } from '../sim/data.ts';
 import type { TrialId } from '../sim/data.ts';
 import { AI_PROFILES, DIFFICULTIES } from '../ai/ai.ts';
@@ -186,6 +187,23 @@ export class MpScreens {
     this.codeInput.value = code;
   }
 
+  /**
+   * Getting the server: a computer downloads it; a phone (which can't run it) sends the link to
+   * the computer through its share sheet — AirDrop, Messages, mail — or copies it, and can still
+   * open the page.
+   */
+  private downloadButtons(): HTMLButtonElement[] {
+    const open = () => window.open(SERVER_DOWNLOAD, '_blank', 'noopener');
+    if (currentSituation().os === 'desktop') return [this.button('Download Mythwar Server', 'primary', open)];
+    const send = this.button('Send to my computer', 'primary', () => {
+      const label = send.querySelector('span') ?? send;
+      const copy = () => void copyText(SERVER_DOWNLOAD).then((ok) => (label.textContent = ok ? 'Link copied' : 'Copy failed'));
+      if (navigator.share) navigator.share({ title: 'Mythwar Server', text: 'Mythwar Server: start it on a computer in your Wi-Fi.', url: SERVER_DOWNLOAD }).catch((e: Error) => e.name !== 'AbortError' && copy());
+      else copy();
+    });
+    return [send, this.button('Open the page', 'ghost', open)];
+  }
+
   /** No game server behind this page (static hosting): the lobby only explains how to start one. */
   showNoServer(): void {
     this.lobby.classList.add('noserver');
@@ -253,7 +271,7 @@ export class MpScreens {
           '<li>Scan the <b>QR code</b> it shows with each phone — or open the address it prints in any browser.</li>' +
           '<li>There, choose <b>Multiplayer → Host a battle</b>; your friend joins with the room code.</li>',
       }),
-      h('div', { class: 'mrow' }, this.button('Download Mythwar Server', 'primary', () => window.open(SERVER_DOWNLOAD, '_blank', 'noopener'))),
+      h('div', { class: 'mrow' }, ...this.downloadButtons()),
       h('div', { class: 'mnote', text: 'Battles against the AI work right here — even offline.' }),
     );
     const back = this.button('Back', 'ghost', () => this.cb.exit());

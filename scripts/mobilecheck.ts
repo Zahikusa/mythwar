@@ -217,6 +217,8 @@ const STEPS: Step[] = [
   { name: 'results-break', query: `${battle}&ff=90`, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, script3: `const m = a.menus, g = a.game; m.featsEarned = [{ name: 'Spirit Banished' }]; m.breakNote = 'You have played for over an hour — a good moment to stretch, drink some water and rest your eyes.'; m.showResults(g.world, g.playerTeam, 'novice', g.history, g.ageUps)`, ready3: `!!document.querySelector('.vbreak')`, after: 1200 },
   // The full offer to get the app, once after the first finished battle (over the results).
   { name: 'results-offer', query: battle, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, script3: `a.settings.installSheet = false; a.install.afterBattle(() => true)`, ready3: `!!document.querySelector('.isheetback.show')`, after: 900, only: 'tab' },
+  // (The public game's page has no server: the lobby explains how to start one on a computer.)
+  { name: 'lobby-noserver', query: 'mp&noserver', ready: `a.menus.current === 'mp' && !!document.querySelector('.screen.mp.noserver')`, after: 700 },
   { name: 'lobby', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, after: 900 },
   // Getting the app (ui/install.ts): the sheet in a tab, the first launch's welcome installed.
   { name: 'install', query: '', ready: `a.menus.current === 'title'`, script: `a.install.open()`, ready2: `!!document.querySelector('.isheetback.show')`, after: 700, only: 'tab' },

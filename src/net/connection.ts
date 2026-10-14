@@ -40,10 +40,11 @@ export function dialLimit(attempt: number): number {
 
 /**
  * False on a plain static host (the GitHub Pages build, `vite build --mode pages`): there is no
- * multiplayer server next to the page there — unless `?server=` points at one.
+ * multiplayer server next to the page there — unless `?server=` points at one. (`?noserver`: as
+ * there, in any build — scripts/mobilecheck.ts shoots that lobby.)
  */
 export function hasMpServer(): boolean {
-  if (import.meta.env.VITE_STATIC_HOST !== '1') return true;
+  if (import.meta.env.VITE_STATIC_HOST !== '1') return !new URLSearchParams(location.search).has('noserver');
   return !!(new URLSearchParams(location.search).get('server') ?? import.meta.env.VITE_MP_SERVER);
 }
 
