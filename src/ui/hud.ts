@@ -160,7 +160,10 @@ export class Hud {
       const badge = left ? E.ageL : E.ageR;
       onTap(badge, () => {
         const who = left ? (this.allyName ? `You & ${this.allyName}` : this.myName) : this.foeName;
-        this.toast(who ? `${who} — ${badge.title}` : badge.title);
+        // (The answer to a tap: at once, not behind the battle's own news, and long enough to
+        // read a line this long.)
+        this.toast(who ? `${who} — ${badge.title}` : badge.title, 'info', true);
+        this.toastTimer = Math.max(this.toastTimer, 3.2);
       });
     }
     E.blessL = h('div', { class: 'blesschips' });
