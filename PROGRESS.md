@@ -328,7 +328,8 @@ Already in the code before Phase 3, and kept:
    it — the menus' empty full-stage layer, made hit-testable by the check, counted as "on top".
    (Done: phone toasts wrap between the side columns; the check skips layers that paint
    nothing (no text, background, border or shadow). mobilecheck `toast`, `room-back` (the
-   room's "Press Back again to leave the room.").)
+   room's "Press Back again to leave the room.").) The full matrix after it: 46 screens × 7
+   devices × tab/installed × both ways, 1,172 views, all green.
 
 ## Decisions
 
