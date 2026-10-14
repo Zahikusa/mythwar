@@ -1,7 +1,7 @@
 # PROGRESS — Phase 3: a native-app feel on phones
 
-Status: Phase 3 complete, in verification mode (since run #12, 2026-10-13; run #13 2026-10-14). A–E done and verified
-(`npm run mobilecheck`: 7 devices × tab/installed × both orientations × 46 screens, all green;
+Status: Phase 3 complete, in verification mode (since run #12, 2026-10-13; runs #13, #14 2026-10-14). A–E done and verified
+(`npm run mobilecheck`: 7 devices × tab/installed × both orientations × 60 screens, all green;
 `npm run verify` green), F decided against. From here: only mobile UX defects seen in
 screenshots or nameable on a real device (backlog below); what needs a physical phone is under
 "Open questions for the human".
@@ -9,6 +9,19 @@ screenshots or nameable on a real device (backlog below); what needs a physical 
 Started run #12, 2026-10-13. Phases 1–2 (LAN multiplayer, the 100 lenses)
 are finished; their log, backlog and open questions are in
 [docs/PROGRESS-archive.md](docs/PROGRESS-archive.md) (last section).
+
+## Run #14 in short (for the morning)
+
+Verification mode, 2026-10-14: mobilecheck's text checks were blind inside every menu screen
+(all `role="dialog"`, which the hidden-text check exempted as a floating note) and only ever
+looked at a line's middle; now they look inside screens and sheets, and a new "text cut short"
+check looks at both ends of each line and at boxes that clip it. They found: on an upright SE
+the foe cards' stats ran under the next card ("Incon 90%") — now one line each on narrow
+cards; the room's note drawn under its news strip. The check's own steps were fixed too: one
+step's seeded settings (start in the last age) had leaked into every later step, and the
+"fullest results" step was a Defeat — as a Victory it showed the "Face the Adept →" button's
+touch area reaching over the tip's text (fixed). New steps: a veteran's foe cards, all ages in
+the Bestiary, earned feats. Backlog 44–51.
 
 ## Run #13 in short (for the morning)
 
@@ -396,6 +409,24 @@ Already in the code before Phase 3, and kept:
 47. [x] The battle room on the shortest stage (39): the news strip covered "Waiting for a
    second player…" but the note was still drawn under it (and read out). (Done: the note is
    hidden while the news shows; caught by 45.)
+48. [x] mobilecheck saw only a newcomer's Bestiary (age I) and foe cards. (Done: `bestiary-all` —
+   every age seen, five named tabs (they just fit an upright SE: 520 px in 520) and the last
+   age's page; `journey-veteran` — records under the cards, "Next challenge", a trial chosen,
+   a start age. Both fit everywhere; on the SE the record wraps and the trials row is below,
+   in the scrolling body.)
+49. [x] mobilecheck's `results-full` and `results-break` were Defeats: the `ff=300` fast-forward
+   ran the idle player into the Novice's win at 1:49, before the step's blow — so the fullest
+   *victory* screen was never shot. (Done: `ff=90`, a victory with stars, the chart and the
+   chronicle.) It found at once:
+50. [x] The results' "Face the Adept →" (a 22-px pill after the tip, with a 44-px touch area of
+   its own): wrapped under the tip on an upright SE, its touch area reached over the tip's last
+   line — a tap on "…citadel above half…" started the next battle. (Done: under a finger it keeps
+   11 px above and below, so its line holds the whole touch area.)
+51. [x] mobilecheck `feats-earned` (half the feats earned, stars against three generals); and
+   the new text checks let a screen's body scroll under its own pinned title and buttons (the
+   one failure of the full matrix after 45: a room listed in the lobby, typing upright on the
+   Galaxy, scrolled under Back — as designed, the buttons get a backdrop then). Full matrix:
+   7 devices × tab/installed × both ways, 1,395 views green before 48–51.
 
 ## Decisions
 

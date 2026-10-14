@@ -167,13 +167,19 @@ const STEPS: Step[] = [
   // The phone's Back on the title: "Press Back again to leave Mythwar."
   { name: 'title-back', query: '', ready: `a.menus.current === 'title'`, script: `a.menus.titleSay('Press Back again to leave Mythwar.', 60000)`, ready2: `!!document.querySelector('.ttoast.show')`, after: 600 },
   { name: 'journey', query: 'screen=difficulty', ready: `a.menus.current === 'difficulty'`, after: 700 },
+  // (A returning player: records under the cards, "Next challenge", the trials row, a start age.)
+  { name: 'journey-veteran', query: 'screen=difficulty', settings: { ageSeen: 3, startAge: 2, trials: ['godless'], records: { novice: { wins: 12, losses: 3, best: 272, streak: 4, stars: 3 }, adept: { wins: 2, losses: 5, best: 401, streak: -1, stars: 1 } } }, ready: `a.menus.current === 'difficulty'`, after: 700 },
   { name: 'riddles', query: 'screen=difficulty', ready: `a.menus.current === 'difficulty'`, script: `a.menus.show('riddles')`, ready2: `a.menus.current === 'riddles'`, after: 700 },
   { name: 'howto', query: 'screen=howto', ready: `a.menus.current === 'howto'`, after: 700 },
   // The how-to's other pages (the first is `howto`): each a different picture and text length.
   ...[1, 2, 3, 4, 5].map((k): Step => ({ name: `howto-${k + 1}`, query: 'screen=howto', ready: `a.menus.current === 'howto'`, script: `a.menus.setHowtoPage(${k})`, after: 700 })),
   { name: 'settings', query: 'screen=settings', ready: `a.menus.current === 'settings'`, after: 700 },
   { name: 'bestiary', query: 'screen=bestiary', ready: `a.menus.current === 'bestiary'`, after: 700 },
+  // (A player who has seen every age: five named tabs — just fitting an upright SE — and the last
+  // age's page.)
+  { name: 'bestiary-all', query: 'screen=bestiary', settings: { ageSeen: 4 }, ready: `a.menus.current === 'bestiary'`, script: `document.querySelectorAll('.btab')[4].click()`, ready2: `document.querySelectorAll('.btab')[4].classList.contains('on')`, after: 700 },
   { name: 'feats', query: 'screen=feats', ready: `a.menus.current === 'feats'`, after: 700 },
+  { name: 'feats-earned', query: 'screen=feats', settings: { feats: ['first', 'novice', 'adept', 'online', 'dragon', 'shrines', 'swift'], records: { novice: { wins: 9, losses: 1, best: 250, streak: 3, stars: 3 }, adept: { wins: 3, losses: 4, best: 420, streak: 1, stars: 2 }, master: { wins: 1, losses: 6, best: 610, streak: -2, stars: 1 } } }, ready: `a.menus.current === 'feats'`, after: 700 },
   { name: 'battle', query: battle, ready: inBattle, after: 1500 },
   { name: 'turrets', query: battle, ready: inBattle, script: `a.game.world.players[0].gold = 900; a.hud.togglePanel('turret')`, after: 700 },
   { name: 'blessings', query: battle, ready: inBattle, script: `a.game.world.players[0].gold = 900; a.hud.togglePanel('bless')`, after: 700 },
@@ -197,10 +203,10 @@ const STEPS: Step[] = [
   { name: 'sandbox', query: 'sandbox&seed=4', ready: inBattle, after: 1200 },
   { name: 'riddle', query: 'screen=riddles', ready: `a.menus.current === 'riddles'`, script: `a.playRiddle('pack')`, ready2: inBattle, after: 1500 },
   { name: 'riddle-over', query: 'screen=riddles', ready: `a.menus.current === 'riddles'`, script: `a.playRiddle('pack')`, ready2: inBattle, script3: `a.game.speed = 4; const w = a.game.world; w.players[0].baseHp = 1; w.damageBase(0, 10, 0, 0)`, ready3: `a.menus.current !== 'none' && a.state !== 'playing'`, after: 1500 },
-  // The results in full: a 5-minute battle (the army chart, the chronicle), two new feats, a new
+  // The results in full: a 90-s battle won (the army chart, the chronicle), two new feats, a new
   // best, the chapter's close; then with the break note instead of the tip and its button.
-  { name: 'results-full', query: `${battle}&ff=300`, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, script3: `const m = a.menus, g = a.game; m.featsEarned = [{ name: 'Spirit Banished' }, { name: 'Keeper of the Ley' }]; m.newBestStars = 3; m.epilogue = { chapter: 'I · The Call', close: 'The spirit flits away, laughing. The crossing is quiet — for now.' }; m.showResults(g.world, g.playerTeam, 'novice', g.history, g.ageUps)`, ready3: `a.menus.current === 'over' && !!document.querySelector('.vfeats')`, after: 1200 },
-  { name: 'results-break', query: `${battle}&ff=300`, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, script3: `const m = a.menus, g = a.game; m.featsEarned = [{ name: 'Spirit Banished' }]; m.breakNote = 'You have played for over an hour — a good moment to stretch, drink some water and rest your eyes.'; m.showResults(g.world, g.playerTeam, 'novice', g.history, g.ageUps)`, ready3: `!!document.querySelector('.vbreak')`, after: 1200 },
+  { name: 'results-full', query: `${battle}&ff=90`, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, script3: `const m = a.menus, g = a.game; m.featsEarned = [{ name: 'Spirit Banished' }, { name: 'Keeper of the Ley' }]; m.newBestStars = 3; m.epilogue = { chapter: 'I · The Call', close: 'The spirit flits away, laughing. The crossing is quiet — for now.' }; m.showResults(g.world, g.playerTeam, 'novice', g.history, g.ageUps)`, ready3: `a.menus.current === 'over' && !!document.querySelector('.vfeats')`, after: 1200 },
+  { name: 'results-break', query: `${battle}&ff=90`, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, script3: `const m = a.menus, g = a.game; m.featsEarned = [{ name: 'Spirit Banished' }]; m.breakNote = 'You have played for over an hour — a good moment to stretch, drink some water and rest your eyes.'; m.showResults(g.world, g.playerTeam, 'novice', g.history, g.ageUps)`, ready3: `!!document.querySelector('.vbreak')`, after: 1200 },
   // The full offer to get the app, once after the first finished battle (over the results).
   { name: 'results-offer', query: battle, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, script3: `a.settings.installSheet = false; a.install.afterBattle(() => true)`, ready3: `!!document.querySelector('.isheetback.show')`, after: 900, only: 'tab' },
   { name: 'lobby', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, after: 900 },
@@ -384,6 +390,12 @@ function inspect(safe: Insets): Problem[] {
   // (Over the text from a note or sheet of its own — not a neighbour inside the same screen or
   // sheet: every menu screen is a dialog too.)
   const afloat = (top: Element, el: Element) => !!top.closest(floating) && top.closest(floating) !== el.closest(floating);
+  // (A screen's body scrolls under its own pinned title and buttons — they get a backdrop then.)
+  const pinnedOver = (top: Element, el: Element) => {
+    const body = el.closest('.screen > .sbody');
+    const pin = top.closest('.screen > :is(h2, .rhead, .mrow, .vbuttons)');
+    return !!body && !!pin && pin.parentElement === body.parentElement;
+  };
   // Painted by its letters only (no background, border or shadow; an svg by its shapes, mostly
   // see-through — a diagram's arrows between its labels): covers only where its glyphs are,
   // roughly the middle half of each of its lines (a big title's line box reaches far past its
@@ -429,7 +441,7 @@ function inspect(safe: Insets): Problem[] {
           .find((x) => (!x.checkVisibility || x.checkVisibility({ opacityProperty: true, visibilityProperty: true })) && paints(x) && (x === el || el.contains(x) || !boxless(x) || onGlyphs(x, px, py)));
         if (!top || top === el || el.contains(top) || top.contains(el)) continue;
         const tb = top.getBoundingClientRect();
-        if (tb.width * tb.height > vw * vh * 0.3 || afloat(top, el)) continue;
+        if (tb.width * tb.height > vw * vh * 0.3 || afloat(top, el) || pinnedOver(top, el)) continue;
         hidden.add(`${name(el)} behind ${name(top)}`);
       }
     }
@@ -491,7 +503,7 @@ function inspect(safe: Insets): Problem[] {
             .find((x) => (!x.checkVisibility || x.checkVisibility({ opacityProperty: true, visibilityProperty: true })) && paints(x) && (x === el || el.contains(x) || !boxless(x) || onGlyphs(x, px, py)));
           if (!top || top === el || el.contains(top) || top.contains(el)) continue;
           const tb = top.getBoundingClientRect();
-          if (tb.width * tb.height > vw * vh * 0.3 || afloat(top, el)) continue;
+          if (tb.width * tb.height > vw * vh * 0.3 || afloat(top, el) || pinnedOver(top, el)) continue;
           // (A control's own cooldown sweep or charge fill dims its label on purpose.)
           const ctl = touchable.find((t) => t.el.contains(el));
           if (ctl && ctl.el.contains(top)) continue;

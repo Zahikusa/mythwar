@@ -2400,6 +2400,11 @@
     translate: 0 -50%;
   }
 
+  /* Its line keeps room for that touch: wrapped under the tip, it reached over the text above (a
+     tap on "…citadel above half…" faced the Adept). */
+  .vtip .mbtn.vnext {
+    margin-block: 11px;
+  }
 }
 
 /* The shortest stages (a small phone sideways in a browser tab, ~290 px): the title's parade of
