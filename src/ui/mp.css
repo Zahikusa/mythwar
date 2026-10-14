@@ -1177,3 +1177,33 @@
     visibility: hidden;
   }
 }
+
+/* The lobby of a page with no game server, on the shortest stages (a phone sideways in a browser
+   tab): the steps and their buttons side by side, so the buttons aren't below the fold. */
+@container stage (max-height: 340px) {
+  #stage .screen.mp.noserver .mpsub {
+    display: none;
+  }
+
+  #stage .screen.mp.noserver .mpnoserver {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: 18px;
+    max-width: min(760px, 94cqw);
+  }
+
+  .mpnoserver > b,
+  .mpnoserver .mnote {
+    grid-column: 1 / -1;
+  }
+
+  .mpnoserver ol {
+    margin: 4px 0 0;
+  }
+
+  .mpnoserver .mrow {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

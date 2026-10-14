@@ -452,6 +452,10 @@ Already in the code before Phase 3, and kept:
    Download. `?noserver` shows that lobby in any build; mobilecheck `lobby-noserver` — fits
    everywhere; on the Galaxy sideways the buttons are just under the fade, a swipe away.
    PLAYTEST line for the iPhone's share sheet.)
+56. [x] That lobby on the short sideways stages (Galaxy 292 px, SE 325 in a tab): its buttons
+   started under the fade (261 px of body in 187). (Done: under 340 px of stage the steps and
+   their two buttons sit side by side and the subtitle gives way — the SE shows it all, the
+   Galaxy all but the closing note.)
 
 ## Decisions
 
