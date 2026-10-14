@@ -1,7 +1,7 @@
 # PROGRESS — Phase 3: a native-app feel on phones
 
-Status: Phase 3 complete, in verification mode (run #12, 2026-10-13). A–E done and verified
-(`npm run mobilecheck`: 7 devices × tab/installed × both orientations × 38 screens, all green;
+Status: Phase 3 complete, in verification mode (since run #12, 2026-10-13; run #13 2026-10-14). A–E done and verified
+(`npm run mobilecheck`: 7 devices × tab/installed × both orientations × 46 screens, all green;
 `npm run verify` green), F decided against. From here: only mobile UX defects seen in
 screenshots or nameable on a real device (backlog below); what needs a physical phone is under
 "Open questions for the human".
@@ -9,6 +9,20 @@ screenshots or nameable on a real device (backlog below); what needs a physical 
 Started run #12, 2026-10-13. Phases 1–2 (LAN multiplayer, the 100 lenses)
 are finished; their log, backlog and open questions are in
 [docs/PROGRESS-archive.md](docs/PROGRESS-archive.md) (last section).
+
+## Run #13 in short (for the morning)
+
+Verification mode, 2026-10-13/14: mobilecheck grew from 22 to 46 screens per view — a returning
+player's title, every how-to page, screens turned while open, a friend in the room (a node
+client joins), the online battle with its quick messages, pause, "Bo is away", "Connection
+lost" and the walkover results, co-op, the sandbox, riddles, the after-battle offer, toasts —
+and three new checks (text drawn over a control, text fields under 16 px, popups exempt). They
+found real defects, now fixed: Settings' name field at 15 px (iOS zoomed in on focus); the
+room's QR cut on the shortest phone; the title with Continue cut off (upright SE/Galaxy) and
+running under its footer (iPad mini); quick-message buttons 33 px; the sandbox's side switch
+25 px; the online notices and long toasts over the cards and the god power; keyboard hints
+shown to phones; a dead "Fullscreen on phones" switch on iPhones and installed apps; the
+title's "Press Back again" over its buttons. Backlog 21–36 (28 needs an iPhone: sound).
 
 ## Run #12 in short (for the morning)
 
@@ -309,6 +323,12 @@ Already in the code before Phase 3, and kept:
    foot, over "Get the app" and — upright on an SE — Bestiary and Settings, just as the player
    decides whether to stay. (Done: it shows at the top, over the logo's small line; mobilecheck
    `title-back`, green on every device.)
+36. [x] (run #13) A long battle toast (a feat and what it was for) ran in one line across an
+   upright SE: over the top card's price and the god power. The text-over-control check missed
+   it — the menus' empty full-stage layer, made hit-testable by the check, counted as "on top".
+   (Done: phone toasts wrap between the side columns; the check skips layers that paint
+   nothing (no text, background, border or shadow). mobilecheck `toast`, `room-back` (the
+   room's "Press Back again to leave the room.").)
 
 ## Decisions
 

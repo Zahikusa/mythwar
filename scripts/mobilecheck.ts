@@ -154,6 +154,8 @@ const STEPS: Step[] = [
   { name: 'title', query: '', ready: `a.menus.current === 'title'`, after: 900 },
   // A returning player with a battle saved: Continue joins the title's buttons.
   { name: 'title-continue', query: '', ready: `a.menus.current === 'title'`, script: `a.menus.setContinue('Fae Wilds · 3:12'); a.menus.show('title')`, after: 900 },
+  // The phone's Back on the title: "Press Back again to leave Mythwar."
+  { name: 'title-back', query: '', ready: `a.menus.current === 'title'`, script: `a.menus.titleSay('Press Back again to leave Mythwar.', 60000)`, ready2: `!!document.querySelector('.ttoast.show')`, after: 600 },
   { name: 'journey', query: 'screen=difficulty', ready: `a.menus.current === 'difficulty'`, after: 700 },
   { name: 'riddles', query: 'screen=difficulty', ready: `a.menus.current === 'difficulty'`, script: `a.menus.show('riddles')`, ready2: `a.menus.current === 'riddles'`, after: 700 },
   { name: 'howto', query: 'screen=howto', ready: `a.menus.current === 'howto'`, after: 700 },
@@ -171,6 +173,8 @@ const STEPS: Step[] = [
   { name: 'tip', query: battle, ready: inBattle, script: `a.settings.hints = true; a.settings.hintsSeen = []; a.game.speed = 4`, ready2: `!!document.querySelector('.coach.show')`, after: 700 },
   { name: 'preview', query: battle, ready: inBattle, script: `document.querySelector('.act.ascend').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true }))`, ready2: `!document.querySelector('.tooltip').classList.contains('hidden')`, after: 500 },
   { name: 'card', query: battle, ready: inBattle, script: `a.hud.showTooltip(window.__mythwarData.UNITS.treant, document.querySelector('.card'))`, ready2: `!document.querySelector('.tooltip').classList.contains('hidden')`, after: 500 },
+  // A battle's toast (the longest kind: a feat with its description).
+  { name: 'toast', query: battle, ready: inBattle, script: `a.hud.toast('Feat: Spirit Banished — win a battle without losing a single creature to the foe', 'feat', true)`, ready2: `!!document.querySelector('.toast.show')`, after: 400 },
   { name: 'pause', query: battle, ready: inBattle, script: `a.pause()`, ready2: `a.menus.current === 'pause'`, after: 700 },
   { name: 'results', query: battle, ready: inBattle, script: `a.game.speed = 4; const w = a.game.world; w.players[1].baseHp = 1; w.damageBase(1, 10, 0, 0)`, ready2: `a.menus.current === 'over'`, after: 1200 },
   // The other battles: the sandbox (its "For: You / Foe" switch) and a riddle of war (and its result).
@@ -194,6 +198,8 @@ const STEPS: Step[] = [
   { name: 'turned-battle', query: battle, ready: inBattle, turn: true, after: 1200 },
   { name: 'turned-settings', query: 'screen=settings', ready: `a.menus.current === 'settings'`, turn: true, after: 900 },
   { name: 'turned-install', query: '', ready: `a.menus.current === 'title'`, script: `a.install.open()`, ready2: `!!document.querySelector('.isheetback.show')`, turn: true, after: 900, only: 'tab' },
+  // The phone's Back in the room: "Press Back again to leave the room."
+  { name: 'room-back', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, script3: `a.menus.mp.flash('Press Back again to leave the room.', { ms: 60000, calm: true })`, ready3: `!!document.querySelector('.screen.room .mpflash.show')`, after: 600 },
   // With a friend: the full room (seats, battle modes, handicaps), an online battle (quick
   // messages, the connection) and its results (rematch, quick messages).
   { name: 'room2', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, ready3: `!!a.mp.room?.seats[1]?.ready`, after: 1000 },
@@ -299,14 +305,20 @@ function inspect(safe: Insets): Problem[] {
   // by scrolling panels), against every control it isn't part of — where the text is on top.
   // (Hit-tested with every element hit-testable: a footer line ignores the finger but is drawn
   // over the button. The battle's floating notes — the opening banner, a coach tip, a card's
-  // details — come and go over the lane buttons on purpose.)
+  // details, the online notices over a waiting battle — come and go over the lane buttons on
+  // purpose.)
   const over = new Set<string>();
+  const paints = (x: Element) => {
+    if (/^(CANVAS|IMG|SVG|VIDEO)$/i.test(x.tagName) || [...x.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim())) return true;
+    const cs = getComputedStyle(x);
+    return !/^rgba\(.*,\s*0\)$|^transparent$/.test(cs.backgroundColor) || cs.backgroundImage !== 'none' || parseFloat(cs.borderTopWidth) > 0 || cs.boxShadow !== 'none';
+  };
   const allHit = document.createElement('style');
   allHit.textContent = '* { pointer-events: auto !important; }';
   document.head.appendChild(allHit);
   for (const el of document.querySelectorAll<HTMLElement>('body *')) {
     const texts = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent!.trim());
-    if (!texts.length || touchable.some((t) => t.el.contains(el)) || el.closest('.banner, .coach, .tooltip')) continue;
+    if (!texts.length || touchable.some((t) => t.el.contains(el)) || el.closest('.banner, .coach, .tooltip, .netoverlay')) continue;
     const cs = getComputedStyle(el);
     if (cs.visibility !== 'visible' || el.closest('.sronly') || (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true }))) continue;
     let clip: Box = { l: 0, t: 0, r: vw, b: vh };
@@ -324,10 +336,11 @@ function inspect(safe: Insets): Problem[] {
           if (el.contains(t.el)) continue;
           const o = cut(seen, t.b);
           if (o.r - o.l <= 4 || o.b - o.t <= 4) continue;
-          // The topmost thing drawn there (see-through ones, like a faded-out toast, don't count).
+          // The topmost thing drawn there (see-through ones — a faded-out toast, a layer that
+          // only holds others, like the menus' — don't count).
           const top = document
             .elementsFromPoint((o.l + o.r) / 2, (o.t + o.b) / 2)
-            .find((x) => !x.checkVisibility || x.checkVisibility({ opacityProperty: true, visibilityProperty: true }));
+            .find((x) => (!x.checkVisibility || x.checkVisibility({ opacityProperty: true, visibilityProperty: true })) && paints(x));
           if (top && (top === el || el.contains(top))) over.add(`${name(el)} over ${name(t.el)}`);
         }
       }

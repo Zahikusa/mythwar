@@ -2491,6 +2491,13 @@ html.cbfoe .side.right .hpfill {
 .hud.mobile .toast {
   top: 84px;
   font-size: 12px;
+  /* A long one (a feat and what it was for) wraps between the side columns rather than running
+     over the cards and the god power. */
+  white-space: normal;
+  width: max-content;
+  max-width: calc(100cqw - 2 * var(--side) - 16px);
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .hud.mobile .hint {
