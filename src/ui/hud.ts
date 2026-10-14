@@ -1173,9 +1173,12 @@ export class Hud {
         ? `Enemy age: ${AGES[foe.age].name} — ${Math.round(xpFrac(foe) * 100)}% of the XP for ${AGES[foe.age + 1].name}`
         : `Enemy age: ${AGES[foe.age].name}`;
     if (E.ageR.title !== foeTitle) E.ageR.title = foeTitle;
-    setText(E.ageLn, this.allyName ? `You & ${this.allyName} · ${AGES[me.age].name}` : this.myName ? `${this.myName}${/[\p{L}\p{N}]/u.test(this.myName) ? ' ·' : ''} ${AGES[me.age].name}` : AGES[me.age].name);
+    if (this.allyName) nameLine(E.ageLn, `You & ${this.allyName}`, ` · ${AGES[me.age].name}`);
+    else if (this.myName) nameLine(E.ageLn, this.myName, `${/[\p{L}\p{N}]/u.test(this.myName) ? ' ·' : ''} ${AGES[me.age].name}`);
+    else setText(E.ageLn, AGES[me.age].name);
     // Online, the right-hand side says who it is.
-    setText(E.ageRn, this.foeName ? `${this.foeName} · ${AGES[foe.age].name}` : AGES[foe.age].name);
+    if (this.foeName) nameLine(E.ageRn, this.foeName, ` · ${AGES[foe.age].name}`);
+    else setText(E.ageRn, AGES[foe.age].name);
     toggle(E.hpL.parentElement!, 'low', fracs[0] < 0.3);
     setText(E.clock, fmtTime(w.time));
     const pips = E.shrines.children;
@@ -1691,6 +1694,15 @@ const CLASS_NOTE: Record<string, string> = {
 
 function chip(cls: string): string {
   return `<span class="clschip" style="color:${CLASS_COLOR[cls]}">${CLASS_ICON[cls]}${CLASS_NAME[cls]}</span>`;
+}
+
+/**
+ * A side's name line in two parts — who, then " · Fae Wilds" — so a phone short of room gives up
+ * the age first (the badge beside it shows the age), the name only after it.
+ */
+function nameLine(el: HTMLElement, who: string, age: string): void {
+  if (el.textContent === who + age) return;
+  el.replaceChildren(h('span', { class: 'who', text: who }), h('span', { class: 'ageof', text: age }));
 }
 
 /**

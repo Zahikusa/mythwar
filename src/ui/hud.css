@@ -2243,6 +2243,27 @@ html.cbfoe .side.right .hpfill {
   letter-spacing: 0.02em;
 }
 
+/* Online, short of room: " · Jade Empire" gives way before the name does (see hud.ts nameLine). */
+.hud.mobile .agename:has(> .who) {
+  display: flex;
+}
+
+.hud.mobile .agename > :is(.who, .ageof) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hud.mobile .agename > .who {
+  flex: 0 1 auto;
+}
+
+.hud.mobile .agename > .ageof {
+  flex: 0 1000 auto;
+  /* (A flex item drops its leading space: " · " keeps it here.) */
+  white-space: pre;
+}
+
 .hud.mobile .hpcol {
   min-width: 60px;
 }
