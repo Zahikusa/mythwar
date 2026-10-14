@@ -1,7 +1,7 @@
 # PROGRESS — Phase 3: a native-app feel on phones
 
 Status: Phase 3 complete, in verification mode (since run #12, 2026-10-13; runs #13, #14 2026-10-14). A–E done and verified
-(`npm run mobilecheck`: 7 devices × tab/installed × both orientations × 60 screens, all green;
+(`npm run mobilecheck`: 7 devices × tab/installed × both orientations × 67 screens; the full matrix green on 60 of them, each newer one green on every device;
 `npm run verify` green), F decided against. From here: only mobile UX defects seen in
 screenshots or nameable on a real device (backlog below); what needs a physical phone is under
 "Open questions for the human".
@@ -21,7 +21,13 @@ cards; the room's note drawn under its news strip. The check's own steps were fi
 step's seeded settings (start in the last age) had leaked into every later step, and the
 "fullest results" step was a Defeat — as a Victory it showed the "Face the Adept →" button's
 touch area reaching over the tip's text (fixed). New steps: a veteran's foe cards, all ages in
-the Bestiary, earned feats. Backlog 44–51.
+the Bestiary, earned feats. Then one more check (text a touch ring would take; the full matrix
+of 1,480 views green) and more states a phone shows that were never checked: the title with
+"New version ready — restart" or "You have the app" (pushed "Get the app" off an SE — fixed),
+the public page's lobby without a server (its one button downloaded a desktop app to a phone:
+now "Send to my computer" through the share sheet; side by side on short phones), and online
+battles with 16-letter names (the foe's bar ran under the chat and pause buttons — fixed).
+Backlog 44–57 done; 58–62 open, with 5, 16, 28 (need a real phone).
 
 ## Run #13 in short (for the morning)
 
@@ -456,6 +462,31 @@ Already in the code before Phase 3, and kept:
    started under the fade (261 px of body in 187). (Done: under 340 px of stage the steps and
    their two buttons sit side by side and the subtitle gives way — the SE shows it all, the
    Galaxy all but the closing note.)
+57. [x] Online battles were only ever checked with a friend called "Bo". With names as long as
+   they go (16 letters: "Maximilian Weber", "Wolfgang Amadeus"), upright on an SE and an
+   iPhone 15 the foe's bar, health number and age badge ran under the chat and pause buttons
+   (versus and co-op): a one-line name's width counted towards the top bar's `1fr` column, so
+   the foe's half grew to 216 px of 144. (Done: phone HUDs give each side `minmax(0, 1fr)` and
+   the name line ends in "…" rather than wrapping or pushing — with a little less letter
+   spacing, so "Novice · Fae Wilds" still fits half a bar. mobilecheck `room-names`,
+   `online-names`, `coop-names` (fail on the old build). The cut-short check (45) now ends an
+   ellipsized line at its box — a range measures the whole text.)
+58. [ ] Upright on an SE the phone HUD's name lines have ~86 px each: "Master · Jade Empire"
+   (co-op against the Master in the fourth age) still ends in "…" (93 px). When it doesn't fit,
+   the " · age" part could go first (the badge beside it shows the age's numeral).
+59. [ ] A battle's names are cut to "Wolfgang A…" on phones with no way to read them in full
+   in the battle (the room showed them): a long press on the name line could show it whole,
+   as the cards' details do.
+60. [ ] mobilecheck's steps share one browser context's storage per view: besides the settings
+   (46), a results step's records, feats and a saved battle carry into later steps (a later
+   title has Continue only because a battle step left one). Audit which steps depend on what
+   came before, and seed what each needs instead.
+61. [ ] Foe cards on narrow cards (upright SE): a veteran's record line ("12W · 3L · best 4:32 ·
+   ★★★") wraps to two lines, and the trials row and start age sit below the fold of the
+   scrolling body — a player who picks a start age must scroll to see it.
+62. [ ] The Bestiary on the shortest stage (Galaxy sideways in Chrome, 292 px): the title, the
+   tabs and Back leave the creatures a window of ~100 px (the tabs scroll away with the body,
+   so it works, but a first look shows little): tabs beside the title under 330 px.
 
 ## Decisions
 

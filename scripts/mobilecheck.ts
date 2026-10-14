@@ -131,6 +131,8 @@ interface Step {
    * is waited for.
    */
   guest?: boolean;
+  /** The friend's name (else "Bo"). */
+  guestName?: string;
   /** Then `script3` runs and `ready3` is waited for (with or without a friend). */
   script3?: string;
   ready3?: string;
@@ -252,6 +254,10 @@ const STEPS: Step[] = [
   { name: 'online-chat', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, guestSays: 'gl', script4: `document.querySelector('.emotes').classList.remove('hidden')`, ready4: `!!document.querySelector('.ebubble.theirs.show')`, after: 900 },
   // (Co-op: the ally's call shows on our own side.)
   { name: 'coop-chat', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.setCoop('novice'); a.mp.ready(true)`, ready3: inBattle, guestSays: 'thx', script4: `document.querySelector('.emotes').classList.remove('hidden')`, ready4: `!!document.querySelector('.ebubble.mine.show')`, after: 900 },
+  // (Both names as long as names go — 16 letters, wide ones — in the room, the HUD and co-op's.)
+  { name: 'room-names', query: 'mp', settings: { playerName: 'Maximilian Weber' }, ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, guestName: 'Wolfgang Amadeus', ready3: `!!a.mp.room?.seats[1]?.ready`, after: 1000 },
+  { name: 'online-names', query: 'mp', settings: { playerName: 'Maximilian Weber' }, ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, guestName: 'Wolfgang Amadeus', script3: `a.mp.ready(true)`, ready3: inBattle, after: 1500 },
+  { name: 'coop-names', query: 'mp', settings: { playerName: 'Maximilian Weber' }, ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, guestName: 'Wolfgang Amadeus', script3: `a.mp.setCoop('mythic'); a.mp.ready(true)`, ready3: inBattle, after: 1500 },
   { name: 'online-pause', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, script4: `a.pause()`, ready4: `a.menus.current === 'pause'`, after: 900 },
   // The friend's app went to the background: the battle waits, then offers to claim the victory.
   { name: 'online-away', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, guest: true, script3: `a.mp.ready(true)`, ready3: inBattle, guestAway: true, ready4: `!document.querySelector('.nclaim').classList.contains('hidden')`, after: 900 },
@@ -472,7 +478,12 @@ function inspect(safe: Insets): Problem[] {
     for (let p: HTMLElement | null = el; p && p !== document.body; p = p.parentElement) {
       const ps = getComputedStyle(p);
       if (ps.overflowX === 'visible' && ps.overflowY === 'visible') continue;
-      if (ps.textOverflow === 'ellipsis') break;
+      // (An ellipsis is a deliberate cut — the line still measures its whole text: what shows
+      // ends at the box.)
+      if (ps.textOverflow === 'ellipsis') {
+        clips.push({ p, b: box(p.getBoundingClientRect()), along: false, across: false });
+        break;
+      }
       // (A panel that scrolls that way shows the rest on a swipe.)
       const sx = /(auto|scroll)/.test(ps.overflowX) && p.scrollWidth > p.clientWidth + 1;
       const sy = /(auto|scroll)/.test(ps.overflowY) && p.scrollHeight > p.clientHeight + 1;
@@ -673,8 +684,8 @@ let failures = 0;
 const tally = new Map<string, number>();
 
 /** The friend: joins room `code` on the check's server and readies up for the battle. */
-function friend(base: string, code: string): MpClient {
-  const mp = new MpClient({ name: 'Bo', url: base.replace(/^http/, 'ws') + '/mp', storage: null });
+function friend(base: string, code: string, name = 'Bo'): MpClient {
+  const mp = new MpClient({ name, url: base.replace(/^http/, 'ws') + '/mp', storage: null });
   let asked = false;
   mp.listen({
     changed: () => {
@@ -749,7 +760,7 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
       if (s.ready2) await wait(s.ready2);
       if (s.guest) {
         const code = (await page.evaluate(`window.__mythwar.mp.room.code`)) as string;
-        guest = friend(base, code);
+        guest = friend(base, code, s.guestName);
         // (Seated and ready first: a newcomer takes both seats out of Ready.)
         await wait(`!!a.mp.room?.seats[1]?.ready`);
       }

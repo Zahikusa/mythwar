@@ -2210,6 +2210,9 @@ html.cbfoe .side.right .hpfill {
   left: calc(var(--side) + 8px);
   right: calc(var(--side) + 8px);
   gap: 8px;
+  /* (Each side keeps its half, whatever its name line holds: a long one counted towards the
+     column's least width and pushed the foe's bar under the chat and pause buttons.) */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 }
 
 .hud.mobile .agebadge {
@@ -2230,6 +2233,14 @@ html.cbfoe .side.right .hpfill {
 .hud.mobile .agename {
   font-size: 10px;
   margin-top: 1px;
+  /* One line that gives way: a 16-letter name ("Wolfgang Amadeus · Fae Wilds") pushed the foe's
+     bar and badge under the chat and pause buttons of an upright SE. */
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  /* (Tighter than the desktop's: "Novice · Fae Wilds" keeps its last letters in half a bar.) */
+  letter-spacing: 0.02em;
 }
 
 .hud.mobile .hpcol {
