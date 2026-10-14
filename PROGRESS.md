@@ -12,7 +12,7 @@ are finished; their log, backlog and open questions are in
 
 ## Run #13 in short (for the morning)
 
-Verification mode, 2026-10-13/14: mobilecheck grew from 22 to 46 screens per view — a returning
+Verification mode, 2026-10-13/14: mobilecheck grew from 22 to 51 screens per view — a returning
 player's title, every how-to page, screens turned while open, a friend in the room (a node
 client joins), the online battle with its quick messages, pause, "Bo is away", "Connection
 lost" and the walkover results, co-op, the sandbox, riddles, the after-battle offer, toasts —
@@ -22,7 +22,8 @@ room's QR cut on the shortest phone; the title with Continue cut off (upright SE
 running under its footer (iPad mini); quick-message buttons 33 px; the sandbox's side switch
 25 px; the online notices and long toasts over the cards and the god power; keyboard hints
 shown to phones; a dead "Fullscreen on phones" switch on iPhones and installed apps; the
-title's "Press Back again" over its buttons. Backlog 21–36 (28 needs an iPhone: sound).
+title's "Press Back again" over its buttons; with the keyboard up sideways the field being
+typed in had no room. Backlog 21–37 (28 needs an iPhone: sound).
 
 ## Run #12 in short (for the morning)
 
@@ -330,6 +331,13 @@ Already in the code before Phase 3, and kept:
    nothing (no text, background, border or shadow). mobilecheck `toast`, `room-back` (the
    room's "Press Back again to leave the room.").) The full matrix after it: 46 screens × 7
    devices × tab/installed × both ways, 1,172 views, all green.
+37. [x] (run #13) Typing sideways on a phone with the keyboard up (~100–150 px of game left —
+   Gboard and iOS's keyboard take over half a sideways screen): the lobby kept its title and
+   Back row and the name field got no room at all (Galaxy: typed blind; SE: the code field
+   under the fade). (Done: under 200 px of stage a screen's title and buttons step aside for
+   its middle, where App.resize scrolls the field into view. mobilecheck `keyboard-name`,
+   `-code`, `-settings`, `-progress`, `-seat`: sideways, 40% of the height left, the focused
+   field must be wholly in sight and on top.)
 
 ## Decisions
 

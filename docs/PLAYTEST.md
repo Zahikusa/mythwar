@@ -88,6 +88,8 @@ down the model, the iOS/Android version and anything that looks wrong (a photo h
 - [ ] The lobby, upright: tap "Your name" — the keyboard opens and an upright box at the top
       shows what you type (the field itself is on the turned game); Done closes it. Close the
       keyboard — the game sits exactly where it was (no gap, nothing shifted).
+- [ ] The lobby, sideways: tap the room code — with the keyboard up, the code field (and Join)
+      shows in the strip above it; the title and Back come back when the keyboard goes.
 - [ ] Sound: play music in another app, then start a battle — note whether your music keeps
       playing under the game's or stops. Flip the ring/silent switch to silent: note whether
       the game goes quiet. (Native games: the music keeps playing, silent mutes the game.)

@@ -2458,3 +2458,16 @@
 .upbox .mbtn {
   grid-area: done;
 }
+
+/* The on-screen keyboard is up on a phone held sideways (~100–150 px of game left): the screen's
+   title and buttons give their room to the middle, where the field being typed in is shown
+   (App.resize scrolls it into view) — they come back with the keyboard's Done. */
+@container stage (max-height: 200px) {
+  .screen > :is(h2, .rhead, .mrow, .vbuttons) {
+    display: none;
+  }
+
+  .screen {
+    padding: 4px 10px;
+  }
+}

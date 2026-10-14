@@ -146,6 +146,12 @@ interface Step {
    * `?safe=` is read once.)
    */
   turn?: boolean;
+  /**
+   * The on-screen keyboard: once ready, only this share of the viewport's height is left (the
+   * keyboard takes the rest), and the focused field must still be in sight. Sideways only (an
+   * upright phone types through the upright echo, see `typing`).
+   */
+  keyboard?: number;
 }
 
 const battle = 'play=novice&seed=4';
@@ -193,6 +199,13 @@ const STEPS: Step[] = [
   { name: 'lan-settings', query: 'lanpreview&screen=settings', ready: `a.menus.current === 'settings'`, script: `document.querySelector('.sapp')?.scrollIntoView({ block: 'center' })`, after: 700, only: 'tab' },
   // Typing a name in the lobby (upright phones: the upright echo of the turned field).
   { name: 'typing', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `const f = document.querySelector('.screen.mp .mpname'); f.focus(); f.value = 'Ada Lovelace'; f.dispatchEvent(new Event('input', { bubbles: true }))`, after: 600 },
+  // Typing sideways with the keyboard up (~40% of a sideways phone left above it): the name, a
+  // room code, the name in the room's seat.
+  { name: 'keyboard-name', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `document.querySelector('.screen.mp .mpname').focus()`, keyboard: 0.4, after: 900 },
+  { name: 'keyboard-code', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `document.querySelector('.screen.mp .mpcode').focus()`, keyboard: 0.4, after: 900 },
+  { name: 'keyboard-settings', query: 'screen=settings', ready: `a.menus.current === 'settings'`, script: `document.querySelector('.sproginput.sname').focus()`, keyboard: 0.4, after: 900 },
+  { name: 'keyboard-progress', query: 'screen=settings', ready: `a.menus.current === 'settings'`, script: `document.querySelector('.sproginput:not(.sname)').focus()`, keyboard: 0.4, after: 900 },
+  { name: 'keyboard-seat', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room' && !!document.querySelector('.rseat.mine .sname')`, script3: `document.querySelector('.rseat.mine .sname').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))`, ready3: `document.activeElement?.classList.contains('sedit')`, keyboard: 0.4, after: 900 },
   { name: 'room', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room'`, after: 1000 },
   // Rotated while open (TASK A: "after rotating"): the battle, a menu screen, the install sheet.
   { name: 'turned-battle', query: battle, ready: inBattle, turn: true, after: 1200 },
@@ -519,6 +532,7 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
     // (Turned: the screen ends up in the other orientation — checked against that one's insets.)
     const turned = d[mode][orient === 'p' ? 1 : 0];
     if (s.turn && JSON.stringify(turned.safe) !== JSON.stringify(v.safe)) continue;
+    if (s.keyboard && orient === 'p') continue;
     const page: Page = await ctx.newPage();
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
@@ -554,8 +568,22 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
         await page.waitForTimeout(400);
         await page.setViewportSize({ width: turned.w, height: turned.h });
       }
+      if (s.keyboard) await page.setViewportSize({ width: v.w, height: Math.round(v.h * s.keyboard) });
       await page.waitForTimeout(s.after ?? 500);
       problems.push(...(await page.evaluate(inspect, v.safe)));
+      if (s.keyboard) {
+        const seen = await page.evaluate(() => {
+          const f = document.activeElement as HTMLElement | null;
+          if (!f || !/^(INPUT|TEXTAREA)$/.test(f.tagName)) return 'the field lost the focus';
+          const r = f.getBoundingClientRect();
+          const vh = visualViewport?.height ?? innerHeight;
+          const vw = visualViewport?.width ?? innerWidth;
+          if (r.top < -1 || r.left < -1 || r.bottom > vh + 1 || r.right > vw + 1) return `the field at ${Math.round(r.left)},${Math.round(r.top)}–${Math.round(r.right)},${Math.round(r.bottom)} is not all in the ${Math.round(vw)}×${Math.round(vh)} left by the keyboard`;
+          const hit = document.elementFromPoint((r.left + r.right) / 2, (r.top + r.bottom) / 2);
+          return hit === f || f.contains(hit) ? '' : 'the field is covered';
+        });
+        if (seen) problems.push({ kind: 'outside', what: `typing: ${seen}` });
+      }
       if (shots) await page.screenshot({ path: `screenshots/mobile/${tag}-${s.name}.png` });
       if (d.engine === 'chromium') problems.push(...(await gestures(page)));
     } catch (e) {
