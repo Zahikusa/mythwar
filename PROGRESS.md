@@ -345,6 +345,13 @@ Already in the code before Phase 3, and kept:
    stage keeps its turn. mobilecheck `keyboard-upright` (55% left) expects the stage still
    turned and the echo in sight; the emulators turn their "screen" with the viewport, so the
    check holds the screen's orientation as a keyboard would. Fails without the fix.)
+39. [ ] The room's news line ("Press Back again to leave the room.", "Bo left the room") is in
+   the flow under the header: on the shortest phone (Galaxy sideways in Chrome) it pushes the
+   invite down for its 4 s and the QR code is cut again (screenshots/mobile/
+   galaxy-s23-tab-l-room-back.png). An overlay over the "Waiting…" line would not move it.
+40. [ ] iOS before 16.4 has no `screen.orientation`: with a field focused, the stage keeps its
+   turn even if the phone is turned while typing (until the keyboard closes). Rare; a
+   `matchMedia('(orientation: …)')` on the layout viewport could stand in there.
 
 ## Decisions
 
