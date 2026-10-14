@@ -362,6 +362,8 @@ function inspect(safe: Insets): Problem[] {
         if (empty(seen)) continue;
         for (const t of touchable) {
           if (el.contains(t.el)) continue;
+          // (A toast lets taps through and may cross a lane's small ▶ marker, like the banner.)
+          if (el.closest('.toast') && t.el.matches('.lanetab')) continue;
           const o = cut(seen, t.b);
           if (o.r - o.l <= 4 || o.b - o.t <= 4) continue;
           // The topmost thing drawn there (see-through ones — a faded-out toast, a layer that
@@ -374,6 +376,61 @@ function inspect(safe: Insets): Problem[] {
       }
     }
   }
+  // Text hidden behind something small that paints (a pill, a badge): each line's middle must
+  // show the text itself. (Behind something large — a menu, a sheet, a backdrop — or a floating
+  // note is how those work.)
+  const hidden = new Set<string>();
+  const floating = '.banner, .coach, .tooltip, .netoverlay, .upecho, .toast, .ttoast, .ebubble, [role="dialog"], [role="menu"], .panel';
+  // Painted by its letters only (no background, border or shadow): covers only where its glyphs
+  // are, roughly the middle half of each of its lines (a big title's line box reaches far past
+  // its letters, over the small lines above and below).
+  const boxless = (x: Element) => {
+    const cs = getComputedStyle(x);
+    const clipped = cs.backgroundClip === 'text' || (cs as unknown as Record<string, string>).webkitBackgroundClip === 'text';
+    return (clipped || (/^rgba\(.*,\s*0\)$|^transparent$/.test(cs.backgroundColor) && cs.backgroundImage === 'none')) && !(parseFloat(cs.borderTopWidth) > 0) && cs.boxShadow === 'none' && !/^(CANVAS|IMG|SVG|VIDEO)$/i.test(x.tagName);
+  };
+  const onGlyphs = (x: Element, px: number, py: number) =>
+    [...x.childNodes].some((n) => {
+      if (n.nodeType !== 3 || !n.textContent!.trim()) return false;
+      const r = document.createRange();
+      r.selectNodeContents(n);
+      // (On the turned stage of an upright phone a line's thickness runs across the screen.)
+      const turned = !!x.closest('#stage.rotated');
+      return [...r.getClientRects()].some((b) =>
+        turned
+          ? py >= b.top && py <= b.bottom && px >= b.left + b.width / 4 && px <= b.right - b.width / 4
+          : px >= b.left && px <= b.right && py >= b.top + b.height / 4 && py <= b.bottom - b.height / 4,
+      );
+    });
+  for (const el of document.querySelectorAll<HTMLElement>('body *')) {
+    const texts = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent!.trim());
+    if (!texts.length || el.closest('.sronly')) continue;
+    const cs = getComputedStyle(el);
+    if (cs.visibility !== 'visible' || (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true }))) continue;
+    let clip: Box = { l: 0, t: 0, r: vw, b: vh };
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      const ps = getComputedStyle(p);
+      if (ps.overflowX !== 'visible' || ps.overflowY !== 'visible') clip = cut(clip, box(p.getBoundingClientRect()));
+    }
+    for (const n of texts) {
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      for (const line of range.getClientRects()) {
+        const seen = cut(box(line), clip);
+        if (seen.r - seen.l < 6 || seen.b - seen.t < 6) continue;
+        const px = (seen.l + seen.r) / 2;
+        const py = (seen.t + seen.b) / 2;
+        const top = document
+          .elementsFromPoint(px, py)
+          .find((x) => (!x.checkVisibility || x.checkVisibility({ opacityProperty: true, visibilityProperty: true })) && paints(x) && (x === el || el.contains(x) || !boxless(x) || onGlyphs(x, px, py)));
+        if (!top || top === el || el.contains(top) || top.contains(el)) continue;
+        const tb = top.getBoundingClientRect();
+        if (tb.width * tb.height > vw * vh * 0.3 || top.closest(floating)) continue;
+        hidden.add(`${name(el)} behind ${name(top)}`);
+      }
+    }
+  }
+  for (const x of hidden) out.push({ kind: 'overlap', what: `text ${x}` });
   allHit.remove();
   for (const o of over) out.push({ kind: 'overlap', what: `text ${o}` });
   // Readable text: nothing on screen below 10 px (the HUD's small numbers are 10).

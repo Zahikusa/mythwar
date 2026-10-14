@@ -364,9 +364,13 @@ Already in the code before Phase 3, and kept:
    down while it's there. mobilecheck `ragnarok`, `ragnarok-on`, and `battle-celestial` (the
    last age's four cards — every other age has three; a `settings` option pre-seeds a step's
    saved settings).)
-42. [ ] mobilecheck has no "text hidden behind something" check: the Ragnarök line (41) passed
-   every check while half covered by the gold pill. A check that each visible text line's
-   middle is topmost (sheets and modal backdrops exempt) would catch the next one.
+42. [x] mobilecheck had no "text hidden behind something" check: the Ragnarök line (41) passed
+   every check while half covered by the gold pill. (Done: each visible text line's middle
+   must show that text, not something small that paints over it. Large layers (> 30% of the
+   screen: menus, sheets, backdrops) and floating notes are exempt; text painted only through
+   its letters (no box, or `background-clip: text` like the MYTHWAR logo) covers only the
+   middle half of its lines — turned with the stage upright. Fails with the old Ragnarök CSS.
+   Also: toasts may cross a lane's ▶ marker (they let taps through) — that pairing was flaky.)
 43. [x] The results screen in its fullest form (new feats, a new best, a closing chapter, a
    break note) was sized for laptops (see the 861–1000-px rule in menus.css); on phones
    mobilecheck showed only a plain first victory. (Done: `results-full` and `results-break`
