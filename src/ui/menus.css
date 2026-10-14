@@ -1540,6 +1540,7 @@
 }
 
 .ctab {
+  position: relative;
   padding: 2px 10px;
   border-radius: 9px;
   font-size: 12px;
@@ -1553,6 +1554,20 @@
 .ctab.on {
   color: var(--gold-l);
   border-color: var(--gold);
+}
+
+/* Under a finger: the pills keep their size; their touch reaches 44 px tall (and 3 px into the
+   gap beside them). */
+@media (pointer: coarse) {
+  .ctab::before {
+    content: '';
+    position: absolute;
+    left: -3px;
+    right: -3px;
+    top: 50%;
+    height: 44px;
+    translate: 0 -50%;
+  }
 }
 
 .chron {

@@ -12,7 +12,7 @@ are finished; their log, backlog and open questions are in
 
 ## Run #13 in short (for the morning)
 
-Verification mode, 2026-10-13/14: mobilecheck grew from 22 to 55 screens per view — a returning
+Verification mode, 2026-10-13/14: mobilecheck grew from 22 to 57 screens per view — a returning
 player's title, every how-to page, screens turned while open, a friend in the room (a node
 client joins), the online battle with its quick messages, pause, "Bo is away", "Connection
 lost" and the walkover results, co-op, the sandbox, riddles, the after-battle offer, toasts —
@@ -24,7 +24,7 @@ running under its footer (iPad mini); quick-message buttons 33 px; the sandbox's
 shown to phones; a dead "Fullscreen on phones" switch on iPhones and installed apps; the
 title's "Press Back again" over its buttons; with the keyboard up sideways the field being
 typed in had no room, and upright the whole game flipped under it; the Ragnarök countdown hid
-behind the gold pill. Backlog 21–41 (28 needs an iPhone: sound).
+behind the gold pill; the results' report tabs were 22 px. Backlog 21–43 (28 needs an iPhone: sound).
 
 ## Run #12 in short (for the morning)
 
@@ -367,10 +367,12 @@ Already in the code before Phase 3, and kept:
 42. [ ] mobilecheck has no "text hidden behind something" check: the Ragnarök line (41) passed
    every check while half covered by the gold pill. A check that each visible text line's
    middle is topmost (sheets and modal backdrops exempt) would catch the next one.
-43. [ ] The results screen in its fullest form (new feats, a new best, a closing chapter, a
+43. [x] The results screen in its fullest form (new feats, a new best, a closing chapter, a
    break note) was sized for laptops (see the 861–1000-px rule in menus.css); on phones
-   mobilecheck shows only a plain first victory. Seed feats/records so the results show all of
-   it on the SE and the Galaxy, and look.
+   mobilecheck showed only a plain first victory. (Done: `results-full` and `results-break`
+   (a 5-minute battle, so the army chart and its tabs show). It all fits — the body scrolls to
+   the table and chart — but the report's "Armies / Chronicle" tabs were 22-px pills on every
+   phone: their touch now reaches 44 px tall, the look unchanged.)
 
 ## Decisions
 
