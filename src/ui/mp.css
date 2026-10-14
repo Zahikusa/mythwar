@@ -1153,4 +1153,23 @@
   .rinvtext .rcopy {
     margin-top: 0;
   }
+
+  /* News ("Press Back again to leave the room.") takes the note's line for its few seconds
+     instead of a line of its own, which pushed the QR code back under the edge. */
+  .screen.room > .sbody {
+    position: relative;
+  }
+
+  .screen.room .mpflash {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 6px;
+    z-index: 1;
+  }
+
+  .screen.room .mpflash.show {
+    padding: 2px 0 4px;
+    background: rgb(21, 14, 38);
+  }
 }
