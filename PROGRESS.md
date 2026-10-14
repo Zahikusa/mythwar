@@ -377,6 +377,25 @@ Already in the code before Phase 3, and kept:
    (a 5-minute battle, so the army chart and its tabs show). It all fits — the body scrolls to
    the table and chart — but the report's "Armies / Chronicle" tabs were 22-px pills on every
    phone: their touch now reaches 44 px tall, the look unchanged.)
+44. [x] (run #14) "Choose your foe" upright on an SE (and every phone whose foe cards are under
+   ~155 px wide): the three stat chips didn't fit across a card — "Sometimes" pushed them wider,
+   and "Income 90%" ran under the next card ("Incon"). No check saw it: the hidden-text check
+   only looked at a line's middle. (Done: each card is a size container; under 155 px the
+   chips are one line each, label left and value right.)
+45. [x] mobilecheck's text-hidden check (42) skipped every menu screen: they're
+   `role="dialog"`, which was in its "floating notes" exemption, so text covered by a neighbour
+   inside a screen or sheet always passed. (Done: covered by a floating layer *of its own* is
+   exempt, not by one it shares; a transparent svg (the how-to's class diagram) covers only like
+   glyphs do. New check, "text cut short": a line that runs past the edge of a box that clips
+   it and doesn't scroll that way, or whose ends lie under something else — fails on the old
+   foe-card CSS, a control's own cooldown sweep excepted.)
+46. [x] mobilecheck: a step's seeded `settings` (battle-celestial's start in the last age) stayed
+   in the browser's storage for every later step of that view — pause, results, sandbox, the
+   online battles were all checked in the Celestial age with its fourth card, never a first
+   battle's three. (Done: a step's own settings are taken out again when its page closes.)
+47. [x] The battle room on the shortest stage (39): the news strip covered "Waiting for a
+   second player…" but the note was still drawn under it (and read out). (Done: the note is
+   hidden while the news shows; caught by 45.)
 
 ## Decisions
 

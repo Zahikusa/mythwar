@@ -1172,4 +1172,8 @@
     padding: 2px 0 4px;
     background: rgb(21, 14, 38);
   }
+
+  .screen.room > .sbody:has(> .mpflash.show) > .rnote {
+    visibility: hidden;
+  }
 }

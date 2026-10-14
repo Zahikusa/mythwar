@@ -547,6 +547,27 @@
   color: var(--muted);
 }
 
+/* Each card measures itself (its track's size never depends on its content). */
+.diff {
+  container: dcard / inline-size;
+}
+
+/* Too narrow for three chips side by side ("Sometimes" ran under the next card on an upright
+   SE; they need ~137 px): one line each, the label left and its value right. */
+@container dcard (max-width: 140px) {
+  .diff .dchips {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .diff .dchips span {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 2px;
+    padding: 1px 4px;
+  }
+}
+
 .record {
   font-size: 12px;
   font-weight: 700;

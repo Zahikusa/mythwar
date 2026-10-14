@@ -381,13 +381,17 @@ function inspect(safe: Insets): Problem[] {
   // note is how those work.)
   const hidden = new Set<string>();
   const floating = '.banner, .coach, .tooltip, .netoverlay, .upecho, .toast, .ttoast, .ebubble, [role="dialog"], [role="menu"], .panel';
-  // Painted by its letters only (no background, border or shadow): covers only where its glyphs
-  // are, roughly the middle half of each of its lines (a big title's line box reaches far past
-  // its letters, over the small lines above and below).
+  // (Over the text from a note or sheet of its own — not a neighbour inside the same screen or
+  // sheet: every menu screen is a dialog too.)
+  const afloat = (top: Element, el: Element) => !!top.closest(floating) && top.closest(floating) !== el.closest(floating);
+  // Painted by its letters only (no background, border or shadow; an svg by its shapes, mostly
+  // see-through — a diagram's arrows between its labels): covers only where its glyphs are,
+  // roughly the middle half of each of its lines (a big title's line box reaches far past its
+  // letters, over the small lines above and below).
   const boxless = (x: Element) => {
     const cs = getComputedStyle(x);
     const clipped = cs.backgroundClip === 'text' || (cs as unknown as Record<string, string>).webkitBackgroundClip === 'text';
-    return (clipped || (/^rgba\(.*,\s*0\)$|^transparent$/.test(cs.backgroundColor) && cs.backgroundImage === 'none')) && !(parseFloat(cs.borderTopWidth) > 0) && cs.boxShadow === 'none' && !/^(CANVAS|IMG|SVG|VIDEO)$/i.test(x.tagName);
+    return (clipped || (/^rgba\(.*,\s*0\)$|^transparent$/.test(cs.backgroundColor) && cs.backgroundImage === 'none')) && !(parseFloat(cs.borderTopWidth) > 0) && cs.boxShadow === 'none' && !/^(CANVAS|IMG|VIDEO)$/i.test(x.tagName);
   };
   const onGlyphs = (x: Element, px: number, py: number) =>
     [...x.childNodes].some((n) => {
@@ -425,12 +429,78 @@ function inspect(safe: Insets): Problem[] {
           .find((x) => (!x.checkVisibility || x.checkVisibility({ opacityProperty: true, visibilityProperty: true })) && paints(x) && (x === el || el.contains(x) || !boxless(x) || onGlyphs(x, px, py)));
         if (!top || top === el || el.contains(top) || top.contains(el)) continue;
         const tb = top.getBoundingClientRect();
-        if (tb.width * tb.height > vw * vh * 0.3 || top.closest(floating)) continue;
+        if (tb.width * tb.height > vw * vh * 0.3 || afloat(top, el)) continue;
         hidden.add(`${name(el)} behind ${name(top)}`);
       }
     }
   }
   for (const x of hidden) out.push({ kind: 'overlap', what: `text ${x}` });
+  // Text cut short: a line that runs past the edge of a box that clips it (and doesn't scroll
+  // that way), or whose ends lie under the next card — the middle can show while "Income" ends
+  // in "Incon". (An ellipsis is a deliberate cut.) Along a line means across the stage, turned
+  // or not; a line's thickness runs down it.
+  const cutShort = new Set<string>();
+  for (const el of document.querySelectorAll<HTMLElement>('body *')) {
+    const texts = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent!.trim());
+    if (!texts.length || el.closest('.sronly')) continue;
+    const cs = getComputedStyle(el);
+    if (cs.visibility !== 'visible' || (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true }))) continue;
+    const turned = !!el.closest('#stage.rotated');
+    const clips: { p: HTMLElement; b: Box; along: boolean; across: boolean }[] = [];
+    for (let p: HTMLElement | null = el; p && p !== document.body; p = p.parentElement) {
+      const ps = getComputedStyle(p);
+      if (ps.overflowX === 'visible' && ps.overflowY === 'visible') continue;
+      if (ps.textOverflow === 'ellipsis') break;
+      // (A panel that scrolls that way shows the rest on a swipe.)
+      const sx = /(auto|scroll)/.test(ps.overflowX) && p.scrollWidth > p.clientWidth + 1;
+      const sy = /(auto|scroll)/.test(ps.overflowY) && p.scrollHeight > p.clientHeight + 1;
+      clips.push({ p, b: box(p.getBoundingClientRect()), along: !sx, across: !sy });
+    }
+    for (const n of texts) {
+      const range = document.createRange();
+      range.selectNodeContents(n);
+      for (const line of range.getClientRects()) {
+        if (line.width < 4 || line.height < 4) continue;
+        const l = box(line);
+        let seen: Box = cut(l, { l: 0, t: 0, r: vw, b: vh });
+        // (Past a panel that scrolls that way, a cut by the boxes around it is that scroll too.)
+        let along = true;
+        let across = true;
+        for (const c of clips) {
+          const s = cut(l, c.b);
+          if (empty(s)) {
+            seen = s; // out of its panel's sight altogether: scrolled away or folded up
+            break;
+          }
+          const past = (a: number, b: number) => a > b + 1.5;
+          const alongCut = turned ? past(c.b.t, l.t) || past(l.b, c.b.b) : past(c.b.l, l.l) || past(l.r, c.b.r);
+          const acrossCut = turned ? past(c.b.l, l.l) || past(l.r, c.b.r) : past(c.b.t, l.t) || past(l.b, c.b.b);
+          along &&= c.along;
+          across &&= c.across && !c.p.matches('.sbody, .pbody');
+          if ((alongCut && along) || (acrossCut && across)) cutShort.add(`${name(el)} cut by ${name(c.p)}`);
+          seen = cut(seen, c.b);
+        }
+        if (empty(seen)) continue;
+        // Its two ends, 3 px in, halfway through its thickness: the text itself, not a neighbour.
+        const ends: [number, number][] = turned
+          ? [[(seen.l + seen.r) / 2, seen.t + 3], [(seen.l + seen.r) / 2, seen.b - 3]]
+          : [[seen.l + 3, (seen.t + seen.b) / 2], [seen.r - 3, (seen.t + seen.b) / 2]];
+        for (const [px, py] of ends) {
+          const top = document
+            .elementsFromPoint(px, py)
+            .find((x) => (!x.checkVisibility || x.checkVisibility({ opacityProperty: true, visibilityProperty: true })) && paints(x) && (x === el || el.contains(x) || !boxless(x) || onGlyphs(x, px, py)));
+          if (!top || top === el || el.contains(top) || top.contains(el)) continue;
+          const tb = top.getBoundingClientRect();
+          if (tb.width * tb.height > vw * vh * 0.3 || afloat(top, el)) continue;
+          // (A control's own cooldown sweep or charge fill dims its label on purpose.)
+          const ctl = touchable.find((t) => t.el.contains(el));
+          if (ctl && ctl.el.contains(top)) continue;
+          cutShort.add(`${name(el)} ends under ${name(top)}`);
+        }
+      }
+    }
+  }
+  for (const x of cutShort) out.push({ kind: 'clipped', what: `text ${x}` });
   allHit.remove();
   for (const o of over) out.push({ kind: 'overlap', what: `text ${o}` });
   // Readable text: nothing on screen below 10 px (the HUD's small numbers are 10).
@@ -680,6 +750,17 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
     }
     for (const m of errors) problems.push({ kind: 'error', what: `page error: ${m}` });
     guest?.stop();
+    // (A step's own settings are for that step: the Celestial start stayed for every later
+    // battle and results screen.)
+    if (s.settings)
+      await page
+        .evaluate((keys: string[]) => {
+          const key = 'mythwar.settings.v1';
+          const saved = JSON.parse(localStorage.getItem(key) ?? '{}');
+          for (const k of keys) delete saved[k];
+          localStorage.setItem(key, JSON.stringify(saved));
+        }, Object.keys(s.settings))
+        .catch(() => {});
     await page.close();
     const seen = new Set<string>();
     for (const p of problems) {
