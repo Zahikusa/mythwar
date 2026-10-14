@@ -403,7 +403,9 @@ export class App {
     // (Not decided again while typing on a phone that hasn't turned: the keyboard leaves an
     // upright small phone a strip wider than tall, and the whole game would flip under the
     // field and back when it closes.)
-    const turn = typeof screen !== 'undefined' ? (screen.orientation?.type ?? '') : '';
+    // (iOS before 16.4 has no screen.orientation: the layout viewport, which the keyboard
+    // doesn't shrink there, tells a turn too.)
+    const turn = typeof screen !== 'undefined' && screen.orientation ? screen.orientation.type : typeof matchMedia !== 'undefined' && matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
     const field = document.activeElement;
     const typing = (field instanceof HTMLInputElement && field.type === 'text') || field instanceof HTMLTextAreaElement;
     this.rotated = typing && turn === this.rotatedFor ? this.rotated : (coarse || forced === 'mobile') && vh > vw && !this.params.has('norotate');

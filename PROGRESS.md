@@ -23,7 +23,7 @@ running under its footer (iPad mini); quick-message buttons 33 px; the sandbox's
 25 px; the online notices and long toasts over the cards and the god power; keyboard hints
 shown to phones; a dead "Fullscreen on phones" switch on iPhones and installed apps; the
 title's "Press Back again" over its buttons; with the keyboard up sideways the field being
-typed in had no room, and upright the whole game flipped under it. Backlog 21–38 (28 needs an iPhone: sound).
+typed in had no room, and upright the whole game flipped under it. Backlog 21–40 (28 needs an iPhone: sound).
 
 ## Run #12 in short (for the morning)
 
@@ -352,9 +352,10 @@ Already in the code before Phase 3, and kept:
    — "Waiting for a second player…" — for those seconds, on an opaque strip; the invite
    doesn't move.) (Seen once while checking it: a mobilecheck run ended with "Target page,
    context or browser has been closed" — a browser crash; the rerun passed. Watch for it.)
-40. [ ] iOS before 16.4 has no `screen.orientation`: with a field focused, the stage keeps its
-   turn even if the phone is turned while typing (until the keyboard closes). Rare; a
-   `matchMedia('(orientation: …)')` on the layout viewport could stand in there.
+40. [x] iOS before 16.4 has no `screen.orientation`: with a field focused, the stage would keep
+   its turn even if the phone was turned while typing (until the keyboard closed). (Done:
+   there `(orientation: portrait)` of the layout viewport — which iOS's keyboard doesn't
+   shrink — tells a turn. Needs an old iPhone to see; logic only.)
 
 ## Decisions
 
