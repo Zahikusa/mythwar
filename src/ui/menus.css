@@ -2416,10 +2416,29 @@
 }
 
 /* An upright small phone in a browser tab (~360–375 px across the turned stage): a saved
-   battle's Continue adds a row of buttons, and the parade gives way to it. */
+   battle's Continue adds a row of buttons, "New version ready — restart" a pill (it pushed
+   "Get the app" off the edge), and the parade gives way to them. */
 @container stage (max-height: 400px) {
-  .screen.title:has(.continue:not(.hidden)) .title-creatures {
+  .screen.title:is(:has(.continue:not(.hidden)), :has(.tupdate)) .title-creatures {
     display: none;
+  }
+
+  /* With the update waiting, the offer to get the app takes its small form (the 44-px round
+     button it leaves after "Not now"): restarting brings the full one back. */
+  .screen.title:has(.tupdate) .tnote.tinstall,
+  .screen.title:has(.tupdate) .tnote.tinstall .tmain {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .screen.title:has(.tupdate) .tnote.tinstall :is(.tmain span, .tclose) {
+    display: none;
+  }
+
+  .screen.title:has(.tupdate) .tnote.tinstall i {
+    width: 20px;
+    height: 20px;
   }
 }
 

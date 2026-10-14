@@ -432,6 +432,14 @@ Already in the code before Phase 3, and kept:
    of each visible line of text that takes taps and isn't part of a control: a control's
    invisible ring there (outside its own box) fails. Fails without 50's fix. Exempt: a screen's
    body under its own pinned buttons, as in 51.)
+53. [x] The title with "New version ready — restart" (a newer build found when the game comes
+   back to the front) was never checked: upright on an SE it pushed "Get the app" half off the
+   edge; with a saved battle's Continue too the title was 384 px in 375 (SE) and 313 in 292
+   (Galaxy sideways, the offer cut). (Done: under 400 px of stage the parade gives way to the
+   update as to Continue, and the offer to get the app takes its small round form while an
+   update waits — the restart brings the full one back. mobilecheck `title-update` (Continue +
+   update + offer): fails on the old build, green on every device. `MOBILECHECK_DIST` lets a
+   long run serve a copy of a build while the next one is made.)
 
 ## Decisions
 

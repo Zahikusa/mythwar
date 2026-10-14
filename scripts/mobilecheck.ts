@@ -166,7 +166,9 @@ const STEPS: Step[] = [
   // A returning player with a battle saved: Continue joins the title's buttons.
   { name: 'title-continue', query: '', ready: `a.menus.current === 'title'`, script: `a.menus.setContinue('Fae Wilds · 3:12'); a.menus.show('title')`, after: 900 },
   // The phone's Back on the title: "Press Back again to leave Mythwar."
-  { name: 'title-back', query: '', ready: `a.menus.current === 'title'`, script: `a.menus.titleSay('Press Back again to leave Mythwar.', 60000)`, ready2: `!!document.querySelector('.ttoast.show')`, after: 600 },
+  // (And a newer build on the server: "New version ready — restart" joins the title's offers.)
+  { name: 'title-update', query: '', ready: `a.menus.current === 'title'`, script: `a.menus.setContinue('Fae Wilds · 3:12'); a.menus.show('title'); a.menus.updateReady()`, ready2: `!!document.querySelector('.tupdate')`, after: 900 },
+  { name: 'title-back',query: '', ready: `a.menus.current === 'title'`, script: `a.menus.titleSay('Press Back again to leave Mythwar.', 60000)`, ready2: `!!document.querySelector('.ttoast.show')`, after: 600 },
   { name: 'journey', query: 'screen=difficulty', ready: `a.menus.current === 'difficulty'`, after: 700 },
   // (A returning player: records under the cards, "Next challenge", the trials row, a start age.)
   { name: 'journey-veteran', query: 'screen=difficulty', settings: { ageSeen: 3, startAge: 2, trials: ['godless'], records: { novice: { wins: 12, losses: 3, best: 272, streak: 4, stars: 3 }, adept: { wins: 2, losses: 5, best: 401, streak: -1, stars: 1 } } }, ready: `a.menus.current === 'difficulty'`, after: 700 },
@@ -821,7 +823,8 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
 }
 
 async function main(): Promise<void> {
-  const root = resolve('dist');
+  // (MOBILECHECK_DIST: a copy of a build, so a long run doesn't see the next build land.)
+  const root = resolve(process.env.MOBILECHECK_DIST ?? 'dist');
   if (!existsSync(join(root, 'index.html'))) throw new Error('Run "npm run build" first');
   mkdirSync('screenshots/mobile', { recursive: true });
   const http = createServer(serveStatic(root));
