@@ -27,7 +27,7 @@ of 1,480 views green) and more states a phone shows that were never checked: the
 the public page's lobby without a server (its one button downloaded a desktop app to a phone:
 now "Send to my computer" through the share sheet; side by side on short phones), and online
 battles with 16-letter names (the foe's bar ran under the chat and pause buttons — fixed).
-Backlog 44–62 done or decided; open: 61, 63, and 5, 16, 28 (need a real phone).
+Backlog 44–62 done or decided; open: 61, and 5, 16, 28 (need a real phone).
 
 ## Run #13 in short (for the morning)
 
@@ -507,9 +507,14 @@ Already in the code before Phase 3, and kept:
    (Decided against: the title is pinned and the tabs are the body's first row, so "beside"
    means hiding the screen's title there — 45 px for losing where the player is, on one
    screen of many. The tabs scroll away with a swipe.)
-63. [ ] The age badges (59) are `role="button"` but not focusable: Tab and a gamepad's D-pad
+63. [x] The age badges (59) are `role="button"` but not focusable: Tab and a gamepad's D-pad
    skip them, unlike the title offer's buttons (15). Either a `tabindex` in the HUD's focus
    order (check smoke's keyboard and gamepad flows) or no button role on a keyboard device.
+   (Done: they are real `<button>`s ("Your age" / "Enemy age"; the title holds the details):
+   Tab reaches them, Enter says them. The gamepad's D-pad moves through menus and sheets only,
+   not the battle HUD, so nothing changes there. The text checks no longer count a control's
+   invisible ring as covering text outside its box — the badge's ring passed over the end of
+   the name line.)
 64. [x] mobilecheck's `tip` step on the big upright tablets (ipad-10 installed, upright) timed out
    once while another mobilecheck ran beside it (headless WebKit draws those on the CPU — 20):
    give that step the time the device needs (a faster game speed there, or a longer wait)

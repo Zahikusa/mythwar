@@ -408,6 +408,9 @@ function inspect(safe: Insets): Problem[] {
   // (Over the text from a note or sheet of its own — not a neighbour inside the same screen or
   // sheet: every menu screen is a dialog too.)
   const afloat = (top: Element, el: Element) => !!top.closest(floating) && top.closest(floating) !== el.closest(floating);
+  // (Hit-testing counts a control's invisible touch ring (a positioned ::after) as the control:
+  // it covers only inside its own box.)
+  const inside = (b: DOMRect, x: number, y: number) => x >= b.left && x <= b.right && y >= b.top && y <= b.bottom;
   // (A screen's body scrolls under its own pinned title and buttons — they get a backdrop then.)
   const pinnedOver = (top: Element, el: Element) => {
     const body = el.closest('.screen > .sbody');
@@ -459,7 +462,7 @@ function inspect(safe: Insets): Problem[] {
           .find((x) => (!x.checkVisibility || x.checkVisibility({ opacityProperty: true, visibilityProperty: true })) && paints(x) && (x === el || el.contains(x) || !boxless(x) || onGlyphs(x, px, py)));
         if (!top || top === el || el.contains(top) || top.contains(el)) continue;
         const tb = top.getBoundingClientRect();
-        if (tb.width * tb.height > vw * vh * 0.3 || afloat(top, el) || pinnedOver(top, el)) continue;
+        if (tb.width * tb.height > vw * vh * 0.3 || afloat(top, el) || pinnedOver(top, el) || !inside(tb, px, py)) continue;
         hidden.add(`${name(el)} behind ${name(top)}`);
       }
     }
@@ -526,7 +529,7 @@ function inspect(safe: Insets): Problem[] {
             .find((x) => (!x.checkVisibility || x.checkVisibility({ opacityProperty: true, visibilityProperty: true })) && paints(x) && (x === el || el.contains(x) || !boxless(x) || onGlyphs(x, px, py)));
           if (!top || top === el || el.contains(top) || top.contains(el)) continue;
           const tb = top.getBoundingClientRect();
-          if (tb.width * tb.height > vw * vh * 0.3 || afloat(top, el) || pinnedOver(top, el)) continue;
+          if (tb.width * tb.height > vw * vh * 0.3 || afloat(top, el) || pinnedOver(top, el) || !inside(tb, px, py)) continue;
           // (A control's own cooldown sweep or charge fill dims its label on purpose.)
           const ctl = touchable.find((t) => t.el.contains(el));
           if (ctl && ctl.el.contains(top)) continue;

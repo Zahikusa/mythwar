@@ -146,19 +146,18 @@ export class Hud {
     E.hpL = h('div', { class: 'hpfill' });
     E.hpLd = h('div', { class: 'hpdmg' });
     E.hpLn = h('span', { class: 'hpnum' });
-    E.ageL = h('div', { class: 'agebadge', title: 'Your age' });
+    E.ageL = h('button', { class: 'agebadge', title: 'Your age', 'aria-label': 'Your age' });
     E.ageLn = h('div', { class: 'agename' });
     E.hpR = h('div', { class: 'hpfill' });
     E.hpRd = h('div', { class: 'hpdmg' });
     E.hpRn = h('span', { class: 'hpnum' });
-    E.ageR = h('div', { class: 'agebadge', title: 'Enemy age' });
+    E.ageR = h('button', { class: 'agebadge', title: 'Enemy age', 'aria-label': 'Enemy age' });
     E.ageRn = h('div', { class: 'agename' });
     E.foePow = h('i', { class: 'foepow', title: 'Enemy god power' });
     // A touch screen shows no titles: a tap on a badge says it, with the side's whole name (a
     // phone's bar may have cut it to "Wolfgang A…").
     for (const left of [true, false]) {
       const badge = left ? E.ageL : E.ageR;
-      badge.setAttribute('role', 'button');
       onTap(badge, () => {
         const who = left ? (this.allyName ? `You & ${this.allyName}` : this.myName) : this.foeName;
         this.toast(who ? `${who} — ${badge.title}` : badge.title);
