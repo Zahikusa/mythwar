@@ -85,6 +85,8 @@ export class App {
   mode: LayoutMode = 'desktop';
   /** True when a portrait phone screen is shown rotated into landscape. */
   rotated = false;
+  /** The screen's orientation when `rotated` was last decided (see resize). */
+  private rotatedFor = '';
   width = 0;
   height = 0;
   private difficulty: Difficulty;
@@ -398,7 +400,14 @@ export class App {
     const forced = this.params.get('mode');
     const coarse = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
     // Phones held upright: rotate the whole game into landscape (side-view lanes need width).
-    this.rotated = (coarse || forced === 'mobile') && vh > vw && !this.params.has('norotate');
+    // (Not decided again while typing on a phone that hasn't turned: the keyboard leaves an
+    // upright small phone a strip wider than tall, and the whole game would flip under the
+    // field and back when it closes.)
+    const turn = typeof screen !== 'undefined' ? (screen.orientation?.type ?? '') : '';
+    const field = document.activeElement;
+    const typing = (field instanceof HTMLInputElement && field.type === 'text') || field instanceof HTMLTextAreaElement;
+    this.rotated = typing && turn === this.rotatedFor ? this.rotated : (coarse || forced === 'mobile') && vh > vw && !this.params.has('norotate');
+    this.rotatedFor = turn;
     // Keep the game clear of notches / rounded corners / the home bar. Upright phones rotate the
     // stage 90° clockwise, so the screen's top inset becomes the stage's left, bottom → right,
     // right → top and left → bottom.
@@ -447,8 +456,7 @@ export class App {
     this.stage.classList.toggle('rotated', this.rotated);
     this.coinTarget = this.hud.goldTarget();
     // The keyboard came up (the stage just got shorter): the field being typed in stays in view.
-    const field = document.activeElement;
-    if (field instanceof HTMLInputElement && field.type === 'text') requestAnimationFrame(() => field.scrollIntoView({ block: 'nearest' }));
+    if (typing) requestAnimationFrame(() => field.scrollIntoView({ block: 'nearest' }));
   }
 
   /**

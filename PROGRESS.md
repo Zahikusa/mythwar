@@ -12,7 +12,7 @@ are finished; their log, backlog and open questions are in
 
 ## Run #13 in short (for the morning)
 
-Verification mode, 2026-10-13/14: mobilecheck grew from 22 to 51 screens per view — a returning
+Verification mode, 2026-10-13/14: mobilecheck grew from 22 to 52 screens per view — a returning
 player's title, every how-to page, screens turned while open, a friend in the room (a node
 client joins), the online battle with its quick messages, pause, "Bo is away", "Connection
 lost" and the walkover results, co-op, the sandbox, riddles, the after-battle offer, toasts —
@@ -23,7 +23,7 @@ running under its footer (iPad mini); quick-message buttons 33 px; the sandbox's
 25 px; the online notices and long toasts over the cards and the god power; keyboard hints
 shown to phones; a dead "Fullscreen on phones" switch on iPhones and installed apps; the
 title's "Press Back again" over its buttons; with the keyboard up sideways the field being
-typed in had no room. Backlog 21–37 (28 needs an iPhone: sound).
+typed in had no room, and upright the whole game flipped under it. Backlog 21–38 (28 needs an iPhone: sound).
 
 ## Run #12 in short (for the morning)
 
@@ -338,6 +338,13 @@ Already in the code before Phase 3, and kept:
    its middle, where App.resize scrolls the field into view. mobilecheck `keyboard-name`,
    `-code`, `-settings`, `-progress`, `-seat`: sideways, 40% of the height left, the focused
    field must be wholly in sight and on top.)
+38. [x] (run #13) Typing upright on a small phone: the keyboard leaves a strip wider than tall
+   (an SE: 375×~300), and App.resize decided the turn from the visible area — the whole game
+   flipped upright under the typing echo and back when the keyboard closed. (Done: while a
+   text field has the focus and the screen hasn't turned (`screen.orientation.type`), the
+   stage keeps its turn. mobilecheck `keyboard-upright` (55% left) expects the stage still
+   turned and the echo in sight; the emulators turn their "screen" with the viewport, so the
+   check holds the screen's orientation as a keyboard would. Fails without the fix.)
 
 ## Decisions
 

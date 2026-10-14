@@ -152,6 +152,8 @@ interface Step {
    * upright phone types through the upright echo, see `typing`).
    */
   keyboard?: number;
+  /** With `keyboard`: upright only — what's typed must show in the upright echo above the keys. */
+  upright?: boolean;
 }
 
 const battle = 'play=novice&seed=4';
@@ -203,6 +205,7 @@ const STEPS: Step[] = [
   // room code, the name in the room's seat.
   { name: 'keyboard-name', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `document.querySelector('.screen.mp .mpname').focus()`, keyboard: 0.4, after: 900 },
   { name: 'keyboard-code', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `document.querySelector('.screen.mp .mpcode').focus()`, keyboard: 0.4, after: 900 },
+  { name: 'keyboard-upright', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `const f = document.querySelector('.screen.mp .mpname'); f.focus(); f.value = 'Ada Lovelace'; f.dispatchEvent(new Event('input', { bubbles: true }))`, keyboard: 0.55, upright: true, after: 900 },
   { name: 'keyboard-settings', query: 'screen=settings', ready: `a.menus.current === 'settings'`, script: `document.querySelector('.sproginput.sname').focus()`, keyboard: 0.4, after: 900 },
   { name: 'keyboard-progress', query: 'screen=settings', ready: `a.menus.current === 'settings'`, script: `document.querySelector('.sproginput:not(.sname)').focus()`, keyboard: 0.4, after: 900 },
   { name: 'keyboard-seat', query: 'mp', ready: `a.menus.current === 'mp' && !!a.mp?.welcomed`, script: `a.mp.host()`, ready2: `a.menus.current === 'room' && !!document.querySelector('.rseat.mine .sname')`, script3: `document.querySelector('.rseat.mine .sname').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))`, ready3: `document.activeElement?.classList.contains('sedit')`, keyboard: 0.4, after: 900 },
@@ -319,7 +322,7 @@ function inspect(safe: Insets): Problem[] {
   // (Hit-tested with every element hit-testable: a footer line ignores the finger but is drawn
   // over the button. The battle's floating notes — the opening banner, a coach tip, a card's
   // details, the online notices over a waiting battle — come and go over the lane buttons on
-  // purpose.)
+  // purpose; so does the upright echo of a field over the turned screen while typing.)
   const over = new Set<string>();
   const paints = (x: Element) => {
     if (/^(CANVAS|IMG|SVG|VIDEO)$/i.test(x.tagName) || [...x.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim())) return true;
@@ -331,7 +334,7 @@ function inspect(safe: Insets): Problem[] {
   document.head.appendChild(allHit);
   for (const el of document.querySelectorAll<HTMLElement>('body *')) {
     const texts = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent!.trim());
-    if (!texts.length || touchable.some((t) => t.el.contains(el)) || el.closest('.banner, .coach, .tooltip, .netoverlay')) continue;
+    if (!texts.length || touchable.some((t) => t.el.contains(el)) || el.closest('.banner, .coach, .tooltip, .netoverlay, .upecho')) continue;
     const cs = getComputedStyle(el);
     if (cs.visibility !== 'visible' || el.closest('.sronly') || (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true }))) continue;
     let clip: Box = { l: 0, t: 0, r: vw, b: vh };
@@ -532,7 +535,7 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
     // (Turned: the screen ends up in the other orientation — checked against that one's insets.)
     const turned = d[mode][orient === 'p' ? 1 : 0];
     if (s.turn && JSON.stringify(turned.safe) !== JSON.stringify(v.safe)) continue;
-    if (s.keyboard && orient === 'p') continue;
+    if (s.keyboard && (orient === 'p') !== !!s.upright) continue;
     const page: Page = await ctx.newPage();
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
@@ -568,20 +571,32 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
         await page.waitForTimeout(400);
         await page.setViewportSize({ width: turned.w, height: turned.h });
       }
-      if (s.keyboard) await page.setViewportSize({ width: v.w, height: Math.round(v.h * s.keyboard) });
+      if (s.keyboard) {
+        // (A keyboard leaves the screen as it is; the emulators' smaller viewport turns it too —
+        // an upright phone's screen would read "landscape". Held as it was.)
+        await page.evaluate(() => {
+          const type = screen.orientation?.type;
+          // (On the prototype: the emulators hand out a new orientation object when they resize.)
+          const held = { type, angle: type?.startsWith('portrait') ? 0 : 90, addEventListener() {}, removeEventListener() {}, lock: () => Promise.reject(new Error('held')), unlock() {} };
+          if (type) Object.defineProperty(Screen.prototype, 'orientation', { configurable: true, get: () => held });
+        });
+        await page.setViewportSize({ width: v.w, height: Math.round(v.h * s.keyboard) });
+      }
       await page.waitForTimeout(s.after ?? 500);
       problems.push(...(await page.evaluate(inspect, v.safe)));
       if (s.keyboard) {
-        const seen = await page.evaluate(() => {
-          const f = document.activeElement as HTMLElement | null;
-          if (!f || !/^(INPUT|TEXTAREA)$/.test(f.tagName)) return 'the field lost the focus';
+        const seen = await page.evaluate((upright) => {
+          const f = (upright ? document.querySelector('.upecho:not(.hidden) .upbox') : document.activeElement) as HTMLElement | null;
+          if (upright && !f) return 'no upright echo';
+          if (upright && !(window as unknown as { __mythwar: { rotated: boolean } }).__mythwar.rotated) return 'the game flipped upright under the keyboard (it turns back when the keyboard goes)';
+          if (!f || (!upright && !/^(INPUT|TEXTAREA)$/.test(f.tagName))) return 'the field lost the focus';
           const r = f.getBoundingClientRect();
           const vh = visualViewport?.height ?? innerHeight;
           const vw = visualViewport?.width ?? innerWidth;
           if (r.top < -1 || r.left < -1 || r.bottom > vh + 1 || r.right > vw + 1) return `the field at ${Math.round(r.left)},${Math.round(r.top)}–${Math.round(r.right)},${Math.round(r.bottom)} is not all in the ${Math.round(vw)}×${Math.round(vh)} left by the keyboard`;
           const hit = document.elementFromPoint((r.left + r.right) / 2, (r.top + r.bottom) / 2);
           return hit === f || f.contains(hit) ? '' : 'the field is covered';
-        });
+        }, !!s.upright);
         if (seen) problems.push({ kind: 'outside', what: `typing: ${seen}` });
       }
       if (shots) await page.screenshot({ path: `screenshots/mobile/${tag}-${s.name}.png` });
