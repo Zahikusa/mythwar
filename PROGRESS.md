@@ -440,6 +440,11 @@ Already in the code before Phase 3, and kept:
    update waits — the restart brings the full one back. mobilecheck `title-update` (Continue +
    update + offer): fails on the old build, green on every device. `MOBILECHECK_DIST` lets a
    long run serve a copy of a build while the next one is made.)
+54. [x] Same for "You have the app — open Mythwar from your home screen" (Android, a tab while
+   the app is installed), never checked on a phone: upright on an SE it ran off the edge
+   (396 px in 375). (Done: the parade gives way to it too; it only informs, so with Continue or
+   the update it steps aside on these small stages and says it again on the plain title.
+   mobilecheck `title-elsewhere` (fails before), `title-elsewhere-continue`.)
 
 ## Decisions
 

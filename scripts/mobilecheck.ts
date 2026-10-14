@@ -168,7 +168,12 @@ const STEPS: Step[] = [
   // The phone's Back on the title: "Press Back again to leave Mythwar."
   // (And a newer build on the server: "New version ready — restart" joins the title's offers.)
   { name: 'title-update', query: '', ready: `a.menus.current === 'title'`, script: `a.menus.setContinue('Fae Wilds · 3:12'); a.menus.show('title'); a.menus.updateReady()`, ready2: `!!document.querySelector('.tupdate')`, after: 900 },
-  { name: 'title-back',query: '', ready: `a.menus.current === 'title'`, script: `a.menus.titleSay('Press Back again to leave Mythwar.', 60000)`, ready2: `!!document.querySelector('.ttoast.show')`, after: 600 },
+  // (A tab while the app is installed on this phone: "You have the app — open Mythwar from your
+  // home screen", the longest note.)
+  { name: 'title-elsewhere', query: '', ready: `a.menus.current === 'title'`, script: `window.dispatchEvent(new Event('appinstalled'))`, ready2: `!!document.querySelector('.tinstall.elsewhere')?.checkVisibility()`, after: 900, only: 'tab' },
+  // (With a saved battle's Continue too: on small phones the note steps aside for it.)
+  { name: 'title-elsewhere-continue', query: '', ready: `a.menus.current === 'title'`, script: `a.menus.setContinue('Fae Wilds · 3:12'); a.menus.show('title'); window.dispatchEvent(new Event('appinstalled'))`, ready2: `!!document.querySelector('.tinstall.elsewhere')`, after: 900, only: 'tab' },
+  { name: 'title-back', query: '', ready: `a.menus.current === 'title'`, script: `a.menus.titleSay('Press Back again to leave Mythwar.', 60000)`, ready2: `!!document.querySelector('.ttoast.show')`, after: 600 },
   { name: 'journey', query: 'screen=difficulty', ready: `a.menus.current === 'difficulty'`, after: 700 },
   // (A returning player: records under the cards, "Next challenge", the trials row, a start age.)
   { name: 'journey-veteran', query: 'screen=difficulty', settings: { ageSeen: 3, startAge: 2, trials: ['godless'], records: { novice: { wins: 12, losses: 3, best: 272, streak: 4, stars: 3 }, adept: { wins: 2, losses: 5, best: 401, streak: -1, stars: 1 } } }, ready: `a.menus.current === 'difficulty'`, after: 700 },

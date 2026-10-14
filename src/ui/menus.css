@@ -2416,23 +2416,30 @@
 }
 
 /* An upright small phone in a browser tab (~360–375 px across the turned stage): a saved
-   battle's Continue adds a row of buttons, "New version ready — restart" a pill (it pushed
-   "Get the app" off the edge), and the parade gives way to them. */
+   battle's Continue adds a row of buttons, "New version ready — restart" or "You have the app
+   — …" a long pill (they pushed "Get the app" off the edge), and the parade gives way to them. */
 @container stage (max-height: 400px) {
-  .screen.title:is(:has(.continue:not(.hidden)), :has(.tupdate)) .title-creatures {
+  .screen.title:is(:has(.continue:not(.hidden)), :has(.tupdate), :has(.tinstall.elsewhere)) .title-creatures {
     display: none;
   }
 
   /* With the update waiting, the offer to get the app takes its small form (the 44-px round
      button it leaves after "Not now"): restarting brings the full one back. */
-  .screen.title:has(.tupdate) .tnote.tinstall,
-  .screen.title:has(.tupdate) .tnote.tinstall .tmain {
+  .screen.title:has(.tupdate) .tnote.tinstall:not(.elsewhere),
+  .screen.title:has(.tupdate) .tnote.tinstall:not(.elsewhere) .tmain {
     width: 44px;
     padding: 0;
     justify-content: center;
   }
 
-  .screen.title:has(.tupdate) .tnote.tinstall :is(.tmain span, .tclose) {
+  .screen.title:has(.tupdate) .tnote.tinstall:not(.elsewhere) :is(.tmain span, .tclose) {
+    display: none;
+  }
+
+  /* "You have the app — open Mythwar from your home screen" only informs (no small form to
+     take): with Continue or the update it has no room here, and says it again on the plain
+     title. */
+  .screen.title:is(:has(.continue:not(.hidden)), :has(.tupdate)) .tnote.tinstall.elsewhere {
     display: none;
   }
 

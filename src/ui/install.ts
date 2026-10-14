@@ -327,6 +327,7 @@ export class InstallGuide {
       // until it's put away once (it has nothing more to offer).
       if (s.installHint !== 0) return;
       this.chip = this.makeChip(pic('home'), 'You have the app — open Mythwar from your home screen', () => {});
+      this.chip.classList.add('elsewhere');
       this.notes.appendChild(this.chip);
       return;
     }
