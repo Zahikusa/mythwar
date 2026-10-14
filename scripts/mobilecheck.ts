@@ -125,6 +125,8 @@ interface Step {
   after?: number;
   /** Only in a tab, or only installed. */
   only?: 'tab' | 'app';
+  /** How long each wait may take (ms; else 45 s): a big upright tablet plays slowly here. */
+  patience?: number;
   /**
    * A friend (a client run here) joins the room the page hosts and readies up. With
    * `guestLeaves`, after `ready4`, the friend leaves (mid-battle: a forfeit) and that predicate
@@ -196,7 +198,7 @@ const STEPS: Step[] = [
   // The first minutes' overlays: a coach tip, the next age's preview (a long
   // press on Ascend) and a card's details (a long press on a card).
   // (Whatever tip comes first: the earlier screens of this phone may have used some up.)
-  { name: 'tip', query: battle, ready: inBattle, script: `a.settings.hints = true; a.settings.hintsSeen = []; a.game.speed = 4`, ready2: `!!document.querySelector('.coach.show')`, after: 700 },
+  { name: 'tip', query: battle, ready: inBattle, script: `a.settings.hints = true; a.settings.hintsSeen = []; a.game.speed = 4`, ready2: `!!document.querySelector('.coach.show')`, after: 700, patience: 90000 },
   { name: 'preview', query: battle, ready: inBattle, script: `document.querySelector('.act.ascend').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true }))`, ready2: `!document.querySelector('.tooltip').classList.contains('hidden')`, after: 500 },
   { name: 'card', query: battle, ready: inBattle, script: `a.hud.showTooltip(window.__mythwarData.UNITS.treant, document.querySelector('.card'))`, ready2: `!document.querySelector('.tooltip').classList.contains('hidden')`, after: 500 },
   // The last age: four cards in the column (every earlier age has three), the largest HUD numbers.
@@ -752,8 +754,8 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
         }, s.settings);
       await page.goto(`${base}/?${q}`);
       const wait = (expr: string) =>
-        page.waitForFunction(`(() => { const a = window.__mythwar; return !!a && (${expr}); })()`, undefined, { timeout: 45000 }).catch(() => {
-          throw new Error(`waited 45 s for ${expr.slice(0, 70)}`);
+        page.waitForFunction(`(() => { const a = window.__mythwar; return !!a && (${expr}); })()`, undefined, { timeout: s.patience ?? 45000 }).catch(() => {
+          throw new Error(`waited ${(s.patience ?? 45000) / 1000} s for ${expr.slice(0, 70)}`);
         });
       await wait(s.ready);
       if (s.script) await page.evaluate(`(() => { const a = window.__mythwar; ${s.script}; })()`);

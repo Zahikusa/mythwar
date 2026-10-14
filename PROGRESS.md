@@ -27,7 +27,7 @@ of 1,480 views green) and more states a phone shows that were never checked: the
 the public page's lobby without a server (its one button downloaded a desktop app to a phone:
 now "Send to my computer" through the share sheet; side by side on short phones), and online
 battles with 16-letter names (the foe's bar ran under the chat and pause buttons — fixed).
-Backlog 44–62 done or decided; open: 61, 63, 64, and 5, 16, 28 (need a real phone).
+Backlog 44–62 done or decided; open: 61, 63, and 5, 16, 28 (need a real phone).
 
 ## Run #13 in short (for the morning)
 
@@ -510,10 +510,12 @@ Already in the code before Phase 3, and kept:
 63. [ ] The age badges (59) are `role="button"` but not focusable: Tab and a gamepad's D-pad
    skip them, unlike the title offer's buttons (15). Either a `tabindex` in the HUD's focus
    order (check smoke's keyboard and gamepad flows) or no button role on a keyboard device.
-64. [ ] mobilecheck's `tip` step on the big upright tablets (ipad-10 installed, upright) timed out
+64. [x] mobilecheck's `tip` step on the big upright tablets (ipad-10 installed, upright) timed out
    once while another mobilecheck ran beside it (headless WebKit draws those on the CPU — 20):
    give that step the time the device needs (a faster game speed there, or a longer wait)
    so a busy machine doesn't fail a screen that's fine.
+   (Done: a step's `patience` sets its waits; the tip step has 90 s. Green on the iPad 10 and
+   the Pro Max with the full matrix running beside it.)
 
 ## Decisions
 
