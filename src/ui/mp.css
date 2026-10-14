@@ -1193,17 +1193,36 @@
     max-width: min(760px, 94cqw);
   }
 
-  .mpnoserver > b,
-  .mpnoserver .mnote {
+  #stage .screen.mp.noserver .mpnoserver {
+    padding: 8px 14px 10px;
+    line-height: 1.4;
+  }
+
+  .mpnoserver > b {
     grid-column: 1 / -1;
   }
 
   .mpnoserver ol {
+    grid-row: 2 / span 2;
     margin: 4px 0 0;
+  }
+
+  .mpnoserver li + li {
+    margin-top: 2px;
   }
 
   .mpnoserver .mrow {
     flex-direction: column;
     gap: 8px;
+  }
+
+  /* ("Battles against the AI work right here" — the line that says play now — under the
+     buttons, not below the fold.) */
+  .mpnoserver .mnote {
+    grid-column: 2;
+    max-width: 220px;
+    margin-top: 6px;
+    font-size: 12px;
+    text-align: center;
   }
 }

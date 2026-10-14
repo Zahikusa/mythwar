@@ -27,7 +27,7 @@ of 1,480 views green) and more states a phone shows that were never checked: the
 the public page's lobby without a server (its one button downloaded a desktop app to a phone:
 now "Send to my computer" through the share sheet; side by side on short phones), and online
 battles with 16-letter names (the foe's bar ran under the chat and pause buttons — fixed).
-Backlog 44–62 done or decided; open: 61, 65, 66, and 5, 16, 28 (need a real phone).
+Backlog 44–62 done or decided; open: 61, 65, and 5, 16, 28 (need a real phone).
 
 ## Run #13 in short (for the morning)
 
@@ -521,9 +521,11 @@ Already in the code before Phase 3, and kept:
    the enemy took the bottom Ley Shrine"-length news is hard to read in that on a phone, mid-
    battle. Scale an info toast's time by its length (feats already get 3.2 s); keep short ones
    short.
-66. [ ] The no-server lobby on a Galaxy sideways (56): the closing note "Battles against the AI
+66. [x] The no-server lobby on a Galaxy sideways (56): the closing note "Battles against the AI
    work right here — even offline." is still under the fade — the one line that tells a phone
    player they can play right away. It could sit in the steps' column, beside the buttons.
+   (Done: under the buttons in their column, a little tighter spacing on those stages — the
+   whole panel fits a Galaxy and an SE sideways in a tab, 187 px of 187.)
 64. [x] mobilecheck's `tip` step on the big upright tablets (ipad-10 installed, upright) timed out
    once while another mobilecheck ran beside it (headless WebKit draws those on the CPU — 20):
    give that step the time the device needs (a faster game speed there, or a longer wait)
