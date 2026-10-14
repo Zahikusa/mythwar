@@ -2260,6 +2260,27 @@ html.cbfoe .side.right .hpfill {
   background: rgba(10, 6, 20, 0.55);
 }
 
+/* The Ragnarök line (from 3 minutes before, through the climax) under the gold pill — in the
+   top bar's column it ran behind it. Toasts and speech bubbles make room below it. */
+.hud.mobile .topbar .ragnarok {
+  position: absolute;
+  left: 50%;
+  top: 76px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 0 10px;
+  border-radius: 10px;
+  background: rgba(10, 6, 20, 0.55);
+}
+
+.hud.mobile:has(.ragnarok:not(:empty)) :is(.toast, .ebubble) {
+  top: 104px;
+}
+
+.hud.mobile:has(.ragnarok:not(:empty)) .sidebtn {
+  top: 100px;
+}
+
 .hud.mobile .goldrow .ico {
   width: 18px;
   height: 18px;

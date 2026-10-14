@@ -152,6 +152,8 @@ interface Step {
    * upright phone types through the upright echo, see `typing`).
    */
   keyboard?: number;
+  /** Settings saved before the page loads (merged over the check's own). */
+  settings?: Record<string, unknown>;
   /** With `keyboard`: upright only — what's typed must show in the upright echo above the keys. */
   upright?: boolean;
 }
@@ -181,6 +183,12 @@ const STEPS: Step[] = [
   { name: 'tip', query: battle, ready: inBattle, script: `a.settings.hints = true; a.settings.hintsSeen = []; a.game.speed = 4`, ready2: `!!document.querySelector('.coach.show')`, after: 700 },
   { name: 'preview', query: battle, ready: inBattle, script: `document.querySelector('.act.ascend').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true }))`, ready2: `!document.querySelector('.tooltip').classList.contains('hidden')`, after: 500 },
   { name: 'card', query: battle, ready: inBattle, script: `a.hud.showTooltip(window.__mythwarData.UNITS.treant, document.querySelector('.card'))`, ready2: `!document.querySelector('.tooltip').classList.contains('hidden')`, after: 500 },
+  // The last age: four cards in the column (every earlier age has three), the largest HUD numbers.
+  { name: 'battle-celestial', query: battle, settings: { ageSeen: 4, startAge: 4 }, ready: `${inBattle} && a.game.world.players[0].age === 4`, script: `a.game.world.players[0].gold = 99999`, after: 1500 },
+  // The climax foretold, then come: the Ragnarök line under the top bar (on phones it hid behind
+  // the gold pill).
+  { name: 'ragnarok', query: battle, ready: inBattle, script: `a.game.world.ragnarokAt = a.game.world.time + 100`, ready2: `/Ragnarök in/.test(document.querySelector('.ragnarok').textContent)`, after: 700 },
+  { name: 'ragnarok-on', query: battle, ready: inBattle, script: `a.game.speed = 4; a.game.world.ragnarokAt = a.game.world.time + 0.5`, ready2: `a.game.world.ragnarokStarted`, script3: `a.game.speed = 1`, after: 900 },
   // A battle's toast (the longest kind: a feat with its description).
   { name: 'toast', query: battle, ready: inBattle, script: `a.hud.toast('Feat: Spirit Banished — win a battle without losing a single creature to the foe', 'feat', true)`, ready2: `!!document.querySelector('.toast.show')`, after: 400 },
   { name: 'pause', query: battle, ready: inBattle, script: `a.pause()`, ready2: `a.menus.current === 'pause'`, after: 700 },
@@ -543,6 +551,11 @@ async function runView(browser: Browser, base: string, d: Device, mode: 'tab' | 
     const problems: Problem[] = [];
     let guest: MpClient | null = null;
     try {
+      if (s.settings)
+        await page.addInitScript((extra: Record<string, unknown>) => {
+          const key = 'mythwar.settings.v1';
+          localStorage.setItem(key, JSON.stringify({ ...JSON.parse(localStorage.getItem(key) ?? '{}'), ...extra }));
+        }, s.settings);
       await page.goto(`${base}/?${q}`);
       const wait = (expr: string) =>
         page.waitForFunction(`(() => { const a = window.__mythwar; return !!a && (${expr}); })()`, undefined, { timeout: 45000 }).catch(() => {
